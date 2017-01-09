@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ThingDefs>
+
+
+
+  <!-- ============================ TestPawn ========================== -->
+
+  <ThingDef ParentName="Human" Class="AlienRace.ThingDef_AlienRace">
+    <thingClass>AlienRace.AlienPawn</thingClass>
+    <defName>AlienTestPawn</defName>
+    <label>alien test pawn</label>
+    <description>A template Alien Pawn derived from a base human.</description>
+    
+  <!--========================== New entries ===========================-->
+   
+    <NakedBodyGraphicLocation></NakedBodyGraphicLocation>;
+    The location of the body textures. If left empty the default human textures are used.
+    Example: Things/AlienPawn/NakedBodies/
+
+    <NakedHeadGraphicLocation></NakedHeadGraphicLocation>;
+    The location of the head textures. If left empty the default human textures are used.
+    Example: Things/AlienPawn/Heads/
+
+    <DesiccatedGraphicLocation></DesiccatedGraphicLocation>;
+    The location and graphic name of the remains texture. If left empty the default human textures are used.
+    Example: Things/Pawn/Alien/AlienDessicated
+    
+    <CustomGenderDistribution>false</CustomGenderDistribution>
+    Enables a custom distribution of genders among your pawns. Default is set to false.
+    
+    <MaleGenderProbability>0.5</MaleGenderProbability>
+    If custom distribution is enabled, this value decides the proportions of males to females. 
+    
+    <PawnsSpecificBackstories>false</PawnsSpecificBackstories>
+    If enabled, the FactionDef field backstorycategory is ignored, instead the same field in PawnKindDef is used instead.
+    
+    <HasHair>Vanilla</HasHair>,
+    Defines the hair that is to be used. Default is Vanilla, meaning no changes to the hairgeneration.
+    Alternatives:     Custom      Hair colors are decided by the alienpartgenerator
+                      None        Pawns are created bald
+    
+    <GetsGreyAt>50</GetsGreyAt>;
+    If HasHair is set to Custom, this value defines the average age at which your alien would get gray hair.
+    
+    <CustomSkinColors>false</CustomSkinColors>;
+    Default is set to false. If set to true, the skincolor ist decided by the alienpartgenerator.
+
+    <alienpartgenerator>
+      
+      <aliencrowntypes>
+        <li>Male_Average_Normal</li>
+      </aliencrowntypes>
+      If a custom alien head path is defined, these are the graphic names from which a random head will be picked for the pawn.
+      
+      <alienbodytypes>
+        <li>Male</li>
+      </alienbodytypes>
+
+      If a custom alien body path is defined AND you want to get away from the base body type distribution, these are the bodytypes from which a random one will be picked for the pawn.
+
+    </alienpartgenerator>
+
+    <alienskincolorgen Class="ColorGenerator_Options">
+        <options>
+          <li>
+            <weight>10</weight>
+            <only>RGBA(1.0,1.0,1.0,1)</only>
+          </li>
+        </options>
+      </alienskincolorgen>   
+    
+      <alienhaircolorgen Class="ColorGenerator_Options">
+        <options>
+          <li>
+            <weight>10</weight>
+            <only>RGBA(1.0,1.0,1.0,1,1)</only>
+          </li>
+        </options>        
+      </alienhaircolorgen>;
+
+    Defines custom skin- and haircolors. Work the same as color options for items.
+
+  </ThingDef>
+
+
+
+</ThingDefs>

@@ -1,0 +1,26 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assembly_Races\Detours.cs">
+    <Files>
+      <File FileName="Assembly_Races\ModInitializer.cs" Line="20" Column="15" />
+      <File FileName="Assembly_Races\AlienColorKeys.cs" Line="1" Column="1" />
+      <File FileName="Assembly_Races\Detours.cs" Line="21" Column="35" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="AlienRace" expanded="True">
+            <Node name="AlienRace" expanded="True">
+              <Node name="References" expanded="True" />
+              <Node name="Detours.cs" selected="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+</Properties>

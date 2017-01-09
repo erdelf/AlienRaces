@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<ModMetaData>
+	<name>Humanoid Alien Races</name>
+	<author>erdelf</author>
+	<targetVersion>0.16.0</targetVersion>
+    <url>...</url>
+	<description>
+Enables the addition and visualization of humanoid alien races. This is a cosmetic framework only, any aliens added will behave just like humans for now.
+	</description>
+</ModMetaData>
