@@ -45,14 +45,9 @@ namespace AlienRace
 
         public static AlienPawn GeneratePawn(Pawn pawn)
         {
-            try
-            {
                 AlienPawn alienpawn = (AlienPawn)Convert.ChangeType(pawn, typeof(AlienPawn));
                 alienpawn.ReadXML(alienpawn);
                 return alienpawn;
-            }
-            catch (Exception e) { Log.Message(e.Message + "\n" + (e.TargetSite.Name??"") + "\n" + e.StackTrace);}
-            return pawn as AlienPawn;
         }
 
 
@@ -275,7 +270,7 @@ namespace AlienRace
         private void UpdateForcedTraits(AlienPawn apawn)
         {
             apawn.story.traits.allTraits.Clear();
-            typeof(PawnGenerator).GetMethod("GenerateTraits").Invoke(null, new object[] { apawn, true });        
+            typeof(PawnGenerator).GetMethod("GenerateTraits", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, new object[] { apawn, true });        
         }
         /*
         private static void GiveRandomTraits(Pawn pawn, bool allowGay)
