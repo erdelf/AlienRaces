@@ -114,7 +114,8 @@ namespace AlienRace
                             pawn.story.bodyType = pawn.story.childhood.BodyTypeFor(pawn.gender);
                         //Log.Message("2.6");
 
-                        pawn.story.bodyType = pawn.gender == Gender.Male ? BodyType.Male : BodyType.Female;
+                        if(pawn.story.bodyType == BodyType.Undefined)
+                            pawn.story.bodyType = pawn.gender == Gender.Male ? BodyType.Male : BodyType.Female;
 
                         if (pawn.story.bodyType == BodyType.Undefined)
                             pawn.story.bodyType = BodyType.Thin;
