@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RimWorld;
+using System.Collections.Generic;
 using Verse;
 
 namespace AlienRace
@@ -7,6 +8,8 @@ namespace AlienRace
     {
         
         public List<string> aliencrowntypes = new List<string> {};
+
+        public List<BodyType> alienbodytypes = new List<BodyType>();
 
         public string AlienHeadTypeLoc;
 

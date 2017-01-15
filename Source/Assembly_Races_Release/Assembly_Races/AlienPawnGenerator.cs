@@ -96,35 +96,30 @@ namespace AlienRace
                 //Log.Message("2.2");
                 if (!request.Newborn)
                 {
-                    //Log.Message("2.3");
-                    //Log.Message("let's start this");
-                    //Log.Message("Body: " + (pawn?.story?.bodyType != BodyType.Undefined).ToString());
                     if (pawn.story != null && pawn.story.bodyType == BodyType.Undefined)
                     {
-                        //Log.Message("2.4");
-                        //Log.Message("Let's do it");
-                        //Log.Message("Pawn: " + (pawn?? null).ToString());
-                        //Log.Message("Story: " + (pawn.story != null).ToString());
-                        //Log.Message("Adulthood: " + (pawn.story.adulthood != null).ToString());
-                        //Log.Message("Childhood: " + (pawn.story.childhood != null).ToString());
+                        
                         if (pawn.story.adulthood != null)
                             pawn.story.bodyType = pawn.story.adulthood.BodyTypeFor(pawn.gender);
-                        //Log.Message("2.5");
+                        
                         if (pawn.story.bodyType == BodyType.Undefined && pawn.story.adulthood != null)
                             pawn.story.bodyType = pawn.story.childhood.BodyTypeFor(pawn.gender);
-                        //Log.Message("2.6");
+                        
 
                         if(pawn.story.bodyType == BodyType.Undefined)
                             pawn.story.bodyType = pawn.gender == Gender.Male ? BodyType.Male : BodyType.Female;
 
                         if (pawn.story.bodyType == BodyType.Undefined)
                             pawn.story.bodyType = BodyType.Thin;
-                        //Log.Message("2.7");
+
+                        Thingdef_AlienRace aliendef = pawn.def as Thingdef_AlienRace;
+
+                        if (aliendef != null && !aliendef.alienpartgenerator.alienbodytypes.NullOrEmpty() && !aliendef.alienpartgenerator.alienbodytypes.Contains(pawn.story.bodyType))
+                            aliendef.alienpartgenerator.alienbodytypes.RandomElement();
                     }
-                    //Log.Message("let's check this");
-                    //Log.Message("2.8");
+                    
                     AlienPawnGenerator.GenerateGearFor(pawn, request);
-                    //Log.Message("2.9");
+                    
                 }
             }
             //Log.Message("3");
@@ -327,8 +322,10 @@ namespace AlienRace
                     typeof(PawnGenerator).GetMethod("GenerateTraits", BindingFlags.NonPublic|BindingFlags.Static).Invoke(null, new object[] { pawn, request.AllowGay });
                     //Log.Message("hey");
                     if (pawn.kindDef.race.ToString().Contains("Alien_"))
+                    {
                         pawn = AlienPawn.GeneratePawn(pawn);
-
+                        pawn.Name = (NameTriple) typeof(PawnBioAndNameGenerator).GetMethod("GeneratePawnName_Shuffled", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, new object[] { pawn, request.FixedLastName });
+                    }
                     GenerateSkills(pawn);
                 }
                 if (pawn.workSettings != null && request.Faction.IsPlayer)
