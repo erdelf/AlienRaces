@@ -113,9 +113,18 @@ namespace AlienRace
                             pawn.story.bodyType = BodyType.Thin;
 
                         Thingdef_AlienRace aliendef = pawn.def as Thingdef_AlienRace;
+                        /*
+                        Log.Message("START DEBUG");
+                        Log.Message((aliendef != null).ToString());
+                        Log.Message((aliendef.alienpartgenerator != null).ToString());
+                        Log.Message((aliendef.alienpartgenerator.alienbodytypes.NullOrEmpty().ToString()));
+                        Log.Message((aliendef.alienpartgenerator.alienbodytypes.Count.ToString()));
+                        aliendef.alienpartgenerator.alienbodytypes.ForEach((BodyType t) => Log.Message(t.ToString()));
 
+                        Log.Message(aliendef.alienpartgenerator.alienbodytypes.Contains(pawn.story.bodyType).ToString());
+                        */
                         if (aliendef != null && !aliendef.alienpartgenerator.alienbodytypes.NullOrEmpty() && !aliendef.alienpartgenerator.alienbodytypes.Contains(pawn.story.bodyType))
-                            aliendef.alienpartgenerator.alienbodytypes.RandomElement();
+                            pawn.story.bodyType = aliendef.alienpartgenerator.alienbodytypes.RandomElement();
                     }
                     
                     AlienPawnGenerator.GenerateGearFor(pawn, request);
