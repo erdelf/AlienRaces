@@ -12,7 +12,7 @@ namespace AlienRace
         private static List<string> destinations = new List<string>();
 
         /**
-            This is a basic first implementation of the IL method 'hooks' (detours) made possible by RawCode's work;
+            _this is a basic first implementation of the IL method 'hooks' (detours) made possible by RawCode's work;
             https://ludeon.com/forums/index.php?topic=17143.0
 
             Performs detours, spits out basic logs and warns if a method is detoured multiple times.

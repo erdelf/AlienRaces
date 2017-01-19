@@ -337,6 +337,7 @@ namespace AlienRace
                     }
                     GenerateSkills(pawn);
                 }
+                typeof(PawnGenerator).GetMethod("GenerateInitialHediffs", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { pawn, request});
                 if (pawn.workSettings != null && request.Faction.IsPlayer)
                 {
                     pawn.workSettings.EnableAndInitialize();

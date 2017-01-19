@@ -63,7 +63,7 @@ namespace AlienRace
 
             MethodInfo method3a = typeof(RimWorld.FloatMenuMakerMap).GetMethod("AddHumanlikeOrders", BindingFlags.Static | BindingFlags.NonPublic);
             MethodInfo method3b = typeof(AlienRace.MenuMakerMapRestricted).GetMethod("AddHumanlikeOrders", BindingFlags.Static | BindingFlags.NonPublic);
-
+            
             MethodInfo method4a = typeof(Verse.StartingPawnUtility).GetMethod("NewGeneratedStartingPawn", BindingFlags.Static | BindingFlags.Public);
             MethodInfo method4b = typeof(AlienRace.AlienRaceUtilities).GetMethod("NewGeneratedStartingPawnModded", BindingFlags.Static | BindingFlags.Public);
 
@@ -73,15 +73,26 @@ namespace AlienRace
             MethodInfo method6a = typeof(Verse.PawnGenerator).GetMethod("GeneratePawn", new Type[] { typeof(PawnGenerationRequest)});
             MethodInfo method6b = typeof(AlienRace.AlienPawnGenerator).GetMethod("GeneratePawn", new Type[] { typeof(PawnGenerationRequest) });
 
+            //MethodInfo method7a = typeof(Verse.PawnRenderer).GetMethod("RenderPawnAt");
+            //MethodInfo method7b = typeof(AlienRace.AlienPawnRendererDetour).GetMethod("RenderPawnAt", BindingFlags.NonPublic | BindingFlags.Static);
+
             try
             {
                 Detours.TryDetourFromTo(method1a, method1b);
+                //Log.Message("method1");
                 Detours.TryDetourFromTo(method2a, method2b);
+                //Log.Message("method2");
                 Detours.TryDetourFromTo(method3a, method3b);
+                //Log.Message("method3");
                 Detours.TryDetourFromTo(method4a, method4b);
+                //Log.Message("method4");
                 Detours.TryDetourFromTo(method5a, method5b);
+                //Log.Message("method5");
                 Detours.TryDetourFromTo(method6a, method6b);
-                Log.Message("Spawn method detoured!");
+                //Log.Message("method6");
+                //Detours.TryDetourFromTo(method7a, method7b);
+                //Log.Message("method7");
+                Log.Message("Alien Pawn methods detoured!");
             }
             catch (Exception)
             {

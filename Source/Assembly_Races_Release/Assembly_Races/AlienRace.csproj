@@ -56,6 +56,7 @@
     <Compile Include="AlienPartGenerator.cs" />
     <Compile Include="AlienPawn.cs" />
     <Compile Include="AlienPawnGenerator.cs" />
+    <Compile Include="AlienPawnRenderer.cs" />
     <Compile Include="AlienTraitEntry.cs" />
     <Compile Include="BackstoryDef.cs" />
     <Compile Include="CompImmuneToAge.cs" />
@@ -82,7 +83,9 @@
     <Content Include="xml\Initializer.xml">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="xml\TestPawn.xml" />
+    <Content Include="xml\TestPawn.xml">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

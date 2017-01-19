@@ -29,7 +29,7 @@
     Enables a custom distribution of genders among your pawns. Default is set to false.
     
     <MaleGenderProbability>0.5</MaleGenderProbability>
-    If custom distribution is enabled, this value decides the proportions of males to females. 
+    If custom distribution is enabled, _this value decides the proportions of males to females. 
     
     <PawnsSpecificBackstories>false</PawnsSpecificBackstories>
     If enabled, the FactionDef field backstorycategory is ignored, instead the same field in PawnKindDef is used instead.
@@ -40,7 +40,7 @@
                       None        Pawns are created bald
     
     <GetsGreyAt>50</GetsGreyAt>;
-    If HasHair is set to Custom, this value defines the average age at which your alien would get gray hair.
+    If HasHair is set to Custom, _this value defines the average age at which your alien would get gray hair.
     
     <CustomSkinColors>false</CustomSkinColors>;
     Default is set to false. If set to true, the skincolor ist decided by the alienpartgenerator.

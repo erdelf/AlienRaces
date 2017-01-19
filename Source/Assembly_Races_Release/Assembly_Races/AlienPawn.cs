@@ -65,7 +65,7 @@ namespace AlienRace
         {
             if (newguy.def.defName.Contains("Alien_"))
             {
-                Thingdef_AlienRace thingdef_alienrace = this.def as Thingdef_AlienRace;
+                Thingdef_AlienRace thingdef_alienrace = def as Thingdef_AlienRace;
                 if (thingdef_alienrace == null) { Log.Message("Could not read Alien ThingDef."); }
                 if (!FirstSpawn)
                 {
@@ -77,11 +77,11 @@ namespace AlienRace
                         {
                             if (Rand.Value < thingdef_alienrace.MaleGenderProbability)
                             {
-                                this.gender = Gender.Male;
+                                gender = Gender.Male;
                             }
                             else
                             {
-                                this.gender = Gender.Female;
+                                gender = Gender.Female;
                             }
                         }
                     }
@@ -90,7 +90,7 @@ namespace AlienRace
                     {
                         alienskincolor = thingdef_alienrace.alienskincolorgen.NewRandomizedColor();
                     }
-                    else alienskincolor = this.story.SkinColor;
+                    else alienskincolor = story.SkinColor;
                     if (thingdef_alienrace.NakedBodyGraphicLocation.NullOrEmpty())
                     {
                         nakedbodytexpath = "Things/Pawn/Humanlike/Bodies/";
@@ -115,36 +115,36 @@ namespace AlienRace
                     {
                         skullgraphicpath = thingdef_alienrace.SkullGraphicLocation;
                     }
-                    if (this.story != null)
+                    if (story != null)
                     {
                         switch (thingdef_alienrace.HasHair)
                         {
                             case AlienHairTypes.None:
                                 {
                                     HColor = Color.white;
-                                    this.story.hairDef = DefDatabase<HairDef>.GetNamed("Shaved", true);
-                                    TexPathHair = this.story.hairDef.texPath;
+                                    story.hairDef = DefDatabase<HairDef>.GetNamed("Shaved", true);
+                                    TexPathHair = story.hairDef.texPath;
                                     break;
                                 }
                             case AlienHairTypes.Custom:
                                 {
-                                    TexPathHair = this.story.hairDef.texPath;
+                                    TexPathHair = story.hairDef.texPath;
                                     if (thingdef_alienrace.alienhaircolorgen == null)
-                                        HColor = PawnHairColorsAlien.RandomHairColor(alienskincolor, this.ageTracker.AgeBiologicalYears, thingdef_alienrace.GetsGreyAt);
+                                        HColor = PawnHairColorsAlien.RandomHairColor(alienskincolor, ageTracker.AgeBiologicalYears, thingdef_alienrace.GetsGreyAt);
                                     else
                                         HColor = thingdef_alienrace.alienhaircolorgen.NewRandomizedColor();
                                     break;
                                 }
                             case AlienHairTypes.Vanilla:
                                 {
-                                    TexPathHair = this.story.hairDef.texPath;
-                                    HColor = this.story.hairColor;
+                                    TexPathHair = story.hairDef.texPath;
+                                    HColor = story.hairColor;
                                     break;
                                 }
                             default:
                                 {
-                                    TexPathHair = this.story.hairDef.texPath;
-                                    HColor = this.story.hairColor;
+                                    TexPathHair = story.hairDef.texPath;
+                                    HColor = story.hairColor;
                                     break;
                                 }
                         }
@@ -154,17 +154,17 @@ namespace AlienRace
                         {
                             if (thingdef_alienrace.NakedHeadGraphicLocation.NullOrEmpty())
                             {
-                                headtexpath = this.story.HeadGraphicPath;
+                                headtexpath = story.HeadGraphicPath;
                             }
                             else
                             {
-                                headtexpath = thingdef_alienrace.alienpartgenerator.RandomAlienHead(thingdef_alienrace.NakedHeadGraphicLocation, this.gender);
-                                typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this.story, headtexpath);
+                                headtexpath = thingdef_alienrace.alienpartgenerator.RandomAlienHead(thingdef_alienrace.NakedHeadGraphicLocation, gender);
+                                typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(story, headtexpath);
                             }
                         }
                         else
                         {
-                            this.isHeadless = true;
+                            isHeadless = true;
                         }
                         if (thingdef_alienrace.CustomDrawSize == null)
                         {
@@ -185,18 +185,18 @@ namespace AlienRace
                     {
                         fTraits = thingdef_alienrace.ForcedRaceTraitEntries;
                         List<TraitDef> tlist = DefDatabase<TraitDef>.AllDefsListForReading;
-                        if (this.story.childhood.forcedTraits == null) this.story.childhood.forcedTraits = new List<TraitEntry>();
+                        if (story.childhood.forcedTraits == null) story.childhood.forcedTraits = new List<TraitEntry>();
                         for (int i = 0; i < fTraits.Count; i++)
                             if (Rand.RangeInclusive(0, 100) < fTraits[i].chance)
                                 foreach (TraitDef tdef in tlist)
                                     if (tdef.defName == fTraits[i].defname)
-                                        this.story.childhood.forcedTraits.Add(new TraitEntry(tdef, fTraits[i].degree));
+                                        story.childhood.forcedTraits.Add(new TraitEntry(tdef, fTraits[i].degree));
                     }
-                    this.def = thingdef_alienrace;
+                    def = thingdef_alienrace;
 
                     if (this.TryGetComp<CompImmuneToAge>() != null)
                     {
-                        this.health.hediffSet.Clear();
+                        health.hediffSet.Clear();
                         PawnTechHediffsGenerator.GeneratePartsAndImplantsFor(this);
                     }
                 }
@@ -206,45 +206,48 @@ namespace AlienRace
                 MainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
             }
             if (nakedbodytexpath.Length < 2) nakedbodytexpath = "Things/Pawn/Humanlike/Bodies/";
-            if (headtexpath.Length < 2) headtexpath = this.story.HeadGraphicPath;
+            if (headtexpath.Length < 2) headtexpath = story.HeadGraphicPath;
 
         }
 
 
         public void SpawnSetupAlien()
         {
-            DoOnMainThread.ExecuteOnMainThread.Enqueue(() => {
-            this.nakedGraphic = GraphicGetterAlienBody.GetNakedBodyGraphicAlien(this.story.bodyType, ShaderDatabase.Cutout, alienskincolor, nakedbodytexpath, DrawSize);
-            this.rottingGraphic = GraphicGetterAlienBody.GetNakedBodyGraphicAlien(this.story.bodyType, ShaderDatabase.CutoutSkin, PawnGraphicSet.RottingColor, nakedbodytexpath, DrawSize);
-            if (!this.isHeadless)
+            DoOnMainThread.ExecuteOnMainThread.Enqueue(() =>
             {
-                this.headGraphic = GraphicDatabase.Get<Graphic_Multi>(headtexpath, ShaderDatabase.Cutout, DrawSize, alienskincolor);
-            }
-            else
-            {
-                this.headGraphic = null;
-            }
-            this.desiccatedGraphic = GraphicDatabase.Get<Graphic_Multi>(dessicatedgraphicpath, ShaderDatabase.Cutout, DrawSize, PawnGraphicSet.RottingColor);
-            this.desiccatedHeadGraphic = GraphicDatabase.Get<Graphic_Multi>(headtexpath, ShaderDatabase.Cutout, DrawSize, PawnGraphicSet.RottingColor);
-            this.skullGraphic = GraphicDatabase.Get<Graphic_Multi>(skullgraphicpath, ShaderDatabase.Cutout, DrawSize, Color.white);
-            this.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(TexPathHair, ShaderDatabase.Cutout, DrawSize, HColor);
-            this.UpdateGraphics();
+                nakedGraphic = GraphicGetterAlienBody.GetNakedBodyGraphicAlien(story.bodyType, ShaderDatabase.Cutout, alienskincolor, nakedbodytexpath, DrawSize);
+                rottingGraphic = GraphicGetterAlienBody.GetNakedBodyGraphicAlien(story.bodyType, ShaderDatabase.CutoutSkin, PawnGraphicSet.RottingColor, nakedbodytexpath, DrawSize);
+
+                if (!isHeadless)
+                {
+                    headGraphic = GraphicDatabase.Get<Graphic_Multi>(headtexpath, ShaderDatabase.Cutout, DrawSize, alienskincolor);
+                }
+                else
+                {
+                    headGraphic = null;
+                }
+                desiccatedGraphic = GraphicDatabase.Get<Graphic_Multi>(dessicatedgraphicpath, ShaderDatabase.Cutout, DrawSize, PawnGraphicSet.RottingColor);
+                desiccatedHeadGraphic = GraphicDatabase.Get<Graphic_Multi>(headtexpath, ShaderDatabase.Cutout, DrawSize, PawnGraphicSet.RottingColor);
+                skullGraphic = GraphicDatabase.Get<Graphic_Multi>(skullgraphicpath, ShaderDatabase.Cutout, DrawSize, Color.white);
+                hairGraphic = GraphicDatabase.Get<Graphic_Multi>(TexPathHair, ShaderDatabase.Cutout, DrawSize, HColor);
+                UpdateGraphics();
             });
         }
 
         public void UpdateGraphics()
         {
-                base.Drawer.renderer.graphics.headGraphic = this.headGraphic;
-                base.Drawer.renderer.graphics.nakedGraphic = this.nakedGraphic;
-                base.Drawer.renderer.graphics.hairGraphic = this.hairGraphic;
-                base.Drawer.renderer.graphics.rottingGraphic = this.rottingGraphic;
-                base.Drawer.renderer.graphics.desiccatedHeadGraphic = this.desiccatedHeadGraphic;
-                base.Drawer.renderer.graphics.skullGraphic = this.skullGraphic;
-                foreach (Apparel current in this.apparel.WornApparel)
+            Drawer.renderer.graphics.headGraphic = headGraphic;
+            Drawer.renderer.graphics.nakedGraphic = nakedGraphic;
+            Drawer.renderer.graphics.hairGraphic = hairGraphic;
+            Drawer.renderer.graphics.rottingGraphic = rottingGraphic;
+            Drawer.renderer.graphics.desiccatedHeadGraphic = desiccatedHeadGraphic;
+            Drawer.renderer.graphics.skullGraphic = skullGraphic;
+            foreach (Apparel current in apparel.WornApparel)
             {
-  //              current.Graphic.data.drawSize = current.wearer.Graphic.drawSize;
+                //current.Graphic.data.drawSize = current.wearer.Graphic.drawSize;
             }
-                this.Drawer.renderer.graphics.ResolveApparelGraphics();
+
+            Drawer.renderer.graphics.ResolveApparelGraphics();
         }
 
 
@@ -272,6 +275,7 @@ namespace AlienRace
             apawn.story.traits.allTraits.Clear();
             typeof(PawnGenerator).GetMethod("GenerateTraits", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, new object[] { apawn, true });        
         }
+
         /*
         private static void GiveRandomTraits(Pawn pawn, bool allowGay)
         {
@@ -357,7 +361,7 @@ namespace AlienRace
         */
         public override void SetFaction(Faction newFaction, Pawn recruiter = null)
         {
-            var x = this.kindDef;
+            var x = kindDef;
             AlienPawn temprecruitee = this as AlienPawn;
             if (newFaction == base.Faction)
             {
@@ -370,9 +374,9 @@ namespace AlienRace
                 }));
                 return;
             }
-            if (this.guest != null)
+            if (guest != null)
             {
-                this.guest.SetGuestStatus(null, false);
+                guest.SetGuestStatus(null, false);
             }
             Map.mapPawns.DeRegisterPawn(this);
             Map.pawnDestinationManager.RemovePawnFromSystem(this);
@@ -390,31 +394,31 @@ namespace AlienRace
             PawnComponentsUtility.AddAndRemoveDynamicComponents(this, false);
             if (base.Faction != null && base.Faction.IsPlayer)
             {
-                if (this.workSettings != null)
+                if (workSettings != null)
                 {
-                    this.workSettings.EnableAndInitialize();
+                    workSettings.EnableAndInitialize();
                 }
                 Find.Storyteller.intenderPopulation.Notify_PopulationGained();
             }
-            if (this.Drafted)
+            if (Drafted)
             {
-                this.drafter.Drafted = false;
+                drafter.Drafted = false;
             }
             Map.reachability.ClearCache();
-            this.health.surgeryBills.Clear();
+            health.surgeryBills.Clear();
             if (base.Spawned)
             {
                 Map.mapPawns.RegisterPawn(this);
             }
-            this.GenerateNecessaryName();
-            if (this.playerSettings != null)
+            GenerateNecessaryName();
+            if (playerSettings != null)
             {
-                this.playerSettings.medCare = ((!this.RaceProps.Humanlike) ? (this.playerSettings.medCare = MedicalCareCategory.NoMeds) : MedicalCareCategory.Best);
+                playerSettings.medCare = ((!RaceProps.Humanlike) ? (playerSettings.medCare = MedicalCareCategory.NoMeds) : MedicalCareCategory.Best);
             }
-            this.ClearMind(true);
-            if (!this.Dead && this.needs.mood != null)
+            ClearMind(true);
+            if (!Dead && needs.mood != null)
             {
-                this.needs.mood.thoughts.situational.Notify_SituationalThoughtsDirty();
+                needs.mood.thoughts.situational.Notify_SituationalThoughtsDirty();
             }
             Map.attackTargetsCache.UpdateTarget(this);
             Find.GameEnder.CheckGameOver();
@@ -424,15 +428,15 @@ namespace AlienRace
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Defs.LookDef<ThingDef>(ref this.def, "def");
-            Scribe_Values.LookValue<bool>(ref this.FirstSpawn, "FirstSpawn", false, false);
-            Scribe_Values.LookValue<string>(ref this.headtexpath, "headtexpath", null, false);
-            Scribe_Values.LookValue<string>(ref this.TexPathHair, "TexPathHair", null, false);
-            Scribe_Values.LookValue<string>(ref this.nakedbodytexpath, "nakedbodytexpath", null, false);
-            Scribe_Values.LookValue<string>(ref this.dessicatedgraphicpath, "dessicatedgraphicpath", null, false);
-            Scribe_Values.LookValue<string>(ref this.skullgraphicpath, "skullgraphicpath", null, false);
-            Scribe_Values.LookValue<Color>(ref this.alienskincolor, "alienskincolor");
-            Scribe_Values.LookValue<Color>(ref this.HColor, "HColor");
+            Scribe_Defs.LookDef<ThingDef>(ref def, "def");
+            Scribe_Values.LookValue<bool>(ref FirstSpawn, "FirstSpawn", false, false);
+            Scribe_Values.LookValue<string>(ref headtexpath, "headtexpath", null, false);
+            Scribe_Values.LookValue<string>(ref TexPathHair, "TexPathHair", null, false);
+            Scribe_Values.LookValue<string>(ref nakedbodytexpath, "nakedbodytexpath", null, false);
+            Scribe_Values.LookValue<string>(ref dessicatedgraphicpath, "dessicatedgraphicpath", null, false);
+            Scribe_Values.LookValue<string>(ref skullgraphicpath, "skullgraphicpath", null, false);
+            Scribe_Values.LookValue<Color>(ref alienskincolor, "alienskincolor");
+            Scribe_Values.LookValue<Color>(ref HColor, "HColor");
         }
     }
 }
