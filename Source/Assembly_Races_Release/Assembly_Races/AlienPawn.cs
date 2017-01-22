@@ -155,6 +155,7 @@ namespace AlienRace
                             if (thingdef_alienrace.NakedHeadGraphicLocation.NullOrEmpty())
                             {
                                 headtexpath = story.HeadGraphicPath;
+                                typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(story, headtexpath);
                             }
                             else
                             {

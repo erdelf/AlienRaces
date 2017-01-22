@@ -10,7 +10,6 @@ namespace AlienRace
 {
     public class MenuMakerMapRestricted
     {
-
         private static bool RaceRestricted(Pawn pawn, Apparel app)
         {
             if (app.GetComp<CompRestritctedRace>() != null)

@@ -73,8 +73,8 @@ namespace AlienRace
             MethodInfo method6a = typeof(Verse.PawnGenerator).GetMethod("GeneratePawn", new Type[] { typeof(PawnGenerationRequest)});
             MethodInfo method6b = typeof(AlienRace.AlienPawnGenerator).GetMethod("GeneratePawn", new Type[] { typeof(PawnGenerationRequest) });
 
-            //MethodInfo method7a = typeof(Verse.PawnRenderer).GetMethod("RenderPawnAt");
-            //MethodInfo method7b = typeof(AlienRace.AlienPawnRendererDetour).GetMethod("RenderPawnAt", BindingFlags.NonPublic | BindingFlags.Static);
+            MethodInfo method7a = typeof(RimWorld.Building_CommsConsole).GetMethod("GetFloatMenuOptions");
+            MethodInfo method7b = typeof(AlienRace.Detours).GetMethod("_GetFloatMenuOptions");
 
             try
             {
@@ -90,7 +90,7 @@ namespace AlienRace
                 //Log.Message("method5");
                 Detours.TryDetourFromTo(method6a, method6b);
                 //Log.Message("method6");
-                //Detours.TryDetourFromTo(method7a, method7b);
+                Detours.TryDetourFromTo(method7a, method7b);
                 //Log.Message("method7");
                 Log.Message("Alien Pawn methods detoured!");
             }

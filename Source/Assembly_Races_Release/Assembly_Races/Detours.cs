@@ -1,12 +1,118 @@
-﻿using System;
+﻿using RimWorld;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Verse;
+using Verse.AI;
 
 namespace AlienRace
 {
     public static class Detours
     {
+        public static IEnumerable<FloatMenuOption> _GetFloatMenuOptions(this Building_CommsConsole _this, Pawn myPawn)
+        {
+            if (!myPawn.CanReserve(_this, 1))
+            {
+                FloatMenuOption item = new FloatMenuOption("CannotUseReserved".Translate(), null, MenuOptionPriority.Default, null, null, 0f, null, null);
+                return new List<FloatMenuOption>
+                {
+                    item
+                };
+            }
+            if (!myPawn.CanReach(_this, PathEndMode.InteractionCell, Danger.Some, false, TraverseMode.ByPawn))
+            {
+                FloatMenuOption item2 = new FloatMenuOption("CannotUseNoPath".Translate(), null, MenuOptionPriority.Default, null, null, 0f, null, null);
+                return new List<FloatMenuOption>
+                {
+                    item2
+                };
+            }
+            if (_this.Spawned && _this.Map.mapConditionManager.ConditionIsActive(MapConditionDefOf.SolarFlare))
+            {
+                FloatMenuOption item3 = new FloatMenuOption("CannotUseSolarFlare".Translate(), null, MenuOptionPriority.Default, null, null, 0f, null, null);
+                return new List<FloatMenuOption>
+                {
+                    item3
+                };
+            }
+            if (!_this.GetComp<CompPowerTrader>().PowerOn)
+            {
+                FloatMenuOption item4 = new FloatMenuOption("CannotUseNoPower".Translate(), null, MenuOptionPriority.Default, null, null, 0f, null, null);
+                return new List<FloatMenuOption>
+                {
+                    item4
+                };
+            }
+            if (!myPawn.health.capacities.CapableOf(PawnCapacityDefOf.Talking))
+            {
+                FloatMenuOption item5 = new FloatMenuOption("CannotUseReason".Translate(new object[]
+                {
+                    "IncapableOfCapacity".Translate(new object[]
+                    {
+                        PawnCapacityDefOf.Talking.label
+                    })
+                }), null, MenuOptionPriority.Default, null, null, 0f, null, null);
+                return new List<FloatMenuOption>
+                {
+                    item5
+                };
+            }
+            if (!_this.CanUseCommsNow)
+            {
+                Log.Error(myPawn + " could not use comm console for unknown reason.");
+                FloatMenuOption item6 = new FloatMenuOption("Cannot use now", null, MenuOptionPriority.Default, null, null, 0f, null, null);
+                return new List<FloatMenuOption>
+                    {
+                        item6
+                    };
+            }
+            List<FloatMenuOption> list = new List<FloatMenuOption>();
+            IEnumerable<ICommunicable> enumerable = myPawn.Map.passingShipManager.passingShips.Cast<ICommunicable>().Concat(Find.FactionManager.AllFactionsInViewOrder.Cast<ICommunicable>());
+            foreach (ICommunicable commTarget in enumerable)
+            {
+                ICommunicable localCommTarget = commTarget;
+                string text = "CallOnRadio".Translate(new object[]
+                {
+                    localCommTarget.GetCallLabel()
+                });
+                Faction faction = localCommTarget as Faction;
+                if (faction != null)
+                {
+                    if (faction.IsPlayer)
+                    {
+                        continue;
+                    }
+                    if (!Building_CommsConsole.LeaderIsAvailableToTalk(faction))
+                    {
+                        list.Add(new FloatMenuOption(text + " (" + "LeaderUnavailable".Translate(new object[]
+                        {
+                            faction.leader?.LabelShort ?? ""
+                        }) + ")", null, MenuOptionPriority.Default, null, null, 0f, null, null));
+                        continue;
+                    }
+                }
+                Log.Message("5");
+                Action action = delegate
+                {
+                    ICommunicable localCommTargetCopy = localCommTarget;
+                    if (commTarget is TradeShip && !Building_OrbitalTradeBeacon.AllPowered(_this.Map).Any<Building_OrbitalTradeBeacon>())
+                    {
+                        Messages.Message("MessageNeedBeaconToTradeWithShip".Translate(), _this, MessageSound.RejectInput);
+                        return;
+                    }
+                    Job job = new Job(JobDefOf.UseCommsConsole, _this);
+                    job.commTarget = localCommTargetCopy;
+                    myPawn.jobs.TryTakeOrderedJob(job);
+                    PlayerKnowledgeDatabase.KnowledgeDemonstrated(ConceptDefOf.OpeningComms, KnowledgeAmount.Total);
+                };
+                list.Add(new FloatMenuOption(text, action, MenuOptionPriority.InitiateSocial, null, null, 0f, null, null));
+            }
+            return list;
+        }
+
+
+
 
         private static List<string> detoured = new List<string>();
         private static List<string> destinations = new List<string>();
