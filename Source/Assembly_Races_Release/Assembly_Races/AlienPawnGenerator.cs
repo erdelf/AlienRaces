@@ -58,6 +58,9 @@ namespace AlienRace
 
         public static Pawn GeneratePawn(PawnGenerationRequest request)
         {
+            Log.Message("----------------------------");
+            Log.Message(request.KindDef.defName);
+
             //Log.Message("0");
             if (request.KindDef != null && request.KindDef == PawnKindDefOf.SpaceRefugee && Rand.Value > 0.6f)
                 request.KindDef.race = DefDatabase<Thingdef_AlienRace>.AllDefs.Where((Thingdef_AlienRace x) => !x.defName.Contains("Base")).RandomElement();
@@ -287,6 +290,7 @@ namespace AlienRace
 
         private static Pawn DoGenerateNewNakedPawn(ref PawnGenerationRequest request, out string error, bool ignoreScenarioRequirements)
         {
+            //Log.Message("1");
             error = null;
             Pawn pawn = (Pawn)ThingMaker.MakeThing(request.KindDef.race, null);
             AlienPawnGenerator.pawnsBeingGenerated.Add(new PawnGenerationStatus(pawn, null));
@@ -315,29 +319,39 @@ namespace AlienRace
                 {
                     pawn.gender = Gender.None;
                 }
+                //Log.Message("2");
                 AlienPawnGenerator.GenerateRandomAge(pawn, request);
                 pawn.needs.SetInitialLevels();
                 if (!request.Newborn && request.CanGeneratePawnRelations)
                 {
                     AlienPawnGenerator.GeneratePawnRelations(pawn, ref request);
                 }
+                //Log.Message("2.1");
                 if (pawn.RaceProps.Humanlike)
                 {
+                    //Log.Message("2.2");
                     pawn.story.melanin = ((!request.FixedMelanin.HasValue) ? PawnSkinColors.RandomMelanin() : request.FixedMelanin.Value);
                     pawn.story.crownType = ((Rand.Value >= 0.5f) ? CrownType.Narrow : CrownType.Average);
                     pawn.story.hairColor = PawnHairColors.RandomHairColor(pawn.story.SkinColor, pawn.ageTracker.AgeBiologicalYears);
+                    //Log.Message("2.3");
                     PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo(pawn, request.FixedLastName);
+                    //Log.Message("2.4");
                     pawn.story.hairDef = PawnHairChooser.RandomHairDefFor(pawn, request.Faction.def);
                     //Log.Message("hey");
                     typeof(PawnGenerator).GetMethod("GenerateTraits", BindingFlags.NonPublic|BindingFlags.Static).Invoke(null, new object[] { pawn, request.AllowGay });
                     //Log.Message("hey");
+                    //Log.Message("2.5");
                     if (pawn.kindDef.race.ToString().Contains("Alien_"))
                     {
+                        //Log.Message("2.5.1");
                         pawn = AlienPawn.GeneratePawn(pawn);
+                        //Log.Message("2.5.2");
                         pawn.Name = (NameTriple) typeof(PawnBioAndNameGenerator).GetMethod("GeneratePawnName_Shuffled", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, new object[] { pawn, request.FixedLastName });
                     }
+                    //Log.Message("2.6");
                     GenerateSkills(pawn);
                 }
+                //Log.Message("3");
                 typeof(PawnGenerator).GetMethod("GenerateInitialHediffs", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { pawn, request});
                 if (pawn.workSettings != null && request.Faction.IsPlayer)
                 {

@@ -45,9 +45,9 @@ namespace AlienRace
 
         public static AlienPawn GeneratePawn(Pawn pawn)
         {
-                AlienPawn alienpawn = (AlienPawn)Convert.ChangeType(pawn, typeof(AlienPawn));
-                alienpawn.ReadXML(alienpawn);
-                return alienpawn;
+            AlienPawn alienpawn = (AlienPawn)Convert.ChangeType(pawn, typeof(AlienPawn));
+            alienpawn.ReadXML(alienpawn);
+            return alienpawn;
         }
 
 
@@ -60,11 +60,11 @@ namespace AlienRace
             return false;
         }
 
-
         public void ReadXML(AlienPawn newguy)
         {
             if (newguy.def.defName.Contains("Alien_"))
             {
+                //Log.Message("1");
                 Thingdef_AlienRace thingdef_alienrace = def as Thingdef_AlienRace;
                 if (thingdef_alienrace == null) { Log.Message("Could not read Alien ThingDef."); }
                 if (!FirstSpawn)
@@ -85,7 +85,7 @@ namespace AlienRace
                             }
                         }
                     }
-
+                    //Log.Message("2");
                     if (thingdef_alienrace.CustomSkinColors == true)
                     {
                         alienskincolor = thingdef_alienrace.alienskincolorgen.NewRandomizedColor();
@@ -115,6 +115,7 @@ namespace AlienRace
                     {
                         skullgraphicpath = thingdef_alienrace.SkullGraphicLocation;
                     }
+                    //Log.Message("3");
                     if (story != null)
                     {
                         switch (thingdef_alienrace.HasHair)
@@ -148,13 +149,13 @@ namespace AlienRace
                                     break;
                                 }
                         }
-
+                        //Log.Message("3");
 
                         if (!thingdef_alienrace.Headless)
                         {
                             if (thingdef_alienrace.NakedHeadGraphicLocation.NullOrEmpty())
                             {
-                                headtexpath = story.HeadGraphicPath;
+                                headtexpath = "Things/Pawn/Humanlike/Heads/" + gender.ToString() + "/" + gender.ToString() + "_" + story.crownType.ToString() + "_Normal"; 
                                 typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(story, headtexpath);
                             }
                             else
@@ -194,14 +195,14 @@ namespace AlienRace
                                         story.childhood.forcedTraits.Add(new TraitEntry(tdef, fTraits[i].degree));
                     }
                     def = thingdef_alienrace;
-
+                    //Log.Message("5");
                     if (this.TryGetComp<CompImmuneToAge>() != null)
                     {
                         health.hediffSet.Clear();
                         PawnTechHediffsGenerator.GeneratePartsAndImplantsFor(this);
                     }
                 }
-
+                //Log.Message("6");
                 if (fTraits != null && !FirstSpawn) UpdateForcedTraits(newguy);
                 FirstSpawn = true;
                 MainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;

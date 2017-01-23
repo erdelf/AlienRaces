@@ -1,15 +1,13 @@
-﻿using RimWorld;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Verse;
-using Verse.AI;
 
 namespace AlienRace
 {
     public static class Detours
     {
+        /*
         public static IEnumerable<FloatMenuOption> _GetFloatMenuOptions(this Building_CommsConsole _this, Pawn myPawn)
         {
             if (!myPawn.CanReserve(_this, 1))
@@ -109,7 +107,7 @@ namespace AlienRace
                 list.Add(new FloatMenuOption(text, action, MenuOptionPriority.InitiateSocial, null, null, 0f, null, null));
             }
             return list;
-        }
+        }*/
 
 
 
@@ -147,7 +145,7 @@ namespace AlienRace
             {
                 Log.Warning("Source method ('" + sourceString + "') is previously detoured to '" + destinations[detoured.IndexOf(sourceString)] + "'");
             }
-
+            UnityEngine.Debug.Log( "AlienRace: Detouring '" + sourceString + "' to '" + destinationString + "'");
             //Log.Message("Detouring '" + sourceString + "' to '" + destinationString + "'");
 
 
