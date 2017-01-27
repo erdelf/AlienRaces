@@ -122,6 +122,7 @@ namespace AlienRace
                         {
                             case AlienHairTypes.None:
                                 {
+                                    //Log.Message("hey");
                                     HColor = Color.white;
                                     story.hairDef = DefDatabase<HairDef>.GetNamed("Shaved", true);
                                     TexPathHair = story.hairDef.texPath;
@@ -199,7 +200,6 @@ namespace AlienRace
                     if (this.TryGetComp<CompImmuneToAge>() != null)
                     {
                         health.hediffSet.Clear();
-                        PawnTechHediffsGenerator.GeneratePartsAndImplantsFor(this);
                     }
                 }
                 //Log.Message("6");
@@ -219,7 +219,6 @@ namespace AlienRace
             {
                 nakedGraphic = GraphicGetterAlienBody.GetNakedBodyGraphicAlien(story.bodyType, ShaderDatabase.Cutout, alienskincolor, nakedbodytexpath, DrawSize);
                 rottingGraphic = GraphicGetterAlienBody.GetNakedBodyGraphicAlien(story.bodyType, ShaderDatabase.CutoutSkin, PawnGraphicSet.RottingColor, nakedbodytexpath, DrawSize);
-
                 if (!isHeadless)
                 {
                     headGraphic = GraphicDatabase.Get<Graphic_Multi>(headtexpath, ShaderDatabase.Cutout, DrawSize, alienskincolor);
@@ -232,22 +231,50 @@ namespace AlienRace
                 desiccatedHeadGraphic = GraphicDatabase.Get<Graphic_Multi>(headtexpath, ShaderDatabase.Cutout, DrawSize, PawnGraphicSet.RottingColor);
                 skullGraphic = GraphicDatabase.Get<Graphic_Multi>(skullgraphicpath, ShaderDatabase.Cutout, DrawSize, Color.white);
                 hairGraphic = GraphicDatabase.Get<Graphic_Multi>(TexPathHair, ShaderDatabase.Cutout, DrawSize, HColor);
+
                 UpdateGraphics();
             });
         }
 
         public void UpdateGraphics()
         {
+
             Drawer.renderer.graphics.headGraphic = headGraphic;
             Drawer.renderer.graphics.nakedGraphic = nakedGraphic;
             Drawer.renderer.graphics.hairGraphic = hairGraphic;
             Drawer.renderer.graphics.rottingGraphic = rottingGraphic;
             Drawer.renderer.graphics.desiccatedHeadGraphic = desiccatedHeadGraphic;
             Drawer.renderer.graphics.skullGraphic = skullGraphic;
-            foreach (Apparel current in apparel.WornApparel)
+
+            /*foreach (Apparel current in apparel.WornApparel)
             {
                 //current.Graphic.data.drawSize = current.wearer.Graphic.drawSize;
-            }
+                
+                current.Graphic.MatFront.mainTextureScale = new Vector2(0.75f, 0.75f);
+                current.Graphic.MatSide.mainTextureScale = new Vector2(0.75f, 0.75f);
+                current.Graphic.MatBack.mainTextureScale = new Vector2(0.75f, 0.75f);
+
+                current.Graphic.MatFront.mainTextureOffset = new Vector2(0f, 0.25f);
+                current.Graphic.MatSide.mainTextureOffset = new Vector2(0f, 0.25f);
+                current.Graphic.MatBack.mainTextureOffset = new Vector2(0f, 0.25f);
+
+            }*/
+            
+            typeof(PawnGraphicSet).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.FieldType == typeof(Graphic)).ToList().ForEach(f =>
+            {
+                Graphic_Multi graphic = f.GetValue(Drawer.renderer.graphics) as Graphic_Multi;
+                if (graphic != null)
+                {
+                    //graphic.MatFront.mainTextureScale = graphic.MatFront.mainTextureScale * 0.8f;
+                    //graphic.MatFront.mainTextureScale = new Vector2(0.75f, 0.75f);
+                    //graphic.MatSide.mainTextureScale = new Vector2(0.75f, 0.75f);
+                    //graphic.MatBack.mainTextureScale = new Vector2(0.75f, 0.75f);
+
+                    //graphic.MatFront.mainTextureOffset = new Vector2(0.1f, 0.1f);
+                    //graphic.MatSide.mainTextureOffset = new Vector2(0f, 0.25f);
+                    //graphic.MatBack.mainTextureOffset = new Vector2(0f, 0.25f);
+                }
+            });
 
             Drawer.renderer.graphics.ResolveApparelGraphics();
         }

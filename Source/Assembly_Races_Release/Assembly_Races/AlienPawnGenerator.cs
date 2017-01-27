@@ -58,11 +58,11 @@ namespace AlienRace
 
         public static Pawn GeneratePawn(PawnGenerationRequest request)
         {
-            Log.Message("----------------------------");
-            Log.Message(request.KindDef.defName);
+            //Log.Message("----------------------------");
+            //Log.Message(request.KindDef.defName);
 
             //Log.Message("0");
-            if (request.KindDef != null && request.KindDef == PawnKindDefOf.SpaceRefugee && Rand.Value > 0.6f)
+            if (request.KindDef != null && (request.KindDef == PawnKindDefOf.SpaceRefugee || request.KindDef == PawnKindDefOf.Slave) && Rand.Value > 0.4f)
                 request.KindDef.race = DefDatabase<Thingdef_AlienRace>.AllDefs.Where((Thingdef_AlienRace x) => !x.defName.Contains("Base")).RandomElement();
 
             //typeof(PawnGenerationRequest).GetProperty("KindDef", System.Reflection.BindingFlags.Instance).GetSetMethod(false).Invoke(request, new object[] { PawnKindDef.Named("OrassanVillager") });
