@@ -40,13 +40,6 @@ namespace AlienRace
         public GraphicMeshSet hairSetAverage;
         public GraphicMeshSet hairSetNarrow;
 
-        public static AlienPawn GeneratePawn(Thing thing)
-        {
-            AlienPawn alienpawn = (AlienPawn)Convert.ChangeType(thing, typeof(AlienPawn));
-            alienpawn.ReadXML(alienpawn);
-            return alienpawn;
-        }
-
         public static AlienPawn GeneratePawn(Pawn pawn)
         {
             AlienPawn alienpawn = (AlienPawn)Convert.ChangeType(pawn, typeof(AlienPawn));
@@ -449,6 +442,11 @@ namespace AlienRace
             Map.attackTargetsCache.UpdateTarget(this);
             Find.GameEnder.CheckGameOver();
             temprecruitee.kindDef = x;
+        }
+
+        public void shit()
+        {
+            Log.Message("hey");
         }
 
         public override void ExposeData()

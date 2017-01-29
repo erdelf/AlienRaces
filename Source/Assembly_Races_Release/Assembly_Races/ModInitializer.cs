@@ -13,6 +13,8 @@ namespace AlienRace
     {
         protected GameObject modInitializerControllerObject;
 
+        public static Type psychologyAlienPawn;
+        
         public ModInitializer()
         {
             LongEventHandler.QueueLongEvent(delegate
@@ -21,7 +23,7 @@ namespace AlienRace
                 this.modInitializerControllerObject.AddComponent<ModInitializerBehaviour>();
                 this.modInitializerControllerObject.AddComponent<DoOnMainThread>();
                 Object.DontDestroyOnLoad(this.modInitializerControllerObject);
-            }, "queueInject", false, null);
+            }, "queueInjectFailed", false, null);
         }
 
         protected override void FillTab()
@@ -100,6 +102,8 @@ namespace AlienRace
                 Log.Error("Could not detour Aliens");
                 throw;
             }
+
+
         }
     }
 }
