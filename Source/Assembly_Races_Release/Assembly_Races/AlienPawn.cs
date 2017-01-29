@@ -173,7 +173,7 @@ namespace AlienRace
                         {
                             isHeadless = true;
                         }
-                        if (thingdef_alienrace.CustomDrawSize == null || thingdef_alienrace.CustomDrawSize.Equals(IntVec2.Zero))
+                        if (thingdef_alienrace.CustomDrawSize == null || thingdef_alienrace.CustomDrawSize.Equals(Vector2.zero))
                         {
                             DrawSize = Vector2.one;
                         }
@@ -461,7 +461,7 @@ namespace AlienRace
             Scribe_Values.LookValue<string>(ref nakedbodytexpath, "nakedbodytexpath", null, false);
             Scribe_Values.LookValue<string>(ref dessicatedgraphicpath, "dessicatedgraphicpath", null, false);
             Scribe_Values.LookValue<string>(ref skullgraphicpath, "skullgraphicpath", null, false);
-
+            Scribe_Values.LookValue<Vector2>(ref DrawSize, "drawSize", Vector2.one, false);
             Scribe_Values.LookValue<Color>(ref alienskincolor, "alienskincolor");
             Scribe_Values.LookValue<Color>(ref HColor, "HColor");
         }
