@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using Verse;
@@ -73,10 +74,9 @@ namespace AlienRace
             MethodInfo method6a = typeof(Verse.PawnGenerator).GetMethod("GeneratePawn", new Type[] { typeof(PawnGenerationRequest)});
             MethodInfo method6b = typeof(AlienRace.AlienPawnGenerator).GetMethod("GeneratePawn", new Type[] { typeof(PawnGenerationRequest) });
 
-            /*
-            MethodInfo method7a = typeof(RimWorld.Building_CommsConsole).GetMethod("GetFloatMenuOptions");
-            MethodInfo method7b = typeof(AlienRace.Detours).GetMethod("_GetFloatMenuOptions");
-            */
+            MethodInfo method7a = typeof(Verse.PawnRenderer).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(m=> m.Name.EqualsIgnoreCase("RenderPawnInternal")).First((MethodInfo m) => m.GetParameters().Any((ParameterInfo p) => p.ParameterType.Equals(typeof(Rot4))));
+            MethodInfo method7b = typeof(AlienRace.AlienPawnRendererDetour).GetMethod("_RenderPawnInternal");
+            
             try
             {
                 Detours.TryDetourFromTo(method1a, method1b);
@@ -91,7 +91,7 @@ namespace AlienRace
                 //Log.Message("method5");
                 Detours.TryDetourFromTo(method6a, method6b);
                 //Log.Message("method6");
-                //Detours.TryDetourFromTo(method7a, method7b);
+                Detours.TryDetourFromTo(method7a, method7b);
                 //Log.Message("method7");
                 Log.Message("Alien Pawn methods detoured!");
             }

@@ -35,6 +35,10 @@ namespace AlienRace
         public List<Color> PossibleHairColors;
         public List<Color> PossibleSkinColors;
         public bool SpawnedByPC = false;
+        public GraphicMeshSet bodySet;
+        public GraphicMeshSet headSet;
+        public GraphicMeshSet hairSetAverage;
+        public GraphicMeshSet hairSetNarrow;
 
         public static AlienPawn GeneratePawn(Thing thing)
         {
@@ -169,7 +173,7 @@ namespace AlienRace
                         {
                             isHeadless = true;
                         }
-                        if (thingdef_alienrace.CustomDrawSize == null)
+                        if (thingdef_alienrace.CustomDrawSize == null || thingdef_alienrace.CustomDrawSize.Equals(IntVec2.Zero))
                         {
                             DrawSize = Vector2.one;
                         }
@@ -217,6 +221,8 @@ namespace AlienRace
         {
             DoOnMainThread.ExecuteOnMainThread.Enqueue(() =>
             {
+                UpdateSets();
+
                 nakedGraphic = GraphicGetterAlienBody.GetNakedBodyGraphicAlien(story.bodyType, ShaderDatabase.Cutout, alienskincolor, nakedbodytexpath, DrawSize);
                 rottingGraphic = GraphicGetterAlienBody.GetNakedBodyGraphicAlien(story.bodyType, ShaderDatabase.CutoutSkin, PawnGraphicSet.RottingColor, nakedbodytexpath, DrawSize);
                 if (!isHeadless)
@@ -236,6 +242,28 @@ namespace AlienRace
             });
         }
 
+        public void UpdateSets()
+        {
+            if (!AlienPawnRendererDetour.meshPools.Keys.Any(v => v.Equals(DrawSize)))
+            {
+                GraphicMeshSet[] meshSetToSave = new GraphicMeshSet[4];
+
+                meshSetToSave[0] = new GraphicMeshSet(1.5f * DrawSize.x, 1.5f * DrawSize.y);
+                meshSetToSave[1] = new GraphicMeshSet(1.5f * DrawSize.x, 1.5f * DrawSize.y);
+                meshSetToSave[2] = new GraphicMeshSet(1.5f * DrawSize.x, 1.5f * DrawSize.y);
+                meshSetToSave[3] = new GraphicMeshSet(1.3f * DrawSize.x, 1.5f * DrawSize.y);
+
+                AlienPawnRendererDetour.meshPools.Add(DrawSize, meshSetToSave);
+            }
+
+            GraphicMeshSet[] meshSet = AlienPawnRendererDetour.meshPools[AlienPawnRendererDetour.meshPools.Keys.First(v => v.Equals(DrawSize))];
+
+            bodySet = meshSet[0];
+            headSet = meshSet[1];
+            hairSetAverage = meshSet[2];
+            hairSetNarrow = meshSet[3];
+        }
+
         public void UpdateGraphics()
         {
 
@@ -245,37 +273,6 @@ namespace AlienRace
             Drawer.renderer.graphics.rottingGraphic = rottingGraphic;
             Drawer.renderer.graphics.desiccatedHeadGraphic = desiccatedHeadGraphic;
             Drawer.renderer.graphics.skullGraphic = skullGraphic;
-
-            /*foreach (Apparel current in apparel.WornApparel)
-            {
-                //current.Graphic.data.drawSize = current.wearer.Graphic.drawSize;
-                
-                current.Graphic.MatFront.mainTextureScale = new Vector2(0.75f, 0.75f);
-                current.Graphic.MatSide.mainTextureScale = new Vector2(0.75f, 0.75f);
-                current.Graphic.MatBack.mainTextureScale = new Vector2(0.75f, 0.75f);
-
-                current.Graphic.MatFront.mainTextureOffset = new Vector2(0f, 0.25f);
-                current.Graphic.MatSide.mainTextureOffset = new Vector2(0f, 0.25f);
-                current.Graphic.MatBack.mainTextureOffset = new Vector2(0f, 0.25f);
-
-            }*/
-            
-            typeof(PawnGraphicSet).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.FieldType == typeof(Graphic)).ToList().ForEach(f =>
-            {
-                Graphic_Multi graphic = f.GetValue(Drawer.renderer.graphics) as Graphic_Multi;
-                if (graphic != null)
-                {
-                    //graphic.MatFront.mainTextureScale = graphic.MatFront.mainTextureScale * 0.8f;
-                    //graphic.MatFront.mainTextureScale = new Vector2(0.75f, 0.75f);
-                    //graphic.MatSide.mainTextureScale = new Vector2(0.75f, 0.75f);
-                    //graphic.MatBack.mainTextureScale = new Vector2(0.75f, 0.75f);
-
-                    //graphic.MatFront.mainTextureOffset = new Vector2(0.1f, 0.1f);
-                    //graphic.MatSide.mainTextureOffset = new Vector2(0f, 0.25f);
-                    //graphic.MatBack.mainTextureOffset = new Vector2(0f, 0.25f);
-                }
-            });
-
             Drawer.renderer.graphics.ResolveApparelGraphics();
         }
 
@@ -464,8 +461,10 @@ namespace AlienRace
             Scribe_Values.LookValue<string>(ref nakedbodytexpath, "nakedbodytexpath", null, false);
             Scribe_Values.LookValue<string>(ref dessicatedgraphicpath, "dessicatedgraphicpath", null, false);
             Scribe_Values.LookValue<string>(ref skullgraphicpath, "skullgraphicpath", null, false);
+
             Scribe_Values.LookValue<Color>(ref alienskincolor, "alienskincolor");
             Scribe_Values.LookValue<Color>(ref HColor, "HColor");
         }
     }
 }
+ 
