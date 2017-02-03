@@ -6,7 +6,6 @@ using Verse;
 using Verse.AI.Group;
 using System.Reflection;
 using System;
-using System.ComponentModel;
 
 namespace AlienRace
 {
@@ -442,11 +441,6 @@ namespace AlienRace
             Map.attackTargetsCache.UpdateTarget(this);
             Find.GameEnder.CheckGameOver();
             temprecruitee.kindDef = x;
-        }
-
-        public void shit()
-        {
-            Log.Message("hey");
         }
 
         public override void ExposeData()

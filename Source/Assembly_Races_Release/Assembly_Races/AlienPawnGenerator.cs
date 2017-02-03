@@ -46,7 +46,7 @@ namespace AlienRace
             new CurvePoint(0.675f, 100f),
             new CurvePoint(0.75f, 30f),
             new CurvePoint(0.875f, 18f),
-            new CurvePoint(1f, 10f),
+            new CurvePoint(1f, 10f), 
             new CurvePoint(1.125f, 3f),
             new CurvePoint(1.25f, 0f)
         };
