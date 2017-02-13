@@ -22,74 +22,22 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateTraits"), new HarmonyMethod(typeof(HarmonyPatches), "GenerateTraitsPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), "ResolveAllGraphics"), new HarmonyMethod(typeof(HarmonyPatches), "ResolveAllGraphicsPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGiveSolidBioTo"), new HarmonyMethod(typeof(HarmonyPatches), "TryGiveSolidBioToPrefix"), null);
-            //harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), "SetBackstoryInSlotPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GiveShuffledBioTo"), null, new HarmonyMethod(typeof(HarmonyPatches), "GiveShuffledBioToPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), "SetBackstoryInSlotPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer), "RenderPawnInternal", new Type[] {typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool)}), new HarmonyMethod(typeof(HarmonyPatches), "RenderPawnInternalPrefix"), null);
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
-        public static void GiveShuffledBioToPostfix(ref Pawn pawn)
-        {
-            CompProperties_Alien alienProps = pawn.def.GetCompProperties<CompProperties_Alien>();
-
-            if (alienProps != null && alienProps.PawnsSpecificBackstories && !pawn.kindDef.backstoryCategory.NullOrEmpty())
-            {
-                Pawn pawn2 = pawn;
-                foreach (BackstorySlot slot in Enum.GetValues(typeof(BackstorySlot)))
-                {
-                    IEnumerable<Backstory> backstories = BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn2.kindDef.backstoryCategory) &&
-                        kvp.Value.slot == slot && (slot != BackstorySlot.Adulthood || !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn2.story.childhood.workDisables))).Select(kvp => kvp.Value);
-                    Backstory b;
-                    if (backstories.TryRandomElement(out b))
-                        if (slot == BackstorySlot.Childhood)
-                            pawn.story.childhood = b;
-                        else
-                            pawn.story.adulthood = b;
-                }
-            }
-        }
-        
         public static bool SetBackstoryInSlotPrefix(Pawn pawn, BackstorySlot slot, ref Backstory backstory)
         {
 
             CompProperties_Alien alienProps = pawn.def.GetCompProperties<CompProperties_Alien>();
 
             if (alienProps != null && alienProps.PawnsSpecificBackstories && !pawn.kindDef.backstoryCategory.NullOrEmpty())
-            {
-                /*
-                IEnumerable<Backstory> backstories = BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) &&
-                kvp.Value.slot == slot && (slot != BackstorySlot.Adulthood || !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood.workDisables))).Select(kvp => kvp.Value);
-                if (backstories.TryRandomElement(out backstory))
-                */
-
-
-                /*if((from kvp in BackstoryDatabase.allBackstories
-                 where kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) && kvp.Value.slot == slot && (slot != BackstorySlot.Adulthood || !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood.workDisables))
-                 select kvp.Value).TryRandomElement(out backstory))*/
-
-                List<Backstory> backstories = new List<Backstory>();
-                foreach (KeyValuePair<string, Backstory> kvp in BackstoryDatabase.allBackstories)
-                {
-                    if (kvp.Value.shuffleable)
-                    {
-                        if (kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory))
-                        {
-                            if (kvp.Value.slot == slot)
-                            {
-                                if (slot != BackstorySlot.Adulthood || !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood.workDisables))
-                                {
-                                    backstories.Add(kvp.Value);
-                                }
-                            }
-                        }
-                    }
-                }
-
-
-                if (!backstories.NullOrEmpty() && backstories.TryRandomElement(out backstory))
+                if (BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) &&
+                 kvp.Value.slot == slot && (slot != BackstorySlot.Adulthood ||
+                 !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood.workDisables))).Select(kvp => kvp.Value).TryRandomElement(out backstory))
                     return false;
-            }
             return true;
         }
 
@@ -133,21 +81,11 @@ namespace AlienRace
 
         public static void GenerateTraitsPrefix(Pawn pawn)
         {
-            Log.Message("start");
-            Log.Message((pawn != null).ToString());
-            Log.Message((pawn.Name != null).ToString());
-            Log.Message(pawn.Name?.ToStringFull);
-            Log.Message("after check");
             CompProperties_Alien alienProps = pawn.def.GetCompProperties<CompProperties_Alien>();
             if (alienProps != null && !alienProps.ForcedRaceTraitEntries.NullOrEmpty())
-            {
                 foreach (AlienTraitEntry ate in alienProps.ForcedRaceTraitEntries)
-                {
                     if (Rand.Range(0, 100) < ate.chance)
                         pawn.story.traits.GainTrait(new Trait(TraitDef.Named(ate.defname), ate.degree, true));
-                }
-            }
-            Log.Message("end");
         }
 
         public static void SkinColorPostfix(Pawn_StoryTracker __instance, ref Color __result)
@@ -210,9 +148,6 @@ namespace AlienRace
             }
         }
 
-        /**
-         * Don't continue here... this implementation is so close to a detour that I hate it
-         **/
         public static bool RenderPawnInternalPrefix(PawnRenderer __instance, Vector3 rootLoc, Quaternion quat, bool renderBody, Rot4 bodyFacing, Rot4 headFacing, RotDrawMode bodyDrawType, bool portrait)
         {
             Pawn pawn = (Pawn)AccessTools.Field(typeof(PawnRenderer), "pawn").GetValue(__instance);
@@ -226,6 +161,7 @@ namespace AlienRace
                 __instance.graphics.ResolveAllGraphics();
             }
             Mesh mesh = null;
+
             if (renderBody)
             {
                 Vector3 loc = rootLoc;
@@ -234,7 +170,9 @@ namespace AlienRace
                 if (bodyDrawType == RotDrawMode.Rotting)
                     __instance.graphics.dessicatedGraphic.Draw(loc, bodyFacing, pawn);
                 else
-                    alienComp.bodySet.MeshAt(bodyFacing);
+                {
+                    mesh = alienComp.bodySet.MeshAt(bodyFacing);
+                }
 
                 List<Material> list = __instance.graphics.MatsBodyBaseAt(bodyFacing, bodyDrawType);
                 for (int i = 0; i < list.Count; i++)
@@ -271,7 +209,7 @@ namespace AlienRace
                 Vector3 loc2 = rootLoc + b;
                 loc2.y += 0.035f;
                 bool flag = false;
-                Mesh mesh3 = __instance.graphics.HairMeshSet.MeshAt(headFacing);
+                Mesh mesh3 = (pawn.story.crownType == CrownType.Narrow ? alienComp.hairSetNarrow : alienComp.hairSetAverage).MeshAt(headFacing);
                 List<ApparelGraphicRecord> apparelGraphics = __instance.graphics.apparelGraphics;
                 for (int j = 0; j < apparelGraphics.Count; j++)
                 {
@@ -285,7 +223,7 @@ namespace AlienRace
                 }
                 if (!flag && bodyDrawType != RotDrawMode.Dessicated)
                 {
-                    Mesh mesh4 = __instance.graphics.HairMeshSet.MeshAt(headFacing);
+                    Mesh mesh4 = (pawn.story.crownType == CrownType.Narrow ? alienComp.hairSetNarrow : alienComp.hairSetAverage).MeshAt(headFacing);
                     Material mat2 = __instance.graphics.HairMatAt(headFacing);
                     GenDraw.DrawMeshNowOrLater(mesh4, loc2, quat, mat2, portrait);
                 }
