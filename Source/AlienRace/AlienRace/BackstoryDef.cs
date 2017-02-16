@@ -23,8 +23,8 @@ namespace AlienRace
         public List<WorkTags> workDisables = new List<WorkTags>();
         public List<BackstoryDefSkillListItem> skillGains = new List<BackstoryDefSkillListItem>();
         public List<string> spawnCategories = new List<string>();
-        public List<TraitEntry> forcedTraits = new List<TraitEntry>();
-        public List<TraitEntry> disallowedTraits = new List<TraitEntry>();
+        public List<AlienTraitEntry> forcedTraits = new List<AlienTraitEntry>();
+        public List<AlienTraitEntry> disallowedTraits = new List<AlienTraitEntry>();
         public string saveKeyIdentifier;
 #pragma warning restore CS0649
 
@@ -56,9 +56,6 @@ namespace AlienRace
             
             if (!addToDatabase || BackstoryDatabase.allBackstories.ContainsKey(UniqueSaveKey) || title.NullOrEmpty() || spawnCategories.NullOrEmpty())
                 return;
-            
-            //Log.Message(DefDatabase<BackstoryDef>.DefCount.ToString());
-
 
             Backstory b = new Backstory()
             {
@@ -70,8 +67,8 @@ namespace AlienRace
                 shuffleable = shuffleable,
                 spawnCategories = spawnCategories,
                 skillGains = skillGains.ToDictionary(i => i.defName, i => i.amount),
-                forcedTraits = forcedTraits.NullOrEmpty() ? null : forcedTraits.ConvertAll(trait => new TraitEntry(trait.def, trait.degree)),
-                disallowedTraits = disallowedTraits.NullOrEmpty() ? null : disallowedTraits.ConvertAll(trait => new TraitEntry(trait.def, trait.degree)),
+                forcedTraits = forcedTraits.NullOrEmpty() ? null : forcedTraits.Where(trait => Rand.Range(0,100) < trait.chance).ToList().ConvertAll(trait => new TraitEntry(TraitDef.Named(trait.defname), trait.degree)),
+                disallowedTraits = disallowedTraits.NullOrEmpty() ? null : disallowedTraits.Where(trait => Rand.Range(0,100) < trait.chance).ToList().ConvertAll(trait => new TraitEntry(TraitDef.Named(trait.defname), trait.degree)),
                 workDisables = workAllows.NullOrEmpty() ? workDisables.NullOrEmpty() ? WorkTags.None : ((Func<WorkTags>)delegate
                 {
                     WorkTags wt = WorkTags.None;

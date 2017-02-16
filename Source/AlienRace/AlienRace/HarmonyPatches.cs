@@ -24,14 +24,138 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGiveSolidBioTo"), new HarmonyMethod(typeof(HarmonyPatches), "TryGiveSolidBioToPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), "SetBackstoryInSlotPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer), "RenderPawnInternal", new Type[] {typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool)}), new HarmonyMethod(typeof(HarmonyPatches), "RenderPawnInternalPrefix"), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnComponentsUtility), "CreateInitialComponents"), new HarmonyMethod(typeof(HarmonyPatches), "CreateInitialComponentsPostfix"), null);
+            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "GenerateRandomOldAgeInjuries"), new HarmonyMethod(typeof(HarmonyPatches), "GenerateRandomOldAgeInjuriesPrefix"), null);
+            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "RandomHediffsToGainOnBirthday", new Type[] {typeof(Pawn), typeof(int)}), new HarmonyMethod(typeof(HarmonyPatches), "RandomHediffsToGainOnBirthdayPrefix"), null);
+            harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), "NewGeneratedStartingPawn"), new HarmonyMethod(typeof(HarmonyPatches), "NewGeneratedStartingPawnPrefix"), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GiveAppropriateBioAndNameTo"), null, new HarmonyMethod(typeof(HarmonyPatches), "GiveAppropriateBioAndNameToPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateRandomAge"), new HarmonyMethod(typeof(HarmonyPatches), "GenerateRandomAgePrefix"), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GeneratePawnName"), new HarmonyMethod(typeof(HarmonyPatches), "GeneratePawnNamePrefix"), null);
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
+        public static bool GeneratePawnNamePrefix(ref Name __result, Pawn pawn, NameStyle style = NameStyle.Full, string forcedLastName = null)
+        {
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+            if(alienProps == null || alienProps.race.GetNameGenerator(pawn.gender) == null || style != NameStyle.Full)
+                return true;
+
+            NameTriple nameTriple = NameTriple.FromString(NameGenerator.GenerateName(alienProps.race.GetNameGenerator(pawn.gender), delegate (string x)
+            {
+                NameTriple name = NameTriple.FromString(x);
+
+                return !name.UsedThisGame;
+            }, false));
+
+            string first = nameTriple.First, nick = nameTriple.Nick, last = nameTriple.Last;
+
+            if (nick == null)
+                nick = nameTriple.First;
+
+            if (last != null && forcedLastName != null)
+                last = forcedLastName;
+
+            __result = new NameTriple(first, nick, last);
+
+            return false;
+        }
+
+        public static void GenerateRandomAgePrefix(Pawn pawn, PawnGenerationRequest request)
+        {
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+            CompAlien alienComps = pawn.TryGetComp<CompAlien>();
+
+            if (alienProps != null && alienProps.MaleGenderProbability != 0.5f)
+            {
+                if (!request.FixedGender.HasValue)
+                    pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.MaleGenderProbability ? Gender.Female : Gender.Male;
+                else
+                    alienComps.fixGenderPostSpawn = true;
+            }
+        }
+
+        public static void GiveAppropriateBioAndNameToPostfix(Pawn pawn)
+        {
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+            CompAlien alienComp = pawn.GetComp<CompAlien>();
+
+            if (alienProps != null)
+            {
+                //Log.Message(pawn.LabelCap);
+                if (alienComp.hairColor == Color.clear)
+                    alienComp.hairColor = pawn.story.hairColor;
+                float grey = Rand.Range(0.65f, 0.85f);
+                pawn.story.hairColor = alienProps.GetsGreyAt <= pawn.ageTracker.AgeBiologicalYears ? new Color(grey, grey, grey) : alienComp.hairColor;
+
+                if (!alienProps.NakedHeadGraphicLocation.NullOrEmpty())
+                    AccessTools.Field(typeof(Pawn_StoryTracker), "headGraphicPath").SetValue(pawn.story,
+                        alienProps.alienpartgenerator.RandomAlienHead(alienProps.NakedHeadGraphicLocation, pawn.gender));
+            }
+        }
+
+        public static bool NewGeneratedStartingPawnPrefix(ref Pawn __result)
+        {
+            PawnKindDef kindDef = Faction.OfPlayer.def.basicMemberKind;
+
+            DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(tdar => !tdar.startingColonists.NullOrEmpty()).
+                SelectMany(tdar => tdar.startingColonists).Where(sce => sce.factionDefs.Contains(Faction.OfPlayer.def)).SelectMany(sce => sce.pawnKindEntries).InRandomOrder().ToList().ForEach(pke =>
+                {
+                    if (Rand.Range(0f, 100f) < pke.chance)
+                    {
+                        kindDef = pke.kindDefs.RandomElement();
+                    }
+                });
+
+            if (kindDef == Faction.OfPlayer.def.basicMemberKind)
+                return true;
+
+            PawnGenerationRequest request = new PawnGenerationRequest(kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, null, true, false, false, false, true, false, 26f, false, true, true, null, null, null, null, null, null);
+            Pawn pawn = null;
+            try
+            {
+                pawn = PawnGenerator.GeneratePawn(request);
+            }
+            catch (Exception arg)
+            {
+                Log.Error("There was an exception thrown by the PawnGenerator during generating a starting pawn. Trying one more time...\nException: " + arg);
+                pawn = PawnGenerator.GeneratePawn(request);
+            }
+            pawn.relations.everSeenByPlayer = true;
+            PawnComponentsUtility.AddComponentsForSpawn(pawn);
+            __result = pawn;
+
+            return false;
+        }
+
+        public static bool RandomHediffsToGainOnBirthdayPrefix(ref IEnumerable<HediffGiver_Birthday> __result, Pawn pawn)
+        {
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+            if (alienProps != null && alienProps.ImmuneToAge)
+            {
+                __result = new List<HediffGiver_Birthday>();
+                return false;
+            }
+            return true;
+        }
+
+        public static bool GenerateRandomOldAgeInjuries(Pawn pawn)
+        {
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+            if (alienProps != null && alienProps.ImmuneToAge)
+                return false;
+            return true;
+        }
+
+        public static void CreateInitialComponentsPostfix(Pawn pawn)
+        {
+            //pawn.TryGetComp<CompAlien>()?.InitializeAlien();
+        }
+        
         public static bool SetBackstoryInSlotPrefix(Pawn pawn, BackstorySlot slot, ref Backstory backstory)
         {
 
-            CompProperties_Alien alienProps = pawn.def.GetCompProperties<CompProperties_Alien>();
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
             if (alienProps != null && alienProps.PawnsSpecificBackstories && !pawn.kindDef.backstoryCategory.NullOrEmpty())
                 if (BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) &&
@@ -61,9 +185,22 @@ namespace AlienRace
         public static bool ResolveAllGraphicsPrefix(PawnGraphicSet __instance)
         {
             CompAlien alienComps = __instance.pawn.TryGetComp<CompAlien>();
-            CompProperties_Alien alienProps = __instance.pawn.def.GetCompProperties<CompProperties_Alien>();
-            if (alienProps != null)
+
+            if (alienComps != null)
             {
+                ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
+                if (alienComps.fixGenderPostSpawn)
+                {
+                    if (alienProps.MaleGenderProbability != 0.5f)
+                            __instance.pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.MaleGenderProbability ? Gender.Female : Gender.Male;
+
+                    if (!alienProps.NakedHeadGraphicLocation.NullOrEmpty())
+                        AccessTools.Field(typeof(Pawn_StoryTracker), "headGraphicPath").SetValue(__instance.pawn.story,
+                            alienProps.alienpartgenerator.RandomAlienHead(alienProps.NakedHeadGraphicLocation, __instance.pawn.gender));
+
+                    alienComps.fixGenderPostSpawn = false;
+                }
+
                 __instance.nakedGraphic = AlienRaceUtilties.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, alienProps.NakedBodyGraphicLocation);
                 __instance.rottingGraphic = AlienRaceUtilties.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.NakedBodyGraphicLocation);
                 __instance.dessicatedGraphic = GraphicDatabase.Get<Graphic_Multi>(alienProps.DesiccatedGraphicLocation, ShaderDatabase.Cutout);
@@ -81,9 +218,9 @@ namespace AlienRace
 
         public static void GenerateTraitsPrefix(Pawn pawn)
         {
-            CompProperties_Alien alienProps = pawn.def.GetCompProperties<CompProperties_Alien>();
-            if (alienProps != null && !alienProps.ForcedRaceTraitEntries.NullOrEmpty())
-                foreach (AlienTraitEntry ate in alienProps.ForcedRaceTraitEntries)
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+            if (alienProps != null && !alienProps.forcedRaceTraitEntries.NullOrEmpty())
+                foreach (AlienTraitEntry ate in alienProps.forcedRaceTraitEntries)
                     if (Rand.Range(0, 100) < ate.chance)
                         pawn.story.traits.GainTrait(new Trait(TraitDef.Named(ate.defname), ate.degree, true));
         }
@@ -92,60 +229,50 @@ namespace AlienRace
         {
             CompAlien alienComp = ((Pawn)AccessTools.Field(typeof(Pawn_StoryTracker), "pawn").GetValue(__instance)).TryGetComp<CompAlien>();
             if (alienComp != null)
-                __result = alienComp.skinColor;
+                __result = alienComp.SkinColor;
         }
 
         public static void GenerateBodyTypePostfix(ref Pawn pawn)
         {
-            CompProperties_Alien alienProps = pawn.def.GetCompProperties<CompProperties_Alien>();
-            if (alienProps != null && !alienProps.partgenerator.alienbodytypes.NullOrEmpty() && !alienProps.partgenerator.alienbodytypes.Contains(pawn.story.bodyType))
-                pawn.story.bodyType = alienProps.partgenerator.alienbodytypes.RandomElement();
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+            if (alienProps != null && !alienProps.alienpartgenerator.alienbodytypes.NullOrEmpty() && !alienProps.alienpartgenerator.alienbodytypes.Contains(pawn.story.bodyType))
+                pawn.story.bodyType = alienProps.alienpartgenerator.alienbodytypes.RandomElement();
         }
-
 
         static FactionDef hairFaction = new FactionDef() { hairTags = new List<string>() { "alienNoHair" } };
 
         public static void RandomHairDefForPrefix(Pawn pawn, ref FactionDef factionType)
         {
-            CompProperties_Alien alienProps = pawn.def.GetCompProperties<CompProperties_Alien>();
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
             if (alienProps != null && !alienProps.HasHair)
             {
                 factionType = hairFaction;
-                //Log.Message(pawn.def.defName);
             }
         }
 
         public static void GeneratePawnPrefix(ref PawnGenerationRequest request)
         {
-            if ((request.KindDef == PawnKindDefOf.SpaceRefugee || request.KindDef == PawnKindDefOf.Slave) && Rand.Value > 0.4f)
+            PawnKindDef kindDef = request.KindDef;
+            if (Rand.Value <= 0.4f)
             {
-                IEnumerable<ThingDef> races = DefDatabase<ThingDef>.AllDefsListForReading.Where(d => d.HasComp(typeof(CompAlien)) && d.GetCompProperties<CompProperties_Alien>().RandomlyGenerated);
-                if (races.Any())
-                    request.KindDef.race = races.RandomElement();
-            }
-            CompProperties_Alien alienProps = request.KindDef.race.GetCompProperties<CompProperties_Alien>();
-            if (alienProps != null && request.KindDef.RaceProps.hasGenders)
-            {
-                Gender gender = request.FixedGender ?? Gender.Male;
-                if (request.FixedGender.HasValue)
+                IEnumerable<ThingDef_AlienRace> comps = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading;
+                PawnKindEntry pk;
+                if (request.KindDef == PawnKindDefOf.SpaceRefugee)
                 {
-                    if (alienProps.MaleGenderProbability <= 0f)
-                    {
-                        if (request.FixedGender.Value == Gender.Male)
-                            gender = Gender.Female;
-                    }
-                    else if (alienProps.MaleGenderProbability >= 100f)
-                        if (request.FixedGender.Value == Gender.Female)
-                            gender = Gender.Male;
+                    if (comps.Where(r => !r.alienrefugeekinds.NullOrEmpty()).Select(r => r.alienrefugeekinds.RandomElement()).TryRandomElementByWeight((PawnKindEntry pke) => pke.chance, out pk))
+                        kindDef = pk.kindDefs.RandomElement();
                 }
-                else
-                    gender = Rand.RangeInclusive(0, 100) >= alienProps.MaleGenderProbability ? Gender.Female : Gender.Male;
-
-                request = new PawnGenerationRequest(request.KindDef, request.Faction, request.Context, request.Map, request.ForceGenerateNewPawn, request.Newborn, 
-                    request.AllowDead, request.AllowDead, request.CanGeneratePawnRelations, request.MustBeCapableOfViolence, request.ColonistRelationChanceFactor, 
-                    request.ForceAddFreeWarmLayerIfNeeded, request.AllowGay, request.AllowFood, request.Validator, request.FixedBiologicalAge, 
-                    request.FixedChronologicalAge, new Gender?(gender), request.FixedMelanin, request.FixedLastName);
+                else if (request.KindDef == PawnKindDefOf.Slave)
+                {
+                    if (comps.Where(r => !r.alienslavekinds.NullOrEmpty()).Select(r => r.alienslavekinds.RandomElement()).TryRandomElementByWeight((PawnKindEntry pke) => pke.chance, out pk))
+                        kindDef = pk.kindDefs.RandomElement();
+                }
             }
+
+            request = new PawnGenerationRequest(kindDef, request.Faction, request.Context, request.Map, request.ForceGenerateNewPawn, request.Newborn,
+                request.AllowDead, request.AllowDead, request.CanGeneratePawnRelations, request.MustBeCapableOfViolence, request.ColonistRelationChanceFactor,
+                request.ForceAddFreeWarmLayerIfNeeded, request.AllowGay, request.AllowFood, request.Validator, request.FixedBiologicalAge,
+                request.FixedChronologicalAge, request.FixedGender, request.FixedMelanin, request.FixedLastName);
         }
 
         public static bool RenderPawnInternalPrefix(PawnRenderer __instance, Vector3 rootLoc, Quaternion quat, bool renderBody, Rot4 bodyFacing, Rot4 headFacing, RotDrawMode bodyDrawType, bool portrait)
@@ -242,7 +369,6 @@ namespace AlienRace
                 }
             }
 
-
             AccessTools.Method(typeof(PawnRenderer), "DrawEquipment").Invoke(__instance, new object[] { rootLoc });
             if (pawn.apparel != null)
             {
@@ -255,7 +381,6 @@ namespace AlienRace
             Vector3 bodyLoc = rootLoc;
             bodyLoc.y += 0.0449999981f;
             ((PawnHeadOverlays)AccessTools.Field(typeof(PawnRenderer), "statusOverlays").GetValue(__instance)).RenderStatusOverlays(bodyLoc, quat, alienComp.headSet.MeshAt(headFacing));
-
             return false;
         }
     }
