@@ -32,8 +32,60 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GeneratePawnName"), new HarmonyMethod(typeof(HarmonyPatches), "GeneratePawnNamePrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), "CanDoNext"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanDoNextStartPawnPostfix"));
             harmony.Patch(AccessTools.Method(typeof(ThoughtHandler), "CanGetThought"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanGetThoughtPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(FloatMenuMakerMap), "AddHumanlikeOrders"), null, new HarmonyMethod(typeof(HarmonyPatches).GetMethod("AddHumanlikeOrdersPostfix")));
+
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void AddHumanlikeOrdersPostfix(ref List<FloatMenuOption> opts, Pawn pawn, Vector3 clickPos)
+        {
+            IntVec3 c = IntVec3.FromVector3(clickPos);
+
+            if (pawn.equipment != null)
+            {
+                Apparel apparel = pawn.Map.thingGrid.ThingAt<Apparel>(c);
+                if (apparel != null)
+                {
+                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && !d.raceRestrictedApparel.NullOrEmpty() && d.raceRestrictedApparel.Contains(apparel.def))).ToList();
+
+                    if (!options.NullOrEmpty())
+                    {
+                        foreach (FloatMenuOption fmo in options)
+                        {
+                            int index = opts.IndexOf(fmo);
+                            opts.Remove(fmo);
+
+                            opts.Insert(index, new FloatMenuOption("CannotWear".Translate(new object[]
+                                {
+                                    apparel.LabelShort
+                                }) + " (" + pawn.def.LabelCap + " can't wear this" + ")", null, MenuOptionPriority.Default, null, null, 0f, null));
+                        }
+                    }
+
+
+                    ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+
+                    if (alienProps != null && alienProps.onlyUseRacerestrictedApparel)
+                    {
+                        options = opts.Where(fmo => !fmo.Disabled && (alienProps.raceRestrictedApparel.NullOrEmpty() || !alienProps.raceRestrictedApparel.Contains(apparel.def))).ToList();
+
+                        if (!options.NullOrEmpty())
+                        {
+                            foreach (FloatMenuOption fmo in options)
+                            {
+                                int index = opts.IndexOf(fmo);
+                                opts.Remove(fmo);
+
+                                opts.Insert(index, new FloatMenuOption("CannotWear".Translate(new object[]
+                                    {
+                                        apparel.LabelShort
+                                    }) + " (" + alienProps.LabelCap + " can't use other races' apparel" + ")", null, MenuOptionPriority.Default, null, null, 0f, null));
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public static void CanGetThoughtPostfix(ThoughtHandler __instance, ref bool __result, ThoughtDef def)
