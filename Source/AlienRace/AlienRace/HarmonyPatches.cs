@@ -30,8 +30,31 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GiveAppropriateBioAndNameTo"), null, new HarmonyMethod(typeof(HarmonyPatches), "GiveAppropriateBioAndNameToPostfix"));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateRandomAge"), new HarmonyMethod(typeof(HarmonyPatches), "GenerateRandomAgePrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GeneratePawnName"), new HarmonyMethod(typeof(HarmonyPatches), "GeneratePawnNamePrefix"), null);
+            harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), "CanDoNext"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanDoNextStartPawnPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(ThoughtHandler), "CanGetThought"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanGetThoughtPostfix"));
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void CanGetThoughtPostfix(ThoughtHandler __instance, ref bool __result, ThoughtDef def)
+        {
+            ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
+            if (__result && def == ThoughtDefOf.Naked && alienProps != null)
+                if (!alienProps.cannotReceiveThoughts.NullOrEmpty() && alienProps.cannotReceiveThoughts.Contains(def))
+                    __result = false;
+        }
+
+        public static void CanDoNextStartPawnPostfix(ref bool __result)
+        {
+            if (__result)
+                return;
+            bool result = true;
+            Find.GameInitData.startingPawns.ForEach(current =>
+            {
+                if (!current.Name.IsValid && current.def.race.GetNameGenerator(current.gender) == null)
+                    result = false;
+            });
+            __result = result;
         }
 
         public static bool GeneratePawnNamePrefix(ref Name __result, Pawn pawn, NameStyle style = NameStyle.Full, string forcedLastName = null)
@@ -40,12 +63,7 @@ namespace AlienRace
             if(alienProps == null || alienProps.race.GetNameGenerator(pawn.gender) == null || style != NameStyle.Full)
                 return true;
 
-            NameTriple nameTriple = NameTriple.FromString(NameGenerator.GenerateName(alienProps.race.GetNameGenerator(pawn.gender), delegate (string x)
-            {
-                NameTriple name = NameTriple.FromString(x);
-
-                return !name.UsedThisGame;
-            }, false));
+            NameTriple nameTriple = NameTriple.FromString(NameGenerator.GenerateName(alienProps.race.GetNameGenerator(pawn.gender)));
 
             string first = nameTriple.First, nick = nameTriple.Nick, last = nameTriple.Last;
 
