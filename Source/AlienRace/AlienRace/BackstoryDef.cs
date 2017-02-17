@@ -25,7 +25,6 @@ namespace AlienRace
         public List<string> spawnCategories = new List<string>();
         public List<AlienTraitEntry> forcedTraits = new List<AlienTraitEntry>();
         public List<AlienTraitEntry> disallowedTraits = new List<AlienTraitEntry>();
-        public string saveKeyIdentifier;
 #pragma warning restore CS0649
 
         private static bool patched = false;
@@ -39,22 +38,13 @@ namespace AlienRace
             }
         }
 
-
-        public string UniqueSaveKey
-        {
-            get
-            {
-                return (saveKeyIdentifier.NullOrEmpty() ? "AlienBackstory_" : saveKeyIdentifier + "_") + defName;
-            }
-        }
-
         public override void ResolveReferences()
         {
 
             base.ResolveReferences();
 
             
-            if (!addToDatabase || BackstoryDatabase.allBackstories.ContainsKey(UniqueSaveKey) || title.NullOrEmpty() || spawnCategories.NullOrEmpty())
+            if (!addToDatabase || BackstoryDatabase.allBackstories.ContainsKey(defName) || title.NullOrEmpty() || spawnCategories.NullOrEmpty())
                 return;
 
             Backstory b = new Backstory()
@@ -80,7 +70,7 @@ namespace AlienRace
                     Enum.GetValues(typeof(WorkTags)).Cast<WorkTags>().ToList().ForEach(tag => { if (workAllows.Contains(tag)) wt |= tag; });
                     return wt;
                 })(),
-                identifier = UniqueSaveKey
+                identifier = defName
             };
 
             b.SetTitle(title);
@@ -94,10 +84,10 @@ namespace AlienRace
 
             if (!b.ConfigErrors(false).Any())
             {
-                BackstoryDatabase.allBackstories.Add(UniqueSaveKey, b);
+                BackstoryDatabase.allBackstories.Add(defName, b);
             } else
             {
-                Log.Error(UniqueSaveKey + " has errors");
+                Log.Error(defName + " has errors");
             }
         }
 
