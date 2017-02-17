@@ -133,30 +133,31 @@ namespace AlienRace
         public static void GenerateRandomAgePrefix(Pawn pawn, PawnGenerationRequest request)
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            CompAlien alienComps = pawn.TryGetComp<CompAlien>();
 
             if (alienProps != null && alienProps.MaleGenderProbability != 0.5f)
             {
                 if (!request.FixedGender.HasValue)
                     pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.MaleGenderProbability ? Gender.Female : Gender.Male;
                 else
-                    alienComps.fixGenderPostSpawn = true;
+                    pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = true;
             }
         }
 
         public static void GiveAppropriateBioAndNameToPostfix(Pawn pawn)
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            CompAlien alienComp = pawn.GetComp<CompAlien>();
 
             if (alienProps != null)
             {
                 //Log.Message(pawn.LabelCap);
-                if (alienComp.hairColor == Color.clear)
-                    alienComp.hairColor = pawn.story.hairColor;
-                float grey = Rand.Range(0.65f, 0.85f);
-                pawn.story.hairColor = alienProps.GetsGreyAt <= pawn.ageTracker.AgeBiologicalYears ? new Color(grey, grey, grey) : alienComp.hairColor;
+                if (alienProps.alienpartgenerator.alienhaircolorgen != null)
+                    pawn.story.hairColor = alienProps.alienpartgenerator.alienhaircolorgen.NewRandomizedColor();
 
+                if (alienProps.GetsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
+                {
+                    float grey = Rand.Range(0.65f, 0.85f);
+                    pawn.story.hairColor = new Color(grey, grey, grey);
+                }
                 if (!alienProps.NakedHeadGraphicLocation.NullOrEmpty())
                     AccessTools.Field(typeof(Pawn_StoryTracker), "headGraphicPath").SetValue(pawn.story,
                         alienProps.alienpartgenerator.RandomAlienHead(alienProps.NakedHeadGraphicLocation, pawn.gender));
@@ -231,7 +232,7 @@ namespace AlienRace
 
         public static bool TryGiveSolidBioToPrefix(Pawn pawn, ref bool __result)
         {
-            if(pawn.TryGetComp<CompAlien>() != null)
+            if(pawn.def is ThingDef_AlienRace)
             {
                 __result = false;
                 return false;
@@ -248,12 +249,10 @@ namespace AlienRace
 
         public static bool ResolveAllGraphicsPrefix(PawnGraphicSet __instance)
         {
-            CompAlien alienComps = __instance.pawn.TryGetComp<CompAlien>();
-
-            if (alienComps != null)
+            ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
+            if (alienProps != null)
             {
-                ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
-                if (alienComps.fixGenderPostSpawn)
+                if (__instance.pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn)
                 {
                     if (alienProps.MaleGenderProbability != 0.5f)
                             __instance.pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.MaleGenderProbability ? Gender.Female : Gender.Male;
@@ -262,11 +261,11 @@ namespace AlienRace
                         AccessTools.Field(typeof(Pawn_StoryTracker), "headGraphicPath").SetValue(__instance.pawn.story,
                             alienProps.alienpartgenerator.RandomAlienHead(alienProps.NakedHeadGraphicLocation, __instance.pawn.gender));
 
-                    alienComps.fixGenderPostSpawn = false;
+                     __instance.pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = false;
                 }
 
-                __instance.nakedGraphic = AlienRaceUtilties.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, alienProps.NakedBodyGraphicLocation);
-                __instance.rottingGraphic = AlienRaceUtilties.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.NakedBodyGraphicLocation);
+                __instance.nakedGraphic = AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, alienProps.NakedBodyGraphicLocation);
+                __instance.rottingGraphic = AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.NakedBodyGraphicLocation);
                 __instance.dessicatedGraphic = GraphicDatabase.Get<Graphic_Multi>(alienProps.DesiccatedGraphicLocation, ShaderDatabase.Cutout);
                 __instance.headGraphic = !alienProps.NakedHeadGraphicLocation.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, __instance.pawn.story.SkinColor) : null;
                 __instance.desiccatedHeadGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, PawnGraphicSet.RottingColor);
@@ -291,9 +290,10 @@ namespace AlienRace
 
         public static void SkinColorPostfix(Pawn_StoryTracker __instance, ref Color __result)
         {
-            CompAlien alienComp = ((Pawn)AccessTools.Field(typeof(Pawn_StoryTracker), "pawn").GetValue(__instance)).TryGetComp<CompAlien>();
-            if (alienComp != null)
-                __result = alienComp.SkinColor;
+            Pawn pawn = ((Pawn)AccessTools.Field(typeof(Pawn_StoryTracker), "pawn").GetValue(__instance));
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+            if (alienProps != null)
+                __result = alienProps.alienpartgenerator.SkinColor(pawn);
         }
 
         public static void GenerateBodyTypePostfix(ref Pawn pawn)
@@ -342,8 +342,9 @@ namespace AlienRace
         public static bool RenderPawnInternalPrefix(PawnRenderer __instance, Vector3 rootLoc, Quaternion quat, bool renderBody, Rot4 bodyFacing, Rot4 headFacing, RotDrawMode bodyDrawType, bool portrait)
         {
             Pawn pawn = (Pawn)AccessTools.Field(typeof(PawnRenderer), "pawn").GetValue(__instance);
-            CompAlien alienComp = pawn.TryGetComp<CompAlien>();
-            if (alienComp == null || portrait)
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+
+            if (alienProps == null || portrait)
                 return true;
 
 
@@ -362,7 +363,7 @@ namespace AlienRace
                     __instance.graphics.dessicatedGraphic.Draw(loc, bodyFacing, pawn);
                 else
                 {
-                    mesh = alienComp.bodySet.MeshAt(bodyFacing);
+                    mesh = alienProps.alienpartgenerator.bodySet.MeshAt(bodyFacing);
                 }
 
                 List<Material> list = __instance.graphics.MatsBodyBaseAt(bodyFacing, bodyDrawType);
@@ -394,13 +395,13 @@ namespace AlienRace
             if (__instance.graphics.headGraphic != null)
             {
                 Vector3 b = quat * __instance.BaseHeadOffsetAt(headFacing);
-                Mesh mesh2 = alienComp.headSet.MeshAt(headFacing);
+                Mesh mesh2 = alienProps.alienpartgenerator.headSet.MeshAt(headFacing);
                 Material mat = __instance.graphics.HeadMatAt(headFacing, bodyDrawType);
                 GenDraw.DrawMeshNowOrLater(mesh2, a + b, quat, mat, portrait);
                 Vector3 loc2 = rootLoc + b;
                 loc2.y += 0.035f;
                 bool flag = false;
-                Mesh mesh3 = (pawn.story.crownType == CrownType.Narrow ? alienComp.hairSetNarrow : alienComp.hairSetAverage).MeshAt(headFacing);
+                Mesh mesh3 = (pawn.story.crownType == CrownType.Narrow ? alienProps.alienpartgenerator.hairSetNarrow : alienProps.alienpartgenerator.hairSetAverage).MeshAt(headFacing);
                 List<ApparelGraphicRecord> apparelGraphics = __instance.graphics.apparelGraphics;
                 for (int j = 0; j < apparelGraphics.Count; j++)
                 {
@@ -414,7 +415,7 @@ namespace AlienRace
                 }
                 if (!flag && bodyDrawType != RotDrawMode.Dessicated)
                 {
-                    Mesh mesh4 = (pawn.story.crownType == CrownType.Narrow ? alienComp.hairSetNarrow : alienComp.hairSetAverage).MeshAt(headFacing);
+                    Mesh mesh4 = (pawn.story.crownType == CrownType.Narrow ? alienProps.alienpartgenerator.hairSetNarrow : alienProps.alienpartgenerator.hairSetAverage).MeshAt(headFacing);
                     Material mat2 = __instance.graphics.HairMatAt(headFacing);
                     GenDraw.DrawMeshNowOrLater(mesh4, loc2, quat, mat2, portrait);
                 }
@@ -444,7 +445,7 @@ namespace AlienRace
             }
             Vector3 bodyLoc = rootLoc;
             bodyLoc.y += 0.0449999981f;
-            ((PawnHeadOverlays)AccessTools.Field(typeof(PawnRenderer), "statusOverlays").GetValue(__instance)).RenderStatusOverlays(bodyLoc, quat, alienComp.headSet.MeshAt(headFacing));
+            ((PawnHeadOverlays)AccessTools.Field(typeof(PawnRenderer), "statusOverlays").GetValue(__instance)).RenderStatusOverlays(bodyLoc, quat, alienProps.alienpartgenerator.headSet.MeshAt(headFacing));
             return false;
         }
     }

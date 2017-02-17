@@ -20,21 +20,17 @@ namespace AlienRace
         public List<PawnKindEntry> alienrefugeekinds;
         public List<StartingColonistEntry> startingColonists;
 
-        public AlienPartGenerator alienpartgenerator;
-        public ColorGenerator alienskincolorgen;
-        public ColorGenerator alienhaircolorgen;
+        public AlienPartGenerator alienPartGenerator = new AlienPartGenerator();
         public List<AlienTraitEntry> forcedRaceTraitEntries;
-        public Vector2 CustomDrawSize = Vector2.one;
         public bool ImmuneToAge = false;
         public List<ThoughtDef> cannotReceiveThoughts;
         public bool onlyUseRacerestrictedApparel = false;
         public List<ThingDef> raceRestrictedApparel;
-
 #pragma warning restore CS0649
 
         public override void ResolveReferences()
         {
-            comps.Add(new CompProperties(typeof(CompAlien)));
+            comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
             base.ResolveReferences();
         }
     }
