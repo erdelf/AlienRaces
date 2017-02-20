@@ -20,6 +20,7 @@ namespace AlienRace
         public ColorGenerator alienhaircolorgen;
 
         public Vector2 CustomDrawSize = Vector2.one;
+        public Vector2 CustomPortraitDrawSize = Vector2.one;
 
         static Dictionary<Vector2, GraphicMeshSet[]> meshPools = new Dictionary<Vector2, GraphicMeshSet[]>();
 
@@ -27,6 +28,11 @@ namespace AlienRace
         public GraphicMeshSet headSet;
         public GraphicMeshSet hairSetAverage;
         public GraphicMeshSet hairSetNarrow;
+
+        public GraphicMeshSet bodyPortraitSet;
+        public GraphicMeshSet headPortraitSet;
+        public GraphicMeshSet hairPortraitSetAverage;
+        public GraphicMeshSet hairPortraitSetNarrow;
 
         public string RandomAlienHead(string userpath, Gender gender)
         {
@@ -43,30 +49,50 @@ namespace AlienRace
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
             if (alienComp.skinColor == Color.clear)
                 alienComp.skinColor = alienskincolorgen != null ? alienskincolorgen.NewRandomizedColor() : PawnSkinColors.GetSkinColor(alien.story.melanin);
-
             return alienComp.skinColor;
         }
 
         public AlienPartGenerator()
         {
+            LongEventHandler.QueueLongEvent(() =>
+                {
+                    Log.Message(CustomDrawSize.ToStringTwoDigits() + " - " + CustomPortraitDrawSize.ToStringTwoDigits());
 
-            {
-                if (!meshPools.Keys.Any(v => v.Equals(CustomDrawSize)))
-                    meshPools.Add(CustomDrawSize, new GraphicMeshSet[]
-                        {
-                            new GraphicMeshSet(1.5f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // bodySet
-                            new GraphicMeshSet(1.5f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // headSet
-                            new GraphicMeshSet(1.5f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // hairSetAverage
-                            new GraphicMeshSet(1.3f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // hairSetNarrow
-                        });
+                    {
+                        if (!meshPools.Keys.Any(v => v.Equals(CustomDrawSize)))
+                            meshPools.Add(CustomDrawSize, new GraphicMeshSet[]
+                                {
+                                new GraphicMeshSet(1.5f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // bodySet
+                                new GraphicMeshSet(1.5f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // headSet
+                                new GraphicMeshSet(1.5f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // hairSetAverage
+                                new GraphicMeshSet(1.3f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // hairSetNarrow
+                                });
 
-                GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(CustomDrawSize))];
+                        GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(CustomDrawSize))];
 
-                bodySet = meshSet[0];
-                headSet = meshSet[1];
-                hairSetAverage = meshSet[2];
-                hairSetNarrow = meshSet[3];
-            }
+                        bodySet = meshSet[0];
+                        headSet = meshSet[1];
+                        hairSetAverage = meshSet[2];
+                        hairSetNarrow = meshSet[3];
+                    }
+                    {
+                        if (!meshPools.Keys.Any(v => v.Equals(CustomPortraitDrawSize)))
+                            meshPools.Add(CustomPortraitDrawSize, new GraphicMeshSet[]
+                                {
+                                new GraphicMeshSet(1.5f * CustomPortraitDrawSize.x, 1.5f * CustomPortraitDrawSize.y), // bodySet
+                                new GraphicMeshSet(1.5f * CustomPortraitDrawSize.x, 1.5f * CustomPortraitDrawSize.y), // headSet
+                                new GraphicMeshSet(1.5f * CustomPortraitDrawSize.x, 1.5f * CustomPortraitDrawSize.y), // hairSetAverage
+                                new GraphicMeshSet(1.3f * CustomPortraitDrawSize.x, 1.5f * CustomPortraitDrawSize.y), // hairSetNarrow
+                                });
+
+                        GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(CustomPortraitDrawSize))];
+
+                        bodyPortraitSet = meshSet[0];
+                        headPortraitSet = meshSet[1];
+                        hairPortraitSetAverage = meshSet[2];
+                        hairPortraitSetNarrow = meshSet[3];
+                    }
+                }, "meshSetAlien", false, null);
         }
 
         public class AlienComp : ThingComp

@@ -26,6 +26,7 @@ namespace AlienRace
         public List<ThoughtDef> cannotReceiveThoughts;
         public bool onlyUseRacerestrictedApparel = false;
         public List<ThingDef> raceRestrictedApparel;
+        public List<string> hairTags;
 #pragma warning restore CS0649
 
         public override void ResolveReferences()
@@ -40,6 +41,8 @@ namespace AlienRace
         public string defname;
         public int degree = 0;
         public float chance = 100;
+        public float commonalityMale=-1f;
+        public float commonalityFemale=-1f;
     }
 
     public class PawnKindEntry

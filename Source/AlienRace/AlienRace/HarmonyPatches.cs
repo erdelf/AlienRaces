@@ -46,7 +46,7 @@ namespace AlienRace
                 Apparel apparel = pawn.Map.thingGrid.ThingAt<Apparel>(c);
                 if (apparel != null)
                 {
-                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && !d.raceRestrictedApparel.NullOrEmpty() && d.raceRestrictedApparel.Contains(apparel.def))).ToList();
+                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && !((pawn.def is ThingDef_AlienRace) && !(pawn.def as ThingDef_AlienRace).raceRestrictedApparel.NullOrEmpty() && (pawn.def as ThingDef_AlienRace).raceRestrictedApparel.Contains(apparel.def)) && !d.raceRestrictedApparel.NullOrEmpty() && d.raceRestrictedApparel.Contains(apparel.def))).ToList();
 
                     if (!options.NullOrEmpty())
                     {
@@ -284,7 +284,8 @@ namespace AlienRace
             if (alienProps != null && !alienProps.forcedRaceTraitEntries.NullOrEmpty())
                 foreach (AlienTraitEntry ate in alienProps.forcedRaceTraitEntries)
                     if (Rand.Range(0, 100) < ate.chance)
-                        pawn.story.traits.GainTrait(new Trait(TraitDef.Named(ate.defname), ate.degree, true));
+                        if((pawn.gender == Gender.Male && (ate.commonalityMale == -1f || Rand.Range(0,100) < ate.commonalityMale)) || (pawn.gender == Gender.Female && (ate.commonalityFemale == -1f || Rand.Range(0, 100) < ate.commonalityFemale)) || pawn.gender == Gender.None)
+                            pawn.story.traits.GainTrait(new Trait(TraitDef.Named(ate.defname), ate.degree, true));
         }
 
         public static void SkinColorPostfix(Pawn_StoryTracker __instance, ref Color __result)
@@ -302,14 +303,21 @@ namespace AlienRace
                 pawn.story.bodyType = alienProps.alienPartGenerator.alienbodytypes.RandomElement();
         }
 
-        static FactionDef hairFaction = new FactionDef() { hairTags = new List<string>() { "alienNoHair" } };
+        static FactionDef noHairFaction = new FactionDef() { hairTags = new List<string>() { "alienNoHair" } };
+        static FactionDef hairFaction = new FactionDef();
 
         public static void RandomHairDefForPrefix(Pawn pawn, ref FactionDef factionType)
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            if (alienProps != null && !alienProps.HasHair)
+            if (alienProps != null)
             {
-                factionType = hairFaction;
+                if(!alienProps.HasHair)
+                    factionType = noHairFaction;
+                else if(!alienProps.hairTags.NullOrEmpty())
+                {
+                    hairFaction.hairTags = alienProps.hairTags;
+                    factionType = hairFaction;
+                }
             }
         }
 
@@ -343,9 +351,9 @@ namespace AlienRace
             Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
-            if (alienProps == null || portrait)
-                return true;
 
+            if (alienProps == null)
+                return true;
 
             if (!__instance.graphics.AllResolved)
             {
@@ -362,7 +370,7 @@ namespace AlienRace
                     __instance.graphics.dessicatedGraphic.Draw(loc, bodyFacing, pawn);
                 else
                 {
-                    mesh = alienProps.alienPartGenerator.bodySet.MeshAt(bodyFacing);
+                    mesh = (portrait ? alienProps.alienPartGenerator.bodyPortraitSet.MeshAt(bodyFacing) : alienProps.alienPartGenerator.bodySet.MeshAt(bodyFacing));
                 }
 
                 List<Material> list = __instance.graphics.MatsBodyBaseAt(bodyFacing, bodyDrawType);
@@ -394,13 +402,13 @@ namespace AlienRace
             if (__instance.graphics.headGraphic != null)
             {
                 Vector3 b = quat * __instance.BaseHeadOffsetAt(headFacing);
-                Mesh mesh2 = alienProps.alienPartGenerator.headSet.MeshAt(headFacing);
+                Mesh mesh2 = (portrait ? alienProps.alienPartGenerator.headPortraitSet.MeshAt(headFacing) : alienProps.alienPartGenerator.headSet.MeshAt(headFacing));
                 Material mat = __instance.graphics.HeadMatAt(headFacing, bodyDrawType);
                 GenDraw.DrawMeshNowOrLater(mesh2, a + b, quat, mat, portrait);
                 Vector3 loc2 = rootLoc + b;
                 loc2.y += 0.035f;
                 bool flag = false;
-                Mesh mesh3 = (pawn.story.crownType == CrownType.Narrow ? alienProps.alienPartGenerator.hairSetNarrow : alienProps.alienPartGenerator.hairSetAverage).MeshAt(headFacing);
+                Mesh mesh3 = (pawn.story.crownType == CrownType.Narrow ? (portrait ? alienProps.alienPartGenerator.hairPortraitSetNarrow : alienProps.alienPartGenerator.hairSetNarrow) : (portrait ? alienProps.alienPartGenerator.hairPortraitSetAverage : alienProps.alienPartGenerator.hairSetAverage)).MeshAt(headFacing);
                 List<ApparelGraphicRecord> apparelGraphics = __instance.graphics.apparelGraphics;
                 for (int j = 0; j < apparelGraphics.Count; j++)
                 {
@@ -414,7 +422,7 @@ namespace AlienRace
                 }
                 if (!flag && bodyDrawType != RotDrawMode.Dessicated)
                 {
-                    Mesh mesh4 = (pawn.story.crownType == CrownType.Narrow ? alienProps.alienPartGenerator.hairSetNarrow : alienProps.alienPartGenerator.hairSetAverage).MeshAt(headFacing);
+                    Mesh mesh4 = (pawn.story.crownType == CrownType.Narrow ? (portrait ? alienProps.alienPartGenerator.hairPortraitSetNarrow : alienProps.alienPartGenerator.hairSetNarrow) : (portrait ? alienProps.alienPartGenerator.hairPortraitSetAverage : alienProps.alienPartGenerator.hairSetAverage)).MeshAt(headFacing);
                     Material mat2 = __instance.graphics.HairMatAt(headFacing);
                     GenDraw.DrawMeshNowOrLater(mesh4, loc2, quat, mat2, portrait);
                 }
@@ -444,7 +452,7 @@ namespace AlienRace
             }
             Vector3 bodyLoc = rootLoc;
             bodyLoc.y += 0.0449999981f;
-            Traverse.Create(__instance).Field("statusOverlays").GetValue<PawnHeadOverlays>().RenderStatusOverlays(bodyLoc, quat, alienProps.alienPartGenerator.headSet.MeshAt(headFacing));
+            Traverse.Create(__instance).Field("statusOverlays").GetValue<PawnHeadOverlays>().RenderStatusOverlays(bodyLoc, quat, portrait ? alienProps.alienPartGenerator.headPortraitSet.MeshAt(headFacing) : alienProps.alienPartGenerator.headSet.MeshAt(headFacing));
             return false;
         }
     }
