@@ -33,8 +33,39 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), "CanDoNext"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanDoNextStartPawnPostfix"));
             harmony.Patch(AccessTools.Method(typeof(ThoughtHandler), "CanGetThought"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanGetThoughtPostfix"));
             harmony.Patch(AccessTools.Method(typeof(FloatMenuMakerMap), "AddHumanlikeOrders"), null, new HarmonyMethod(typeof(HarmonyPatches).GetMethod("AddHumanlikeOrdersPostfix")));
+            harmony.Patch(AccessTools.Method(typeof(Corpse), "ButcherProducts"), new HarmonyMethod(typeof(HarmonyPatches).GetMethod("ButcherProductsPrefix")), null);
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static bool ButcherProductsPrefix(Pawn butcher, float efficiency, ref IEnumerable<Thing> __result, Corpse __instance)
+        {
+            __result = ButcherProducts(butcher, __instance.InnerPawn, efficiency);
+            return false;
+        }
+
+        static IEnumerable<Thing> ButcherProducts(Pawn butcher, Pawn corpse, float efficiency)
+        {
+            ThingDef_AlienRace alienProps = butcher.def as ThingDef_AlienRace;
+
+            foreach (Thing t in corpse.ButcherProducts(butcher, efficiency))
+            {
+                yield return t;
+            }
+            if (corpse.RaceProps.BloodDef != null)
+            {
+                FilthMaker.MakeFilth(butcher.Position, butcher.Map, corpse.RaceProps.BloodDef, corpse.LabelIndefinite(), 1);
+            }
+            if (corpse.RaceProps.Humanlike)
+            {
+                butcher.needs.mood.thoughts.memories.TryGainMemoryThought(alienProps==null? ThoughtDefOf.ButcheredHumanlikeCorpse : butcher.def == corpse.def ? alienProps.butcherThoughtSame : alienProps.butcherThoughtDifferent, null);
+                butcher.Map.mapPawns.SpawnedPawnsInFaction(butcher.Faction).ForEach(p =>
+                {
+                    if (p != butcher && p.needs != null && p.needs.mood != null && p.needs.mood.thoughts != null)
+                        p.needs.mood.thoughts.memories.TryGainMemoryThought(p.def == corpse.def ? ((p.def as ThingDef_AlienRace)?.butcherKnowThoughtSame ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse) : ((p.def as ThingDef_AlienRace)?.butcherKnowThoughtDifferent ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse), null);
+                });
+                TaleRecorder.RecordTale(TaleDefOf.ButcheredHumanlikeCorpse, new object[] { butcher });
+            }
         }
 
         public static void AddHumanlikeOrdersPostfix(ref List<FloatMenuOption> opts, Pawn pawn, Vector3 clickPos)

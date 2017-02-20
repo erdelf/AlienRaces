@@ -12,8 +12,6 @@ namespace AlienRace
 
         public List<BodyType> alienbodytypes = new List<BodyType>();
 
-        public string AlienHeadTypeLoc;
-
         public bool UseGenderedHeads = true;
 
         public ColorGenerator alienskincolorgen;
@@ -36,7 +34,7 @@ namespace AlienRace
 
         public string RandomAlienHead(string userpath, Gender gender)
         {
-            return AlienHeadTypeLoc = userpath + (UseGenderedHeads ? gender.ToString() + "_" : "") + aliencrowntypes[Rand.Range(0, aliencrowntypes.Count)];
+            return userpath + (UseGenderedHeads ? gender.ToString() + "_" : "") + aliencrowntypes[Rand.Range(0, aliencrowntypes.Count)];
         }
 
         public static Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, string userpath)
@@ -56,7 +54,6 @@ namespace AlienRace
         {
             LongEventHandler.QueueLongEvent(() =>
                 {
-                    Log.Message(CustomDrawSize.ToStringTwoDigits() + " - " + CustomPortraitDrawSize.ToStringTwoDigits());
 
                     {
                         if (!meshPools.Keys.Any(v => v.Equals(CustomDrawSize)))

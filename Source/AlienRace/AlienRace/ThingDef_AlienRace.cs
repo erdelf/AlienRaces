@@ -27,6 +27,12 @@ namespace AlienRace
         public bool onlyUseRacerestrictedApparel = false;
         public List<ThingDef> raceRestrictedApparel;
         public List<string> hairTags;
+
+        public ThoughtDef butcherThoughtSame = ThoughtDefOf.ButcheredHumanlikeCorpse;
+        public ThoughtDef butcherKnowThoughtSame = ThoughtDefOf.KnowButcheredHumanlikeCorpse;
+        public ThoughtDef butcherThoughtDifferent = ThoughtDefOf.ButcheredHumanlikeCorpse;
+        public ThoughtDef butcherKnowThoughtDifferent = ThoughtDefOf.KnowButcheredHumanlikeCorpse;
+
 #pragma warning restore CS0649
 
         public override void ResolveReferences()
