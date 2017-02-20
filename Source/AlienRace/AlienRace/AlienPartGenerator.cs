@@ -53,8 +53,7 @@ namespace AlienRace
         public AlienPartGenerator()
         {
             LongEventHandler.QueueLongEvent(() =>
-                {
-
+                { 
                     {
                         if (!meshPools.Keys.Any(v => v.Equals(CustomDrawSize)))
                             meshPools.Add(CustomDrawSize, new GraphicMeshSet[]

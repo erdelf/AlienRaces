@@ -44,7 +44,7 @@ namespace AlienRace
         {
             Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
             if(pawn.def is ThingDef_AlienRace && pawn.ageTracker.CurLifeStageRace is AlienLifeStageAge && !(pawn.ageTracker.CurLifeStageRace as AlienLifeStageAge).NakedHeadGraphicLocation.NullOrEmpty())
-                Traverse.Create(pawn.story).Field("headGraphicPath").SetValue((pawn.def as ThingDef_AlienRace).alienPartGenerator.RandomAlienHead((pawn.ageTracker.CurLifeStageRace as AlienLifeStageAge).NakedHeadGraphicLocation, pawn.gender));
+                Traverse.Create(pawn.story).Field("headGraphicPath").SetValue((pawn.def as ThingDef_AlienRace).alienRace.alienPartGenerator.RandomAlienHead((pawn.ageTracker.CurLifeStageRace as AlienLifeStageAge).NakedHeadGraphicLocation, pawn.gender));
         }
 
         public static bool ButcherProductsPrefix(Pawn butcher, float efficiency, ref IEnumerable<Thing> __result, Corpse __instance)
@@ -60,11 +60,11 @@ namespace AlienRace
                 }
                 if (corpse.RaceProps.Humanlike)
                 {
-                    butcher.needs.mood.thoughts.memories.TryGainMemoryThought(alienProps == null ? ThoughtDefOf.ButcheredHumanlikeCorpse : butcher.def == corpse.def ? alienProps.butcherThoughtSame : alienProps.butcherThoughtDifferent, null);
+                    butcher.needs.mood.thoughts.memories.TryGainMemoryThought(alienProps == null ? ThoughtDefOf.ButcheredHumanlikeCorpse : butcher.def == corpse.def ? alienProps.alienRace.butcherThoughtSame : alienProps.alienRace.butcherThoughtDifferent, null);
                     butcher.Map.mapPawns.SpawnedPawnsInFaction(butcher.Faction).ForEach(p =>
                     {
                         if (p != butcher && p.needs != null && p.needs.mood != null && p.needs.mood.thoughts != null)
-                            p.needs.mood.thoughts.memories.TryGainMemoryThought(p.def == corpse.def ? ((p.def as ThingDef_AlienRace)?.butcherKnowThoughtSame ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse) : ((p.def as ThingDef_AlienRace)?.butcherKnowThoughtDifferent ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse), null);
+                            p.needs.mood.thoughts.memories.TryGainMemoryThought(p.def == corpse.def ? ((p.def as ThingDef_AlienRace).alienRace?.butcherKnowThoughtSame ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse) : ((p.def as ThingDef_AlienRace).alienRace?.butcherKnowThoughtDifferent ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse), null);
                     });
                     TaleRecorder.RecordTale(TaleDefOf.ButcheredHumanlikeCorpse, new object[] { butcher });
                 }
@@ -82,7 +82,7 @@ namespace AlienRace
                 Apparel apparel = pawn.Map.thingGrid.ThingAt<Apparel>(c);
                 if (apparel != null)
                 {
-                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && !((pawn.def is ThingDef_AlienRace) && !(pawn.def as ThingDef_AlienRace).raceRestrictedApparel.NullOrEmpty() && (pawn.def as ThingDef_AlienRace).raceRestrictedApparel.Contains(apparel.def)) && !d.raceRestrictedApparel.NullOrEmpty() && d.raceRestrictedApparel.Contains(apparel.def))).ToList();
+                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && !((pawn.def is ThingDef_AlienRace) && !(pawn.def as ThingDef_AlienRace).alienRace.raceRestrictedApparel.NullOrEmpty() && (pawn.def as ThingDef_AlienRace).alienRace.raceRestrictedApparel.Contains(apparel.def)) && !d.alienRace.raceRestrictedApparel.NullOrEmpty() && d.alienRace.raceRestrictedApparel.Contains(apparel.def))).ToList();
 
                     if (!options.NullOrEmpty())
                     {
@@ -101,9 +101,9 @@ namespace AlienRace
 
                     ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
-                    if (alienProps != null && alienProps.onlyUseRacerestrictedApparel)
+                    if (alienProps != null && alienProps.alienRace.onlyUseRacerestrictedApparel)
                     {
-                        options = opts.Where(fmo => !fmo.Disabled && (alienProps.raceRestrictedApparel.NullOrEmpty() || !alienProps.raceRestrictedApparel.Contains(apparel.def))).ToList();
+                        options = opts.Where(fmo => !fmo.Disabled && (alienProps.alienRace.raceRestrictedApparel.NullOrEmpty() || !alienProps.alienRace.raceRestrictedApparel.Contains(apparel.def))).ToList();
 
                         if (!options.NullOrEmpty())
                         {
@@ -127,7 +127,7 @@ namespace AlienRace
         {
             ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
             if (__result && def == ThoughtDefOf.Naked && alienProps != null)
-                if (!alienProps.cannotReceiveThoughts.NullOrEmpty() && alienProps.cannotReceiveThoughts.Contains(def))
+                if (!alienProps.alienRace.cannotReceiveThoughts.NullOrEmpty() && alienProps.alienRace.cannotReceiveThoughts.Contains(def))
                     __result = false;
         }
 
@@ -169,10 +169,10 @@ namespace AlienRace
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
-            if (alienProps != null && alienProps.MaleGenderProbability != 0.5f)
+            if (alienProps != null && alienProps.alienRace.MaleGenderProbability != 0.5f)
             {
                 if (!request.FixedGender.HasValue)
-                    pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.MaleGenderProbability ? Gender.Female : Gender.Male;
+                    pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.alienRace.MaleGenderProbability ? Gender.Female : Gender.Male;
                 else
                     pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = true;
             }
@@ -185,17 +185,17 @@ namespace AlienRace
             if (alienProps != null)
             {
                 //Log.Message(pawn.LabelCap);
-                if (alienProps.alienPartGenerator.alienhaircolorgen != null)
-                    pawn.story.hairColor = alienProps.alienPartGenerator.alienhaircolorgen.NewRandomizedColor();
+                if (alienProps.alienRace.alienPartGenerator.alienhaircolorgen != null)
+                    pawn.story.hairColor = alienProps.alienRace.alienPartGenerator.alienhaircolorgen.NewRandomizedColor();
 
-                if (alienProps.GetsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
+                if (alienProps.alienRace.GetsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                 {
                     float grey = Rand.Range(0.65f, 0.85f);
                     pawn.story.hairColor = new Color(grey, grey, grey);
                 }
-                if (!alienProps.NakedHeadGraphicLocation.NullOrEmpty())
+                if (!alienProps.alienRace.NakedHeadGraphicLocation.NullOrEmpty())
                 {
-                    Traverse.Create(pawn.story).Field("headGraphicPath").SetValue(alienProps.alienPartGenerator.RandomAlienHead(alienProps.NakedHeadGraphicLocation, pawn.gender));
+                    Traverse.Create(pawn.story).Field("headGraphicPath").SetValue(alienProps.alienRace.alienPartGenerator.RandomAlienHead(alienProps.alienRace.NakedHeadGraphicLocation, pawn.gender));
                 }
             }
         }
@@ -204,8 +204,8 @@ namespace AlienRace
         {
             PawnKindDef kindDef = Faction.OfPlayer.def.basicMemberKind;
 
-            DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(tdar => !tdar.startingColonists.NullOrEmpty()).
-                SelectMany(tdar => tdar.startingColonists).Where(sce => sce.factionDefs.Contains(Faction.OfPlayer.def)).SelectMany(sce => sce.pawnKindEntries).InRandomOrder().ToList().ForEach(pke =>
+            DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(tdar => !tdar.alienRace.startingColonists.NullOrEmpty()).
+                SelectMany(tdar => tdar.alienRace.startingColonists).Where(sce => sce.factionDefs.Contains(Faction.OfPlayer.def)).SelectMany(sce => sce.pawnKindEntries).InRandomOrder().ToList().ForEach(pke =>
                 {
                     if (Rand.Range(0f, 100f) < pke.chance)
                     {
@@ -237,7 +237,7 @@ namespace AlienRace
         public static bool RandomHediffsToGainOnBirthdayPrefix(ref IEnumerable<HediffGiver_Birthday> __result, Pawn pawn)
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            if (alienProps != null && alienProps.ImmuneToAge)
+            if (alienProps != null && alienProps.alienRace.ImmuneToAge)
             {
                 __result = new List<HediffGiver_Birthday>();
                 return false;
@@ -248,7 +248,7 @@ namespace AlienRace
         public static bool GenerateRandomOldAgeInjuries(Pawn pawn)
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            if (alienProps != null && alienProps.ImmuneToAge)
+            if (alienProps != null && alienProps.alienRace.ImmuneToAge)
                 return false;
             return true;
         }
@@ -258,7 +258,7 @@ namespace AlienRace
 
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
-            if (alienProps != null && alienProps.PawnsSpecificBackstories && !pawn.kindDef.backstoryCategory.NullOrEmpty())
+            if (alienProps != null && alienProps.alienRace.PawnsSpecificBackstories && !pawn.kindDef.backstoryCategory.NullOrEmpty())
                 if (BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) &&
                  kvp.Value.slot == slot && (slot != BackstorySlot.Adulthood ||
                  !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood.workDisables))).Select(kvp => kvp.Value).TryRandomElement(out backstory))
@@ -292,21 +292,21 @@ namespace AlienRace
                 AlienLifeStageAge lifeStage = alien.ageTracker.CurLifeStageRace as AlienLifeStageAge;
                 if (__instance.pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn)
                 {
-                    if (alienProps.MaleGenderProbability != 0.5f)
-                            __instance.pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.MaleGenderProbability ? Gender.Female : Gender.Male;
+                    if (alienProps.alienRace.MaleGenderProbability != 0.5f)
+                            __instance.pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.alienRace.MaleGenderProbability ? Gender.Female : Gender.Male;
 
-                    if (!alienProps.NakedHeadGraphicLocation.NullOrEmpty())
-                        Traverse.Create(__instance.pawn.story).Field("headGraphicPath").SetValue(alienProps.alienPartGenerator.RandomAlienHead(((lifeStage != null) && !lifeStage.NakedHeadGraphicLocation.NullOrEmpty()) ? lifeStage.NakedHeadGraphicLocation : alienProps.NakedHeadGraphicLocation, __instance.pawn.gender));
+                    if (!alienProps.alienRace.NakedHeadGraphicLocation.NullOrEmpty())
+                        Traverse.Create(__instance.pawn.story).Field("headGraphicPath").SetValue(alienProps.alienRace.alienPartGenerator.RandomAlienHead(((lifeStage != null) && !lifeStage.NakedHeadGraphicLocation.NullOrEmpty()) ? lifeStage.NakedHeadGraphicLocation : alienProps.alienRace.NakedHeadGraphicLocation, __instance.pawn.gender));
 
                      __instance.pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = false;
                 }
 
-                __instance.nakedGraphic = AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, (lifeStage != null && !lifeStage.NakedBodyGraphicLocation.NullOrEmpty()) ? lifeStage.NakedBodyGraphicLocation : alienProps.NakedBodyGraphicLocation);
-                __instance.rottingGraphic = AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.NakedBodyGraphicLocation);
-                __instance.dessicatedGraphic = GraphicDatabase.Get<Graphic_Multi>(((lifeStage != null) && !lifeStage.DesiccatedGraphicLocation.NullOrEmpty()) ? lifeStage.DesiccatedGraphicLocation : alienProps.DesiccatedGraphicLocation, ShaderDatabase.Cutout);
-                __instance.headGraphic = !alienProps.NakedHeadGraphicLocation.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, __instance.pawn.story.SkinColor) : null;
+                __instance.nakedGraphic = AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, (lifeStage != null && !lifeStage.NakedBodyGraphicLocation.NullOrEmpty()) ? lifeStage.NakedBodyGraphicLocation : alienProps.alienRace.NakedBodyGraphicLocation);
+                __instance.rottingGraphic = AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.alienRace.NakedBodyGraphicLocation);
+                __instance.dessicatedGraphic = GraphicDatabase.Get<Graphic_Multi>(((lifeStage != null) && !lifeStage.DesiccatedGraphicLocation.NullOrEmpty()) ? lifeStage.DesiccatedGraphicLocation : alienProps.alienRace.DesiccatedGraphicLocation, ShaderDatabase.Cutout);
+                __instance.headGraphic = !alienProps.alienRace.NakedHeadGraphicLocation.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, __instance.pawn.story.SkinColor) : null;
                 __instance.desiccatedHeadGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, PawnGraphicSet.RottingColor);
-                __instance.skullGraphic = GraphicDatabase.Get<Graphic_Multi>(((lifeStage != null) && !lifeStage.SkullGraphicLocation.NullOrEmpty()) ? lifeStage.SkullGraphicLocation : alienProps.SkullGraphicLocation, ShaderDatabase.CutoutSkin, Vector2.one, Color.white);
+                __instance.skullGraphic = GraphicDatabase.Get<Graphic_Multi>(((lifeStage != null) && !lifeStage.SkullGraphicLocation.NullOrEmpty()) ? lifeStage.SkullGraphicLocation : alienProps.alienRace.SkullGraphicLocation, ShaderDatabase.CutoutSkin, Vector2.one, Color.white);
                 __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ShaderDatabase.Cutout, Vector2.one, __instance.pawn.story.hairColor);
 
                 __instance.ResolveApparelGraphics();
@@ -319,8 +319,8 @@ namespace AlienRace
         public static void GenerateTraitsPrefix(Pawn pawn)
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            if (alienProps != null && !alienProps.forcedRaceTraitEntries.NullOrEmpty())
-                foreach (AlienTraitEntry ate in alienProps.forcedRaceTraitEntries)
+            if (alienProps != null && !alienProps.alienRace.forcedRaceTraitEntries.NullOrEmpty())
+                foreach (AlienTraitEntry ate in alienProps.alienRace.forcedRaceTraitEntries)
                     if (Rand.Range(0, 100) < ate.chance)
                         if((pawn.gender == Gender.Male && (ate.commonalityMale == -1f || Rand.Range(0,100) < ate.commonalityMale)) || (pawn.gender == Gender.Female && (ate.commonalityFemale == -1f || Rand.Range(0, 100) < ate.commonalityFemale)) || pawn.gender == Gender.None)
                             pawn.story.traits.GainTrait(new Trait(TraitDef.Named(ate.defname), ate.degree, true));
@@ -331,14 +331,14 @@ namespace AlienRace
             Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
             if (alienProps != null)
-                __result = alienProps.alienPartGenerator.SkinColor(pawn);
+                __result = alienProps.alienRace.alienPartGenerator.SkinColor(pawn);
         }
 
         public static void GenerateBodyTypePostfix(ref Pawn pawn)
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            if (alienProps != null && !alienProps.alienPartGenerator.alienbodytypes.NullOrEmpty() && !alienProps.alienPartGenerator.alienbodytypes.Contains(pawn.story.bodyType))
-                pawn.story.bodyType = alienProps.alienPartGenerator.alienbodytypes.RandomElement();
+            if (alienProps != null && !alienProps.alienRace.alienPartGenerator.alienbodytypes.NullOrEmpty() && !alienProps.alienRace.alienPartGenerator.alienbodytypes.Contains(pawn.story.bodyType))
+                pawn.story.bodyType = alienProps.alienRace.alienPartGenerator.alienbodytypes.RandomElement();
         }
 
         static FactionDef noHairFaction = new FactionDef() { hairTags = new List<string>() { "alienNoHair" } };
@@ -349,11 +349,11 @@ namespace AlienRace
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
             if (alienProps != null)
             {
-                if(!alienProps.HasHair)
+                if(!alienProps.alienRace.HasHair)
                     factionType = noHairFaction;
-                else if(!alienProps.hairTags.NullOrEmpty())
+                else if(!alienProps.alienRace.hairTags.NullOrEmpty())
                 {
-                    hairFaction.hairTags = alienProps.hairTags;
+                    hairFaction.hairTags = alienProps.alienRace.hairTags;
                     factionType = hairFaction;
                 }
             }
@@ -368,12 +368,12 @@ namespace AlienRace
                 PawnKindEntry pk;
                 if (request.KindDef == PawnKindDefOf.SpaceRefugee)
                 {
-                    if (comps.Where(r => !r.alienrefugeekinds.NullOrEmpty()).Select(r => r.alienrefugeekinds.RandomElement()).TryRandomElementByWeight((PawnKindEntry pke) => pke.chance, out pk))
+                    if (comps.Where(r => !r.alienRace.alienrefugeekinds.NullOrEmpty()).Select(r => r.alienRace.alienrefugeekinds.RandomElement()).TryRandomElementByWeight((PawnKindEntry pke) => pke.chance, out pk))
                         kindDef = pk.kindDefs.RandomElement();
                 }
                 else if (request.KindDef == PawnKindDefOf.Slave)
                 {
-                    if (comps.Where(r => !r.alienslavekinds.NullOrEmpty()).Select(r => r.alienslavekinds.RandomElement()).TryRandomElementByWeight((PawnKindEntry pke) => pke.chance, out pk))
+                    if (comps.Where(r => !r.alienRace.alienslavekinds.NullOrEmpty()).Select(r => r.alienRace.alienslavekinds.RandomElement()).TryRandomElementByWeight((PawnKindEntry pke) => pke.chance, out pk))
                         kindDef = pk.kindDefs.RandomElement();
                 }
             }
@@ -408,7 +408,7 @@ namespace AlienRace
                     __instance.graphics.dessicatedGraphic.Draw(loc, bodyFacing, pawn);
                 else
                 {
-                    mesh = (portrait ? alienProps.alienPartGenerator.bodyPortraitSet.MeshAt(bodyFacing) : alienProps.alienPartGenerator.bodySet.MeshAt(bodyFacing));
+                    mesh = (portrait ? alienProps.alienRace.alienPartGenerator.bodyPortraitSet.MeshAt(bodyFacing) : alienProps.alienRace.alienPartGenerator.bodySet.MeshAt(bodyFacing));
                 }
 
                 List<Material> list = __instance.graphics.MatsBodyBaseAt(bodyFacing, bodyDrawType);
@@ -440,13 +440,13 @@ namespace AlienRace
             if (__instance.graphics.headGraphic != null)
             {
                 Vector3 b = quat * __instance.BaseHeadOffsetAt(headFacing);
-                Mesh mesh2 = (portrait ? alienProps.alienPartGenerator.headPortraitSet.MeshAt(headFacing) : alienProps.alienPartGenerator.headSet.MeshAt(headFacing));
+                Mesh mesh2 = (portrait ? alienProps.alienRace.alienPartGenerator.headPortraitSet.MeshAt(headFacing) : alienProps.alienRace.alienPartGenerator.headSet.MeshAt(headFacing));
                 Material mat = __instance.graphics.HeadMatAt(headFacing, bodyDrawType);
                 GenDraw.DrawMeshNowOrLater(mesh2, a + b, quat, mat, portrait);
                 Vector3 loc2 = rootLoc + b;
                 loc2.y += 0.035f;
                 bool flag = false;
-                Mesh mesh3 = (pawn.story.crownType == CrownType.Narrow ? (portrait ? alienProps.alienPartGenerator.hairPortraitSetNarrow : alienProps.alienPartGenerator.hairSetNarrow) : (portrait ? alienProps.alienPartGenerator.hairPortraitSetAverage : alienProps.alienPartGenerator.hairSetAverage)).MeshAt(headFacing);
+                Mesh mesh3 = (pawn.story.crownType == CrownType.Narrow ? (portrait ? alienProps.alienRace.alienPartGenerator.hairPortraitSetNarrow : alienProps.alienRace.alienPartGenerator.hairSetNarrow) : (portrait ? alienProps.alienRace.alienPartGenerator.hairPortraitSetAverage : alienProps.alienRace.alienPartGenerator.hairSetAverage)).MeshAt(headFacing);
                 List<ApparelGraphicRecord> apparelGraphics = __instance.graphics.apparelGraphics;
                 for (int j = 0; j < apparelGraphics.Count; j++)
                 {
@@ -460,7 +460,7 @@ namespace AlienRace
                 }
                 if (!flag && bodyDrawType != RotDrawMode.Dessicated)
                 {
-                    Mesh mesh4 = (pawn.story.crownType == CrownType.Narrow ? (portrait ? alienProps.alienPartGenerator.hairPortraitSetNarrow : alienProps.alienPartGenerator.hairSetNarrow) : (portrait ? alienProps.alienPartGenerator.hairPortraitSetAverage : alienProps.alienPartGenerator.hairSetAverage)).MeshAt(headFacing);
+                    Mesh mesh4 = (pawn.story.crownType == CrownType.Narrow ? (portrait ? alienProps.alienRace.alienPartGenerator.hairPortraitSetNarrow : alienProps.alienRace.alienPartGenerator.hairSetNarrow) : (portrait ? alienProps.alienRace.alienPartGenerator.hairPortraitSetAverage : alienProps.alienRace.alienPartGenerator.hairSetAverage)).MeshAt(headFacing);
                     Material mat2 = __instance.graphics.HairMatAt(headFacing);
                     GenDraw.DrawMeshNowOrLater(mesh4, loc2, quat, mat2, portrait);
                 }
@@ -490,7 +490,7 @@ namespace AlienRace
             }
             Vector3 bodyLoc = rootLoc;
             bodyLoc.y += 0.0449999981f;
-            Traverse.Create(__instance).Field("statusOverlays").GetValue<PawnHeadOverlays>().RenderStatusOverlays(bodyLoc, quat, portrait ? alienProps.alienPartGenerator.headPortraitSet.MeshAt(headFacing) : alienProps.alienPartGenerator.headSet.MeshAt(headFacing));
+            Traverse.Create(__instance).Field("statusOverlays").GetValue<PawnHeadOverlays>().RenderStatusOverlays(bodyLoc, quat, portrait ? alienProps.alienRace.alienPartGenerator.headPortraitSet.MeshAt(headFacing) : alienProps.alienRace.alienPartGenerator.headSet.MeshAt(headFacing));
             return false;
         }
     }

@@ -7,6 +7,19 @@ namespace AlienRace
     public class ThingDef_AlienRace : ThingDef
     {
 #pragma warning disable CS0649
+        public AlienSettings alienRace;
+#pragma warning restore CS0649
+
+        public override void ResolveReferences()
+        {
+            comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
+            base.ResolveReferences();
+        }
+    }
+
+    public class AlienSettings
+    {
+#pragma warning disable CS0649
         public bool HasHair = true;
         public string NakedBodyGraphicLocation = "Things/Pawn/Humanlike/Bodies/";
         public string NakedHeadGraphicLocation = "Things/Pawn/Humanlike/Heads/";
@@ -31,14 +44,7 @@ namespace AlienRace
         public ThoughtDef butcherKnowThoughtSame = ThoughtDefOf.KnowButcheredHumanlikeCorpse;
         public ThoughtDef butcherThoughtDifferent = ThoughtDefOf.ButcheredHumanlikeCorpse;
         public ThoughtDef butcherKnowThoughtDifferent = ThoughtDefOf.KnowButcheredHumanlikeCorpse;
-
 #pragma warning restore CS0649
-
-        public override void ResolveReferences()
-        {
-            comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
-            base.ResolveReferences();
-        }
     }
 
     public class AlienTraitEntry
