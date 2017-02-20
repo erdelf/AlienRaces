@@ -32,10 +32,19 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GeneratePawnName"), new HarmonyMethod(typeof(HarmonyPatches), "GeneratePawnNamePrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), "CanDoNext"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanDoNextStartPawnPostfix"));
             harmony.Patch(AccessTools.Method(typeof(ThoughtHandler), "CanGetThought"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanGetThoughtPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(FloatMenuMakerMap), "AddHumanlikeOrders"), null, new HarmonyMethod(typeof(HarmonyPatches).GetMethod("AddHumanlikeOrdersPostfix")));
-            harmony.Patch(AccessTools.Method(typeof(Corpse), "ButcherProducts"), new HarmonyMethod(typeof(HarmonyPatches).GetMethod("ButcherProductsPrefix")), null);
+            harmony.Patch(AccessTools.Method(typeof(FloatMenuMakerMap), "AddHumanlikeOrders"), null, new HarmonyMethod(typeof(HarmonyPatches), "AddHumanlikeOrdersPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(Corpse), "ButcherProducts"), new HarmonyMethod(typeof(HarmonyPatches), "ButcherProductsPrefix"), null);
+            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(typeof(HarmonyPatches), "BirthdayBiologicalPrefix"), null);
+
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void BirthdayBiologicalPrefix(Pawn_AgeTracker __instance)
+        {
+            Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+            if(pawn.def is ThingDef_AlienRace && pawn.ageTracker.CurLifeStageRace is AlienLifeStageAge && !(pawn.ageTracker.CurLifeStageRace as AlienLifeStageAge).NakedHeadGraphicLocation.NullOrEmpty())
+                Traverse.Create(pawn.story).Field("headGraphicPath").SetValue((pawn.def as ThingDef_AlienRace).alienPartGenerator.RandomAlienHead((pawn.ageTracker.CurLifeStageRace as AlienLifeStageAge).NakedHeadGraphicLocation, pawn.gender));
         }
 
         public static bool ButcherProductsPrefix(Pawn butcher, float efficiency, ref IEnumerable<Thing> __result, Corpse __instance)
@@ -276,26 +285,28 @@ namespace AlienRace
 
         public static bool ResolveAllGraphicsPrefix(PawnGraphicSet __instance)
         {
+            Pawn alien = __instance.pawn;
             ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
             if (alienProps != null)
             {
+                AlienLifeStageAge lifeStage = alien.ageTracker.CurLifeStageRace as AlienLifeStageAge;
                 if (__instance.pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn)
                 {
                     if (alienProps.MaleGenderProbability != 0.5f)
                             __instance.pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.MaleGenderProbability ? Gender.Female : Gender.Male;
 
                     if (!alienProps.NakedHeadGraphicLocation.NullOrEmpty())
-                        Traverse.Create(__instance.pawn.story).Field("headGraphicPath").SetValue(alienProps.alienPartGenerator.RandomAlienHead(alienProps.NakedHeadGraphicLocation, __instance.pawn.gender));
+                        Traverse.Create(__instance.pawn.story).Field("headGraphicPath").SetValue(alienProps.alienPartGenerator.RandomAlienHead(((lifeStage != null) && !lifeStage.NakedHeadGraphicLocation.NullOrEmpty()) ? lifeStage.NakedHeadGraphicLocation : alienProps.NakedHeadGraphicLocation, __instance.pawn.gender));
 
                      __instance.pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = false;
                 }
 
-                __instance.nakedGraphic = AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, alienProps.NakedBodyGraphicLocation);
+                __instance.nakedGraphic = AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, (lifeStage != null && !lifeStage.NakedBodyGraphicLocation.NullOrEmpty()) ? lifeStage.NakedBodyGraphicLocation : alienProps.NakedBodyGraphicLocation);
                 __instance.rottingGraphic = AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.NakedBodyGraphicLocation);
-                __instance.dessicatedGraphic = GraphicDatabase.Get<Graphic_Multi>(alienProps.DesiccatedGraphicLocation, ShaderDatabase.Cutout);
+                __instance.dessicatedGraphic = GraphicDatabase.Get<Graphic_Multi>(((lifeStage != null) && !lifeStage.DesiccatedGraphicLocation.NullOrEmpty()) ? lifeStage.DesiccatedGraphicLocation : alienProps.DesiccatedGraphicLocation, ShaderDatabase.Cutout);
                 __instance.headGraphic = !alienProps.NakedHeadGraphicLocation.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, __instance.pawn.story.SkinColor) : null;
                 __instance.desiccatedHeadGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, PawnGraphicSet.RottingColor);
-                __instance.skullGraphic = GraphicDatabase.Get<Graphic_Multi>(alienProps.SkullGraphicLocation, ShaderDatabase.CutoutSkin, Vector2.one, Color.white);
+                __instance.skullGraphic = GraphicDatabase.Get<Graphic_Multi>(((lifeStage != null) && !lifeStage.SkullGraphicLocation.NullOrEmpty()) ? lifeStage.SkullGraphicLocation : alienProps.SkullGraphicLocation, ShaderDatabase.CutoutSkin, Vector2.one, Color.white);
                 __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ShaderDatabase.Cutout, Vector2.one, __instance.pawn.story.hairColor);
 
                 __instance.ResolveApparelGraphics();
