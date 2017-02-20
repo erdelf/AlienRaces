@@ -40,32 +40,28 @@ namespace AlienRace
 
         public static bool ButcherProductsPrefix(Pawn butcher, float efficiency, ref IEnumerable<Thing> __result, Corpse __instance)
         {
-            __result = ButcherProducts(butcher, __instance.InnerPawn, efficiency);
-            return false;
-        }
-
-        static IEnumerable<Thing> ButcherProducts(Pawn butcher, Pawn corpse, float efficiency)
-        {
-            ThingDef_AlienRace alienProps = butcher.def as ThingDef_AlienRace;
-
-            foreach (Thing t in corpse.ButcherProducts(butcher, efficiency))
+            __result = new Func<IEnumerable<Thing>>(() =>
             {
-                yield return t;
-            }
-            if (corpse.RaceProps.BloodDef != null)
-            {
-                FilthMaker.MakeFilth(butcher.Position, butcher.Map, corpse.RaceProps.BloodDef, corpse.LabelIndefinite(), 1);
-            }
-            if (corpse.RaceProps.Humanlike)
-            {
-                butcher.needs.mood.thoughts.memories.TryGainMemoryThought(alienProps==null? ThoughtDefOf.ButcheredHumanlikeCorpse : butcher.def == corpse.def ? alienProps.butcherThoughtSame : alienProps.butcherThoughtDifferent, null);
-                butcher.Map.mapPawns.SpawnedPawnsInFaction(butcher.Faction).ForEach(p =>
+                ThingDef_AlienRace alienProps = butcher.def as ThingDef_AlienRace;
+                Pawn corpse = __instance.InnerPawn;
+                IEnumerable<Thing> things = corpse.ButcherProducts(butcher, efficiency);
+                if (corpse.RaceProps.BloodDef != null)
                 {
-                    if (p != butcher && p.needs != null && p.needs.mood != null && p.needs.mood.thoughts != null)
-                        p.needs.mood.thoughts.memories.TryGainMemoryThought(p.def == corpse.def ? ((p.def as ThingDef_AlienRace)?.butcherKnowThoughtSame ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse) : ((p.def as ThingDef_AlienRace)?.butcherKnowThoughtDifferent ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse), null);
-                });
-                TaleRecorder.RecordTale(TaleDefOf.ButcheredHumanlikeCorpse, new object[] { butcher });
-            }
+                    FilthMaker.MakeFilth(butcher.Position, butcher.Map, corpse.RaceProps.BloodDef, corpse.LabelIndefinite(), 1);
+                }
+                if (corpse.RaceProps.Humanlike)
+                {
+                    butcher.needs.mood.thoughts.memories.TryGainMemoryThought(alienProps == null ? ThoughtDefOf.ButcheredHumanlikeCorpse : butcher.def == corpse.def ? alienProps.butcherThoughtSame : alienProps.butcherThoughtDifferent, null);
+                    butcher.Map.mapPawns.SpawnedPawnsInFaction(butcher.Faction).ForEach(p =>
+                    {
+                        if (p != butcher && p.needs != null && p.needs.mood != null && p.needs.mood.thoughts != null)
+                            p.needs.mood.thoughts.memories.TryGainMemoryThought(p.def == corpse.def ? ((p.def as ThingDef_AlienRace)?.butcherKnowThoughtSame ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse) : ((p.def as ThingDef_AlienRace)?.butcherKnowThoughtDifferent ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse), null);
+                    });
+                    TaleRecorder.RecordTale(TaleDefOf.ButcheredHumanlikeCorpse, new object[] { butcher });
+                }
+                return things;
+            })();
+            return false;
         }
 
         public static void AddHumanlikeOrdersPostfix(ref List<FloatMenuOption> opts, Pawn pawn, Vector3 clickPos)
