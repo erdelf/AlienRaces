@@ -44,6 +44,15 @@ namespace AlienRace
         public ThoughtDef butcherKnowThoughtSame = ThoughtDefOf.KnowButcheredHumanlikeCorpse;
         public ThoughtDef butcherThoughtDifferent = ThoughtDefOf.ButcheredHumanlikeCorpse;
         public ThoughtDef butcherKnowThoughtDifferent = ThoughtDefOf.KnowButcheredHumanlikeCorpse;
+
+        public float relationChanceModifierChild = 1.0f;
+        public float relationChanceModifierExLover = 1.0f;
+        public float relationChanceModifierExSpouse = 1.0f;
+        public float relationChanceModifierFiance = 1.0f;
+        public float relationChanceModifierLover = 1.0f;
+        public float relationChanceModifierParent = 1.0f;
+        public float relationChanceModifierSibling = 1.0f;
+        public float relationChanceModifierSpouse = 1.0f;
 #pragma warning restore CS0649
     }
 

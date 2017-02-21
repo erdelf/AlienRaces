@@ -36,8 +36,81 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Corpse), "ButcherProducts"), new HarmonyMethod(typeof(HarmonyPatches), "ButcherProductsPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(typeof(HarmonyPatches), "BirthdayBiologicalPrefix"), null);
 
-
+            
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceChildPostfix"), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceExLoverPostfix"), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceExSpousePostfix"), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Fiance), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceFiancePostfix"), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Lover), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceLoverPostfix"), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceParentPostfix"), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSiblingPostfix"), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSpousePostfix"), null);
+            
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void GenerationChanceSpousePostfix(ref float __result, Pawn generated, Pawn other)
+        {
+            if (generated.def is ThingDef_AlienRace)
+                __result *= (generated.def as ThingDef_AlienRace).alienRace.relationChanceModifierSpouse;
+            if (other.def is ThingDef_AlienRace)
+                __result *= (other.def as ThingDef_AlienRace).alienRace.relationChanceModifierSpouse;
+        }
+
+        public static void GenerationChanceSiblingPostfix(ref float __result, Pawn generated, Pawn other)
+        {
+            if (generated.def is ThingDef_AlienRace)
+                __result *= (generated.def as ThingDef_AlienRace).alienRace.relationChanceModifierSibling;
+            if (other.def is ThingDef_AlienRace)
+                __result *= (other.def as ThingDef_AlienRace).alienRace.relationChanceModifierSibling;
+        }
+
+        public static void GenerationChanceParentPostfix(ref float __result, Pawn generated, Pawn other)
+        {
+            if (generated.def is ThingDef_AlienRace)
+                __result *= (generated.def as ThingDef_AlienRace).alienRace.relationChanceModifierParent;
+            if (other.def is ThingDef_AlienRace)
+                __result *= (other.def as ThingDef_AlienRace).alienRace.relationChanceModifierParent;
+        }
+
+        public static void GenerationChanceLoverPostfix(ref float __result, Pawn generated, Pawn other)
+        {
+            if (generated.def is ThingDef_AlienRace)
+                __result *= (generated.def as ThingDef_AlienRace).alienRace.relationChanceModifierLover;
+            if (other.def is ThingDef_AlienRace)
+                __result *= (other.def as ThingDef_AlienRace).alienRace.relationChanceModifierLover;
+        }
+
+        public static void GenerationChanceFiancePostfix(ref float __result, Pawn generated, Pawn other)
+        {
+            if (generated.def is ThingDef_AlienRace)
+                __result *= (generated.def as ThingDef_AlienRace).alienRace.relationChanceModifierFiance;
+            if (other.def is ThingDef_AlienRace)
+                __result *= (other.def as ThingDef_AlienRace).alienRace.relationChanceModifierFiance;
+        }
+
+        public static void GenerationChanceExSpousePostfix(ref float __result, Pawn generated, Pawn other)
+        {
+            if (generated.def is ThingDef_AlienRace)
+                __result *= (generated.def as ThingDef_AlienRace).alienRace.relationChanceModifierExSpouse;
+            if (other.def is ThingDef_AlienRace)
+                __result *= (other.def as ThingDef_AlienRace).alienRace.relationChanceModifierExSpouse;
+        }
+
+        public static void GenerationChanceExLoverPostfix(ref float __result, Pawn generated, Pawn other)
+        {
+            if (generated.def is ThingDef_AlienRace)
+                __result *= (generated.def as ThingDef_AlienRace).alienRace.relationChanceModifierExLover;
+            if (other.def is ThingDef_AlienRace)
+                __result *= (other.def as ThingDef_AlienRace).alienRace.relationChanceModifierExLover;
+        }
+
+        public static void GenerationChanceChildPostfix(ref float __result, Pawn generated, Pawn other)
+        {
+            if (generated.def is ThingDef_AlienRace)
+                __result *= (generated.def as ThingDef_AlienRace).alienRace.relationChanceModifierChild;
+            if (other.def is ThingDef_AlienRace)
+                __result *= (other.def as ThingDef_AlienRace).alienRace.relationChanceModifierChild;
         }
 
         public static void BirthdayBiologicalPrefix(Pawn_AgeTracker __instance)
@@ -172,7 +245,10 @@ namespace AlienRace
             if (alienProps != null && alienProps.alienRace.MaleGenderProbability != 0.5f)
             {
                 if (!request.FixedGender.HasValue)
-                    pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.alienRace.MaleGenderProbability ? Gender.Female : Gender.Male;
+                {
+                    if(request.KindDef.RaceProps.hasGenders)
+                        pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.alienRace.MaleGenderProbability ? Gender.Female : Gender.Male;
+                }
                 else
                     pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = true;
             }
