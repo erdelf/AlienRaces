@@ -20,9 +20,6 @@ namespace AlienRace
 
     public class AlienSettings
     {
-        //#pragma warning disable CS0649
-        //#pragma warning restore CS0649
-
         public GeneralSettings generalSettings = new GeneralSettings();
         public List<GraphicPaths> graphicPaths = new List<GraphicPaths>();
         public HairSettings hairSettings = new HairSettings();
@@ -136,6 +133,8 @@ namespace AlienRace
     public class RaceRestrictionSettings
     {
         public bool onlyUseRacerestrictedApparel = false;
-        public List<ThingDef> raceRestrictedApparel;
+        public List<ThingDef> apparelList;
+
+        public List<ResearchProjectDef> researchList;
     }
 }

@@ -44,12 +44,21 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSiblingPostfix"));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSpousePostfix"));
             harmony.Patch(AccessTools.Method(typeof(FoodUtility), "ThoughtsFromIngesting"), null, new HarmonyMethod(typeof(HarmonyPatches), "ThoughtsFromIngestingPostfix"));
-
+            harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), "ShouldSkip"), null, new HarmonyMethod(typeof(HarmonyPatches), "ShouldSkipResearchPostfix"));
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
+        public static void ShouldSkipResearchPostfix(Pawn pawn, ref bool __result)
+        {
+            if (!__result)
+            {
+                ResearchProjectDef project = Find.ResearchManager.currentProj;
 
+                __result = (!(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.Contains(project)) ?? 
+                    DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.researchList?.Contains(project) ?? false));
+            }
+        }
 
         public static void ThoughtsFromIngestingPostfix(Pawn ingester, Thing t, ref List<ThoughtDef> __result)
         {
@@ -199,7 +208,7 @@ namespace AlienRace
                 Apparel apparel = pawn.Map.thingGrid.ThingAt<Apparel>(c);
                 if (apparel != null)
                 {
-                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && !((pawn.def is ThingDef_AlienRace) && !(pawn.def as ThingDef_AlienRace).alienRace.raceRestriction.raceRestrictedApparel.NullOrEmpty() && (pawn.def as ThingDef_AlienRace).alienRace.raceRestriction.raceRestrictedApparel.Contains(apparel.def)) && !d.alienRace.raceRestriction.raceRestrictedApparel.NullOrEmpty() && d.alienRace.raceRestriction.raceRestrictedApparel.Contains(apparel.def))).ToList();
+                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && !((pawn.def is ThingDef_AlienRace) && !(pawn.def as ThingDef_AlienRace).alienRace.raceRestriction.apparelList.NullOrEmpty() && (pawn.def as ThingDef_AlienRace).alienRace.raceRestriction.apparelList.Contains(apparel.def)) && !d.alienRace.raceRestriction.apparelList.NullOrEmpty() && d.alienRace.raceRestriction.apparelList.Contains(apparel.def))).ToList();
 
                     if (!options.NullOrEmpty())
                     {
@@ -220,7 +229,7 @@ namespace AlienRace
 
                     if (alienProps != null && alienProps.alienRace.raceRestriction.onlyUseRacerestrictedApparel)
                     {
-                        options = opts.Where(fmo => !fmo.Disabled && (alienProps.alienRace.raceRestriction.raceRestrictedApparel.NullOrEmpty() || !alienProps.alienRace.raceRestriction.raceRestrictedApparel.Contains(apparel.def))).ToList();
+                        options = opts.Where(fmo => !fmo.Disabled && (alienProps.alienRace.raceRestriction.apparelList.NullOrEmpty() || !alienProps.alienRace.raceRestriction.apparelList.Contains(apparel.def))).ToList();
 
                         if (!options.NullOrEmpty())
                         {
