@@ -24,8 +24,8 @@ namespace AlienRace
         //#pragma warning restore CS0649
 
         public GeneralSettings generalSettings = new GeneralSettings();
-        public HairSettings hairSettings = new HairSettings();
         public List<GraphicPaths> graphicPaths = new List<GraphicPaths>();
+        public HairSettings hairSettings = new HairSettings();
         public PawnKindSettings pawnKindSettings = new PawnKindSettings();
         public ThoughtSettings thoughtSettings = new ThoughtSettings();
         public RelationSettings relationSettings = new RelationSettings();
@@ -52,17 +52,29 @@ namespace AlienRace
         public float commonalityFemale = -1f;
     }
 
+    public class GraphicPaths
+    {
+        public List<LifeStageDef> lifeStageDefs;
+
+        public string body = "Things/Pawn/Humanlike/Bodies/";
+        public string head = "Things/Pawn/Humanlike/Heads/";
+        public string skeleton = "Things/Pawn/Humanlike/HumanoidDessicated";
+        public string skull = "Things/Pawn/Humanlike/Heads/None_Average_Skull";
+    }
+
+    static class GraphicPathsExtension
+    {
+        public static GraphicPaths getCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef)
+        {
+            return list.FirstOrDefault(gp => gp.lifeStageDefs.Contains(lifeStageDef)) ?? list.First();
+        }
+    }
+
     public class HairSettings
     {
         public bool HasHair = true;
         public List<string> hairTags;
         public int GetsGreyAt = 40;
-    }
-
-    public class RaceRestrictionSettings
-    {
-        public bool onlyUseRacerestrictedApparel = false;
-        public List<ThingDef> raceRestrictedApparel;
     }
 
     public class PawnKindSettings
@@ -84,24 +96,6 @@ namespace AlienRace
         public List<FactionDef> factionDefs;
     }
 
-    static class GraphicPathsExtension
-    {
-        public static GraphicPaths getCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef)
-        {
-            return list.FirstOrDefault(gp => gp.lifeStageDefs.Contains(lifeStageDef)) ?? list.First();
-        }
-    }
-
-    public class GraphicPaths
-    {
-        public List<LifeStageDef> lifeStageDefs;
-
-        public string body = "Things/Pawn/Humanlike/Bodies/";
-        public string head = "Things/Pawn/Humanlike/Heads/";
-        public string skeleton = "Things/Pawn/Humanlike/HumanoidDessicated";
-        public string skull = "Things/Pawn/Humanlike/Heads/None_Average_Skull";
-    }
-
     public class ThoughtSettings
     {
         public List<ThoughtDef> cannotReceiveThoughts;
@@ -116,8 +110,8 @@ namespace AlienRace
     public class ButcherThought
     {
         public List<ThingDef> raceList;
-        public ThoughtDef butcherThought = ThoughtDefOf.ButcheredHumanlikeCorpse;
-        public ThoughtDef butcherKnowThought = ThoughtDefOf.KnowButcheredHumanlikeCorpse;
+        public ThoughtDef thought = ThoughtDefOf.ButcheredHumanlikeCorpse;
+        public ThoughtDef knowThought = ThoughtDefOf.KnowButcheredHumanlikeCorpse;
     }
 
     public class AteThought
@@ -137,5 +131,11 @@ namespace AlienRace
         public int relationChanceModifierParent = 100;
         public int relationChanceModifierSibling = 100;
         public int relationChanceModifierSpouse = 100;
+    }
+
+    public class RaceRestrictionSettings
+    {
+        public bool onlyUseRacerestrictedApparel = false;
+        public List<ThingDef> raceRestrictedApparel;
     }
 }
