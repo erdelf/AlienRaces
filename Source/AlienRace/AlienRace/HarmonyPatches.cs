@@ -35,7 +35,6 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(FloatMenuMakerMap), "AddHumanlikeOrders"), null, new HarmonyMethod(typeof(HarmonyPatches), "AddHumanlikeOrdersPostfix"));
             harmony.Patch(AccessTools.Method(typeof(Corpse), "ButcherProducts"), new HarmonyMethod(typeof(HarmonyPatches), "ButcherProductsPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(typeof(HarmonyPatches), "BirthdayBiologicalPrefix"), null);
-
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceChildPostfix"));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceExLoverPostfix"));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceExSpousePostfix"));
@@ -45,6 +44,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSiblingPostfix"));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSpousePostfix"));
             
+
+
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
@@ -139,15 +140,15 @@ namespace AlienRace
                 if (corpse.RaceProps.Humanlike)
                 {
                     butcher.needs.mood.thoughts.memories.TryGainMemoryThought(alienPropsButcher == null ? ThoughtDefOf.ButcheredHumanlikeCorpse : 
-                        alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific.FirstOrDefault(bt => bt.raceList.Contains(corpse.def))?.butcherThought ?? 
-                        alienPropsButcher.alienRace.thoughtSettings.butcherThoughtGeneral.butcherThought, null);
+                        alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific.FirstOrDefault(bt => bt.raceList.Contains(corpse.def))?.thought ?? 
+                        alienPropsButcher.alienRace.thoughtSettings.butcherThoughtGeneral.thought, null);
 
                     butcher.Map.mapPawns.SpawnedPawnsInFaction(butcher.Faction).ForEach(p =>
                     {
                         if (p != butcher && p.needs != null && p.needs.mood != null && p.needs.mood.thoughts != null)
                         {
                             ThingDef_AlienRace alienPropsPawn = p.def as ThingDef_AlienRace;
-                            p.needs.mood.thoughts.memories.TryGainMemoryThought(alienPropsPawn == null ? ThoughtDefOf.KnowButcheredHumanlikeCorpse : alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific.FirstOrDefault(bt => bt.raceList.Contains(corpse.def))?.butcherKnowThought ?? alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.butcherKnowThought, null);
+                            p.needs.mood.thoughts.memories.TryGainMemoryThought(alienPropsPawn == null ? ThoughtDefOf.KnowButcheredHumanlikeCorpse : alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific.FirstOrDefault(bt => bt.raceList.Contains(corpse.def))?.knowThought ?? alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.knowThought, null);
                         }
                     });
                     TaleRecorder.RecordTale(TaleDefOf.ButcheredHumanlikeCorpse, new object[] { butcher });
