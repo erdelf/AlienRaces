@@ -49,6 +49,8 @@ namespace AlienRace
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
+
+
         public static void ThoughtsFromIngestingPostfix(Pawn ingester, Thing t, ref List<ThoughtDef> __result)
         {
             ThingDef_AlienRace alienProps = ingester.def as ThingDef_AlienRace;
@@ -419,12 +421,12 @@ namespace AlienRace
                      __instance.pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = false;
                 }
 
-                __instance.nakedGraphic = AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).body);
-                __instance.rottingGraphic = AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).body);
-                __instance.dessicatedGraphic = GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).skeleton, ShaderDatabase.Cutout);
+                __instance.nakedGraphic = !alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
+                __instance.rottingGraphic = !alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
+                __instance.dessicatedGraphic = !alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).skeleton, ShaderDatabase.Cutout) : null;
                 __instance.headGraphic = !alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, __instance.pawn.story.SkinColor) : null;
-                __instance.desiccatedHeadGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, PawnGraphicSet.RottingColor);
-                __instance.skullGraphic = GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull, ShaderDatabase.CutoutSkin, Vector2.one, Color.white);
+                __instance.desiccatedHeadGraphic = !alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, PawnGraphicSet.RottingColor) : null;
+                __instance.skullGraphic = !alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull, ShaderDatabase.CutoutSkin, Vector2.one, Color.white) : null;
                 __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ShaderDatabase.Cutout, Vector2.one, __instance.pawn.story.hairColor);
 
                 __instance.ResolveApparelGraphics();
