@@ -50,7 +50,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlienLifeStageAge.cs" />
     <Compile Include="AlienPartGenerator.cs" />
     <Compile Include="BackstoryDef.cs" />
     <Compile Include="HarmonyPatches.cs" />
