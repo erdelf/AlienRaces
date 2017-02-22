@@ -36,15 +36,14 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Corpse), "ButcherProducts"), new HarmonyMethod(typeof(HarmonyPatches), "ButcherProductsPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(typeof(HarmonyPatches), "BirthdayBiologicalPrefix"), null);
 
-            
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceChildPostfix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceExLoverPostfix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceExSpousePostfix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Fiance), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceFiancePostfix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Lover), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceLoverPostfix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceParentPostfix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSiblingPostfix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), "GenerationChance"), new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSpousePostfix"), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceChildPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceExLoverPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceExSpousePostfix"));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Fiance), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceFiancePostfix"));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Lover), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceLoverPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceParentPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSiblingPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSpousePostfix"));
             
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
