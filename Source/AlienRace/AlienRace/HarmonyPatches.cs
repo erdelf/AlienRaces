@@ -60,7 +60,7 @@ namespace AlienRace
                 {
                     int index = __result.IndexOf(ingester.story.traits.HasTrait(TraitDefOf.Cannibal) ? ThoughtDefOf.AteHumanlikeMeatDirectCannibal : ThoughtDefOf.AteHumanlikeMeatDirect);
                     __result.RemoveAt(index);
-                    __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific.FirstOrDefault(at => at.raceList?.Contains(t.def.ingestible.sourceDef) ?? false).thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
+                    __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific?.FirstOrDefault(at => at.raceList?.Contains(t.def.ingestible.sourceDef) ?? false).thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
                 }
                 if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredient) || __result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))
                 {
@@ -73,11 +73,10 @@ namespace AlienRace
                             {
                                 int index = __result.IndexOf(ingester.story.traits.HasTrait(TraitDefOf.Cannibal) ? ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal : ThoughtDefOf.AteHumanlikeMeatAsIngredient);
                                 __result.RemoveAt(index);
-                                __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific.FirstOrDefault(at => at.raceList?.Contains(ingredient.ingestible.sourceDef) ?? false).thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
+                                __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific?.FirstOrDefault(at => at.raceList?.Contains(ingredient.ingestible.sourceDef) ?? false).thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
                             }
                         }
                     }
-                    
                 }
             }
         }
@@ -173,7 +172,7 @@ namespace AlienRace
                 if (corpse.RaceProps.Humanlike)
                 {
                     butcher.needs.mood.thoughts.memories.TryGainMemoryThought(alienPropsButcher == null ? ThoughtDefOf.ButcheredHumanlikeCorpse : 
-                        alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific.FirstOrDefault(bt => bt.raceList?.Contains(corpse.def) ?? false)?.thought ?? 
+                        alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific?.FirstOrDefault(bt => bt.raceList?.Contains(corpse.def) ?? false)?.thought ?? 
                         alienPropsButcher.alienRace.thoughtSettings.butcherThoughtGeneral.thought, null);
 
                     butcher.Map.mapPawns.SpawnedPawnsInFaction(butcher.Faction).ForEach(p =>
@@ -181,7 +180,7 @@ namespace AlienRace
                         if (p != butcher && p.needs != null && p.needs.mood != null && p.needs.mood.thoughts != null)
                         {
                             ThingDef_AlienRace alienPropsPawn = p.def as ThingDef_AlienRace;
-                            p.needs.mood.thoughts.memories.TryGainMemoryThought(alienPropsPawn == null ? ThoughtDefOf.KnowButcheredHumanlikeCorpse : alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific.FirstOrDefault(bt => bt.raceList?.Contains(corpse.def) ?? false)?.knowThought ?? alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.knowThought, null);
+                            p.needs.mood.thoughts.memories.TryGainMemoryThought(alienPropsPawn == null ? ThoughtDefOf.KnowButcheredHumanlikeCorpse : alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific?.FirstOrDefault(bt => bt.raceList?.Contains(corpse.def) ?? false)?.knowThought ?? alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.knowThought, null);
                         }
                     });
                     TaleRecorder.RecordTale(TaleDefOf.ButcheredHumanlikeCorpse, new object[] { butcher });
