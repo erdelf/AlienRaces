@@ -60,7 +60,7 @@ namespace AlienRace
                 {
                     int index = __result.IndexOf(ingester.story.traits.HasTrait(TraitDefOf.Cannibal) ? ThoughtDefOf.AteHumanlikeMeatDirectCannibal : ThoughtDefOf.AteHumanlikeMeatDirect);
                     __result.RemoveAt(index);
-                    __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific.FirstOrDefault(at => at.raceList.Contains(t.def.ingestible.sourceDef)).thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
+                    __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific.FirstOrDefault(at => at.raceList?.Contains(t.def.ingestible.sourceDef) ?? false).thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
                 }
                 if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredient) || __result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))
                 {
@@ -73,7 +73,7 @@ namespace AlienRace
                             {
                                 int index = __result.IndexOf(ingester.story.traits.HasTrait(TraitDefOf.Cannibal) ? ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal : ThoughtDefOf.AteHumanlikeMeatAsIngredient);
                                 __result.RemoveAt(index);
-                                __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific.FirstOrDefault(at => at.raceList.Contains(ingredient.ingestible.sourceDef)).thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
+                                __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific.FirstOrDefault(at => at.raceList?.Contains(ingredient.ingestible.sourceDef) ?? false).thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
                             }
                         }
                     }
@@ -152,7 +152,7 @@ namespace AlienRace
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
             if (alienProps != null)
             {
-                string path = alienProps.alienRace.graphicPaths.getCurrentGraphicPath(pawn.ageTracker.CurLifeStageRace.def).head;
+                string path = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStageRace.def).head;
                 if(path != null)
                     Traverse.Create(pawn.story).Field("headGraphicPath").SetValue((pawn.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator.RandomAlienHead(path, pawn.gender));
             }
@@ -173,7 +173,7 @@ namespace AlienRace
                 if (corpse.RaceProps.Humanlike)
                 {
                     butcher.needs.mood.thoughts.memories.TryGainMemoryThought(alienPropsButcher == null ? ThoughtDefOf.ButcheredHumanlikeCorpse : 
-                        alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific.FirstOrDefault(bt => bt.raceList.Contains(corpse.def))?.thought ?? 
+                        alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific.FirstOrDefault(bt => bt.raceList?.Contains(corpse.def) ?? false)?.thought ?? 
                         alienPropsButcher.alienRace.thoughtSettings.butcherThoughtGeneral.thought, null);
 
                     butcher.Map.mapPawns.SpawnedPawnsInFaction(butcher.Faction).ForEach(p =>
@@ -181,7 +181,7 @@ namespace AlienRace
                         if (p != butcher && p.needs != null && p.needs.mood != null && p.needs.mood.thoughts != null)
                         {
                             ThingDef_AlienRace alienPropsPawn = p.def as ThingDef_AlienRace;
-                            p.needs.mood.thoughts.memories.TryGainMemoryThought(alienPropsPawn == null ? ThoughtDefOf.KnowButcheredHumanlikeCorpse : alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific.FirstOrDefault(bt => bt.raceList.Contains(corpse.def))?.knowThought ?? alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.knowThought, null);
+                            p.needs.mood.thoughts.memories.TryGainMemoryThought(alienPropsPawn == null ? ThoughtDefOf.KnowButcheredHumanlikeCorpse : alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific.FirstOrDefault(bt => bt.raceList?.Contains(corpse.def) ?? false)?.knowThought ?? alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.knowThought, null);
                         }
                     });
                     TaleRecorder.RecordTale(TaleDefOf.ButcheredHumanlikeCorpse, new object[] { butcher });
@@ -313,9 +313,9 @@ namespace AlienRace
                     float grey = Rand.Range(0.65f, 0.85f);
                     pawn.story.hairColor = new Color(grey, grey, grey);
                 }
-                if (!alienProps.alienRace.graphicPaths.getCurrentGraphicPath(pawn.ageTracker.CurLifeStage).head.NullOrEmpty())
+                if (!alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).head.NullOrEmpty())
                 {
-                    Traverse.Create(pawn.story).Field("headGraphicPath").SetValue(alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(alienProps.alienRace.graphicPaths.getCurrentGraphicPath(pawn.ageTracker.CurLifeStage).head, pawn.gender));
+                    Traverse.Create(pawn.story).Field("headGraphicPath").SetValue(alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).head, pawn.gender));
                 }
             }
         }
@@ -415,18 +415,18 @@ namespace AlienRace
                     if (alienProps.alienRace.generalSettings.MaleGenderProbability != 0.5f)
                             __instance.pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.alienRace.generalSettings.MaleGenderProbability ? Gender.Female : Gender.Male;
 
-                    if (!alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty())
-                        Traverse.Create(__instance.pawn.story).Field("headGraphicPath").SetValue(alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).head, __instance.pawn.gender));
+                    if (!alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty())
+                        Traverse.Create(__instance.pawn.story).Field("headGraphicPath").SetValue(alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head, __instance.pawn.gender));
 
                      __instance.pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = false;
                 }
 
-                __instance.nakedGraphic = !alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
-                __instance.rottingGraphic = !alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
-                __instance.dessicatedGraphic = !alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).skeleton, ShaderDatabase.Cutout) : null;
-                __instance.headGraphic = !alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, __instance.pawn.story.SkinColor) : null;
-                __instance.desiccatedHeadGraphic = !alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, PawnGraphicSet.RottingColor) : null;
-                __instance.skullGraphic = !alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.getCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull, ShaderDatabase.CutoutSkin, Vector2.one, Color.white) : null;
+                __instance.nakedGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
+                __instance.rottingGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
+                __instance.dessicatedGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skeleton, ShaderDatabase.Cutout) : null;
+                __instance.headGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, __instance.pawn.story.SkinColor) : null;
+                __instance.desiccatedHeadGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, PawnGraphicSet.RottingColor) : null;
+                __instance.skullGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull, ShaderDatabase.CutoutSkin, Vector2.one, Color.white) : null;
                 __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ShaderDatabase.Cutout, Vector2.one, __instance.pawn.story.hairColor);
 
                 __instance.ResolveApparelGraphics();

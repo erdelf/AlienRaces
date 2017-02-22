@@ -64,9 +64,9 @@ namespace AlienRace
 
     static class GraphicPathsExtension
     {
-        public static GraphicPaths getCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef)
+        public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef)
         {
-            return list.FirstOrDefault(gp => gp.lifeStageDefs.Contains(lifeStageDef)) ?? list.First();
+            return list.FirstOrDefault(gp => gp.lifeStageDefs?.Contains(lifeStageDef) ?? false) ?? list.First();
         }
     }
 
