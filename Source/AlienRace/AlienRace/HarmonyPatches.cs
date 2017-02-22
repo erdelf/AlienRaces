@@ -43,10 +43,41 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceParentPostfix"));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSiblingPostfix"));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSpousePostfix"));
-            
+            harmony.Patch(AccessTools.Method(typeof(FoodUtility), "ThoughtsFromIngesting"), null, new HarmonyMethod(typeof(HarmonyPatches), "ThoughtsFromIngestingPostfix"));
 
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void ThoughtsFromIngestingPostfix(Pawn ingester, Thing t, ref List<ThoughtDef> __result)
+        {
+            ThingDef_AlienRace alienProps = ingester.def as ThingDef_AlienRace;
+            if (alienProps != null)
+            {
+                if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatDirect) || __result.Contains(ThoughtDefOf.AteHumanlikeMeatDirectCannibal))
+                {
+                    int index = __result.IndexOf(ingester.story.traits.HasTrait(TraitDefOf.Cannibal) ? ThoughtDefOf.AteHumanlikeMeatDirectCannibal : ThoughtDefOf.AteHumanlikeMeatDirect);
+                    __result.RemoveAt(index);
+                    __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific.FirstOrDefault(at => at.raceList.Contains(t.def.ingestible.sourceDef)).thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
+                }
+                if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredient) || __result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))
+                {
+                    CompIngredients compIngredients = t.TryGetComp<CompIngredients>();
+                    if(compIngredients != null)
+                    {
+                        foreach(ThingDef ingredient in compIngredients.ingredients)
+                        {
+                            if (FoodUtility.IsHumanlikeMeat(ingredient))
+                            {
+                                int index = __result.IndexOf(ingester.story.traits.HasTrait(TraitDefOf.Cannibal) ? ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal : ThoughtDefOf.AteHumanlikeMeatAsIngredient);
+                                __result.RemoveAt(index);
+                                __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific.FirstOrDefault(at => at.raceList.Contains(ingredient.ingestible.sourceDef)).thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
+                            }
+                        }
+                    }
+                    
+                }
+            }
         }
 
         public static void GenerationChanceSpousePostfix(ref float __result, Pawn generated, Pawn other)
