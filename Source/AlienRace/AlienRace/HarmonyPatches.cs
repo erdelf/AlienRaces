@@ -45,8 +45,30 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSpousePostfix"));
             harmony.Patch(AccessTools.Method(typeof(FoodUtility), "ThoughtsFromIngesting"), null, new HarmonyMethod(typeof(HarmonyPatches), "ThoughtsFromIngestingPostfix"));
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), "ShouldSkip"), null, new HarmonyMethod(typeof(HarmonyPatches), "ShouldSkipResearchPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), "PreOpen"), null, new HarmonyMethod(typeof(HarmonyPatches), "ResearchPreOpenPostfix"));
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void ResearchPreOpenPostfix(MainTabWindow_Research __instance)
+        {
+            List<ResearchProjectDef> projects = Traverse.Create(__instance).Field("relevantProjects").GetValue<IEnumerable<ResearchProjectDef>>().ToList();
+            for(int i=0; i<projects.Count;i++)
+            {
+                ResearchProjectDef project = projects[i];
+                if (!project.IsFinished)
+                {
+                    List<ThingDef_AlienRace> alienRaces =
+                        DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.raceRestriction?.researchList?.Contains(project) ?? false).ToList();
+
+                    if (!alienRaces.NullOrEmpty() && !Find.ColonistBar.GetColonistsInOrder().Any(p => p.def is ThingDef_AlienRace && alienRaces.Contains(p.def as ThingDef_AlienRace)))
+                    {
+                        projects.RemoveAt(i);
+                        i--;
+                    }
+                }
+            }
+            Traverse.Create(__instance).Field("relevantProjects").SetValue(projects);
         }
 
         public static void ShouldSkipResearchPostfix(Pawn pawn, ref bool __result)
