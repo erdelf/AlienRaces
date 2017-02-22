@@ -61,13 +61,35 @@ namespace AlienRace
                     List<ThingDef_AlienRace> alienRaces =
                         DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.raceRestriction?.researchList?.Contains(project) ?? false).ToList();
 
-                    if (!alienRaces.NullOrEmpty() && !Find.ColonistBar.GetColonistsInOrder().Any(p => p.def is ThingDef_AlienRace && alienRaces.Contains(p.def as ThingDef_AlienRace)))
+                    if (!alienRaces.NullOrEmpty() && !Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def is ThingDef_AlienRace && alienRaces.Contains(p.def as ThingDef_AlienRace)))
                     {
                         projects.RemoveAt(i);
                         i--;
                     }
                 }
             }
+            bool changed = true;
+
+            while (changed)
+            {
+                changed = false;
+                for (int i = 0; i < projects.Count; i++)
+                {
+                    if (projects[i].prerequisites != null)
+                    {
+                        foreach (ResearchProjectDef project in projects[i].prerequisites)
+                        {
+                            if (!projects.Contains(project))
+                            {
+                                projects.RemoveAt(i);
+                                i--;
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+            
             Traverse.Create(__instance).Field("relevantProjects").SetValue(projects);
         }
 
