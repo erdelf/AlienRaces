@@ -82,9 +82,12 @@ namespace AlienRace
             b.ResolveReferences();
             b.PostLoad();
 
+            b.identifier = defName;
+
+
             if (!b.ConfigErrors(false).Any())
             {
-                BackstoryDatabase.allBackstories.Add(defName, b);
+                BackstoryDatabase.AddBackstory(b);
             } else
             {
                 Log.Error(defName + " has errors");
