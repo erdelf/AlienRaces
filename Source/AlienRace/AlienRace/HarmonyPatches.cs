@@ -59,9 +59,9 @@ namespace AlienRace
                 if (!project.IsFinished)
                 {
                     List<ThingDef_AlienRace> alienRaces =
-                        DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.raceRestriction?.researchList?.Contains(project) ?? false).ToList();
+                        DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.raceRestriction?.researchList?.Any(rpr => rpr.project == project) ?? false).ToList();
 
-                    if (!alienRaces.NullOrEmpty() && !Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def is ThingDef_AlienRace && alienRaces.Contains(p.def as ThingDef_AlienRace)))
+                    if (!alienRaces.NullOrEmpty() && !Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def is ThingDef_AlienRace && alienRaces.Contains(p.def as ThingDef_AlienRace) && alienRaces.First(ar => ar == p.def).alienRace.raceRestriction.researchList.First(rp => rp.project == project).apparelList.TrueForAll(ap => p.apparel.WornApparel.Select(apd => apd.def).Contains(ap))))
                     {
                         projects.RemoveAt(i);
                         i--;
@@ -99,8 +99,9 @@ namespace AlienRace
             {
                 ResearchProjectDef project = Find.ResearchManager.currentProj;
 
-                __result = (!(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.Contains(project)) ?? 
-                    DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.researchList?.Contains(project) ?? false));
+                __result = (!(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.Any(rpr => rpr.project == project && 
+                (rpr.apparelList?.TrueForAll(ap => pawn.apparel.WornApparel.Select(twc => twc.def).Contains(ap)) ?? true))) ?? 
+                    DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.researchList?.Any(rpr => rpr.project == project) ?? false));
             }
         }
 

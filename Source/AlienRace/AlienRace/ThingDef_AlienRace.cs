@@ -135,6 +135,13 @@ namespace AlienRace
         public bool onlyUseRacerestrictedApparel = false;
         public List<ThingDef> apparelList;
 
-        public List<ResearchProjectDef> researchList;
+        public List<ResearchProjectRestrictions> researchList;
+    }
+
+    public class ResearchProjectRestrictions
+    {
+        public ResearchProjectDef project;
+        public List<ThingDef> apparelList;
+        
     }
 }
