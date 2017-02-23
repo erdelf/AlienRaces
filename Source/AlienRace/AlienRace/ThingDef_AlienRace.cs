@@ -140,8 +140,8 @@ namespace AlienRace
 
     public class ResearchProjectRestrictions
     {
-        public ResearchProjectDef project;
+        public List<ResearchProjectDef> projects;
         public List<ThingDef> apparelList;
-        
+        public List<ThingDef> researchBenches;
     }
 }

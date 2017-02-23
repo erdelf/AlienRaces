@@ -59,9 +59,9 @@ namespace AlienRace
                 if (!project.IsFinished)
                 {
                     List<ThingDef_AlienRace> alienRaces =
-                        DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.raceRestriction?.researchList?.Any(rpr => rpr.project == project) ?? false).ToList();
+                        DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.raceRestriction?.researchList?.Any(rpr => rpr.projects.Contains(project)) ?? false).ToList();
 
-                    if (!alienRaces.NullOrEmpty() && !Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def is ThingDef_AlienRace && alienRaces.Contains(p.def as ThingDef_AlienRace) && alienRaces.First(ar => ar == p.def).alienRace.raceRestriction.researchList.First(rp => rp.project == project).apparelList.TrueForAll(ap => p.apparel.WornApparel.Select(apd => apd.def).Contains(ap))))
+                    if (!alienRaces.NullOrEmpty() && !Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def is ThingDef_AlienRace && alienRaces.Contains(p.def as ThingDef_AlienRace) && alienRaces.First(ar => ar == p.def).alienRace.raceRestriction.researchList.First(rp => rp.projects.Contains(project)).apparelList.TrueForAll(ap => p.apparel.WornApparel.Select(apd => apd.def).Contains(ap))))
                     {
                         projects.RemoveAt(i);
                         i--;
@@ -99,9 +99,9 @@ namespace AlienRace
             {
                 ResearchProjectDef project = Find.ResearchManager.currentProj;
 
-                __result = (!(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.Any(rpr => rpr.project == project && 
+                __result = (!(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project) && 
                 (rpr.apparelList?.TrueForAll(ap => pawn.apparel.WornApparel.Select(twc => twc.def).Contains(ap)) ?? true))) ?? 
-                    DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.researchList?.Any(rpr => rpr.project == project) ?? false));
+                    DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project)) ?? false));
             }
         }
 
@@ -477,9 +477,9 @@ namespace AlienRace
                 __instance.nakedGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
                 __instance.rottingGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
                 __instance.dessicatedGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skeleton, ShaderDatabase.Cutout) : null;
-                __instance.headGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, __instance.pawn.story.SkinColor) : null;
-                __instance.desiccatedHeadGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, PawnGraphicSet.RottingColor) : null;
-                __instance.skullGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull, ShaderDatabase.CutoutSkin, Vector2.one, Color.white) : null;
+                __instance.headGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one, __instance.pawn.story.SkinColor) : null;
+                __instance.desiccatedHeadGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one, PawnGraphicSet.RottingColor) : null;
+                __instance.skullGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull, ShaderDatabase.Cutout, Vector2.one, Color.white) : null;
                 __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ShaderDatabase.Cutout, Vector2.one, __instance.pawn.story.hairColor);
 
                 __instance.ResolveApparelGraphics();
