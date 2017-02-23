@@ -142,6 +142,5 @@ namespace AlienRace
     {
         public List<ResearchProjectDef> projects;
         public List<ThingDef> apparelList;
-        public List<ThingDef> researchBenches;
     }
 }
