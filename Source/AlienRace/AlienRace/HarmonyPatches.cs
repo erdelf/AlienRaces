@@ -46,8 +46,17 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(FoodUtility), "ThoughtsFromIngesting"), null, new HarmonyMethod(typeof(HarmonyPatches), "ThoughtsFromIngestingPostfix"));
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), "ShouldSkip"), null, new HarmonyMethod(typeof(HarmonyPatches), "ShouldSkipResearchPostfix"));
             harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), "PreOpen"), null, new HarmonyMethod(typeof(HarmonyPatches), "ResearchPreOpenPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(GenConstruct), "CanConstruct"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanConstructPostfix"));
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void CanConstructPostfix(Thing t, Pawn p, ref bool __result)
+        {
+            if (__result)
+                __result = ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(t.def) ?? false) || 
+                    (((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) ? false :
+                    !(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => p.def != d && (d.alienRace.raceRestriction.buildingList?.Contains(t.def.entityDefToBuild as ThingDef) ?? false))));
         }
 
         public static void ResearchPreOpenPostfix(MainTabWindow_Research __instance)
@@ -250,6 +259,49 @@ namespace AlienRace
 
             if (pawn.equipment != null)
             {
+                ThingWithComps equipment = (ThingWithComps) c.GetThingList(pawn.Map).FirstOrDefault(t => t.TryGetComp<CompEquippable>() != null && t.def.IsWeapon);
+                if(equipment != null)
+                {
+                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && !((pawn.def is ThingDef_AlienRace) && !(pawn.def as ThingDef_AlienRace).alienRace.raceRestriction.weaponList.NullOrEmpty() && (pawn.def as ThingDef_AlienRace).alienRace.raceRestriction.weaponList.Contains(equipment.def)) && !d.alienRace.raceRestriction.weaponList.NullOrEmpty() && d.alienRace.raceRestriction.weaponList.Contains(equipment.def))).ToList();
+                    if (!options.NullOrEmpty())
+                    {
+                        foreach (FloatMenuOption fmo in options)
+                        {
+                            int index = opts.IndexOf(fmo);
+                            opts.Remove(fmo);
+
+                            opts.Insert(index, new FloatMenuOption("CannotEquip".Translate(new object[]
+                                {
+                                    equipment.LabelShort
+                                }) + " (" + pawn.def.LabelCap + " can't equip this" + ")", null));
+                        }
+                    }
+
+                    ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+
+                    if (alienProps != null && alienProps.alienRace.raceRestriction.onlyUseRaceRestrictedWeapons)
+                    {
+                        options = opts.Where(fmo => !fmo.Disabled && (alienProps.alienRace.raceRestriction.weaponList.NullOrEmpty() || !alienProps.alienRace.raceRestriction.weaponList.Contains(equipment.def))).ToList();
+
+                        if (!options.NullOrEmpty())
+                        {
+                            foreach (FloatMenuOption fmo in options)
+                            {
+                                int index = opts.IndexOf(fmo);
+                                opts.Remove(fmo);
+
+                                opts.Insert(index, new FloatMenuOption("CannotEquip".Translate(new object[]
+                                    {
+                                        equipment.LabelShort
+                                    }) + " (" + pawn.def.LabelCap + " can't use other races' weapons" + ")", null));
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (pawn.apparel != null)
+            {
                 Apparel apparel = pawn.Map.thingGrid.ThingAt<Apparel>(c);
                 if (apparel != null)
                 {
@@ -265,14 +317,14 @@ namespace AlienRace
                             opts.Insert(index, new FloatMenuOption("CannotWear".Translate(new object[]
                                 {
                                     apparel.LabelShort
-                                }) + " (" + pawn.def.LabelCap + " can't wear this" + ")", null, MenuOptionPriority.Default, null, null, 0f, null));
+                                }) + " (" + pawn.def.LabelCap + " can't wear this" + ")", null));
                         }
                     }
 
 
                     ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
-                    if (alienProps != null && alienProps.alienRace.raceRestriction.onlyUseRacerestrictedApparel)
+                    if (alienProps != null && alienProps.alienRace.raceRestriction.onlyUseRaceRestrictedApparel)
                     {
                         options = opts.Where(fmo => !fmo.Disabled && (alienProps.alienRace.raceRestriction.apparelList.NullOrEmpty() || !alienProps.alienRace.raceRestriction.apparelList.Contains(apparel.def))).ToList();
 
@@ -286,7 +338,7 @@ namespace AlienRace
                                 opts.Insert(index, new FloatMenuOption("CannotWear".Translate(new object[]
                                     {
                                         apparel.LabelShort
-                                    }) + " (" + alienProps.LabelCap + " can't use other races' apparel" + ")", null, MenuOptionPriority.Default, null, null, 0f, null));
+                                    }) + " (" + pawn.def.LabelCap + " can't use other races' apparel" + ")", null));
                             }
                         }
                     }
@@ -495,8 +547,9 @@ namespace AlienRace
             if (alienProps != null && !alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
                 foreach (AlienTraitEntry ate in alienProps.alienRace.generalSettings.forcedRaceTraitEntries)
                     if (Rand.Range(0, 100) < ate.chance)
-                        if((pawn.gender == Gender.Male && (ate.commonalityMale == -1f || Rand.Range(0,100) < ate.commonalityMale)) || (pawn.gender == Gender.Female && (ate.commonalityFemale == -1f || Rand.Range(0, 100) < ate.commonalityFemale)) || pawn.gender == Gender.None)
-                            pawn.story.traits.GainTrait(new Trait(TraitDef.Named(ate.defname), ate.degree, true));
+                        if ((pawn.gender == Gender.Male && (ate.commonalityMale == -1f || Rand.Range(0, 100) < ate.commonalityMale)) || (pawn.gender == Gender.Female && (ate.commonalityFemale == -1f || Rand.Range(0, 100) < ate.commonalityFemale)) || pawn.gender == Gender.None)
+                            if (pawn.story.traits.HasTrait(TraitDef.Named(ate.defname)))
+                                pawn.story.traits.GainTrait(new Trait(TraitDef.Named(ate.defname), ate.degree, true));
         }
 
         public static void SkinColorPostfix(Pawn_StoryTracker __instance, ref Color __result)

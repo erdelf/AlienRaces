@@ -132,10 +132,19 @@ namespace AlienRace
 
     public class RaceRestrictionSettings
     {
-        public bool onlyUseRacerestrictedApparel = false;
+        public bool onlyUseRaceRestrictedApparel = false;
         public List<ThingDef> apparelList;
 
         public List<ResearchProjectRestrictions> researchList;
+
+        public bool onlyUseRaceRestrictedWeapons = false;
+        public List<ThingDef> weaponList;
+
+        public bool onlyBuildRaceRestrictedBuildings = false;
+        public List<ThingDef> buildingList;
+
+        public bool onlyDoRaceRestrictedBillBuildings = false;
+        public List<ThingDef> buildingBillList;
     }
 
     public class ResearchProjectRestrictions
