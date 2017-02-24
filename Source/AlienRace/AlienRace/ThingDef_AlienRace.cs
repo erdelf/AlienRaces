@@ -143,8 +143,8 @@ namespace AlienRace
         public bool onlyBuildRaceRestrictedBuildings = false;
         public List<ThingDef> buildingList;
 
-        public bool onlyDoRaceRestrictedBillBuildings = false;
-        public List<ThingDef> buildingBillList;
+        public bool onlyDoRaceRestrictedRecipes = false;
+        public List<RecipeDef> recipeList;
     }
 
     public class ResearchProjectRestrictions

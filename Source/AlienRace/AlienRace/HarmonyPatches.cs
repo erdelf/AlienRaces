@@ -48,9 +48,20 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), "PreOpen"), null, new HarmonyMethod(typeof(HarmonyPatches), "ResearchPreOpenPostfix"));
             harmony.Patch(AccessTools.Method(typeof(GenConstruct), "CanConstruct"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanConstructPostfix"));
             harmony.Patch(AccessTools.Method(typeof(GameRules), "DesignatorAllowed"), null, new HarmonyMethod(typeof(HarmonyPatches), "DesignatorAllowedPostfix"));
-            
+            harmony.Patch(AccessTools.Method(typeof(Bill), "PawnAllowedToStartAnew"), null, new HarmonyMethod(typeof(HarmonyPatches), "PawnAllowedToStartAnewPostfix"));
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void PawnAllowedToStartAnewPostfix(Pawn p, Bill __instance, ref bool __result)
+        {
+            RecipeDef recipe = __instance.recipe;
+
+            if(__result)
+            {
+                __result = (p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.recipeList?.Contains(recipe) ?? false || (!(p.def as ThingDef_AlienRace).alienRace.raceRestriction.onlyDoRaceRestrictedRecipes &&
+                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => p.def != d && (d.alienRace.raceRestriction.recipeList?.Contains(recipe) ?? false)));
+            }
         }
 
         public static void DesignatorAllowedPostfix(Designator d, ref bool __result)
