@@ -47,8 +47,20 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), "ShouldSkip"), null, new HarmonyMethod(typeof(HarmonyPatches), "ShouldSkipResearchPostfix"));
             harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), "PreOpen"), null, new HarmonyMethod(typeof(HarmonyPatches), "ResearchPreOpenPostfix"));
             harmony.Patch(AccessTools.Method(typeof(GenConstruct), "CanConstruct"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanConstructPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(GameRules), "DesignatorAllowed"), null, new HarmonyMethod(typeof(HarmonyPatches), "DesignatorAllowedPostfix"));
+            
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void DesignatorAllowedPostfix(Designator d, ref bool __result)
+        {
+            if (__result && d is Designator_Build)
+            {
+                IEnumerable<ThingDef_AlienRace> races = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => (ar.alienRace.raceRestriction.buildingList?.Contains((d as Designator_Build).PlacingDef as ThingDef) ?? false));
+                if (races.Count() > 0)
+                    __result = races.Any(ar => Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def == ar));
+            }
         }
 
         public static void CanConstructPostfix(Thing t, Pawn p, ref bool __result)
