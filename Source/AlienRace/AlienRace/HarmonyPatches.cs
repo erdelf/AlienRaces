@@ -3,6 +3,7 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using Verse;
 
@@ -51,10 +52,31 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Bill), "PawnAllowedToStartAnew"), null, new HarmonyMethod(typeof(HarmonyPatches), "PawnAllowedToStartAnewPostfix"));
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_GrowerHarvest), "HasJobOnCell"), null, new HarmonyMethod(typeof(HarmonyPatches), "HasJobOnCellHarvestPostfix"));
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_GrowerSow), "ExtraRequirements"), null, new HarmonyMethod(typeof(HarmonyPatches), "ExtraRequirementsGrowerSowPostfix"));
+            harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), "TryGainMemoryThought", new Type[] { typeof(Thought_Memory), typeof(Pawn) }), new HarmonyMethod(typeof(HarmonyPatches), "TryGainMemoryThoughtPrefix"), null);
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
         
+        public static void TryGainMemoryThoughtPrefix(ref Thought_Memory newThought, MemoryThoughtHandler __instance)
+        {
+            Pawn pawn = __instance.pawn;
+            if (pawn.def is ThingDef_AlienRace)
+            {
+                string thoughtName = newThought.def.defName;
+                ThoughtReplacer replacer = (pawn.def as ThingDef_AlienRace)?.alienRace.thoughtSettings.replacerList.FirstOrDefault(tr => thoughtName.EqualsIgnoreCase(tr.original.defName));
+                if (replacer != null)
+                {
+                    Thought_Memory replaceThought = (Thought_Memory) ThoughtMaker.MakeThought(replacer.original);
+
+                    foreach (string infoName in AccessTools.GetFieldNames(newThought.GetType()))
+                    {
+                        Traverse.Create(replaceThought).Field(infoName)?.SetValue(Traverse.Create(newThought).Field(infoName).GetValue());
+                    }
+
+                    newThought = replaceThought;
+                }
+            }
+        }
 
         public static void ExtraRequirementsGrowerSowPostfix(Pawn pawn, WorkGiver_GrowerSow __instance, ref bool __result)
         {

@@ -102,6 +102,8 @@ namespace AlienRace
 
         public AteThought ateThoughtGeneral = new AteThought();
         public List<AteThought> ateThoughtSpecific = new List<AteThought>();
+
+        public List<ThoughtReplacer> replacerList;
     }
 
     public class ButcherThought
@@ -116,6 +118,12 @@ namespace AlienRace
         public List<ThingDef> raceList;
         public ThoughtDef thought = ThoughtDefOf.AteHumanlikeMeatDirect;
         public ThoughtDef ingredientThought = ThoughtDefOf.AteHumanlikeMeatAsIngredient;
+    }
+
+    public class ThoughtReplacer
+    {
+        public ThoughtDef original;
+        public ThoughtDef replacer;
     }
 
     public class RelationSettings
@@ -148,6 +156,7 @@ namespace AlienRace
 
         public bool onlyDoRaceRastrictedPlants = false;
         public List<ThingDef> plantList;
+
     }
 
     public class ResearchProjectRestrictions
