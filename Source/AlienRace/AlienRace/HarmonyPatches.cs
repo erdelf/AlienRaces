@@ -57,9 +57,16 @@ namespace AlienRace
         {
             if (__result && d is Designator_Build)
             {
-                IEnumerable<ThingDef_AlienRace> races = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => (ar.alienRace.raceRestriction.buildingList?.Contains((d as Designator_Build).PlacingDef as ThingDef) ?? false));
+                ThingDef toBuild = (d as Designator_Build).PlacingDef as ThingDef;
+                IEnumerable<ThingDef_AlienRace> races = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => (ar.alienRace.raceRestriction.buildingList?.Contains(toBuild) ?? false));
                 if (races.Count() > 0)
                     __result = races.Any(ar => Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def == ar));
+
+                if (__result)
+                {
+                    if (Find.ColonistBar.GetColonistsInOrder().Where(p => !p.Dead).ToList().TrueForAll(p => ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) && !((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(toBuild) ?? false)))
+                        __result = false;
+                }
             }
         }
 
