@@ -63,7 +63,7 @@ namespace AlienRace
             if (pawn.def is ThingDef_AlienRace)
             {
                 string thoughtName = newThought.def.defName;
-                ThoughtReplacer replacer = (pawn.def as ThingDef_AlienRace)?.alienRace.thoughtSettings.replacerList.FirstOrDefault(tr => thoughtName.EqualsIgnoreCase(tr.original.defName));
+                ThoughtReplacer replacer = (pawn.def as ThingDef_AlienRace)?.alienRace.thoughtSettings.replacerList?.FirstOrDefault(tr => thoughtName.EqualsIgnoreCase(tr.original.defName));
                 if (replacer != null)
                 {
                     Thought_Memory replaceThought = (Thought_Memory) ThoughtMaker.MakeThought(replacer.original);
