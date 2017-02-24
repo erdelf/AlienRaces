@@ -46,7 +46,7 @@ namespace AlienRace
         {
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
             if (alienComp.skinColor == Color.clear)
-                alienComp.skinColor = alienskincolorgen != null ? alienskincolorgen.NewRandomizedColor() : PawnSkinColors.GetSkinColor(alien.story.melanin);
+                alienComp.skinColor = (alienskincolorgen != null ? alienskincolorgen.NewRandomizedColor() : PawnSkinColors.GetSkinColor(alien.story.melanin));
             return alienComp.skinColor;
         }
 
@@ -95,6 +95,13 @@ namespace AlienRace
         {
             public bool fixGenderPostSpawn;
             public Color skinColor;
+
+            public override void PostExposeData()
+            {
+                base.PostExposeData();
+                Scribe_Values.LookValue<bool>(ref fixGenderPostSpawn, "fixAlienGenderPostSpawn", false);
+                Scribe_Values.LookValue<Color>(ref skinColor, "skinColorAlien");
+            }
         }
     }
 }
