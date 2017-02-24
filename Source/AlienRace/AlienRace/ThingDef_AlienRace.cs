@@ -7,9 +7,7 @@ namespace AlienRace
 {
     public class ThingDef_AlienRace : ThingDef
     {
-#pragma warning disable CS0649
         public AlienSettings alienRace;
-#pragma warning restore CS0649
 
         public override void ResolveReferences()
         {
@@ -156,7 +154,6 @@ namespace AlienRace
 
         public bool onlyDoRaceRastrictedPlants = false;
         public List<ThingDef> plantList;
-
     }
 
     public class ResearchProjectRestrictions
