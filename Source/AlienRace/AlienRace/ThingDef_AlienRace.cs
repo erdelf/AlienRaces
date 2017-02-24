@@ -145,6 +145,9 @@ namespace AlienRace
 
         public bool onlyDoRaceRestrictedRecipes = false;
         public List<RecipeDef> recipeList;
+
+        public bool onlyDoRaceRastrictedPlants = false;
+        public List<ThingDef> plantList;
     }
 
     public class ResearchProjectRestrictions
