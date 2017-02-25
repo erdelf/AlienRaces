@@ -78,13 +78,14 @@ namespace AlienRace
             }
         }
 
-        public static void ExtraRequirementsGrowerSowPostfix(Pawn pawn, WorkGiver_GrowerSow __instance, ref bool __result)
+        public static void ExtraRequirementsGrowerSowPostfix(Pawn pawn, IPlantToGrowSettable settable, WorkGiver_GrowerSow __instance, ref bool __result)
         {
             if(__result)
             {
-                ThingDef plant = Traverse.Create(__instance as WorkGiver_Grower).Field("wantedPlantDef").GetValue<ThingDef>();
+                ThingDef plant = WorkGiver_Grower.CalculateWantedPlantDef((settable as Zone_Growing)?.Cells[0] ?? (settable as Thing).Position, pawn.Map);
 
-                __result = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.plantList?.Contains(plant) ?? false || (!(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRastrictedPlants ?? false &&
+                __result = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.plantList?.Contains(plant) ?? false ? true :
+                    (((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRastrictedPlants ?? false) ? false :
                     !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.plantList?.Contains(plant) ?? false)));
             }
         }
@@ -218,7 +219,6 @@ namespace AlienRace
                         }
                     }
                 }
-                Log.Message("2");
             }
         }
 
@@ -427,7 +427,7 @@ namespace AlienRace
         public static void CanGetThoughtPostfix(ThoughtHandler __instance, ref bool __result, ThoughtDef def)
         {
             ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
-            if (__result && def == ThoughtDefOf.Naked && alienProps != null)
+            if (__result && alienProps != null)
                 if (!alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.NullOrEmpty() && alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.Contains(def))
                     __result = false;
         }
