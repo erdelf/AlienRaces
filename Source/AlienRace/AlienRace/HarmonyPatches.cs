@@ -82,7 +82,7 @@ namespace AlienRace
         {
             if(__result)
             {
-                ThingDef plant = Traverse.Create(__instance).Field("wantedPlantDef").GetValue<ThingDef>();
+                ThingDef plant = Traverse.Create(__instance as WorkGiver_Grower).Field("wantedPlantDef").GetValue<ThingDef>();
 
                 __result = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.plantList?.Contains(plant) ?? false || (!(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRastrictedPlants ?? false &&
                     !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.plantList?.Contains(plant) ?? false)));
@@ -147,7 +147,7 @@ namespace AlienRace
                     List<ThingDef_AlienRace> alienRaces =
                         DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.raceRestriction?.researchList?.Any(rpr => rpr.projects.Contains(project)) ?? false).ToList();
 
-                    if (!alienRaces.NullOrEmpty() && !Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def is ThingDef_AlienRace && alienRaces.Contains(p.def as ThingDef_AlienRace) && alienRaces.First(ar => ar == p.def).alienRace.raceRestriction.researchList.First(rp => rp.projects.Contains(project)).apparelList.TrueForAll(ap => p.apparel.WornApparel.Select(apd => apd.def).Contains(ap))))
+                    if (!alienRaces.NullOrEmpty() && !Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def is ThingDef_AlienRace && alienRaces.Contains(p.def as ThingDef_AlienRace) && (alienRaces.First(ar => ar == p.def).alienRace.raceRestriction.researchList.First(rp => (rp.projects.Contains(project)))?.apparelList?.TrueForAll(ap => p.apparel.WornApparel.Select(apd => apd.def).Contains(ap)) ?? true)))
                     {
                         projects.RemoveAt(i);
                         i--;
@@ -186,7 +186,7 @@ namespace AlienRace
                 ResearchProjectDef project = Find.ResearchManager.currentProj;
 
                 __result = (!(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project) && 
-                (rpr.apparelList?.TrueForAll(ap => pawn.apparel.WornApparel.Select(twc => twc.def).Contains(ap)) ?? true))) ?? 
+                (rpr.apparelList?.TrueForAll(ap => pawn.apparel.WornApparel.Select(twc => twc.def).Contains(ap)) ?? false))) ?? 
                     DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project)) ?? false));
             }
         }
@@ -200,7 +200,7 @@ namespace AlienRace
                 {
                     int index = __result.IndexOf(ingester.story.traits.HasTrait(TraitDefOf.Cannibal) ? ThoughtDefOf.AteHumanlikeMeatDirectCannibal : ThoughtDefOf.AteHumanlikeMeatDirect);
                     __result.RemoveAt(index);
-                    __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific?.FirstOrDefault(at => at.raceList?.Contains(t.def.ingestible.sourceDef) ?? false).thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
+                    __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific?.FirstOrDefault(at => at.raceList?.Contains(t.def.ingestible.sourceDef) ?? false)?.thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
                 }
                 if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredient) || __result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))
                 {
@@ -213,11 +213,12 @@ namespace AlienRace
                             {
                                 int index = __result.IndexOf(ingester.story.traits.HasTrait(TraitDefOf.Cannibal) ? ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal : ThoughtDefOf.AteHumanlikeMeatAsIngredient);
                                 __result.RemoveAt(index);
-                                __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific?.FirstOrDefault(at => at.raceList?.Contains(ingredient.ingestible.sourceDef) ?? false).thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
+                                __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific?.FirstOrDefault(at => at.raceList?.Contains(ingredient.ingestible.sourceDef) ?? false)?.thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
                             }
                         }
                     }
                 }
+                Log.Message("2");
             }
         }
 

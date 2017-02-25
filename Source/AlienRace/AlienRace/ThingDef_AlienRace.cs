@@ -13,18 +13,42 @@ namespace AlienRace
         {
             comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
             base.ResolveReferences();
-        }
-    }
 
-    public class AlienSettings
-    {
-        public GeneralSettings generalSettings = new GeneralSettings();
-        public List<GraphicPaths> graphicPaths = new List<GraphicPaths>();
-        public HairSettings hairSettings = new HairSettings();
-        public PawnKindSettings pawnKindSettings = new PawnKindSettings();
-        public ThoughtSettings thoughtSettings = new ThoughtSettings();
-        public RelationSettings relationSettings = new RelationSettings();
-        public RaceRestrictionSettings raceRestriction = new RaceRestrictionSettings();
+            if (alienRace.thoughtSettings.butcherThoughtGeneral.thought == null)
+                alienRace.thoughtSettings.butcherThoughtGeneral.thought = ThoughtDef.Named("ButcheredHumanlikeCorpse");
+            if (alienRace.thoughtSettings.butcherThoughtGeneral.knowThought == null)
+                alienRace.thoughtSettings.butcherThoughtGeneral.knowThought = ThoughtDef.Named("KnowButcheredHumanlikeCorpse");
+
+            if (alienRace.thoughtSettings.butcherThoughtSpecific != null)
+                foreach (ButcherThought bt in alienRace.thoughtSettings.butcherThoughtSpecific)
+                {
+                    bt.thought = ThoughtDef.Named("ButcheredHumanlikeCorpse");
+                    bt.knowThought = ThoughtDef.Named("KnowButcheredHumanlikeCorpse");
+                }
+
+            if (alienRace.thoughtSettings.ateThoughtGeneral.thought == null)
+                alienRace.thoughtSettings.ateThoughtGeneral.thought = ThoughtDef.Named("AteHumanlikeMeatDirect");
+            if (alienRace.thoughtSettings.ateThoughtGeneral.ingredientThought == null)
+                alienRace.thoughtSettings.ateThoughtGeneral.ingredientThought = ThoughtDef.Named("AteHumanlikeMeatAsIngredient");
+
+            if (alienRace.thoughtSettings.ateThoughtSpecific != null)
+                foreach (AteThought at in alienRace.thoughtSettings.ateThoughtSpecific)
+                {
+                    at.thought = ThoughtDef.Named("AteHumanlikeMeatDirect");
+                    at.ingredientThought = ThoughtDef.Named("AteHumanlikeMeatAsIngredient");
+                }
+        }
+
+        public class AlienSettings
+        {
+            public GeneralSettings generalSettings = new GeneralSettings();
+            public List<GraphicPaths> graphicPaths = new List<GraphicPaths>();
+            public HairSettings hairSettings = new HairSettings();
+            public PawnKindSettings pawnKindSettings = new PawnKindSettings();
+            public ThoughtSettings thoughtSettings = new ThoughtSettings();
+            public RelationSettings relationSettings = new RelationSettings();
+            public RaceRestrictionSettings raceRestriction = new RaceRestrictionSettings();
+        }
     }
 
     public class GeneralSettings
@@ -55,14 +79,6 @@ namespace AlienRace
         public string head = "Things/Pawn/Humanlike/Heads/";
         public string skeleton = "Things/Pawn/Humanlike/HumanoidDessicated";
         public string skull = "Things/Pawn/Humanlike/Heads/None_Average_Skull";
-    }
-
-    static class GraphicPathsExtension
-    {
-        public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef)
-        {
-            return list.FirstOrDefault(gp => gp.lifeStageDefs?.Contains(lifeStageDef) ?? false) ?? list.First();
-        }
     }
 
     public class HairSettings
@@ -107,15 +123,15 @@ namespace AlienRace
     public class ButcherThought
     {
         public List<ThingDef> raceList;
-        public ThoughtDef thought = ThoughtDefOf.ButcheredHumanlikeCorpse;
-        public ThoughtDef knowThought = ThoughtDefOf.KnowButcheredHumanlikeCorpse;
+        public ThoughtDef thought;// = ThoughtDef.Named("ButcheredHumanlikeCorpse");
+        public ThoughtDef knowThought;// = ThoughtDef.Named("KnowButcheredHumanlikeCorpse");
     }
 
     public class AteThought
     {
         public List<ThingDef> raceList;
-        public ThoughtDef thought = ThoughtDefOf.AteHumanlikeMeatDirect;
-        public ThoughtDef ingredientThought = ThoughtDefOf.AteHumanlikeMeatAsIngredient;
+        public ThoughtDef thought;// = ThoughtDef.Named("AteHumanlikeMeatDirect");
+        public ThoughtDef ingredientThought;// = ThoughtDef.Named("AteHumanlikeMeatAsIngredient");
     }
 
     public class ThoughtReplacer
@@ -160,5 +176,13 @@ namespace AlienRace
     {
         public List<ResearchProjectDef> projects;
         public List<ThingDef> apparelList;
+    }
+    
+    static class GraphicPathsExtension
+    {
+        public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef)
+        {
+            return list.FirstOrDefault(gp => gp.lifeStageDefs?.Contains(lifeStageDef) ?? false) ?? list.First();
+        }
     }
 }
