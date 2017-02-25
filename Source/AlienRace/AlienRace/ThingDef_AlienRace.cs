@@ -22,8 +22,10 @@ namespace AlienRace
             if (alienRace.thoughtSettings.butcherThoughtSpecific != null)
                 foreach (ButcherThought bt in alienRace.thoughtSettings.butcherThoughtSpecific)
                 {
-                    bt.thought = ThoughtDef.Named("ButcheredHumanlikeCorpse");
-                    bt.knowThought = ThoughtDef.Named("KnowButcheredHumanlikeCorpse");
+                    if (bt.thought == null)
+                        bt.thought = ThoughtDef.Named("ButcheredHumanlikeCorpse");
+                    if (bt.knowThought == null)
+                        bt.knowThought = ThoughtDef.Named("KnowButcheredHumanlikeCorpse");
                 }
 
             if (alienRace.thoughtSettings.ateThoughtGeneral.thought == null)
@@ -34,8 +36,10 @@ namespace AlienRace
             if (alienRace.thoughtSettings.ateThoughtSpecific != null)
                 foreach (AteThought at in alienRace.thoughtSettings.ateThoughtSpecific)
                 {
-                    at.thought = ThoughtDef.Named("AteHumanlikeMeatDirect");
-                    at.ingredientThought = ThoughtDef.Named("AteHumanlikeMeatAsIngredient");
+                    if (at.thought == null)
+                        at.thought = ThoughtDef.Named("AteHumanlikeMeatDirect");
+                    if (at.ingredientThought == null)
+                        at.ingredientThought = ThoughtDef.Named("AteHumanlikeMeatAsIngredient");
                 }
         }
 
