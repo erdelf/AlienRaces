@@ -3,7 +3,6 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 using Verse;
 
@@ -53,10 +52,16 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_GrowerHarvest), "HasJobOnCell"), null, new HarmonyMethod(typeof(HarmonyPatches), "HasJobOnCellHarvestPostfix"));
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_GrowerSow), "ExtraRequirements"), null, new HarmonyMethod(typeof(HarmonyPatches), "ExtraRequirementsGrowerSowPostfix"));
             harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), "TryGainMemoryThought", new Type[] { typeof(Thought_Memory), typeof(Pawn) }), new HarmonyMethod(typeof(HarmonyPatches), "TryGainMemoryThoughtPrefix"), null);
+            harmony.Patch(AccessTools.Method(typeof(GameInitData), "PrepForMapGen"), new HarmonyMethod(typeof(HarmonyPatches), "PrepForMapGenPrefix"), null);
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
-        
+
+        public static void PrepForMapGenPrefix(GameInitData __instance)
+        {
+            Find.Scenario.AllParts.Where(sp => sp is ScenPart_StartingHumanlikes).Select(sp => sp as ScenPart_StartingHumanlikes).ToList().ForEach(sp => __instance.startingPawns.AddRange(sp.GetPawns()));
+        }
+
         public static void TryGainMemoryThoughtPrefix(ref Thought_Memory newThought, MemoryThoughtHandler __instance)
         {
             Pawn pawn = __instance.pawn;

@@ -1,8 +1,6 @@
 ﻿using RimWorld;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using Verse;
 
@@ -74,12 +72,11 @@ namespace AlienRace
             return true;
         }
 
-        public override IEnumerable<Thing> PlayerStartingThings()
+        public IEnumerable<Pawn> GetPawns()
         {
             for (int i = 0; i < this.pawnCount; i++)
             {
                 Pawn newPawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(this.kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, null, true, false, false, false, true, false, 26f, true, true, true, p => DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(wtd => wtd.requireCapableColonist).ToList().TrueForAll(w => !p.story.WorkTypeIsDisabled(w))));
-                Find.GameInitData.startingPawns.Add(newPawn);
                 yield return newPawn;
             }
             yield break;
