@@ -71,13 +71,13 @@ namespace AlienRace
                 ThoughtReplacer replacer = (pawn.def as ThingDef_AlienRace)?.alienRace.thoughtSettings.replacerList?.FirstOrDefault(tr => thoughtName.EqualsIgnoreCase(tr.original.defName));
                 if (replacer != null)
                 {
-                    Thought_Memory replaceThought = (Thought_Memory) ThoughtMaker.MakeThought(replacer.original);
-
+                    Thought_Memory replaceThought = (Thought_Memory) ThoughtMaker.MakeThought(replacer.replacer);
+                    /*
                     foreach (string infoName in AccessTools.GetFieldNames(newThought.GetType()))
                     {
                         Traverse.Create(replaceThought).Field(infoName)?.SetValue(Traverse.Create(newThought).Field(infoName).GetValue());
                     }
-
+                    */
                     newThought = replaceThought;
                 }
             }
@@ -434,7 +434,9 @@ namespace AlienRace
         {
             ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
             if (__result && alienProps != null)
-                if (!alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.NullOrEmpty() && alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.Contains(def))
+                if (alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll)
+                    __result = false;
+                else if (!alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.NullOrEmpty() && alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.Contains(def))
                     __result = false;
         }
 
