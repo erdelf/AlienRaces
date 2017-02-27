@@ -56,8 +56,21 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(GameInitData), "PrepForMapGen"), new HarmonyMethod(typeof(HarmonyPatches), "PrepForMapGenPrefix"), null);
             harmony.Patch(AccessTools.Property(typeof(JobDriver), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), "PosturePostfix"));
             harmony.Patch(AccessTools.Property(typeof(JobDriver_Skygaze), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(JobGiver_OptimizeApparel), nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ApparelScoreGainPostFix)));
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void ApparelScoreGainPostFix(Pawn pawn, Apparel ap, ref float __result)
+        {
+            if (__result >= 0f)
+            {
+                if (!((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.apparelList?.Contains(ap.def) ?? false ? true :
+                    (((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel ?? false) ? false :
+                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(ap.def) ?? false)))))
+                    __result = -50f;
+
+            }
         }
 
         public static void PosturePostfix(JobDriver __instance, ref PawnPosture __result)
