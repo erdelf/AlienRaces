@@ -1,4 +1,5 @@
 ﻿using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -75,9 +76,18 @@ namespace AlienRace
 
         public IEnumerable<Pawn> GetPawns()
         {
+            Predicate<Pawn> pawnCheck = p => p != null && DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(wtd => wtd.requireCapableColonist).ToList().TrueForAll(w => !p.story.WorkTypeIsDisabled(w));
+
+
             for (int i = 0; i < this.pawnCount; i++)
             {
-                Pawn newPawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(this.kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, null, true, false, false, false, true, false, 26f, true, true, true, p => DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(wtd => wtd.requireCapableColonist).ToList().TrueForAll(w => !p.story.WorkTypeIsDisabled(w))));
+                Pawn newPawn = null;
+                for (int x = 0; x < 200; x++)
+                {
+                    newPawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(this.kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, null, true, false, false, false, true, false, 26f, true));
+                    if (pawnCheck(newPawn))
+                        x = 200;
+                }
                 yield return newPawn;
             }
             yield break;
