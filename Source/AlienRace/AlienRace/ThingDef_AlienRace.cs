@@ -62,6 +62,7 @@ namespace AlienRace
         public float MaleGenderProbability = 0.5f;
         public bool PawnsSpecificBackstories = false;
         public bool ImmuneToAge = false;
+        public bool CanLayDown = true;
 
         public List<AlienTraitEntry> forcedRaceTraitEntries;
         public AlienPartGenerator alienPartGenerator = new AlienPartGenerator();

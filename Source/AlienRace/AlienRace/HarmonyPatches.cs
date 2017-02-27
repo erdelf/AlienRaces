@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 
 namespace AlienRace
 {
@@ -53,8 +54,23 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_GrowerSow), "ExtraRequirements"), null, new HarmonyMethod(typeof(HarmonyPatches), "ExtraRequirementsGrowerSowPostfix"));
             harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), "TryGainMemoryThought", new Type[] { typeof(Thought_Memory), typeof(Pawn) }), new HarmonyMethod(typeof(HarmonyPatches), "TryGainMemoryThoughtPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(GameInitData), "PrepForMapGen"), new HarmonyMethod(typeof(HarmonyPatches), "PrepForMapGenPrefix"), null);
+            harmony.Patch(AccessTools.Property(typeof(JobDriver), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), "PosturePostfix"));
+            harmony.Patch(AccessTools.Property(typeof(JobDriver_Skygaze), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void PosturePostfix(JobDriver __instance, ref PawnPosture __result)
+        {
+            if (__result != PawnPosture.Standing)
+            {
+                ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
+                if(alienProps != null)
+                {
+                    if (!alienProps.alienRace.generalSettings.CanLayDown)
+                        __result = PawnPosture.Standing;
+                }
+            }
         }
 
         public static void PrepForMapGenPrefix(GameInitData __instance)
