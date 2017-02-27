@@ -39,6 +39,7 @@ namespace AlienRace
                 List<FloatMenuOption> list = new List<FloatMenuOption>();
                 list.AddRange(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.pawnKindSettings.startingColonists != null).SelectMany(ar => ar.alienRace.pawnKindSettings.startingColonists.SelectMany(ste => ste.pawnKindEntries.SelectMany(pke => pke.kindDefs))).Select(pkd => new FloatMenuOption(pkd.label.CapitalizeFirst(), () => kindDef = pkd)));
                 list.Add(new FloatMenuOption("Villager", () => kindDef = PawnKindDefOf.Villager));
+                list.Add(new FloatMenuOption("Slave", () => kindDef = PawnKindDefOf.Slave));
                 Find.WindowStack.Add(new FloatMenu(list));
             }
             Widgets.TextFieldNumeric<int>(scenPartRect.BottomPart(0.45f), ref pawnCount, ref buffer, 0);
