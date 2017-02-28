@@ -1,6 +1,9 @@
-﻿using RimWorld;
+﻿using Harmony;
+using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using Verse;
 
@@ -26,11 +29,20 @@ namespace AlienRace
         public GraphicMeshSet headSet;
         public GraphicMeshSet hairSetAverage;
         public GraphicMeshSet hairSetNarrow;
+        public Mesh tailMesh;
+        public Mesh tailMeshFlipped;
 
         public GraphicMeshSet bodyPortraitSet;
         public GraphicMeshSet headPortraitSet;
         public GraphicMeshSet hairPortraitSetAverage;
         public GraphicMeshSet hairPortraitSetNarrow;
+        public Mesh tailPortraitMesh;
+        public Mesh tailPortraitMeshFlipped;
+
+        public BodyPartDef tailBodyPart;
+        public bool UseSkinColorForTail = true;
+
+        static MethodInfo meshInfo = AccessTools.Method(AccessTools.TypeByName("MeshMakerPlanes"), "NewPlaneMesh", new Type[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
 
         public string RandomAlienHead(string userpath, Gender gender)
         {
@@ -54,6 +66,7 @@ namespace AlienRace
         {
             LongEventHandler.QueueLongEvent(() =>
                 { 
+                    
                     {
                         if (!meshPools.Keys.Any(v => v.Equals(CustomDrawSize)))
                             meshPools.Add(CustomDrawSize, new GraphicMeshSet[]
@@ -62,6 +75,7 @@ namespace AlienRace
                                 new GraphicMeshSet(1.5f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // headSet
                                 new GraphicMeshSet(1.5f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // hairSetAverage
                                 new GraphicMeshSet(1.3f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // hairSetNarrow
+
                                 });
 
                         GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(CustomDrawSize))];
@@ -70,6 +84,8 @@ namespace AlienRace
                         headSet = meshSet[1];
                         hairSetAverage = meshSet[2];
                         hairSetNarrow = meshSet[3];
+                        tailMesh = (Mesh)meshInfo.Invoke(null, new object[] {CustomDrawSize, false, false, false });
+                        tailMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { CustomDrawSize, true, false, false });
                     }
                     {
                         if (!meshPools.Keys.Any(v => v.Equals(CustomPortraitDrawSize)))
@@ -87,14 +103,23 @@ namespace AlienRace
                         headPortraitSet = meshSet[1];
                         hairPortraitSetAverage = meshSet[2];
                         hairPortraitSetNarrow = meshSet[3];
+                        tailPortraitMesh = (Mesh)meshInfo.Invoke(null, new object[] { CustomPortraitDrawSize, false, false, false });
+                        tailPortraitMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { CustomPortraitDrawSize, true, false, false });
                     }
                 }, "meshSetAlien", false, null);
+        }
+
+        public bool CanDrawTail(Pawn pawn)
+        {
+            return RestUtility.CurrentBed(pawn) == null && !pawn.Downed && !pawn.Dead && (tailBodyPart == null ||
+                pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == tailBodyPart));
         }
 
         public class AlienComp : ThingComp
         {
             public bool fixGenderPostSpawn;
             public Color skinColor;
+            public Graphic Tail;
 
             public override void PostExposeData()
             {

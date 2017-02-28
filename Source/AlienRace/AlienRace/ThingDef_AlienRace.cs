@@ -86,6 +86,7 @@ namespace AlienRace
         public string head = "Things/Pawn/Humanlike/Heads/";
         public string skeleton = "Things/Pawn/Humanlike/HumanoidDessicated";
         public string skull = "Things/Pawn/Humanlike/Heads/None_Average_Skull";
+        public string tail = "";
     }
 
     public class HairSettings

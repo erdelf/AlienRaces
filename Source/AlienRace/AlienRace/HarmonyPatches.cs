@@ -641,13 +641,15 @@ namespace AlienRace
                      __instance.pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = false;
                 }
 
-                __instance.nakedGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
-                __instance.rottingGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(__instance.pawn.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
+                __instance.nakedGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(alien.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
+                __instance.rottingGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(alien.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
                 __instance.dessicatedGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skeleton, ShaderDatabase.Cutout) : null;
-                __instance.headGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one, __instance.pawn.story.SkinColor) : null;
-                __instance.desiccatedHeadGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one, PawnGraphicSet.RottingColor) : null;
+                __instance.headGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one, alien.story.SkinColor) : null;
+                __instance.desiccatedHeadGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one, PawnGraphicSet.RottingColor) : null;
                 __instance.skullGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull, ShaderDatabase.Cutout, Vector2.one, Color.white) : null;
-                __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ShaderDatabase.Cutout, Vector2.one, __instance.pawn.story.hairColor);
+                __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ShaderDatabase.Cutout, Vector2.one, alien.story.hairColor);
+
+                alien.GetComp<AlienPartGenerator.AlienComp>().Tail = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).tail.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).tail, ShaderDatabase.Transparent, new Vector3(1,0,1), alienProps.alienRace.generalSettings.alienPartGenerator.UseSkinColorForTail ? alien.story.SkinColor : alien.story.hairColor, alienProps.alienRace.generalSettings.alienPartGenerator.UseSkinColorForTail ? alien.story.SkinColor : alien.story.hairColor) : null;
 
                 __instance.ResolveApparelGraphics();
                 return false;
@@ -817,6 +819,41 @@ namespace AlienRace
                         material2 = __instance.graphics.flasher.GetDamagedMat(material2);
                         GenDraw.DrawMeshNowOrLater(mesh, vector, quat, material2, portrait);
                     }
+                }
+
+
+                if (pawn.GetComp<AlienPartGenerator.AlienComp>().Tail != null && alienProps.alienRace.generalSettings.alienPartGenerator.CanDrawTail(pawn))
+                {
+                    //mesh = MeshPool.plane10;
+
+                    mesh = portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.tailPortraitMesh : alienProps.alienRace.generalSettings.alienPartGenerator.tailMesh;
+
+                    float MoffsetX = 0.42f;
+                    float MoffsetZ = -0.22f;
+                    float MoffsetY = -0.3f;
+                    float num = -40;
+
+                    if (pawn.Rotation == Rot4.North)
+                    {
+                        MoffsetX = 0f;
+                        MoffsetY = 0.3f;
+                        MoffsetZ = -0.55f;
+                        mesh = portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.tailPortraitMesh : alienProps.alienRace.generalSettings.alienPartGenerator.tailMesh;
+                        num = 0;
+                    }
+                    else if (pawn.Rotation == Rot4.East)
+                    {
+                        MoffsetX = -MoffsetX;
+                        num = -num + 0; //TailAngle
+                        mesh = portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.tailPortraitMeshFlipped : alienProps.alienRace.generalSettings.alienPartGenerator.tailMeshFlipped;
+                    }
+
+
+                    Vector3 scaleVector = new Vector3(MoffsetX, MoffsetY, MoffsetZ);
+                    scaleVector.x *= 1f + (1f - (portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize).x);
+                    scaleVector.y *= 1f + (1f - (portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize).y);
+
+                    Graphics.DrawMesh(mesh, pawn.DrawPos + scaleVector, Quaternion.AngleAxis(num, Vector3.up), pawn.GetComp<AlienPartGenerator.AlienComp>().Tail.MatAt(pawn.Rotation), 0);
                 }
             }
 
