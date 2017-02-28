@@ -179,6 +179,8 @@ namespace AlienRace
 
         public bool onlyDoRaceRastrictedPlants = false;
         public List<ThingDef> plantList;
+
+        public List<ConceptDef> conceptList;
     }
 
     public class ResearchProjectRestrictions

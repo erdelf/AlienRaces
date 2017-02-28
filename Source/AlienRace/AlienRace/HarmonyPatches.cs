@@ -57,8 +57,36 @@ namespace AlienRace
             harmony.Patch(AccessTools.Property(typeof(JobDriver), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), "PosturePostfix"));
             harmony.Patch(AccessTools.Property(typeof(JobDriver_Skygaze), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
             harmony.Patch(AccessTools.Method(typeof(JobGiver_OptimizeApparel), nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ApparelScoreGainPostFix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn), nameof(Pawn.SetFaction)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SetFactionPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Thing), nameof(Pawn.SetFactionDirect)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SetFactionDirectPostfix)));
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void SetFactionDirectPostfix(Thing __instance, Faction newFaction)
+        {
+            ThingDef_AlienRace alienProps = __instance.def as ThingDef_AlienRace;
+            if (alienProps != null && newFaction == Faction.OfPlayer)
+            {
+                alienProps.alienRace.raceRestriction.conceptList?.ForEach(cd =>
+                {
+                    Find.Tutor.learningReadout.TryActivateConcept(cd);
+                    PlayerKnowledgeDatabase.SetKnowledge(cd, 0);
+                });
+            }
+        }
+
+        public static void SetFactionPostfix(Pawn __instance, Faction newFaction)
+        {
+            ThingDef_AlienRace alienProps = __instance.def as ThingDef_AlienRace;
+            if (alienProps != null && newFaction == Faction.OfPlayer && Current.ProgramState == ProgramState.Playing)
+            {
+                alienProps.alienRace.raceRestriction.conceptList?.ForEach(cd =>
+                {
+                    Find.Tutor.learningReadout.TryActivateConcept(cd);
+                    PlayerKnowledgeDatabase.SetKnowledge(cd, 0);
+                });
+            }
         }
 
         public static void ApparelScoreGainPostFix(Pawn pawn, Apparel ap, ref float __result)
