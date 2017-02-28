@@ -18,6 +18,7 @@ namespace AlienRace
         public bool UseGenderedHeads = true;
 
         public ColorGenerator alienskincolorgen;
+        public ColorGenerator alienskinsecondcolorgen;
         public ColorGenerator alienhaircolorgen;
 
         public Vector2 CustomDrawSize = Vector2.one;
@@ -49,17 +50,20 @@ namespace AlienRace
             return userpath + (UseGenderedHeads ? gender.ToString() + "_" : "") + aliencrowntypes[Rand.Range(0, aliencrowntypes.Count)];
         }
 
-        public static Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, string userpath)
+        public static Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath)
         {
-            return GraphicDatabase.Get<Graphic_Multi>(userpath + "Naked_" + bodyType.ToString(), shader, Vector2.one, skinColor);
+            return GraphicDatabase.Get<Graphic_Multi>(userpath + "Naked_" + bodyType.ToString(), shader, Vector2.one, skinColor, skinColorSecond);
         }
 
-        public Color SkinColor(Pawn alien)
+        public Color SkinColor(Pawn alien, bool first = true)
         {
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
             if (alienComp.skinColor == Color.clear)
+            {
                 alienComp.skinColor = (alienskincolorgen != null ? alienskincolorgen.NewRandomizedColor() : PawnSkinColors.GetSkinColor(alien.story.melanin));
-            return alienComp.skinColor;
+                alienComp.skinColorSecond = (alienskinsecondcolorgen != null ? alienskinsecondcolorgen.NewRandomizedColor() : alienComp.skinColor);
+            }
+            return first ? alienComp.skinColor : alienComp.skinColorSecond;
         }
 
         public AlienPartGenerator()
@@ -119,6 +123,7 @@ namespace AlienRace
         {
             public bool fixGenderPostSpawn;
             public Color skinColor;
+            public Color skinColorSecond;
             public Graphic Tail;
 
             public override void PostExposeData()
@@ -126,6 +131,7 @@ namespace AlienRace
                 base.PostExposeData();
                 Scribe_Values.LookValue<bool>(ref fixGenderPostSpawn, "fixAlienGenderPostSpawn", false);
                 Scribe_Values.LookValue<Color>(ref skinColor, "skinColorAlien");
+                Scribe_Values.LookValue<Color>(ref skinColorSecond, "skinColorSecondAlien");
             }
         }
     }
