@@ -181,6 +181,8 @@ namespace AlienRace
         public List<ThingDef> plantList;
 
         public List<ConceptDef> conceptList;
+
+        public List<WorkGiverDef> workGiverList;
     }
 
     public class ResearchProjectRestrictions

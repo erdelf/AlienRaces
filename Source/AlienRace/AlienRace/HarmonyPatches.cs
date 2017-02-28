@@ -3,6 +3,7 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using Verse;
 using Verse.AI;
@@ -60,7 +61,39 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn), nameof(Pawn.SetFaction)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SetFactionPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Thing), nameof(Pawn.SetFactionDirect)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SetFactionDirectPostfix)));
 
+            DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(ar =>
+            {
+                ar.alienRace.raceRestriction.workGiverList?.ForEach(wgd =>
+                {
+                    harmony.Patch(AccessTools.Method(wgd.giverClass, "JobOnThing"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenericJobOnThingPostfix)));
+                    MethodInfo hasJobOnThingInfo = AccessTools.Method(wgd.giverClass, "HasJobOnThing");
+                    if (hasJobOnThingInfo != null)
+                        harmony.Patch(hasJobOnThingInfo, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenericHasJobOnThingPostfix)));
+                });
+
+            });
+
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void GenericHasJobOnThingPostfix(WorkGiver __instance, Pawn pawn, ref bool __result)
+        {
+            if(__result)
+            {
+                __result = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(wgd => wgd.giverClass == __instance.GetType()) ?? false ||
+                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.workGiverList?.Any(wgd => wgd.giverClass == __instance.GetType()) ?? false)) ;
+            }
+
+        }
+
+        public static void GenericJobOnThingPostfix(WorkGiver __instance, Pawn pawn, ref Job __result)
+        {
+            if (__result != null)
+            {
+                if (!((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(wgd => wgd.giverClass == __instance.GetType()) ?? false ||
+                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.workGiverList?.Any(wgd => wgd.giverClass == __instance.GetType()) ?? false))))
+                    __result = null;
+            }
         }
 
         public static void SetFactionDirectPostfix(Thing __instance, Faction newFaction)
