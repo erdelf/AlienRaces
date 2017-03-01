@@ -170,7 +170,7 @@ namespace AlienRace
         public List<ThingDef> weaponList;
 
         public bool onlyBuildRaceRestrictedBuildings = false;
-        public List<ThingDef> buildingList;
+        public List<string> buildingList;
 
         public bool onlyDoRaceRestrictedRecipes = false;
         public List<RecipeDef> recipeList;
