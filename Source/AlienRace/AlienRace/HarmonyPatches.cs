@@ -94,6 +94,7 @@ namespace AlienRace
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "GetSelectedStuff"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyGetSelectedStuff"), null);
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedApparelInternal"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedApparelInternal"), null);
                             //harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.PawnLayers), "Label"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyLayerLabel"));
+                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "ConvertToPawn", new Type[] { typeof(bool) }), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyConvertToPawn"));
                         }
                     }))();
                 }
@@ -118,6 +119,24 @@ namespace AlienRace
             //if (!other.RaceProps.hasGenders && other.gender == Gender.None) other.gender = Rand.Bool ? Gender.Male : Gender.Female;
         }
         */
+
+        public static void PrepareCarefullyConvertToPawn(ref Pawn __result, object __instance)
+        {
+            Traverse traverse = Traverse.Create(__instance);
+            Pawn source = traverse.Field("pawn").GetValue<Pawn>();
+            AlienPartGenerator.AlienComp sourceComp = source.TryGetComp<AlienPartGenerator.AlienComp>();
+            if (sourceComp != null)
+            {
+                Log.Message("hey ");
+                AlienPartGenerator.AlienComp resultComp = __result.TryGetComp<AlienPartGenerator.AlienComp>();
+
+                resultComp.skinColor = PawnSkinColors.GetSkinColor(traverse.Property("MelaninLevel").GetValue<float>());
+                resultComp.skinColorSecond = sourceComp.skinColorSecond;
+                resultComp.Tail = sourceComp.Tail;
+                resultComp.fixGenderPostSpawn = sourceComp.fixGenderPostSpawn;
+            }
+        }
+
         public static void PrepareCarefullyLayerLabel(int layer, ref string __result)
         {
             if (layer == 9)
