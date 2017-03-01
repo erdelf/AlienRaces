@@ -17,49 +17,52 @@ namespace AlienRace
         {
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.erdelf.alien_race.main");
 
-            harmony.Patch(AccessTools.Method(typeof(PawnHairChooser), "RandomHairDefFor"), new HarmonyMethod(typeof(HarmonyPatches), "RandomHairDefForPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawn", new Type[] { typeof(PawnGenerationRequest) }), new HarmonyMethod(typeof(HarmonyPatches), "GeneratePawnPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateBodyType"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerateBodyTypePostfix"));
-            harmony.Patch(AccessTools.Property(typeof(Pawn_StoryTracker), "SkinColor").GetGetMethod(), null, new HarmonyMethod(typeof(HarmonyPatches), "SkinColorPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateTraits"), new HarmonyMethod(typeof(HarmonyPatches), "GenerateTraitsPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), "ResolveAllGraphics"), new HarmonyMethod(typeof(HarmonyPatches), "ResolveAllGraphicsPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGiveSolidBioTo"), new HarmonyMethod(typeof(HarmonyPatches), "TryGiveSolidBioToPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), "SetBackstoryInSlotPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), "RenderPawnInternal", new Type[] { typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool) }), new HarmonyMethod(typeof(HarmonyPatches), "RenderPawnInternalPrefix"), null);
-            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "GenerateRandomOldAgeInjuries"), new HarmonyMethod(typeof(HarmonyPatches), "GenerateRandomOldAgeInjuriesPrefix"), null);
-            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "RandomHediffsToGainOnBirthday", new Type[] { typeof(Pawn), typeof(int) }), new HarmonyMethod(typeof(HarmonyPatches), "RandomHediffsToGainOnBirthdayPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), "NewGeneratedStartingPawn"), new HarmonyMethod(typeof(HarmonyPatches), "NewGeneratedStartingPawnPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GiveAppropriateBioAndNameTo"), null, new HarmonyMethod(typeof(HarmonyPatches), "GiveAppropriateBioAndNameToPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateRandomAge"), new HarmonyMethod(typeof(HarmonyPatches), "GenerateRandomAgePrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GeneratePawnName"), new HarmonyMethod(typeof(HarmonyPatches), "GeneratePawnNamePrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), "CanDoNext"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanDoNextStartPawnPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(ThoughtHandler), "CanGetThought"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanGetThoughtPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(FloatMenuMakerMap), "AddHumanlikeOrders"), null, new HarmonyMethod(typeof(HarmonyPatches), "AddHumanlikeOrdersPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(Corpse), "ButcherProducts"), new HarmonyMethod(typeof(HarmonyPatches), "ButcherProductsPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(typeof(HarmonyPatches), "BirthdayBiologicalPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceChildPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceExLoverPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceExSpousePostfix"));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Fiance), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceFiancePostfix"));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Lover), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceLoverPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceParentPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSiblingPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), "GenerationChanceSpousePostfix"));
-            harmony.Patch(AccessTools.Method(typeof(FoodUtility), "ThoughtsFromIngesting"), null, new HarmonyMethod(typeof(HarmonyPatches), "ThoughtsFromIngestingPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), "ShouldSkip"), null, new HarmonyMethod(typeof(HarmonyPatches), "ShouldSkipResearchPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), "PreOpen"), null, new HarmonyMethod(typeof(HarmonyPatches), "ResearchPreOpenPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(GenConstruct), "CanConstruct"), null, new HarmonyMethod(typeof(HarmonyPatches), "CanConstructPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(GameRules), "DesignatorAllowed"), null, new HarmonyMethod(typeof(HarmonyPatches), "DesignatorAllowedPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(Bill), "PawnAllowedToStartAnew"), null, new HarmonyMethod(typeof(HarmonyPatches), "PawnAllowedToStartAnewPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(WorkGiver_GrowerHarvest), "HasJobOnCell"), null, new HarmonyMethod(typeof(HarmonyPatches), "HasJobOnCellHarvestPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(WorkGiver_GrowerSow), "ExtraRequirements"), null, new HarmonyMethod(typeof(HarmonyPatches), "ExtraRequirementsGrowerSowPostfix"));
-            harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), "TryGainMemoryThought", new Type[] { typeof(Thought_Memory), typeof(Pawn) }), new HarmonyMethod(typeof(HarmonyPatches), "TryGainMemoryThoughtPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(GameInitData), "PrepForMapGen"), new HarmonyMethod(typeof(HarmonyPatches), "PrepForMapGenPrefix"), null);
-            harmony.Patch(AccessTools.Property(typeof(JobDriver), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), "PosturePostfix"));
+            harmony.Patch(AccessTools.Method(typeof(PawnHairChooser), "RandomHairDefFor"), new HarmonyMethod(typeof(HarmonyPatches), nameof(RandomHairDefForPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawn", new Type[] { typeof(PawnGenerationRequest) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateBodyType"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateBodyTypePostfix)));
+            harmony.Patch(AccessTools.Property(typeof(Pawn_StoryTracker), "SkinColor").GetGetMethod(), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SkinColorPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateTraits"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateTraitsPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), "ResolveAllGraphics"), new HarmonyMethod(typeof(HarmonyPatches), nameof(ResolveAllGraphicsPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGiveSolidBioTo"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGiveSolidBioToPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetBackstoryInSlotPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), "RenderPawnInternal", new Type[] { typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(RenderPawnInternalPrefix)), null);
+            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "GenerateRandomOldAgeInjuries"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateRandomOldAgeInjuriesPrefix)), null);
+            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "RandomHediffsToGainOnBirthday", new Type[] { typeof(Pawn), typeof(int) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(RandomHediffsToGainOnBirthdayPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), "NewGeneratedStartingPawn"), new HarmonyMethod(typeof(HarmonyPatches), nameof(NewGeneratedStartingPawnPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GiveAppropriateBioAndNameTo"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GiveAppropriateBioAndNameToPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateRandomAge"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateRandomAgePrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GeneratePawnName"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnNamePrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), "CanDoNext"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanDoNextStartPawnPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(ThoughtHandler), "CanGetThought"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanGetThoughtPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(FloatMenuMakerMap), "AddHumanlikeOrders"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(AddHumanlikeOrdersPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Corpse), "ButcherProducts"), new HarmonyMethod(typeof(HarmonyPatches), nameof(ButcherProductsPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(typeof(HarmonyPatches), nameof(BirthdayBiologicalPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceChildPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceExLoverPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceExSpousePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Fiance), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceFiancePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Lover), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceLoverPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceParentPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceSiblingPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceSpousePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(FoodUtility), "ThoughtsFromIngesting"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ThoughtsFromIngestingPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), "ShouldSkip"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ShouldSkipResearchPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), "PreOpen"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ResearchPreOpenPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(GenConstruct), "CanConstruct"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanConstructPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(GameRules), "DesignatorAllowed"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DesignatorAllowedPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Bill), "PawnAllowedToStartAnew"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PawnAllowedToStartAnewPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(WorkGiver_GrowerHarvest), "HasJobOnCell"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(HasJobOnCellHarvestPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(WorkGiver_GrowerSow), "ExtraRequirements"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ExtraRequirementsGrowerSowPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), "TryGainMemoryThought", new Type[] { typeof(Thought_Memory), typeof(Pawn) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGainMemoryThoughtPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(GameInitData), "PrepForMapGen"), new HarmonyMethod(typeof(HarmonyPatches), nameof(PrepForMapGenPrefix)), null);
+            harmony.Patch(AccessTools.Property(typeof(JobDriver), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
             harmony.Patch(AccessTools.Property(typeof(JobDriver_Skygaze), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
             harmony.Patch(AccessTools.Method(typeof(JobGiver_OptimizeApparel), nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ApparelScoreGainPostFix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn), nameof(Pawn.SetFaction)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SetFactionPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Thing), nameof(Pawn.SetFactionDirect)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SetFactionDirectPostfix)));
+
+            //harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+
 
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(ar =>
             {
@@ -72,6 +75,7 @@ namespace AlienRace
                 });
             });
 
+            #region prepareCarefully
             {
                 try
                 {
@@ -95,12 +99,25 @@ namespace AlienRace
                 }
                 catch (TypeLoadException) { }
             }
-
+            #endregion
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
-        
-        
+
+        /*
+        public static void RemoveGenderFromGenderless(Pawn pawn) //Pawn generated, Pawn other)
+        {
+            if (!pawn.RaceProps.hasGenders && pawn.gender != Gender.None) pawn.gender = Gender.None;
+            //if (!other.RaceProps.hasGenders && other.gender != Gender.None) other.gender = Gender.None;
+        }
+
+        public static void AssignGenderToGenderless(Pawn pawn) //Pawn generated, Pawn other)
+        {
+            if (!pawn.RaceProps.hasGenders && pawn.gender == Gender.None) pawn.gender = Rand.Bool ? Gender.Male : Gender.Female;
+            Log.Message(pawn.gender.ToString());
+            //if (!other.RaceProps.hasGenders && other.gender == Gender.None) other.gender = Rand.Bool ? Gender.Male : Gender.Female;
+        }
+        */
         public static void PrepareCarefullyLayerLabel(int layer, ref string __result)
         {
             if (layer == 9)
@@ -797,7 +814,7 @@ namespace AlienRace
             return true;
         }
 
-        public static bool GenerateRandomOldAgeInjuries(Pawn pawn)
+        public static bool GenerateRandomOldAgeInjuriesPrefix(Pawn pawn)
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
             if (alienProps != null && alienProps.alienRace.generalSettings.ImmuneToAge)
