@@ -62,8 +62,16 @@ namespace AlienRace
         public bool ImmuneToAge = false;
         public bool CanLayDown = true;
 
+        public List<ChemicalSettings> chemicalSettings;
         public List<AlienTraitEntry> forcedRaceTraitEntries;
         public AlienPartGenerator alienPartGenerator = new AlienPartGenerator();
+    }
+
+    public class ChemicalSettings
+    {
+        public ChemicalDef chemical;
+        public bool ingestible = true;
+        public List<IngestionOutcomeDoer> reactions;
     }
 
     public class AlienTraitEntry
