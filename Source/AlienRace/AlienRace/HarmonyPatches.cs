@@ -25,9 +25,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), "ResolveAllGraphics"), new HarmonyMethod(typeof(HarmonyPatches), "ResolveAllGraphicsPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGiveSolidBioTo"), new HarmonyMethod(typeof(HarmonyPatches), "TryGiveSolidBioToPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), "SetBackstoryInSlotPrefix"), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), "RenderPawnInternal", new Type[] {typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool)}), new HarmonyMethod(typeof(HarmonyPatches), "RenderPawnInternalPrefix"), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), "RenderPawnInternal", new Type[] { typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool) }), new HarmonyMethod(typeof(HarmonyPatches), "RenderPawnInternalPrefix"), null);
             harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "GenerateRandomOldAgeInjuries"), new HarmonyMethod(typeof(HarmonyPatches), "GenerateRandomOldAgeInjuriesPrefix"), null);
-            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "RandomHediffsToGainOnBirthday", new Type[] {typeof(Pawn), typeof(int)}), new HarmonyMethod(typeof(HarmonyPatches), "RandomHediffsToGainOnBirthdayPrefix"), null);
+            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "RandomHediffsToGainOnBirthday", new Type[] { typeof(Pawn), typeof(int) }), new HarmonyMethod(typeof(HarmonyPatches), "RandomHediffsToGainOnBirthdayPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), "NewGeneratedStartingPawn"), new HarmonyMethod(typeof(HarmonyPatches), "NewGeneratedStartingPawnPrefix"), null);
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GiveAppropriateBioAndNameTo"), null, new HarmonyMethod(typeof(HarmonyPatches), "GiveAppropriateBioAndNameToPostfix"));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateRandomAge"), new HarmonyMethod(typeof(HarmonyPatches), "GenerateRandomAgePrefix"), null);
@@ -70,10 +70,170 @@ namespace AlienRace
                     if (hasJobOnThingInfo != null)
                         harmony.Patch(hasJobOnThingInfo, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenericHasJobOnThingPostfix)));
                 });
-
             });
 
+            {
+                try
+                {
+                    ((Action)(() =>
+                    {
+                        if (AccessTools.Method(typeof(EdB.PrepareCarefully.PrepareCarefully), nameof(EdB.PrepareCarefully.PrepareCarefully.Initialize)) != null)
+                        {
+                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "CopyPawn"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyCopyPawn"));
+                            harmony.Patch(AccessTools.Property(typeof(EdB.PrepareCarefully.CustomPawn), "MelaninLevel").GetSetMethod(false), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyMelaninLevel"), null);
+                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.Page_ConfigureStartingPawnsCarefully), "DrawAppearance"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyDrawAppearance"));
+                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "GetSelectedApparel"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySelectedApparel"), null);
+                            harmony.Patch(AccessTools.Property(typeof(EdB.PrepareCarefully.Page_ConfigureStartingPawnsCarefully), "PawnLayerLabel").GetGetMethod(true), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyPawnLayerLabel"));
+
+                            //harmony.Patch(AccessTools.Constructor(typeof(EdB.PrepareCarefully.Page_ConfigureStartingPawnsCarefully)), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyCtor"));
+                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedStuff"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedStuff"), null);
+                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "GetSelectedStuff"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyGetSelectedStuff"), null);
+                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedApparelInternal"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedApparelInternal"), null);
+                            //harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.PawnLayers), "Label"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyLayerLabel"));
+                        }
+                    }))();
+                }
+                catch (TypeLoadException) { }
+            }
+
+
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void PrepareCarefullyLayerLabel(int layer, ref string __result)
+        {
+            if (layer == 9)
+                __result = "Race";
+        }
+
+        public static bool PrepareCarefullySetSelectedApparelInternal(int layer, ThingDef def, object __instance)
+        {
+            if (layer != 9)
+                return true;
+
+            Traverse traversePawn = Traverse.Create(__instance);
+            List<PawnKindDef> pkds = DefDatabase<PawnKindDef>.AllDefsListForReading.Where(pkd => pkd.race == def).ToList();
+
+            Log.Message(pkds.Count.ToString() + (def?.defName ?? " no def here"));
+
+            PawnKindDef pk;
+            Pawn pawn = PawnGenerator.GeneratePawn(pkds.TryRandomElement(out pk) ? pk : PawnKindDefOf.Villager, Faction.OfPlayer);
+
+            traversePawn.Method("InitializeWithPawn", pawn).GetValue();
+
+            return false;
+        }
+
+        public static bool PrepareCarefullyGetSelectedStuff(int layer, ref ThingDef __result, object __instance)
+        {
+            if (layer == 9)
+            {
+                Traverse traversePawn = Traverse.Create(__instance);
+                Pawn pawn = traversePawn.Field("pawn").GetValue<Pawn>();
+                __result = pawn.def;
+                return false;
+            }
+            return true;
+
+        }
+
+        public static bool PrepareCarefullySetSelectedStuff(int layer, ThingDef stuffDef, object __instance)
+        {
+            if (layer != 9)
+                return true;
+
+            Traverse traversePawn = Traverse.Create(__instance);
+            List<PawnKindDef> pkds = DefDatabase<PawnKindDef>.AllDefsListForReading.Where(pkd => pkd.race == stuffDef).ToList();
+
+            Log.Message(pkds.Count.ToString() + (stuffDef?.defName ?? " no def here"));
+
+            PawnKindDef pk;
+            Pawn pawn = PawnGenerator.GeneratePawn(pkds.TryRandomElement(out pk) ? pk : PawnKindDefOf.Villager, Faction.OfPlayer);
+
+            traversePawn.Method("InitializeWithPawn", pawn).GetValue();
+
+            return false;
+        }
+
+        /*
+        public static void PrepareCarefullyCtor(object __result)
+        {
+            Traverse traverseInstance = Traverse.Create(__result);
+            List<Action> pawnLayerActions = traverseInstance.Field("pawnLayerActions").GetValue<List<Action>>();
+            List<int> pawnLayers = traverseInstance.Field("pawnLayers").GetValue<List<int>>();
+
+            pawnLayerActions.Add(() => traverseInstance.Method("ChangePawnLayer", 9).GetValue());
+            pawnLayers.Add(9);
+        }
+        */
+        public static void PrepareCarefullyPawnLayerLabel(object __instance, ref string __result)
+        {
+            Traverse traverseInstance = Traverse.Create(__instance);
+
+            if(traverseInstance.Field("selectedPawnLayer").GetValue<int>() == 9)
+            {
+                string name = Traverse.Create(traverseInstance.Property("CurrentPawn").GetValue()).Field("pawn").GetValue<Pawn>().def.LabelCap;
+                __result = name;
+                traverseInstance.Field("pawnLayerLabel").SetValue(__result);
+            }
+        }
+
+        public static bool PrepareCarefullySelectedApparel(int layer, object __instance, ref ThingDef __result)
+        {
+            if (layer == 9)
+            {
+                Traverse traversePawn = Traverse.Create(__instance);
+                Pawn pawn = traversePawn.Field("pawn").GetValue<Pawn>();
+
+                __result = pawn.def;
+                return false;
+            }
+            return true;
+        }
+
+        public static void PrepareCarefullyDrawAppearance(object __instance, object customPawn)
+        {
+            Traverse traversePawn = Traverse.Create(customPawn);
+            Pawn pawn = traversePawn.Field("pawn").GetValue<Pawn>();
+
+            Traverse traverseInstance = Traverse.Create(__instance);
+            List<Action> pawnLayerActions = traverseInstance.Field("pawnLayerActions").GetValue<List<Action>>();
+
+            if (pawnLayerActions.Count == 9)
+            {
+                pawnLayerActions.Add(() => traverseInstance.Method("ChangePawnLayer", 9).GetValue());
+                traverseInstance.Field("pawnLayers").GetValue<List<int>>().Add(9);
+
+                List<ThingDef> raceList = new List<ThingDef>();
+                raceList.AddRange(DefDatabase<ThingDef_AlienRace>.AllDefs.Cast<ThingDef>());
+                raceList.Add(ThingDefOf.Human);
+
+                traverseInstance.Field("apparelLists").GetValue<List<List<ThingDef>>>().Add(raceList);
+            }
+        }
+
+        public static void PrepareCarefullyMelaninLevel(object __instance, float value)
+        {
+            Traverse traverse = Traverse.Create(__instance);
+            Pawn pawn = traverse.Field("pawn").GetValue<Pawn>();
+            if (pawn.def is ThingDef_AlienRace)
+            {
+                pawn.GetComp<AlienPartGenerator.AlienComp>().skinColor = PawnSkinColors.GetSkinColor(value);
+            }
+        }
+
+        public static void PrepareCarefullyCopyPawn(Pawn source, ref Pawn __result)
+        {
+            AlienPartGenerator.AlienComp sourceComp = source.TryGetComp<AlienPartGenerator.AlienComp>();
+            if(sourceComp != null)
+            {
+                AlienPartGenerator.AlienComp resultComp = __result.TryGetComp<AlienPartGenerator.AlienComp>();
+
+                resultComp.skinColor = sourceComp.skinColor;
+                resultComp.skinColorSecond = sourceComp.skinColorSecond;
+                resultComp.Tail = sourceComp.Tail;
+                resultComp.fixGenderPostSpawn = sourceComp.fixGenderPostSpawn;
+            }
         }
 
         public static void GenericHasJobOnThingPostfix(WorkGiver __instance, Pawn pawn, ref bool __result)
@@ -99,7 +259,7 @@ namespace AlienRace
         public static void SetFactionDirectPostfix(Thing __instance, Faction newFaction)
         {
             ThingDef_AlienRace alienProps = __instance.def as ThingDef_AlienRace;
-            if (alienProps != null && newFaction == Faction.OfPlayer)
+            if (alienProps != null && newFaction == Faction.OfPlayerSilentFail)
             {
                 alienProps.alienRace.raceRestriction.conceptList?.ForEach(cd =>
                 {
@@ -112,7 +272,7 @@ namespace AlienRace
         public static void SetFactionPostfix(Pawn __instance, Faction newFaction)
         {
             ThingDef_AlienRace alienProps = __instance.def as ThingDef_AlienRace;
-            if (alienProps != null && newFaction == Faction.OfPlayer && Current.ProgramState == ProgramState.Playing)
+            if (alienProps != null && newFaction == Faction.OfPlayerSilentFail && Current.ProgramState == ProgramState.Playing)
             {
                 alienProps.alienRace.raceRestriction.conceptList?.ForEach(cd =>
                 {
@@ -141,7 +301,7 @@ namespace AlienRace
                 ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
                 if(alienProps != null)
                 {
-                    if (!alienProps.alienRace.generalSettings.CanLayDown)
+                    if (!alienProps.alienRace.generalSettings.CanLayDown && !(__instance.pawn.CurrentBed()?.def.defName.EqualsIgnoreCase("ET_Bed") ?? false))
                         __result = PawnPosture.Standing;
                 }
             }
@@ -191,7 +351,8 @@ namespace AlienRace
             {
                 ThingDef plant = c.GetPlant(pawn.Map).def;
 
-                __result = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.plantList?.Contains(plant) ?? false || (!(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRastrictedPlants ?? false &&
+                __result = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.plantList?.Contains(plant) ?? false ? true : 
+                    ((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRastrictedPlants ?? false ? false :
                     !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.plantList?.Contains(plant) ?? false)));
             }
         }
