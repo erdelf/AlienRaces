@@ -99,7 +99,8 @@ namespace AlienRace
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
-
+        
+        
         public static void PrepareCarefullyLayerLabel(int layer, ref string __result)
         {
             if (layer == 9)
@@ -155,22 +156,11 @@ namespace AlienRace
             return false;
         }
 
-        /*
-        public static void PrepareCarefullyCtor(object __result)
-        {
-            Traverse traverseInstance = Traverse.Create(__result);
-            List<Action> pawnLayerActions = traverseInstance.Field("pawnLayerActions").GetValue<List<Action>>();
-            List<int> pawnLayers = traverseInstance.Field("pawnLayers").GetValue<List<int>>();
-
-            pawnLayerActions.Add(() => traverseInstance.Method("ChangePawnLayer", 9).GetValue());
-            pawnLayers.Add(9);
-        }
-        */
         public static void PrepareCarefullyPawnLayerLabel(object __instance, ref string __result)
         {
             Traverse traverseInstance = Traverse.Create(__instance);
 
-            if(traverseInstance.Field("selectedPawnLayer").GetValue<int>() == 9)
+            if (traverseInstance.Field("selectedPawnLayer").GetValue<int>() == 9)
             {
                 string name = Traverse.Create(traverseInstance.Property("CurrentPawn").GetValue()).Field("pawn").GetValue<Pawn>().def.LabelCap;
                 __result = name;
@@ -225,7 +215,7 @@ namespace AlienRace
         public static void PrepareCarefullyCopyPawn(Pawn source, ref Pawn __result)
         {
             AlienPartGenerator.AlienComp sourceComp = source.TryGetComp<AlienPartGenerator.AlienComp>();
-            if(sourceComp != null)
+            if (sourceComp != null)
             {
                 AlienPartGenerator.AlienComp resultComp = __result.TryGetComp<AlienPartGenerator.AlienComp>();
 
@@ -235,7 +225,7 @@ namespace AlienRace
                 resultComp.fixGenderPostSpawn = sourceComp.fixGenderPostSpawn;
             }
         }
-
+    
         public static void GenericHasJobOnThingPostfix(WorkGiver __instance, Pawn pawn, ref bool __result)
         {
             if(__result)
