@@ -488,6 +488,7 @@ namespace AlienRace
 
         public static void GenerationChanceSpousePostfix(ref float __result, Pawn generated, Pawn other)
         {
+            if (__result == 0) __result++;
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSpouse;
             if (other.def is ThingDef_AlienRace)
@@ -496,6 +497,7 @@ namespace AlienRace
 
         public static void GenerationChanceSiblingPostfix(ref float __result, Pawn generated, Pawn other)
         {
+            if (__result == 0) __result++;
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSibling;
             if (other.def is ThingDef_AlienRace)
@@ -504,6 +506,8 @@ namespace AlienRace
 
         public static void GenerationChanceParentPostfix(ref float __result, Pawn generated, Pawn other)
         {
+            if (__result == 0) __result++;
+
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierParent;
             if (other.def is ThingDef_AlienRace)
@@ -512,6 +516,8 @@ namespace AlienRace
 
         public static void GenerationChanceLoverPostfix(ref float __result, Pawn generated, Pawn other)
         {
+            if (__result == 0) __result++;
+
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierLover;
             if (other.def is ThingDef_AlienRace)
@@ -520,6 +526,8 @@ namespace AlienRace
 
         public static void GenerationChanceFiancePostfix(ref float __result, Pawn generated, Pawn other)
         {
+            if (__result == 0) __result++;
+
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierFiance;
             if (other.def is ThingDef_AlienRace)
@@ -528,6 +536,8 @@ namespace AlienRace
 
         public static void GenerationChanceExSpousePostfix(ref float __result, Pawn generated, Pawn other)
         {
+            if (__result == 0) __result++;
+
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExSpouse;
             if (other.def is ThingDef_AlienRace)
@@ -536,6 +546,8 @@ namespace AlienRace
 
         public static void GenerationChanceExLoverPostfix(ref float __result, Pawn generated, Pawn other)
         {
+            if (__result == 0) __result++;
+
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExLover;
             if (other.def is ThingDef_AlienRace)
@@ -544,6 +556,8 @@ namespace AlienRace
 
         public static void GenerationChanceChildPostfix(ref float __result, Pawn generated, Pawn other)
         {
+            if (__result == 0) __result++;
+
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierChild;
             if (other.def is ThingDef_AlienRace)

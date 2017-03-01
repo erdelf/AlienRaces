@@ -149,14 +149,14 @@ namespace AlienRace
 
     public class RelationSettings
     {
-        public float relationChanceModifierChild = 0.1f;
-        public float relationChanceModifierExLover = 0.1f;
-        public float relationChanceModifierExSpouse = 0.1f;
-        public float relationChanceModifierFiance = 0.1f;
-        public float relationChanceModifierLover = 0.1f;
-        public float relationChanceModifierParent = 0.1f;
-        public float relationChanceModifierSibling = 0.1f;
-        public float relationChanceModifierSpouse = 0.1f;
+        public float relationChanceModifierChild = 1f;
+        public float relationChanceModifierExLover = 1f;
+        public float relationChanceModifierExSpouse = 1f;
+        public float relationChanceModifierFiance = 1f;
+        public float relationChanceModifierLover = 1f;
+        public float relationChanceModifierParent = 1f;
+        public float relationChanceModifierSibling = 1f;
+        public float relationChanceModifierSpouse = 1f;
     }
 
     public class RaceRestrictionSettings
