@@ -60,6 +60,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(JobGiver_OptimizeApparel), nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ApparelScoreGainPostFix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn), nameof(Pawn.SetFaction)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SetFactionPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Thing), nameof(Pawn.SetFactionDirect)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SetFactionDirectPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.SecondaryRomanceChanceFactor)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SecondaryRomanceChanceFactorPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.CompatibilityWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CompatibilityWith)));
 
             //harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
 
@@ -103,6 +105,121 @@ namespace AlienRace
             #endregion
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void CompatibilityWith(Pawn_RelationsTracker __instance, Pawn otherPawn, ref float __result)
+        {
+            Traverse traverse = Traverse.Create(__instance);
+            Pawn pawn = traverse.Field("pawn").GetValue<Pawn>();
+
+            if (pawn.RaceProps.Humanlike != otherPawn.RaceProps.Humanlike || pawn == otherPawn)
+            {
+                __result = 0f;
+                return;
+            }
+            float x = Mathf.Abs(pawn.ageTracker.AgeBiologicalYearsFloat - otherPawn.ageTracker.AgeBiologicalYearsFloat);
+            float num = GenMath.LerpDouble(0f, 20f, 0.45f, -0.45f, x);
+            num = Mathf.Clamp(num, -0.45f, 0.45f);
+            float num2 = __instance.ConstantPerPawnsPairCompatibilityOffset(otherPawn.thingIDNumber);
+            __result = num + num2;
+        }
+
+        public static void SecondaryRomanceChanceFactorPostfix(Pawn_RelationsTracker __instance, Pawn otherPawn, ref float __result)
+        {
+            Traverse traverse = Traverse.Create(__instance);
+            Pawn pawn = traverse.Field("pawn").GetValue<Pawn>();
+
+            if (pawn.RaceProps.Humanlike != otherPawn.RaceProps.Humanlike || pawn == otherPawn)
+            {
+                __result = 0f;
+                return;
+            }
+            Rand.PushSeed();
+            Rand.Seed = pawn.HashOffset();
+            bool flag = Rand.Value < 0.015f;
+            Rand.PopSeed();
+            float num = 1f;
+            float num2 = 1f;
+            float ageBiologicalYearsFloat = pawn.ageTracker.AgeBiologicalYearsFloat;
+            float ageBiologicalYearsFloat2 = otherPawn.ageTracker.AgeBiologicalYearsFloat;
+            if (pawn.gender == Gender.Male)
+            {
+                if (!flag)
+                {
+                    if (pawn.RaceProps.Humanlike && pawn.story.traits.HasTrait(TraitDefOf.Gay))
+                    {
+                        if (otherPawn.gender == Gender.Female)
+                        {
+                            __result = 0f;
+                            return;
+                        }
+                    }
+                    else if (otherPawn.gender == Gender.Male)
+                    {
+                        __result = 0f;
+                        return;
+                    }
+                }
+                num2 = GenMath.FlatHill(0f, 16f, 20f, ageBiologicalYearsFloat, ageBiologicalYearsFloat + 15f, 0.07f, ageBiologicalYearsFloat2);
+            }
+            else if (pawn.gender == Gender.Female)
+            {
+                if (!flag)
+                {
+                    if (pawn.RaceProps.Humanlike && pawn.story.traits.HasTrait(TraitDefOf.Gay))
+                    {
+                        if (otherPawn.gender == Gender.Male)
+                        {
+                            __result = 0f;
+                            return;
+                        }
+                    }
+                    else if (otherPawn.gender == Gender.Female)
+                    {
+                        num = 0f;
+                    }
+                }
+                if (ageBiologicalYearsFloat2 < ageBiologicalYearsFloat - 10f)
+                {
+                    __result = 0f;
+                    return;
+                }
+                if (ageBiologicalYearsFloat2 < ageBiologicalYearsFloat - 3f)
+                {
+                    num2 = Mathf.InverseLerp(ageBiologicalYearsFloat - 10f, ageBiologicalYearsFloat - 3f, ageBiologicalYearsFloat2) * 0.2f;
+                }
+                else
+                {
+                    num2 = GenMath.FlatHill(0.2f, ageBiologicalYearsFloat - 3f, ageBiologicalYearsFloat, ageBiologicalYearsFloat + 10f, ageBiologicalYearsFloat + 30f, 0.1f, ageBiologicalYearsFloat2);
+                }
+            }
+            float num3 = 1f;
+            num3 *= Mathf.Lerp(0.2f, 1f, otherPawn.health.capacities.GetEfficiency(PawnCapacityDefOf.Talking));
+            num3 *= Mathf.Lerp(0.2f, 1f, otherPawn.health.capacities.GetEfficiency(PawnCapacityDefOf.Manipulation));
+            num3 *= Mathf.Lerp(0.2f, 1f, otherPawn.health.capacities.GetEfficiency(PawnCapacityDefOf.Moving));
+            float num4 = 1f;
+            foreach (PawnRelationDef current in pawn.GetRelations(otherPawn))
+            {
+                num4 *= current.attractionFactor;
+            }
+            int num5 = 0;
+            if (otherPawn.RaceProps.Humanlike)
+            {
+                num5 = otherPawn.story.traits.DegreeOfTrait(TraitDefOf.Beauty);
+            }
+            float num6 = 1f;
+            if (num5 < 0)
+            {
+                num6 = 0.3f;
+            }
+            else if (num5 > 0)
+            {
+                num6 = 2.3f;
+            }
+            float num7 = Mathf.InverseLerp(15f, 18f, ageBiologicalYearsFloat);
+            float num8 = Mathf.InverseLerp(15f, 18f, ageBiologicalYearsFloat2);
+            __result = num * num2 * num3 * num4 * num7 * num8 * num6;
+            return;
         }
 
         /*
