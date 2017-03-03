@@ -65,6 +65,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(JobGiver_SatisfyChemicalNeed), "DrugValidator"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DrugValidatorPostfix)));
             harmony.Patch(AccessTools.Method(typeof(CompDrug), nameof(CompDrug.PostIngested)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PostIngestedPostfix)));
             harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanBingeNowPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(SituationalThoughtHandler), "TryCreateSituationalThought"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryCreateSituationalThoughtPrefix)), null);
 
             //harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
 
@@ -112,6 +113,26 @@ namespace AlienRace
             #endregion
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static bool TryCreateSituationalThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance)
+        {
+            Pawn pawn = __instance.pawn;
+            if (DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => !ar.alienRace.thoughtSettings.replacerList.NullOrEmpty()).SelectMany(ar => ar.alienRace.thoughtSettings.replacerList.Select(tr => tr.replacer)).Contains(def.defName))
+                return false;
+
+            if (pawn.def is ThingDef_AlienRace)
+            {
+                string name = def.defName;
+                ThoughtReplacer replacer = (pawn.def as ThingDef_AlienRace)?.alienRace.thoughtSettings.replacerList?.FirstOrDefault(tr => name.EqualsIgnoreCase(tr.original));
+                if (replacer != null)
+                {
+                    ThoughtDef replacerThoughtDef = DefDatabase<ThoughtDef>.GetNamedSilentFail(replacer.replacer);
+                    if (replacerThoughtDef != null)
+                        def = replacerThoughtDef;
+                }
+            }
+            return !Traverse.Create(__instance).Field("tmpCachedThoughts").GetValue<HashSet<ThoughtDef>>().Contains(def);
         }
 
         public static void CanBingeNowPostfix(Pawn pawn, ChemicalDef chemical, ref bool __result)
@@ -298,7 +319,7 @@ namespace AlienRace
                 resultComp.fixGenderPostSpawn = sourceComp.fixGenderPostSpawn;
             }
         }
-
+ 
         public static void PrepareCarefullyLayerLabel(int layer, ref string __result)
         {
             if (layer == 9)
@@ -508,10 +529,10 @@ namespace AlienRace
 
         public static bool TryGainMemoryThoughtPrefix(ref Thought_Memory newThought, MemoryThoughtHandler __instance)
         {
+
             string thoughtName = newThought.def.defName;
             Pawn pawn = __instance.pawn;
-
-            if (DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => !ar.alienRace.thoughtSettings.replacerList.NullOrEmpty()).SelectMany(ar => ar.alienRace.thoughtSettings.replacerList?.Select(tr => tr.replacer)).Contains(thoughtName))
+            if (DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => !ar.alienRace.thoughtSettings.replacerList.NullOrEmpty()).SelectMany(ar => ar.alienRace.thoughtSettings.replacerList.Select(tr => tr.replacer)).Contains(thoughtName))
                 return false;
 
             if (pawn.def is ThingDef_AlienRace)
