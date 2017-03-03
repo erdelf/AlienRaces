@@ -70,10 +70,14 @@ namespace AlienRace
             {
                 ar.alienRace.raceRestriction.workGiverList?.ForEach(wgd =>
                 {
-                    harmony.Patch(AccessTools.Method(wgd.giverClass, "JobOnThing"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenericJobOnThingPostfix)));
-                    MethodInfo hasJobOnThingInfo = AccessTools.Method(wgd.giverClass, "HasJobOnThing");
-                    if (hasJobOnThingInfo != null)
-                        harmony.Patch(hasJobOnThingInfo, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenericHasJobOnThingPostfix)));
+                    WorkGiverDef wg = DefDatabase<WorkGiverDef>.GetNamedSilentFail(wgd);
+                    if (wg != null)
+                    {
+                        harmony.Patch(AccessTools.Method(wg.giverClass, "JobOnThing"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenericJobOnThingPostfix)));
+                        MethodInfo hasJobOnThingInfo = AccessTools.Method(wg.giverClass, "HasJobOnThing");
+                        if (hasJobOnThingInfo != null)
+                            harmony.Patch(hasJobOnThingInfo, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenericHasJobOnThingPostfix)));
+                    }
                 });
             });
 
@@ -244,7 +248,6 @@ namespace AlienRace
             AlienPartGenerator.AlienComp sourceComp = source.TryGetComp<AlienPartGenerator.AlienComp>();
             if (sourceComp != null)
             {
-                Log.Message("hey ");
                 AlienPartGenerator.AlienComp resultComp = __result.TryGetComp<AlienPartGenerator.AlienComp>();
 
                 resultComp.skinColor = PawnSkinColors.GetSkinColor(traverse.Property("MelaninLevel").GetValue<float>());
@@ -267,8 +270,6 @@ namespace AlienRace
 
             Traverse traversePawn = Traverse.Create(__instance);
             List<PawnKindDef> pkds = DefDatabase<PawnKindDef>.AllDefsListForReading.Where(pkd => pkd.race == def).ToList();
-
-            Log.Message(pkds.Count.ToString() + (def?.defName ?? " no def here"));
 
             PawnKindDef pk;
             Pawn pawn = PawnGenerator.GeneratePawn(pkds.TryRandomElement(out pk) ? pk : PawnKindDefOf.Villager, Faction.OfPlayer);
@@ -383,8 +384,8 @@ namespace AlienRace
         {
             if(__result)
             {
-                __result = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(wgd => wgd.giverClass == __instance.GetType()) ?? false ||
-                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.workGiverList?.Any(wgd => wgd.giverClass == __instance.GetType()) ?? false)) ;
+                __result = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(wgd => DefDatabase<WorkGiverDef>.GetNamedSilentFail(wgd)?.giverClass == __instance.GetType()) ?? false ||
+                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.workGiverList?.Any(wgd => DefDatabase<WorkGiverDef>.GetNamedSilentFail(wgd)?.giverClass == __instance.GetType()) ?? false)) ;
             }
 
         }
@@ -393,8 +394,8 @@ namespace AlienRace
         {
             if (__result != null)
             {
-                if (!((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(wgd => wgd.giverClass == __instance.GetType()) ?? false ||
-                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.workGiverList?.Any(wgd => wgd.giverClass == __instance.GetType()) ?? false))))
+                if (!((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(wgd => DefDatabase<WorkGiverDef>.GetNamedSilentFail(wgd)?.giverClass == __instance.GetType()) ?? false ||
+                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.workGiverList?.Any(wgd => DefDatabase<WorkGiverDef>.GetNamedSilentFail(wgd)?.giverClass == __instance.GetType()) ?? false))))
                     __result = null;
             }
         }
@@ -404,10 +405,14 @@ namespace AlienRace
             ThingDef_AlienRace alienProps = __instance.def as ThingDef_AlienRace;
             if (alienProps != null && newFaction == Faction.OfPlayerSilentFail)
             {
-                alienProps.alienRace.raceRestriction.conceptList?.ForEach(cd =>
+                alienProps.alienRace.raceRestriction.conceptList?.ForEach(cdd =>
                 {
-                    Find.Tutor.learningReadout.TryActivateConcept(cd);
-                    PlayerKnowledgeDatabase.SetKnowledge(cd, 0);
+                    ConceptDef cd = DefDatabase<ConceptDef>.GetNamedSilentFail(cdd);
+                    if (cdd != null)
+                    {
+                        Find.Tutor.learningReadout.TryActivateConcept(cd);
+                        PlayerKnowledgeDatabase.SetKnowledge(cd, 0);
+                    }
                 });
             }
         }
@@ -417,10 +422,14 @@ namespace AlienRace
             ThingDef_AlienRace alienProps = __instance.def as ThingDef_AlienRace;
             if (alienProps != null && newFaction == Faction.OfPlayerSilentFail && Current.ProgramState == ProgramState.Playing)
             {
-                alienProps.alienRace.raceRestriction.conceptList?.ForEach(cd =>
+                alienProps.alienRace.raceRestriction.conceptList?.ForEach(cdd =>
                 {
-                    Find.Tutor.learningReadout.TryActivateConcept(cd);
-                    PlayerKnowledgeDatabase.SetKnowledge(cd, 0);
+                ConceptDef cd = DefDatabase<ConceptDef>.GetNamedSilentFail(cdd);
+                    if (cdd != null)
+                    {
+                        Find.Tutor.learningReadout.TryActivateConcept(cd);
+                        PlayerKnowledgeDatabase.SetKnowledge(cd, 0);
+                    }
                 });
             }
         }
@@ -429,9 +438,9 @@ namespace AlienRace
         {
             if (__result >= 0f)
             {
-                if (!((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.apparelList?.Contains(ap.def) ?? false ? true :
+                if (!((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.apparelList?.Contains(ap.def.defName) ?? false ? true : (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteApparelList?.Contains(ap.def.defName) ?? false ? true:
                     (((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel ?? false) ? false :
-                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(ap.def) ?? false)))))
+                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(ap.def.defName) ?? false)))))
                     __result = -50f;
 
             }
@@ -461,10 +470,12 @@ namespace AlienRace
             if (pawn.def is ThingDef_AlienRace)
             {
                 string thoughtName = newThought.def.defName;
-                ThoughtReplacer replacer = (pawn.def as ThingDef_AlienRace)?.alienRace.thoughtSettings.replacerList?.FirstOrDefault(tr => thoughtName.EqualsIgnoreCase(tr.original.defName));
+                ThoughtReplacer replacer = (pawn.def as ThingDef_AlienRace)?.alienRace.thoughtSettings.replacerList?.FirstOrDefault(tr => thoughtName.EqualsIgnoreCase(tr.original));
                 if (replacer != null)
                 {
-                    Thought_Memory replaceThought = (Thought_Memory) ThoughtMaker.MakeThought(replacer.replacer);
+                    ThoughtDef replacerThoughtDef = DefDatabase<ThoughtDef>.GetNamedSilentFail(replacer.replacer);
+
+                    Thought_Memory replaceThought = (Thought_Memory) ThoughtMaker.MakeThought(replacerThoughtDef);
                     /*
                     foreach (string infoName in AccessTools.GetFieldNames(newThought.GetType()))
                     {
@@ -482,9 +493,9 @@ namespace AlienRace
             {
                 ThingDef plant = WorkGiver_Grower.CalculateWantedPlantDef((settable as Zone_Growing)?.Cells[0] ?? (settable as Thing).Position, pawn.Map);
 
-                __result = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.plantList?.Contains(plant) ?? false ? true :
+                __result = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.plantList?.Contains(plant.defName) ?? false ? true : (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whitePlantList?.Contains(plant.defName) ?? false ? true :
                     (((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRastrictedPlants ?? false) ? false :
-                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.plantList?.Contains(plant) ?? false)));
+                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.plantList?.Contains(plant.defName) ?? false)));
             }
         }
 
@@ -494,9 +505,9 @@ namespace AlienRace
             {
                 ThingDef plant = c.GetPlant(pawn.Map).def;
 
-                __result = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.plantList?.Contains(plant) ?? false ? true : 
+                __result = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.plantList?.Contains(plant.defName) ?? false ? true : (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whitePlantList?.Contains(plant.defName) ?? false ? true :
                     ((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRastrictedPlants ?? false ? false :
-                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.plantList?.Contains(plant) ?? false)));
+                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.plantList?.Contains(plant.defName) ?? false)));
             }
         }
 
@@ -506,9 +517,9 @@ namespace AlienRace
 
             if(__result)
             {
-                __result = (p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.recipeList?.Contains(recipe) ?? false ? true :
+                __result = (p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.recipeList?.Contains(recipe.defName) ?? false ? true : (p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteRecipeList?.Contains(recipe.defName) ?? false ? true :
                     (((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRestrictedRecipes ?? false) ? false :
-                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => p.def != d && (d.alienRace.raceRestriction.recipeList?.Contains(recipe) ?? false)));
+                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => p.def != d && (d.alienRace.raceRestriction.recipeList?.Contains(recipe.defName) ?? false)));
             }
         }
 
@@ -517,13 +528,13 @@ namespace AlienRace
             if (__result && d is Designator_Build)
             {
                 Def toBuild = (d as Designator_Build).PlacingDef;
-                IEnumerable<ThingDef_AlienRace> races = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => (ar.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false));
+                IEnumerable<ThingDef_AlienRace> races = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => (ar.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false) || (ar.alienRace.raceRestriction.whiteBuildingList?.Contains(toBuild.defName) ?? false));
                 if (races.Count() > 0)
                     __result = races.Any(ar => Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def == ar));
 
                 if (__result)
                 {
-                    if (Find.ColonistBar.GetColonistsInOrder().Where(p => !p.Dead).ToList().TrueForAll(p => ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) && !((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false)))
+                    if (Find.ColonistBar.GetColonistsInOrder().Where(p => !p.Dead).ToList().TrueForAll(p => ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) && !((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false) && !((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteBuildingList?.Contains(toBuild.defName) ?? false)))
                         __result = false;
                 }
             }
@@ -532,7 +543,7 @@ namespace AlienRace
         public static void CanConstructPostfix(Thing t, Pawn p, ref bool __result)
         {
             if (__result)
-                __result = ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(t.def.defName) ?? false) || 
+                __result = ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(t.def.defName) ?? false) ? true : ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteBuildingList?.Contains(t.def.defName) ?? false) ? true :
                     (((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) ? false :
                     !(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => p.def != d && (d.alienRace.raceRestriction.buildingList?.Contains(t.def.entityDefToBuild.defName) ?? false))));
         }
@@ -546,9 +557,9 @@ namespace AlienRace
                 if (!project.IsFinished)
                 {
                     List<ThingDef_AlienRace> alienRaces =
-                        DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.raceRestriction?.researchList?.Any(rpr => rpr.projects.Contains(project)) ?? false).ToList();
+                        DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.raceRestriction?.researchList?.Any(rpr => rpr.projects.Contains(project.defName)) ?? false).ToList();
 
-                    if (!alienRaces.NullOrEmpty() && !Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def is ThingDef_AlienRace && alienRaces.Contains(p.def as ThingDef_AlienRace) && (alienRaces.First(ar => ar == p.def).alienRace.raceRestriction.researchList.First(rp => (rp.projects.Contains(project)))?.apparelList?.TrueForAll(ap => p.apparel.WornApparel.Select(apd => apd.def).Contains(ap)) ?? true)))
+                    if (!alienRaces.NullOrEmpty() && !Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def is ThingDef_AlienRace && alienRaces.Contains(p.def as ThingDef_AlienRace) && (alienRaces.First(ar => ar == p.def).alienRace.raceRestriction.researchList.First(rp => (rp.projects.Contains(project.defName)))?.apparelList?.TrueForAll(ap => p.apparel.WornApparel.Select(apd => apd.def.defName).Contains(ap)) ?? true)))
                     {
                         projects.RemoveAt(i);
                         i--;
@@ -586,9 +597,9 @@ namespace AlienRace
             {
                 ResearchProjectDef project = Find.ResearchManager.currentProj;
 
-                __result = (!(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project) && 
-                (rpr.apparelList?.TrueForAll(ap => pawn.apparel.WornApparel.Select(twc => twc.def).Contains(ap)) ?? false))) ?? 
-                    DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project)) ?? false));
+                __result = (!(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project.defName) && 
+                (rpr.apparelList?.TrueForAll(ap => pawn.apparel.WornApparel.Select(twc => twc.def.defName).Contains(ap)) ?? false))) ?? 
+                    DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project.defName)) ?? false));
             }
         }
 
@@ -600,8 +611,12 @@ namespace AlienRace
                 if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatDirect) || __result.Contains(ThoughtDefOf.AteHumanlikeMeatDirectCannibal))
                 {
                     int index = __result.IndexOf(ingester.story.traits.HasTrait(TraitDefOf.Cannibal) ? ThoughtDefOf.AteHumanlikeMeatDirectCannibal : ThoughtDefOf.AteHumanlikeMeatDirect);
-                    __result.RemoveAt(index);
-                    __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific?.FirstOrDefault(at => at.raceList?.Contains(t.def.ingestible.sourceDef) ?? false)?.thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
+                    ThoughtDef thought = DefDatabase<ThoughtDef>.GetNamedSilentFail(alienProps.alienRace.thoughtSettings.ateThoughtSpecific?.FirstOrDefault(at => at.raceList?.Contains(t.def.ingestible.sourceDef.defName) ?? false)?.thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
+                    if (thought != null)
+                    {
+                        __result.RemoveAt(index);
+                        __result.Insert(index, thought);
+                    }
                 }
                 if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredient) || __result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))
                 {
@@ -613,8 +628,12 @@ namespace AlienRace
                             if (FoodUtility.IsHumanlikeMeat(ingredient))
                             {
                                 int index = __result.IndexOf(ingester.story.traits.HasTrait(TraitDefOf.Cannibal) ? ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal : ThoughtDefOf.AteHumanlikeMeatAsIngredient);
-                                __result.RemoveAt(index);
-                                __result.Insert(index, alienProps.alienRace.thoughtSettings.ateThoughtSpecific?.FirstOrDefault(at => at.raceList?.Contains(ingredient.ingestible.sourceDef) ?? false)?.thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
+                                ThoughtDef thought = DefDatabase<ThoughtDef>.GetNamedSilentFail(alienProps.alienRace.thoughtSettings.ateThoughtSpecific?.FirstOrDefault(at => at.raceList?.Contains(ingredient.ingestible.sourceDef.defName) ?? false)?.thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
+                                if (thought != null)
+                                {
+                                    __result.RemoveAt(index);
+                                    __result.Insert(index, thought);
+                                }
                             }
                         }
                     }
@@ -726,16 +745,20 @@ namespace AlienRace
                 }
                 if (corpse.RaceProps.Humanlike)
                 {
-                    butcher.needs.mood.thoughts.memories.TryGainMemoryThought(alienPropsButcher == null ? ThoughtDefOf.ButcheredHumanlikeCorpse : 
-                        alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific?.FirstOrDefault(bt => bt.raceList?.Contains(corpse.def) ?? false)?.thought ?? 
-                        alienPropsButcher.alienRace.thoughtSettings.butcherThoughtGeneral.thought, null);
+                    ThoughtDef thought = alienPropsButcher == null ? ThoughtDefOf.ButcheredHumanlikeCorpse : DefDatabase<ThoughtDef>.GetNamedSilentFail(
+                        alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific?.FirstOrDefault(bt => bt.raceList?.Contains(corpse.def.defName) ?? false)?.thought ??
+                        alienPropsButcher.alienRace.thoughtSettings.butcherThoughtGeneral.thought);
+                    
+                        butcher.needs.mood.thoughts.memories.TryGainMemoryThought(thought ?? ThoughtDefOf.ButcheredHumanlikeCorpse, null);
 
                     butcher.Map.mapPawns.SpawnedPawnsInFaction(butcher.Faction).ForEach(p =>
                     {
                         if (p != butcher && p.needs != null && p.needs.mood != null && p.needs.mood.thoughts != null)
                         {
                             ThingDef_AlienRace alienPropsPawn = p.def as ThingDef_AlienRace;
-                            p.needs.mood.thoughts.memories.TryGainMemoryThought(alienPropsPawn == null ? ThoughtDefOf.KnowButcheredHumanlikeCorpse : alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific?.FirstOrDefault(bt => bt.raceList?.Contains(corpse.def) ?? false)?.knowThought ?? alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.knowThought, null);
+                            thought = alienPropsPawn == null ? ThoughtDefOf.KnowButcheredHumanlikeCorpse : DefDatabase<ThoughtDef>.GetNamedSilentFail(alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific?.FirstOrDefault(bt => bt.raceList?.Contains(corpse.def.defName) ?? false)?.knowThought ?? alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.knowThought);
+
+                            p.needs.mood.thoughts.memories.TryGainMemoryThought(thought ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse, null);
                         }
                     });
                     TaleRecorder.RecordTale(TaleDefOf.ButcheredHumanlikeCorpse, new object[] { butcher });
@@ -748,14 +771,19 @@ namespace AlienRace
         public static void AddHumanlikeOrdersPostfix(ref List<FloatMenuOption> opts, Pawn pawn, Vector3 clickPos)
         {
             IntVec3 c = IntVec3.FromVector3(clickPos);
-
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
             if (pawn.equipment != null)
             {
                 ThingWithComps equipment = (ThingWithComps) c.GetThingList(pawn.Map).FirstOrDefault(t => t.TryGetComp<CompEquippable>() != null && t.def.IsWeapon);
                 if(equipment != null)
                 {
-                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && !((pawn.def is ThingDef_AlienRace) && !(pawn.def as ThingDef_AlienRace).alienRace.raceRestriction.weaponList.NullOrEmpty() && (pawn.def as ThingDef_AlienRace).alienRace.raceRestriction.weaponList.Contains(equipment.def)) && !d.alienRace.raceRestriction.weaponList.NullOrEmpty() && d.alienRace.raceRestriction.weaponList.Contains(equipment.def))).ToList();
-                    if (!options.NullOrEmpty())
+                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled).ToList();
+
+                    bool restrictionsOff = (alienProps?.alienRace.raceRestriction.weaponList?.Contains(equipment.def.defName) ?? false) ? true :
+                    (alienProps?.alienRace.raceRestriction.whiteWeaponList?.Contains(equipment.def.defName) ?? true);
+
+                    if (!options.NullOrEmpty() && (!restrictionsOff || DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
+                    pawn.def != d && (d.alienRace.raceRestriction.weaponList?.Contains(equipment.def.defName) ?? false))))
                     {
                         foreach (FloatMenuOption fmo in options)
                         {
@@ -769,13 +797,14 @@ namespace AlienRace
                         }
                     }
 
-                    ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+                    
 
                     if (alienProps != null && alienProps.alienRace.raceRestriction.onlyUseRaceRestrictedWeapons)
                     {
-                        options = opts.Where(fmo => !fmo.Disabled && (alienProps.alienRace.raceRestriction.weaponList.NullOrEmpty() || !alienProps.alienRace.raceRestriction.weaponList.Contains(equipment.def))).ToList();
-
-                        if (!options.NullOrEmpty())
+                        options = opts.Where(fmo => !fmo.Disabled).ToList();
+                        
+                        if (!options.NullOrEmpty() && !(alienProps.alienRace.raceRestriction.weaponList?.Contains(equipment.def.defName) ?? false ||
+                        (alienProps.alienRace.raceRestriction.whiteWeaponList?.Contains(equipment.def.defName) ?? false)))
                         {
                             foreach (FloatMenuOption fmo in options)
                             {
@@ -797,9 +826,13 @@ namespace AlienRace
                 Apparel apparel = pawn.Map.thingGrid.ThingAt<Apparel>(c);
                 if (apparel != null)
                 {
-                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && !((pawn.def is ThingDef_AlienRace) && !(pawn.def as ThingDef_AlienRace).alienRace.raceRestriction.apparelList.NullOrEmpty() && (pawn.def as ThingDef_AlienRace).alienRace.raceRestriction.apparelList.Contains(apparel.def)) && !d.alienRace.raceRestriction.apparelList.NullOrEmpty() && d.alienRace.raceRestriction.apparelList.Contains(apparel.def))).ToList();
+                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled).ToList();
 
-                    if (!options.NullOrEmpty())
+                    bool restrictionsOff = (alienProps?.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false) ? true :
+                    (alienProps?.alienRace.raceRestriction.whiteApparelList?.Contains(apparel.def.defName) ?? true);
+
+                    if (!options.NullOrEmpty() && (!restrictionsOff || DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
+                    pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false))))
                     {
                         foreach (FloatMenuOption fmo in options)
                         {
@@ -813,14 +846,12 @@ namespace AlienRace
                         }
                     }
 
-
-                    ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-
                     if (alienProps != null && alienProps.alienRace.raceRestriction.onlyUseRaceRestrictedApparel)
                     {
-                        options = opts.Where(fmo => !fmo.Disabled && (alienProps.alienRace.raceRestriction.apparelList.NullOrEmpty() || !alienProps.alienRace.raceRestriction.apparelList.Contains(apparel.def))).ToList();
+                        options = opts.Where(fmo => !fmo.Disabled).ToList();
 
-                        if (!options.NullOrEmpty())
+                        if (!options.NullOrEmpty() && !(alienProps.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false ||
+                        (alienProps.alienRace.raceRestriction.whiteApparelList?.Contains(apparel.def.defName) ?? false)))
                         {
                             foreach (FloatMenuOption fmo in options)
                             {
@@ -844,7 +875,7 @@ namespace AlienRace
             if (__result && alienProps != null)
                 if (alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll)
                     __result = false;
-                else if (!alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.NullOrEmpty() && alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.Contains(def))
+                else if (!alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.NullOrEmpty() && alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.Contains(def.defName))
                     __result = false;
         }
 
@@ -924,11 +955,13 @@ namespace AlienRace
             PawnKindDef kindDef = Faction.OfPlayer.def.basicMemberKind;
 
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(tdar => !tdar.alienRace.pawnKindSettings.startingColonists.NullOrEmpty()).
-                SelectMany(tdar => tdar.alienRace.pawnKindSettings.startingColonists).Where(sce => sce.factionDefs.Contains(Faction.OfPlayer.def)).SelectMany(sce => sce.pawnKindEntries).InRandomOrder().ToList().ForEach(pke =>
+                SelectMany(tdar => tdar.alienRace.pawnKindSettings.startingColonists).Where(sce => sce.factionDefs.Contains(Faction.OfPlayer.def.defName)).SelectMany(sce => sce.pawnKindEntries).InRandomOrder().ToList().ForEach(pke =>
                 {
                     if (Rand.Range(0f, 100f) < pke.chance)
                     {
-                        kindDef = pke.kindDefs.RandomElement();
+                        PawnKindDef pk = DefDatabase<PawnKindDef>.GetNamedSilentFail(pke.kindDefs.RandomElement());
+                        if (pk != null)
+                            kindDef = pk;
                     }
                 });
 
@@ -1091,19 +1124,27 @@ namespace AlienRace
                 if (request.KindDef == PawnKindDefOf.SpaceRefugee)
                 {
                     if (comps.Where(r => !r.alienRace.pawnKindSettings.alienrefugeekinds.NullOrEmpty()).Select(r => r.alienRace.pawnKindSettings.alienrefugeekinds.RandomElement()).TryRandomElementByWeight((PawnKindEntry pke) => pke.chance, out pk))
-                        kindDef = pk.kindDefs.RandomElement();
+                    {
+                        PawnKindDef pkd = DefDatabase<PawnKindDef>.GetNamedSilentFail(pk.kindDefs.RandomElement());
+                        if (pkd != null)
+                            kindDef = pkd;
+                    }
                 }
                 else if (request.KindDef == PawnKindDefOf.Slave)
                 {
                     if (comps.Where(r => !r.alienRace.pawnKindSettings.alienslavekinds.NullOrEmpty()).Select(r => r.alienRace.pawnKindSettings.alienslavekinds.RandomElement()).TryRandomElementByWeight((PawnKindEntry pke) => pke.chance, out pk))
-                        kindDef = pk.kindDefs.RandomElement();
+                    {
+                        PawnKindDef pkd = DefDatabase<PawnKindDef>.GetNamedSilentFail(pk.kindDefs.RandomElement());
+                        if (pkd != null)
+                            kindDef = pkd;
+                    }
                 }
-            }
 
-            request = new PawnGenerationRequest(kindDef, request.Faction, request.Context, request.Map, request.ForceGenerateNewPawn, request.Newborn,
-                request.AllowDead, request.AllowDead, request.CanGeneratePawnRelations, request.MustBeCapableOfViolence, request.ColonistRelationChanceFactor,
-                request.ForceAddFreeWarmLayerIfNeeded, request.AllowGay, request.AllowFood, request.Validator, request.FixedBiologicalAge,
-                request.FixedChronologicalAge, request.FixedGender, request.FixedMelanin, request.FixedLastName);
+                request = new PawnGenerationRequest(kindDef, request.Faction, request.Context, request.Map, request.ForceGenerateNewPawn, request.Newborn,
+                    request.AllowDead, request.AllowDead, request.CanGeneratePawnRelations, request.MustBeCapableOfViolence, request.ColonistRelationChanceFactor,
+                    request.ForceAddFreeWarmLayerIfNeeded, request.AllowGay, request.AllowFood, request.Validator, request.FixedBiologicalAge,
+                    request.FixedChronologicalAge, request.FixedGender, request.FixedMelanin, request.FixedLastName);
+            }
         }
 
         public static bool RenderPawnInternalPrefix(PawnRenderer __instance, Vector3 rootLoc, Quaternion quat, bool renderBody, Rot4 bodyFacing, Rot4 headFacing, RotDrawMode bodyDrawType, bool portrait)

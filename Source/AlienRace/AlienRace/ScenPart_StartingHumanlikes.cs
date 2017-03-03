@@ -38,7 +38,7 @@ namespace AlienRace
             if (Widgets.ButtonText(scenPartRect.TopPart(0.45f), this.kindDef.label.CapitalizeFirst(), true, false, true))
             {
                 List<FloatMenuOption> list = new List<FloatMenuOption>();
-                list.AddRange(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.pawnKindSettings.startingColonists != null).SelectMany(ar => ar.alienRace.pawnKindSettings.startingColonists.SelectMany(ste => ste.pawnKindEntries.SelectMany(pke => pke.kindDefs))).Select(pkd => new FloatMenuOption(pkd.label.CapitalizeFirst(), () => kindDef = pkd)));
+                list.AddRange(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.pawnKindSettings.startingColonists != null).SelectMany(ar => ar.alienRace.pawnKindSettings.startingColonists.SelectMany(ste => ste.pawnKindEntries.SelectMany(pke => pke.kindDefs))).Where(s => DefDatabase<PawnKindDef>.GetNamedSilentFail(s) != null).Select(pkd => DefDatabase<PawnKindDef>.GetNamedSilentFail(pkd)).Select(pkd => new FloatMenuOption(pkd.label.CapitalizeFirst(), () => kindDef = pkd)));
                 list.Add(new FloatMenuOption("Villager", () => kindDef = PawnKindDefOf.Villager));
                 list.Add(new FloatMenuOption("Slave", () => kindDef = PawnKindDefOf.Slave));
                 Find.WindowStack.Add(new FloatMenu(list));

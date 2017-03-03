@@ -13,34 +13,6 @@ namespace AlienRace
         {
             comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
             base.ResolveReferences();
-
-            if (alienRace.thoughtSettings.butcherThoughtGeneral.thought == null)
-                alienRace.thoughtSettings.butcherThoughtGeneral.thought = ThoughtDef.Named("ButcheredHumanlikeCorpse");
-            if (alienRace.thoughtSettings.butcherThoughtGeneral.knowThought == null)
-                alienRace.thoughtSettings.butcherThoughtGeneral.knowThought = ThoughtDef.Named("KnowButcheredHumanlikeCorpse");
-
-            if (alienRace.thoughtSettings.butcherThoughtSpecific != null)
-                foreach (ButcherThought bt in alienRace.thoughtSettings.butcherThoughtSpecific)
-                {
-                    if (bt.thought == null)
-                        bt.thought = ThoughtDef.Named("ButcheredHumanlikeCorpse");
-                    if (bt.knowThought == null)
-                        bt.knowThought = ThoughtDef.Named("KnowButcheredHumanlikeCorpse");
-                }
-
-            if (alienRace.thoughtSettings.ateThoughtGeneral.thought == null)
-                alienRace.thoughtSettings.ateThoughtGeneral.thought = ThoughtDef.Named("AteHumanlikeMeatDirect");
-            if (alienRace.thoughtSettings.ateThoughtGeneral.ingredientThought == null)
-                alienRace.thoughtSettings.ateThoughtGeneral.ingredientThought = ThoughtDef.Named("AteHumanlikeMeatAsIngredient");
-
-            if (alienRace.thoughtSettings.ateThoughtSpecific != null)
-                foreach (AteThought at in alienRace.thoughtSettings.ateThoughtSpecific)
-                {
-                    if (at.thought == null)
-                        at.thought = ThoughtDef.Named("AteHumanlikeMeatDirect");
-                    if (at.ingredientThought == null)
-                        at.ingredientThought = ThoughtDef.Named("AteHumanlikeMeatAsIngredient");
-                }
         }
 
         public class AlienSettings
@@ -69,7 +41,7 @@ namespace AlienRace
 
     public class ChemicalSettings
     {
-        public ChemicalDef chemical;
+        public string chemical;
         public bool ingestible = true;
         public List<IngestionOutcomeDoer> reactions;
     }
@@ -107,23 +79,24 @@ namespace AlienRace
         public List<PawnKindEntry> alienslavekinds;
         public List<PawnKindEntry> alienrefugeekinds;
         public List<StartingColonistEntry> startingColonists;
+        public List<StartingColonistEntry> alienWanderer;
     }
 
     public class PawnKindEntry
     {
-        public List<PawnKindDef> kindDefs;
+        public List<string> kindDefs;
         public float chance;
     }
 
     public class StartingColonistEntry
     {
         public List<PawnKindEntry> pawnKindEntries;
-        public List<FactionDef> factionDefs;
+        public List<string> factionDefs;
     }
 
     public class ThoughtSettings
     {
-        public List<ThoughtDef> cannotReceiveThoughts;
+        public List<string> cannotReceiveThoughts;
         public bool cannotReceiveThoughtsAtAll = false;
 
         public ButcherThought butcherThoughtGeneral = new ButcherThought();
@@ -137,22 +110,22 @@ namespace AlienRace
 
     public class ButcherThought
     {
-        public List<ThingDef> raceList;
-        public ThoughtDef thought;// = ThoughtDef.Named("ButcheredHumanlikeCorpse");
-        public ThoughtDef knowThought;// = ThoughtDef.Named("KnowButcheredHumanlikeCorpse");
+        public List<string> raceList;
+        public string thought = "ButcheredHumanlikeCorpse";
+        public string knowThought = "KnowButcheredHumanlikeCorpse";
     }
 
     public class AteThought
     {
-        public List<ThingDef> raceList;
-        public ThoughtDef thought;// = ThoughtDef.Named("AteHumanlikeMeatDirect");
-        public ThoughtDef ingredientThought;// = ThoughtDef.Named("AteHumanlikeMeatAsIngredient");
+        public List<string> raceList;
+        public string thought = "AteHumanlikeMeatDirect";
+        public string ingredientThought = "AteHumanlikeMeatAsIngredient";
     }
 
     public class ThoughtReplacer
     {
-        public ThoughtDef original;
-        public ThoughtDef replacer;
+        public string original;
+        public string replacer;
     }
 
     public class RelationSettings
@@ -170,31 +143,36 @@ namespace AlienRace
     public class RaceRestrictionSettings
     {
         public bool onlyUseRaceRestrictedApparel = false;
-        public List<ThingDef> apparelList;
+        public List<string> apparelList;
+        public List<string> whiteApparelList;
 
         public List<ResearchProjectRestrictions> researchList;
 
         public bool onlyUseRaceRestrictedWeapons = false;
-        public List<ThingDef> weaponList;
+        public List<string> weaponList;
+        public List<string> whiteWeaponList;
 
         public bool onlyBuildRaceRestrictedBuildings = false;
         public List<string> buildingList;
+        public List<string> whiteBuildingList;
 
         public bool onlyDoRaceRestrictedRecipes = false;
-        public List<RecipeDef> recipeList;
+        public List<string> recipeList;
+        public List<string> whiteRecipeList;
 
         public bool onlyDoRaceRastrictedPlants = false;
-        public List<ThingDef> plantList;
+        public List<string> plantList;
+        public List<string> whitePlantList;
 
-        public List<ConceptDef> conceptList;
+        public List<string> conceptList;
 
-        public List<WorkGiverDef> workGiverList;
+        public List<string> workGiverList;
     }
 
     public class ResearchProjectRestrictions
     {
-        public List<ResearchProjectDef> projects;
-        public List<ThingDef> apparelList;
+        public List<string> projects;
+        public List<string> apparelList;
     }
     
     static class GraphicPathsExtension
