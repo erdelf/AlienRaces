@@ -37,6 +37,14 @@ namespace AlienRace
         public List<ChemicalSettings> chemicalSettings;
         public List<AlienTraitEntry> forcedRaceTraitEntries;
         public AlienPartGenerator alienPartGenerator = new AlienPartGenerator();
+
+        public List<FactionRelationSettings> factionRelations;
+    }
+
+    public class FactionRelationSettings
+    {
+        List<string> factions;
+        List<FloatRange> goodwill;
     }
 
     public class ChemicalSettings
