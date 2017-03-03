@@ -78,8 +78,8 @@ namespace AlienRace
     {
         public List<PawnKindEntry> alienslavekinds;
         public List<PawnKindEntry> alienrefugeekinds;
-        public List<StartingColonistEntry> startingColonists;
-        public List<StartingColonistEntry> alienWanderer;
+        public List<FactionPawnKindEntry> startingColonists;
+        public List<FactionPawnKindEntry> alienwandererkinds;
     }
 
     public class PawnKindEntry
@@ -88,7 +88,7 @@ namespace AlienRace
         public float chance;
     }
 
-    public class StartingColonistEntry
+    public class FactionPawnKindEntry
     {
         public List<PawnKindEntry> pawnKindEntries;
         public List<string> factionDefs;

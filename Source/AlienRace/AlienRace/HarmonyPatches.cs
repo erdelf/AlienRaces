@@ -474,15 +474,17 @@ namespace AlienRace
                 if (replacer != null)
                 {
                     ThoughtDef replacerThoughtDef = DefDatabase<ThoughtDef>.GetNamedSilentFail(replacer.replacer);
-
-                    Thought_Memory replaceThought = (Thought_Memory) ThoughtMaker.MakeThought(replacerThoughtDef);
-                    /*
-                    foreach (string infoName in AccessTools.GetFieldNames(newThought.GetType()))
+                    if (replacerThoughtDef != null)
                     {
-                        Traverse.Create(replaceThought).Field(infoName)?.SetValue(Traverse.Create(newThought).Field(infoName).GetValue());
+                        Thought_Memory replaceThought = (Thought_Memory)ThoughtMaker.MakeThought(replacerThoughtDef);
+                        /*
+                        foreach (string infoName in AccessTools.GetFieldNames(newThought.GetType()))
+                        {
+                            Traverse.Create(replaceThought).Field(infoName)?.SetValue(Traverse.Create(newThought).Field(infoName).GetValue());
+                        }
+                        */
+                        newThought = replaceThought;
                     }
-                    */
-                    newThought = replaceThought;
                 }
             }
         }
@@ -1117,6 +1119,10 @@ namespace AlienRace
         public static void GeneratePawnPrefix(ref PawnGenerationRequest request)
         {
             PawnKindDef kindDef = request.KindDef;
+            if (Faction.OfPlayerSilentFail != null && kindDef == PawnKindDefOf.Villager && request.Faction.IsPlayer && kindDef.race != Faction.OfPlayer?.def.basicMemberKind.race)
+                kindDef = Faction.OfPlayer.def.basicMemberKind;
+
+
             if (Rand.Value <= 0.4f)
             {
                 IEnumerable<ThingDef_AlienRace> comps = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading;
@@ -1139,12 +1145,25 @@ namespace AlienRace
                             kindDef = pkd;
                     }
                 }
-
-                request = new PawnGenerationRequest(kindDef, request.Faction, request.Context, request.Map, request.ForceGenerateNewPawn, request.Newborn,
-                    request.AllowDead, request.AllowDead, request.CanGeneratePawnRelations, request.MustBeCapableOfViolence, request.ColonistRelationChanceFactor,
-                    request.ForceAddFreeWarmLayerIfNeeded, request.AllowGay, request.AllowFood, request.Validator, request.FixedBiologicalAge,
-                    request.FixedChronologicalAge, request.FixedGender, request.FixedMelanin, request.FixedLastName);
+                else if (request.KindDef == PawnKindDefOf.Villager)
+                {
+                    DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(tdar => !tdar.alienRace.pawnKindSettings.alienwandererkinds.NullOrEmpty()).
+                        SelectMany(tdar => tdar.alienRace.pawnKindSettings.alienwandererkinds).Where(sce => sce.factionDefs.Contains(Faction.OfPlayer.def.defName)).SelectMany(sce => sce.pawnKindEntries).InRandomOrder().ToList().ForEach(pke =>
+                        {
+                            if (Rand.Range(0f, 100f) < pke.chance)
+                            {
+                                PawnKindDef fpk = DefDatabase<PawnKindDef>.GetNamedSilentFail(pke.kindDefs.RandomElement());
+                                if (fpk != null)
+                                    kindDef = fpk;
+                            }
+                        });
+                }
             }
+            
+            request = new PawnGenerationRequest(kindDef, request.Faction, request.Context, request.Map, request.ForceGenerateNewPawn, request.Newborn,
+            request.AllowDead, request.AllowDead, request.CanGeneratePawnRelations, request.MustBeCapableOfViolence, request.ColonistRelationChanceFactor,
+            request.ForceAddFreeWarmLayerIfNeeded, request.AllowGay, request.AllowFood, request.Validator, request.FixedBiologicalAge,
+            request.FixedChronologicalAge, request.FixedGender, request.FixedMelanin, request.FixedLastName);
         }
 
         public static bool RenderPawnInternalPrefix(PawnRenderer __instance, Vector3 rootLoc, Quaternion quat, bool renderBody, Rot4 bodyFacing, Rot4 headFacing, RotDrawMode bodyDrawType, bool portrait)
