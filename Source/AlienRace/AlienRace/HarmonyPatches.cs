@@ -464,12 +464,16 @@ namespace AlienRace
             Find.Scenario.AllParts.Where(sp => sp is ScenPart_StartingHumanlikes).Select(sp => sp as ScenPart_StartingHumanlikes).ToList().ForEach(sp => __instance.startingPawns.AddRange(sp.GetPawns()));
         }
 
-        public static void TryGainMemoryThoughtPrefix(ref Thought_Memory newThought, MemoryThoughtHandler __instance)
+        public static bool TryGainMemoryThoughtPrefix(ref Thought_Memory newThought, MemoryThoughtHandler __instance)
         {
+            string thoughtName = newThought.def.defName;
             Pawn pawn = __instance.pawn;
+
+            if (DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => !ar.alienRace.thoughtSettings.replacerList.NullOrEmpty()).SelectMany(ar => ar.alienRace.thoughtSettings.replacerList?.Select(tr => tr.replacer)).Contains(thoughtName))
+                return false;
+
             if (pawn.def is ThingDef_AlienRace)
             {
-                string thoughtName = newThought.def.defName;
                 ThoughtReplacer replacer = (pawn.def as ThingDef_AlienRace)?.alienRace.thoughtSettings.replacerList?.FirstOrDefault(tr => thoughtName.EqualsIgnoreCase(tr.original));
                 if (replacer != null)
                 {
@@ -487,6 +491,7 @@ namespace AlienRace
                     }
                 }
             }
+            return true;
         }
 
         public static void ExtraRequirementsGrowerSowPostfix(Pawn pawn, IPlantToGrowSettable settable, WorkGiver_GrowerSow __instance, ref bool __result)
