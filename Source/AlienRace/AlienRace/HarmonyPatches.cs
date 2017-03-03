@@ -844,9 +844,10 @@ namespace AlienRace
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
             {
                 Thing drugs = c.GetThingList(pawn.Map).FirstOrDefault(t => t.TryGetComp<CompDrug>() != null);
-                if(drugs != null && alienProps.alienRace.generalSettings.chemicalSettings.Any(cs => cs.chemical.EqualsIgnoreCase(drugs.TryGetComp<CompDrug>().Props.chemical.defName) && !cs.ingestible))
+                if(drugs != null && (alienProps.alienRace.generalSettings.chemicalSettings?.Any(cs => cs.chemical.EqualsIgnoreCase(drugs.TryGetComp<CompDrug>().Props.chemical.defName) && !cs.ingestible) ?? false))
                 {
-                    foreach (FloatMenuOption fmo in opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains("ConsumeThing".Translate(new object[] { drugs.LabelShort }))).ToList())
+                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains(string.Format(drugs.def.ingestible.ingestCommandString, drugs.LabelShort))).ToList();
+                    foreach (FloatMenuOption fmo in options)
                     {
                         int index = opts.IndexOf(fmo);
                         opts.Remove(fmo);
