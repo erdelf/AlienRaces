@@ -66,6 +66,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(CompDrug), nameof(CompDrug.PostIngested)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PostIngestedPostfix)));
             harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanBingeNowPostfix)));
             harmony.Patch(AccessTools.Method(typeof(SituationalThoughtHandler), "TryCreateSituationalThought"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryCreateSituationalThoughtPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.TryMakeInitialRelationsWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryMakeInitialRelationsWithPostfix)));
+
 
             //harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
 
@@ -113,6 +115,35 @@ namespace AlienRace
             #endregion
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void TryMakeInitialRelationsWithPostfix(Faction __instance, Faction other)
+        {
+            ThingDef_AlienRace alienProps = other.def.basicMemberKind.race as ThingDef_AlienRace;
+            if(alienProps != null)
+            {
+                alienProps.alienRace.generalSettings.factionRelations?.ForEach(frs =>
+                {
+                    if (frs.factions.Contains(__instance.def.defName))
+                    {
+                        other.RelationWith(__instance).goodwill = frs.goodwill.RandomInRange;
+                    }
+                });
+            }
+
+
+            alienProps = __instance.def.basicMemberKind.race as ThingDef_AlienRace;
+            if (alienProps != null)
+            {
+                alienProps.alienRace.generalSettings.factionRelations?.ForEach(frs =>
+                {
+                    if (frs.factions.Contains(other.def.defName))
+                    {
+                        __instance.RelationWith(other).goodwill = frs.goodwill.RandomInRange;
+
+                    }
+                });
+            }
         }
 
         public static bool TryCreateSituationalThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance)

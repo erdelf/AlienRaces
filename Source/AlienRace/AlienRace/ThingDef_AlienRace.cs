@@ -43,8 +43,8 @@ namespace AlienRace
 
     public class FactionRelationSettings
     {
-        List<string> factions;
-        List<FloatRange> goodwill;
+        public List<string> factions;
+        public FloatRange goodwill;
     }
 
     public class ChemicalSettings
