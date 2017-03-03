@@ -62,6 +62,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Thing), nameof(Pawn.SetFactionDirect)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SetFactionDirectPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.SecondaryRomanceChanceFactor)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SecondaryRomanceChanceFactorPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.CompatibilityWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CompatibilityWith)));
+            harmony.Patch(AccessTools.Method(typeof(JobGiver_SatisfyChemicalNeed), "DrugValidator"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DrugValidatorPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(CompDrug), nameof(CompDrug.PostIngested)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PostIngestedPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanBingeNowPostfix)));
 
             //harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
 
@@ -109,6 +112,45 @@ namespace AlienRace
             #endregion
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void CanBingeNowPostfix(Pawn pawn, ChemicalDef chemical, ref bool __result)
+        {
+            if (__result)
+            {
+                ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+                if (alienProps != null)
+                {
+                    bool result = __result;
+                    alienProps.alienRace.generalSettings.chemicalSettings.ForEach(cs =>
+                    {
+                        if (cs.chemical.EqualsIgnoreCase(chemical.defName) && !cs.ingestible)
+                        {
+                            result = false;
+                        }
+                    }
+                    );
+                    __result = result;
+                }
+            }
+        }
+
+        public static void PostIngestedPostfix(Pawn ingester, CompDrug __instance)
+        {
+            ThingDef_AlienRace alienProps = ingester.def as ThingDef_AlienRace;
+            if(alienProps != null)
+            {
+                alienProps.alienRace.generalSettings.chemicalSettings.ForEach(cs =>
+                {
+                    if (cs.chemical.EqualsIgnoreCase(__instance.Props.chemical.defName))
+                        cs.reactions?.ForEach(iod => iod.DoIngestionOutcome(ingester, __instance.parent));
+                });
+            }
+        }
+
+        public static void DrugValidatorPostfix(ref bool __result, Pawn pawn, Thing drug)
+        {
+            CanBingeNowPostfix(pawn, drug.TryGetComp<CompDrug>().Props.chemical, ref __result);
         }
 
         public static void CompatibilityWith(Pawn_RelationsTracker __instance, Pawn otherPawn, ref float __result)
@@ -779,12 +821,28 @@ namespace AlienRace
         {
             IntVec3 c = IntVec3.FromVector3(clickPos);
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+            {
+                Thing drugs = c.GetThingList(pawn.Map).FirstOrDefault(t => t.TryGetComp<CompDrug>() != null);
+                if(drugs != null && alienProps.alienRace.generalSettings.chemicalSettings.Any(cs => cs.chemical.EqualsIgnoreCase(drugs.TryGetComp<CompDrug>().Props.chemical.defName) && !cs.ingestible))
+                {
+                    foreach (FloatMenuOption fmo in opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains("ConsumeThing".Translate(new object[] { drugs.LabelShort }))).ToList())
+                    {
+                        int index = opts.IndexOf(fmo);
+                        opts.Remove(fmo);
+
+                        opts.Insert(index, new FloatMenuOption("CannotEquip".Translate(new object[]
+                            {
+                                    drugs.LabelShort
+                            }) + " (" + pawn.def.LabelCap + " can't consume this" + ")", null));
+                    }
+                }
+            }
             if (pawn.equipment != null)
             {
                 ThingWithComps equipment = (ThingWithComps) c.GetThingList(pawn.Map).FirstOrDefault(t => t.TryGetComp<CompEquippable>() != null && t.def.IsWeapon);
                 if(equipment != null)
                 {
-                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled).ToList();
+                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains("Equip".Translate(new object[] { equipment.LabelShort }))).ToList();
 
                     bool restrictionsOff = (alienProps?.alienRace.raceRestriction.weaponList?.Contains(equipment.def.defName) ?? false) ? true :
                     (alienProps?.alienRace.raceRestriction.whiteWeaponList?.Contains(equipment.def.defName) ?? true);
@@ -808,7 +866,7 @@ namespace AlienRace
 
                     if (alienProps != null && alienProps.alienRace.raceRestriction.onlyUseRaceRestrictedWeapons)
                     {
-                        options = opts.Where(fmo => !fmo.Disabled).ToList();
+                        options = opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains("Equip".Translate(new object[] { equipment.LabelShort }))).ToList();
                         
                         if (!options.NullOrEmpty() && !(alienProps.alienRace.raceRestriction.weaponList?.Contains(equipment.def.defName) ?? false ||
                         (alienProps.alienRace.raceRestriction.whiteWeaponList?.Contains(equipment.def.defName) ?? false)))
@@ -833,7 +891,7 @@ namespace AlienRace
                 Apparel apparel = pawn.Map.thingGrid.ThingAt<Apparel>(c);
                 if (apparel != null)
                 {
-                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled).ToList();
+                    List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains("ForceWear".Translate(new object[] { apparel.LabelShort }))).ToList();
 
                     bool restrictionsOff = (alienProps?.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false) ? true :
                     (alienProps?.alienRace.raceRestriction.whiteApparelList?.Contains(apparel.def.defName) ?? true);
@@ -855,7 +913,7 @@ namespace AlienRace
 
                     if (alienProps != null && alienProps.alienRace.raceRestriction.onlyUseRaceRestrictedApparel)
                     {
-                        options = opts.Where(fmo => !fmo.Disabled).ToList();
+                        options = opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains("ForceWear".Translate(new object[] { apparel.LabelShort }))).ToList();
 
                         if (!options.NullOrEmpty() && !(alienProps.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false ||
                         (alienProps.alienRace.raceRestriction.whiteApparelList?.Contains(apparel.def.defName) ?? false)))
