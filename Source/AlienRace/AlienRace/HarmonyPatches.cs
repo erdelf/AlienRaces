@@ -119,8 +119,8 @@ namespace AlienRace
 
         public static void TryMakeInitialRelationsWithPostfix(Faction __instance, Faction other)
         {
-            ThingDef_AlienRace alienProps = other.def.basicMemberKind.race as ThingDef_AlienRace;
-            if(alienProps != null)
+            ThingDef_AlienRace alienProps = other.def.basicMemberKind?.race as ThingDef_AlienRace;
+            if (alienProps != null)
             {
                 alienProps.alienRace.generalSettings.factionRelations?.ForEach(frs =>
                 {
@@ -131,16 +131,14 @@ namespace AlienRace
                 });
             }
 
-
-            alienProps = __instance.def.basicMemberKind.race as ThingDef_AlienRace;
+            alienProps = __instance.def.basicMemberKind?.race as ThingDef_AlienRace;
             if (alienProps != null)
             {
                 alienProps.alienRace.generalSettings.factionRelations?.ForEach(frs =>
                 {
                     if (frs.factions.Contains(other.def.defName))
                     {
-                        __instance.RelationWith(other).goodwill = frs.goodwill.RandomInRange;
-
+                        __instance.RelationWith(other).goodwill = frs.goodwill.RandomInRange;                        
                     }
                 });
             }
