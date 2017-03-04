@@ -119,6 +119,9 @@ namespace AlienRace
 
         public static void TryMakeInitialRelationsWithPostfix(Faction __instance, Faction other)
         {
+            if (!__instance.HasName || !other.HasName)
+                return;
+            /*
             ThingDef_AlienRace alienProps = other.def.basicMemberKind?.race as ThingDef_AlienRace;
             if (alienProps != null)
             {
@@ -141,7 +144,7 @@ namespace AlienRace
                         __instance.RelationWith(other).goodwill = frs.goodwill.RandomInRange;                        
                     }
                 });
-            }
+            }*/
         }
 
         public static bool TryCreateSituationalThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance)
@@ -333,7 +336,7 @@ namespace AlienRace
         }
         */
 
-        public static void PrepareCarefullyConvertToPawn(ref Pawn __result, object __instance)
+        public static void PrepareCarefullyConvertToPawn(ref Pawn __result, object __instance, bool resolveGraphics)
         {
             Traverse traverse = Traverse.Create(__instance);
             Pawn source = traverse.Field("pawn").GetValue<Pawn>();
@@ -342,10 +345,13 @@ namespace AlienRace
             {
                 AlienPartGenerator.AlienComp resultComp = __result.TryGetComp<AlienPartGenerator.AlienComp>();
 
-                resultComp.skinColor = PawnSkinColors.GetSkinColor(traverse.Property("MelaninLevel").GetValue<float>());
+                resultComp.skinColor = sourceComp.skinColor;
                 resultComp.skinColorSecond = sourceComp.skinColorSecond;
                 resultComp.Tail = sourceComp.Tail;
                 resultComp.fixGenderPostSpawn = sourceComp.fixGenderPostSpawn;
+
+                //if (resolveGraphics)
+                    __result.Drawer.renderer.graphics.ResolveAllGraphics();
             }
         }
  
