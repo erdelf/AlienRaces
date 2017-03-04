@@ -121,7 +121,7 @@ namespace AlienRace
         {
             if (!__instance.HasName || !other.HasName)
                 return;
-            /*
+            
             ThingDef_AlienRace alienProps = other.def.basicMemberKind?.race as ThingDef_AlienRace;
             if (alienProps != null)
             {
@@ -129,7 +129,8 @@ namespace AlienRace
                 {
                     if (frs.factions.Contains(__instance.def.defName))
                     {
-                        other.RelationWith(__instance).goodwill = frs.goodwill.RandomInRange;
+                        if(other.RelationWith(__instance, true) != null)
+                            other.RelationWith(__instance,true).goodwill = frs.goodwill.RandomInRange;
                     }
                 });
             }
@@ -141,10 +142,11 @@ namespace AlienRace
                 {
                     if (frs.factions.Contains(other.def.defName))
                     {
-                        __instance.RelationWith(other).goodwill = frs.goodwill.RandomInRange;                        
+                        if (__instance.RelationWith(other) != null)
+                            __instance.RelationWith(other).goodwill = frs.goodwill.RandomInRange;
                     }
                 });
-            }*/
+            }
         }
 
         public static bool TryCreateSituationalThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance)
