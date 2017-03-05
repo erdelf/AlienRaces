@@ -177,7 +177,7 @@ namespace AlienRace
                 if (alienProps != null)
                 {
                     bool result = __result;
-                    alienProps.alienRace.generalSettings.chemicalSettings.ForEach(cs =>
+                    alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(cs =>
                     {
                         if (cs.chemical.EqualsIgnoreCase(chemical.defName) && !cs.ingestible)
                         {
@@ -195,7 +195,7 @@ namespace AlienRace
             ThingDef_AlienRace alienProps = ingester.def as ThingDef_AlienRace;
             if(alienProps != null)
             {
-                alienProps.alienRace.generalSettings.chemicalSettings.ForEach(cs =>
+                alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(cs =>
                 {
                     if (cs.chemical.EqualsIgnoreCase(__instance.Props.chemical.defName))
                         cs.reactions?.ForEach(iod => iod.DoIngestionOutcome(ingester, __instance.parent));
