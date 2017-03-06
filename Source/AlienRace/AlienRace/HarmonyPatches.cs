@@ -88,6 +88,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(ParentRelationUtility), nameof(ParentRelationUtility.GetFather)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GetParentPostfix)));
             harmony.Patch(AccessTools.Method(typeof(ChildRelationUtility), nameof(ChildRelationUtility.DefinitelyHasNotBirthName)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DefinitelyHasNotBirthNamePostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(CreateRelationChildPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(TraitSet), nameof(TraitSet.GainTrait)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GainTraitPrefix)), null);
+
 
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(ar =>
             {
@@ -132,6 +134,16 @@ namespace AlienRace
             #endregion
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static bool GainTraitPrefix(Trait trait, TraitSet __instance)
+        {
+            ThingDef_AlienRace alienProps = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def as ThingDef_AlienRace;
+
+            if (alienProps == null || !(alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.Any(ate => ate.defname.EqualsIgnoreCase(trait.def.defName)) ?? false))
+                return true;
+
+            return Rand.Range(0, 100) < alienProps.alienRace.generalSettings.forcedRaceTraitEntries.First(ate => ate.defname.EqualsIgnoreCase(trait.def.defName)).chance;
         }
 
         public static bool CreateRelationChildPrefix(Pawn generated, Pawn other)
