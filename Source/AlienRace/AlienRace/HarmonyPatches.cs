@@ -67,10 +67,27 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanBingeNowPostfix)));
             harmony.Patch(AccessTools.Method(typeof(SituationalThoughtHandler), "TryCreateSituationalThought"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryCreateSituationalThoughtPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.TryMakeInitialRelationsWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryMakeInitialRelationsWithPostfix)));
-
-
-            //harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), nameof(PawnRelationWorker_ExLover.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), nameof(PawnRelationWorker_ExSpouse.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Fiance), nameof(PawnRelationWorker_Fiance.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Lover), nameof(PawnRelationWorker_Lover.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), nameof(PawnRelationWorker_Parent.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), nameof(PawnRelationWorker_Sibling.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), nameof(PawnRelationWorker_Spouse.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            //harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), nameof(PawnRelationWorker_ExLover.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), nameof(PawnRelationWorker_ExSpouse.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Fiance), nameof(PawnRelationWorker_Fiance.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Lover), nameof(PawnRelationWorker_Lover.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), nameof(PawnRelationWorker_Parent.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), nameof(PawnRelationWorker_Sibling.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), nameof(PawnRelationWorker_Spouse.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
+            harmony.Patch(AccessTools.Method(typeof(ChildRelationUtility), nameof(ChildRelationUtility.ChanceOfBecomingChildOf)), new HarmonyMethod(typeof(HarmonyPatches), nameof(ChanceOfBecomingChildOfPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(ChanceOfBecomingChildOfPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(ParentRelationUtility), nameof(ParentRelationUtility.GetMother)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GetParentPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(ParentRelationUtility), nameof(ParentRelationUtility.GetFather)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GetParentPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(ChildRelationUtility), nameof(ChildRelationUtility.DefinitelyHasNotBirthName)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DefinitelyHasNotBirthNamePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(CreateRelationChildPrefix)), null);
 
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(ar =>
             {
@@ -115,6 +132,60 @@ namespace AlienRace
             #endregion
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static bool CreateRelationChildPrefix(Pawn generated, Pawn other)
+        {
+            if (generated.RaceProps.hasGenders)
+                return true;
+
+            Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, null);
+            if (parent != null)
+                    generated.relations.AddDirectRelation(parent.story.traits.HasTrait(TraitDefOf.Gay) || LovePartnerRelationUtility.HasAnyLovePartner(generated) || Rand.Value > 0.8 ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent);
+
+            other.relations.AddDirectRelation(PawnRelationDefOf.Parent, generated);
+
+            return false;
+        }
+
+        public static void DefinitelyHasNotBirthNamePostfix(Pawn pawn, ref bool __result)
+        {
+            if (!pawn.RaceProps.hasGenders)
+                __result = true;
+        }
+
+        public static void GetParentPostfix(this Pawn pawn, ref Pawn __result)
+        {
+            DirectPawnRelation dpr;
+            if (!pawn.RaceProps.hasGenders)
+                if (pawn.relations.DirectRelations.Where(dprs => dprs.def == PawnRelationDefOf.Parent).TryRandomElement(out dpr))
+                {
+                    __result = dpr.otherPawn;
+                }
+        }
+
+        public static void ChanceOfBecomingChildOfPostfix(Pawn father, Pawn mother)
+        {
+            if (!father?.RaceProps.hasGenders ?? false) father.gender = Gender.None;
+            if (!mother?.RaceProps.hasGenders ?? false) mother.gender = Gender.None;
+        }
+
+        public static void ChanceOfBecomingChildOfPrefix(Pawn father, Pawn mother)
+        {
+            if (!father?.RaceProps.hasGenders ?? false) father.gender = Gender.Male;
+            if (!mother?.RaceProps.hasGenders ?? false) mother.gender = Gender.Female;
+        }
+
+        public static void RemoveGenderFromGenderless(Pawn generated, Pawn other)
+        {
+            if (!generated.RaceProps.hasGenders) generated.gender = Gender.None;
+            if (!other.RaceProps.hasGenders) other.gender = Gender.None;
+        }
+
+        public static void AssignGenderToGenderless(Pawn generated, Pawn other)
+        {
+            if (!generated.RaceProps.hasGenders) generated.gender = Rand.Bool ? Gender.Male : Gender.Female;
+            if (!other.RaceProps.hasGenders) other.gender = Rand.Bool ? Gender.Male : Gender.Female;
         }
 
         public static void TryMakeInitialRelationsWithPostfix(Faction __instance, Faction other)
@@ -322,21 +393,6 @@ namespace AlienRace
             __result = num * num2 * num3 * num4 * num7 * num8 * num6;
             return;
         }
-
-        /*
-        public static void RemoveGenderFromGenderless(Pawn pawn) //Pawn generated, Pawn other)
-        {
-            if (!pawn.RaceProps.hasGenders && pawn.gender != Gender.None) pawn.gender = Gender.None;
-            //if (!other.RaceProps.hasGenders && other.gender != Gender.None) other.gender = Gender.None;
-        }
-
-        public static void AssignGenderToGenderless(Pawn pawn) //Pawn generated, Pawn other)
-        {
-            if (!pawn.RaceProps.hasGenders && pawn.gender == Gender.None) pawn.gender = Rand.Bool ? Gender.Male : Gender.Female;
-            Log.Message(pawn.gender.ToString());
-            //if (!other.RaceProps.hasGenders && other.gender == Gender.None) other.gender = Rand.Bool ? Gender.Male : Gender.Female;
-        }
-        */
 
         public static void PrepareCarefullyConvertToPawn(ref Pawn __result, object __instance, bool resolveGraphics)
         {
@@ -750,80 +806,99 @@ namespace AlienRace
 
         public static void GenerationChanceSpousePostfix(ref float __result, Pawn generated, Pawn other)
         {
-            if (__result == 0) __result++;
+            //if (__result == 0) __result++;
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSpouse;
             if (other.def is ThingDef_AlienRace)
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSpouse;
+
+            if (generated == other)
+                __result = 0;
         }
 
         public static void GenerationChanceSiblingPostfix(ref float __result, Pawn generated, Pawn other)
         {
-            if (__result == 0) __result++;
+            //if (__result == 0) __result++;
+
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSibling;
             if (other.def is ThingDef_AlienRace)
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSibling;
+
+            if (generated == other)
+                __result = 0;
         }
 
         public static void GenerationChanceParentPostfix(ref float __result, Pawn generated, Pawn other)
         {
-            if (__result == 0) __result++;
+            //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierParent;
             if (other.def is ThingDef_AlienRace)
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierParent;
+            if (generated == other)
+                __result = 0;
         }
 
         public static void GenerationChanceLoverPostfix(ref float __result, Pawn generated, Pawn other)
         {
-            if (__result == 0) __result++;
+            //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierLover;
             if (other.def is ThingDef_AlienRace)
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierLover;
+            if (generated == other)
+                __result = 0;
         }
 
         public static void GenerationChanceFiancePostfix(ref float __result, Pawn generated, Pawn other)
         {
-            if (__result == 0) __result++;
+            //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierFiance;
             if (other.def is ThingDef_AlienRace)
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierFiance;
+            if (generated == other)
+                __result = 0;
         }
 
         public static void GenerationChanceExSpousePostfix(ref float __result, Pawn generated, Pawn other)
         {
-            if (__result == 0) __result++;
+            //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExSpouse;
             if (other.def is ThingDef_AlienRace)
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExSpouse;
+            if (generated == other)
+                __result = 0;
         }
 
         public static void GenerationChanceExLoverPostfix(ref float __result, Pawn generated, Pawn other)
         {
-            if (__result == 0) __result++;
+            //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExLover;
             if (other.def is ThingDef_AlienRace)
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExLover;
+            if (generated == other)
+                __result = 0;
         }
 
         public static void GenerationChanceChildPostfix(ref float __result, Pawn generated, Pawn other)
         {
-            if (__result == 0) __result++;
+            //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierChild;
             if (other.def is ThingDef_AlienRace)
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierChild;
+            if (generated == other)
+                __result = 0;
         }
 
         public static void BirthdayBiologicalPrefix(Pawn_AgeTracker __instance)
