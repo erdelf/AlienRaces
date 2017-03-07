@@ -67,28 +67,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanBingeNowPostfix)));
             harmony.Patch(AccessTools.Method(typeof(SituationalThoughtHandler), "TryCreateSituationalThought"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryCreateSituationalThoughtPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.TryMakeInitialRelationsWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryMakeInitialRelationsWithPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), nameof(PawnRelationWorker_ExLover.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), nameof(PawnRelationWorker_ExSpouse.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Fiance), nameof(PawnRelationWorker_Fiance.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Lover), nameof(PawnRelationWorker_Lover.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), nameof(PawnRelationWorker_Parent.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), nameof(PawnRelationWorker_Sibling.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), nameof(PawnRelationWorker_Spouse.GenerationChance)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            //harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), nameof(PawnRelationWorker_ExLover.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), nameof(PawnRelationWorker_ExSpouse.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Fiance), nameof(PawnRelationWorker_Fiance.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Lover), nameof(PawnRelationWorker_Lover.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), nameof(PawnRelationWorker_Parent.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), nameof(PawnRelationWorker_Sibling.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), nameof(PawnRelationWorker_Spouse.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(AssignGenderToGenderless)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RemoveGenderFromGenderless)));
-            harmony.Patch(AccessTools.Method(typeof(ChildRelationUtility), nameof(ChildRelationUtility.ChanceOfBecomingChildOf)), new HarmonyMethod(typeof(HarmonyPatches), nameof(ChanceOfBecomingChildOfPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(ChanceOfBecomingChildOfPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(ParentRelationUtility), nameof(ParentRelationUtility.GetMother)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GetParentPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(ParentRelationUtility), nameof(ParentRelationUtility.GetFather)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GetParentPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(ChildRelationUtility), nameof(ChildRelationUtility.DefinitelyHasNotBirthName)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DefinitelyHasNotBirthNamePostfix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.CreateRelation)), new HarmonyMethod(typeof(HarmonyPatches), nameof(CreateRelationChildPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(TraitSet), nameof(TraitSet.GainTrait)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GainTraitPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnRelationsPrefix)), null);
+
 
 
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(ar =>
@@ -134,6 +115,65 @@ namespace AlienRace
             #endregion
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static bool GeneratePawnRelationsPrefix(Pawn pawn)
+        {
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+
+            if (pawn.RaceProps.hasGenders || alienProps == null)
+                return true;
+            RelationSettings relations = alienProps.alienRace.relationSettings;
+            List<Pawn> pawns = PawnsFinder.AllMapsAndWorld_AliveOrDead.Where(p => p.def == pawn.def).ToList();
+            if (pawns.NullOrEmpty())
+                return true;
+
+            Pawn other;
+            if (Rand.Range(0, 100) < relations.relationChanceModifierChild*200)
+            {
+                List<Pawn> temp = new List<Pawn>(pawns);
+                do
+                {
+                    temp.TryRandomElement(out other);
+                    if (other == null)
+                        goto Step1;
+                    temp.Remove(other);
+                } while (other.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() > 2);
+                Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent);
+                if (parent != null)
+                    pawn.relations.AddDirectRelation(parent.story.traits.HasTrait(TraitDefOf.Gay) || LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8f ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent);
+                other.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
+            }
+            Step1:
+
+            return false;
+        }
+
+        public static bool CreateRelationSiblingPrefix(Pawn generated, Pawn other)
+        {
+            if (generated.RaceProps.hasGenders)
+                return true;
+
+            Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, null);
+            List<DirectPawnRelation> dprs = other.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent && dpr.otherPawn != parent).ToList();
+            Pawn parent2 = dprs.NullOrEmpty() ? null : dprs.First().otherPawn;
+            if (parent == null)
+            {
+                parent = PawnGenerator.GeneratePawn(other.kindDef, Find.FactionManager.FirstFactionOfDef(other.kindDef.defaultFactionType) ?? Find.FactionManager.AllFactions.RandomElement());
+                other.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent);
+            }
+            if (parent2 == null)
+            {
+                parent2 = PawnGenerator.GeneratePawn(other.kindDef, Find.FactionManager.FirstFactionOfDef(other.kindDef.defaultFactionType) ?? Find.FactionManager.AllFactions.RandomElement());
+                other.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent);
+            }
+
+            parent.relations.AddDirectRelation(parent.story.traits.HasTrait(TraitDefOf.Gay) || LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8 ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent2);
+
+            generated.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent);
+            generated.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent2);
+
+            return false;
         }
 
         public static bool GainTraitPrefix(Trait trait, TraitSet __instance)
