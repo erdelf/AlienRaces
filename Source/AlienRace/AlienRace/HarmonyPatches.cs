@@ -127,9 +127,9 @@ namespace AlienRace
             List<Pawn> pawns = PawnsFinder.AllMapsAndWorld_AliveOrDead.Where(p => p.def == pawn.def).ToList();
             if (pawns.NullOrEmpty())
                 return true;
-
+            
             Pawn other;
-            if (Rand.Range(0, 100) < relations.relationChanceModifierChild*200)
+            if (Rand.Value < relations.relationChanceModifierChild * PawnRelationDefOf.Child.generationChanceFactor * 1.5)
             {
                 List<Pawn> temp = new List<Pawn>(pawns);
                 do
@@ -141,11 +141,155 @@ namespace AlienRace
                 } while (other.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() > 2);
                 Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent);
                 if (parent != null)
-                    pawn.relations.AddDirectRelation(parent.story.traits.HasTrait(TraitDefOf.Gay) || LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8f ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent);
+                    pawn.relations.AddDirectRelation(LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8f ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent);
                 other.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
             }
             Step1:
+            
+            if (Rand.Value < relations.relationChanceModifierExLover * PawnRelationDefOf.ExLover.generationChanceFactor * 1.5)
+            {
+                pawns.TryRandomElement(out other);
+                if (other == null)
+                    goto Step2;
+                if(!pawn.GetRelations(other).Contains(PawnRelationDefOf.ExLover))
+                pawn.relations.AddDirectRelation(PawnRelationDefOf.ExLover, other);
 
+                other.relations.Children.ToList().ForEach(p =>
+                {
+                    if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && Rand.Value < 0.35)
+                        p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
+                });
+            }
+            Step2:
+            
+            if (Rand.Value < relations.relationChanceModifierExSpouse * PawnRelationDefOf.ExSpouse.generationChanceFactor * 1.5)
+            {
+                pawns.TryRandomElement(out other);
+                if (other == null)
+                    goto Step3;
+
+                pawn.relations.AddDirectRelation(PawnRelationDefOf.ExSpouse, other);
+
+                other.relations.Children.ToList().ForEach(p =>
+                {
+                    if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && Rand.Value < 1)
+                        p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
+                });
+            }
+            Step3:
+            
+            if (Rand.Value < relations.relationChanceModifierFiance * PawnRelationDefOf.Fiance.generationChanceFactor * 1.5)
+            {
+                pawns.TryRandomElement(out other);
+                if (other == null)
+                    goto Step4;
+
+                pawn.relations.AddDirectRelation(PawnRelationDefOf.Fiance, other);
+
+                other.relations.Children.ToList().ForEach(p =>
+                {
+                    if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && Rand.Value < 0.7)
+                        p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
+                });
+            }
+            Step4:
+            
+            if (Rand.Value < relations.relationChanceModifierLover * PawnRelationDefOf.Lover.generationChanceFactor * 1.5)
+            {
+                List<Pawn> temp = new List<Pawn>(pawns);
+                do
+                {
+                    temp.TryRandomElement(out other);
+                    if (other == null)
+                        goto Step5;
+                    temp.Remove(other);
+                } while (!LovePartnerRelationUtility.HasAnyLovePartner(other));
+
+                pawn.relations.AddDirectRelation(PawnRelationDefOf.Lover, other);
+
+                other.relations.Children.ToList().ForEach(p =>
+                {
+                    if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && Rand.Value < 0.35f)
+                        p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
+                });
+            }
+            Step5:
+            
+            if (Rand.Value < relations.relationChanceModifierParent * PawnRelationDefOf.Parent.generationChanceFactor * 1.5)
+            {
+                List<Pawn> temp = new List<Pawn>(pawns);
+                do
+                {
+                    temp.TryRandomElement(out other);
+                    if (other == null)
+                        goto Step6;
+                    temp.Remove(other);
+                } while (!LovePartnerRelationUtility.HasAnyLovePartner(other));
+
+                Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent);
+                if (parent != null && pawn != parent && !pawn.GetRelations(parent).Contains(PawnRelationDefOf.ExLover))
+                    pawn.relations.AddDirectRelation(LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8f ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent);
+
+                pawn.relations.AddDirectRelation(PawnRelationDefOf.Parent, other);
+            }
+            Step6:
+            
+            if (Rand.Value < relations.relationChanceModifierSibling * PawnRelationDefOf.Sibling.generationChanceFactor * 1.5)
+            {
+                pawns.TryRandomElement(out other);
+                if (other == null)
+                    goto Step7;
+
+                Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, null);
+                List<DirectPawnRelation> dprs = other.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent && dpr.otherPawn != parent).ToList();
+                Pawn parent2 = dprs.NullOrEmpty() ? null : dprs.First().otherPawn;
+
+                if (parent == null)
+                {
+                    parent = PawnGenerator.GeneratePawn(other.kindDef, Find.FactionManager.FirstFactionOfDef(other.kindDef.defaultFactionType) ?? Find.FactionManager.AllFactions.RandomElement());
+                    if (!other.GetRelations(parent).Contains(PawnRelationDefOf.Parent))
+                        other.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent);
+                }
+
+                if (parent2 == null)
+                {
+                    parent2 = PawnGenerator.GeneratePawn(other.kindDef, Find.FactionManager.FirstFactionOfDef(other.kindDef.defaultFactionType) ?? Find.FactionManager.AllFactions.RandomElement());
+                    if (!other.GetRelations(parent2).Contains(PawnRelationDefOf.Parent))
+                        other.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent2);
+                }
+
+                if (!parent.GetRelations(parent2).Any(prd => prd == PawnRelationDefOf.ExLover || prd == PawnRelationDefOf.Lover))
+                    parent.relations.AddDirectRelation(LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8 ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Lover, parent2);
+
+                if (!pawn.GetRelations(parent).Contains(PawnRelationDefOf.Parent) && pawn != parent)
+                    pawn.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent);
+                if (!pawn.GetRelations(parent2).Contains(PawnRelationDefOf.Parent) && pawn != parent2)
+                    pawn.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent2);
+            }
+            Step7:
+            
+            if (Rand.Value < relations.relationChanceModifierSpouse * PawnRelationDefOf.Spouse.generationChanceFactor * 1.5)
+            {
+                List<Pawn> temp = new List<Pawn>(pawns);
+                do
+                {
+                    temp.TryRandomElement(out other);
+                    if (other == null)
+                        goto Step8;
+                    temp.Remove(other);
+                } while (!LovePartnerRelationUtility.HasAnyLovePartner(other));
+
+                if (!pawn.GetRelations(other).Contains(PawnRelationDefOf.Spouse))
+                    pawn.relations.AddDirectRelation(PawnRelationDefOf.Spouse, other);
+
+                other.relations.Children.ToList().ForEach(p =>
+                {
+                    if (pawn != p && p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && p.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, x => x == pawn) == null && Rand.Value < 0.7)
+                        p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
+                });
+            }
+            Step8:
+            
             return false;
         }
 
