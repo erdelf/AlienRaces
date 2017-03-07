@@ -1007,8 +1007,8 @@ namespace AlienRace
             IntVec3 c = IntVec3.FromVector3(clickPos);
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
             {
-                Thing drugs = c.GetThingList(pawn.Map).FirstOrDefault(t => t.TryGetComp<CompDrug>() != null);
-                if(drugs != null && (alienProps.alienRace.generalSettings.chemicalSettings?.Any(cs => cs.chemical.EqualsIgnoreCase(drugs.TryGetComp<CompDrug>().Props.chemical.defName) && !cs.ingestible) ?? false))
+                Thing drugs = c.GetThingList(pawn.Map).FirstOrDefault(t => t?.TryGetComp<CompDrug>() != null);
+                if (drugs != null && (alienProps?.alienRace.generalSettings.chemicalSettings?.Any(cs => cs.chemical.EqualsIgnoreCase(drugs.TryGetComp<CompDrug>()?.Props.chemical?.defName) && !cs.ingestible) ?? false))
                 {
                     List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains(string.Format(drugs.def.ingestible.ingestCommandString, drugs.LabelShort))).ToList();
                     foreach (FloatMenuOption fmo in options)
