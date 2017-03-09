@@ -146,6 +146,15 @@ namespace AlienRace
         public float relationChanceModifierParent = 1f;
         public float relationChanceModifierSibling = 1f;
         public float relationChanceModifierSpouse = 1f;
+
+        public List<RelationRenamer> renamer;
+    }
+
+    public sealed class RelationRenamer
+    {
+        public string relation;
+        public string label;
+        public string femaleLabel;
     }
 
     public sealed class RaceRestrictionSettings

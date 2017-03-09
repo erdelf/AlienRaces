@@ -28,7 +28,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceSiblingPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceSpousePostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnRelationsPrefix)), null);
-            //harmony.Patch(AccessTools.Method(typeof(PawnRelationDef), nameof(PawnRelationDef.GetGenderSpecificLabel)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GetGenderSpecificLabelPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnRelationDef), nameof(PawnRelationDef.GetGenderSpecificLabel)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GetGenderSpecificLabelPrefix)), null);
             #endregion
 
             #region Backstory
@@ -140,18 +140,21 @@ namespace AlienRace
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
-/*
-        public static bool GetGenderSpecificLabelPrefix(Pawn pawn, string __result, PawnRelationDef __instance)
-        {
-            if (pawn.def is ThingDef_AlienRace alienProps && alienProps.)
-            {
-                
 
-                return false;
+        public static bool GetGenderSpecificLabelPrefix(Pawn pawn, ref string __result, PawnRelationDef __instance)
+        {
+            if (pawn.def is ThingDef_AlienRace alienProps)
+            {
+                RelationRenamer ren = alienProps.alienRace.relationSettings.renamer?.FirstOrDefault(rn => rn.relation.EqualsIgnoreCase(__instance.defName));
+                if (ren != null)
+                {
+                    __result = pawn.gender == Gender.Female ? ren.femaleLabel : ren.label;
+                    return false;
+                }
             }
             return true;
         }
-        */
+        
         public static bool GeneratePawnRelationsPrefix(Pawn pawn)
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
