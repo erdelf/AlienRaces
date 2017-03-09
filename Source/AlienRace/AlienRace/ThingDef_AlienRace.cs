@@ -5,7 +5,7 @@ using Verse;
 
 namespace AlienRace
 {
-    public class ThingDef_AlienRace : ThingDef
+    public sealed class ThingDef_AlienRace : ThingDef
     {
         public AlienSettings alienRace;
 
@@ -15,7 +15,7 @@ namespace AlienRace
             base.ResolveReferences();
         }
 
-        public class AlienSettings
+        public sealed class AlienSettings
         {
             public GeneralSettings generalSettings = new GeneralSettings();
             public List<GraphicPaths> graphicPaths = new List<GraphicPaths>();
@@ -27,7 +27,7 @@ namespace AlienRace
         }
     }
 
-    public class GeneralSettings
+    public sealed class GeneralSettings
     {
         public float MaleGenderProbability = 0.5f;
         public bool PawnsSpecificBackstories = false;
@@ -41,20 +41,20 @@ namespace AlienRace
         public List<FactionRelationSettings> factionRelations;
     }
 
-    public class FactionRelationSettings
+    public sealed class FactionRelationSettings
     {
         public List<string> factions;
         public FloatRange goodwill;
     }
 
-    public class ChemicalSettings
+    public sealed class ChemicalSettings
     {
         public string chemical;
         public bool ingestible = true;
         public List<IngestionOutcomeDoer> reactions;
     }
 
-    public class AlienTraitEntry
+    public sealed class AlienTraitEntry
     {
         public string defname;
         public int degree = 0;
@@ -64,7 +64,7 @@ namespace AlienRace
         public float commonalityFemale = -1f;
     }
 
-    public class GraphicPaths
+    public sealed class GraphicPaths
     {
         public List<LifeStageDef> lifeStageDefs;
 
@@ -75,14 +75,14 @@ namespace AlienRace
         public string tail = "";
     }
 
-    public class HairSettings
+    public sealed class HairSettings
     {
         public bool HasHair = true;
         public List<string> hairTags;
         public int GetsGreyAt = 40;
     }
 
-    public class PawnKindSettings
+    public sealed class PawnKindSettings
     {
         public List<PawnKindEntry> alienslavekinds;
         public List<PawnKindEntry> alienrefugeekinds;
@@ -90,19 +90,19 @@ namespace AlienRace
         public List<FactionPawnKindEntry> alienwandererkinds;
     }
 
-    public class PawnKindEntry
+    public sealed class PawnKindEntry
     {
         public List<string> kindDefs;
         public float chance;
     }
 
-    public class FactionPawnKindEntry
+    public sealed class FactionPawnKindEntry
     {
         public List<PawnKindEntry> pawnKindEntries;
         public List<string> factionDefs;
     }
 
-    public class ThoughtSettings
+    public sealed class ThoughtSettings
     {
         public List<string> cannotReceiveThoughts;
         public bool cannotReceiveThoughtsAtAll = false;
@@ -116,27 +116,27 @@ namespace AlienRace
         public List<ThoughtReplacer> replacerList;
     }
 
-    public class ButcherThought
+    public sealed class ButcherThought
     {
         public List<string> raceList;
         public string thought = "ButcheredHumanlikeCorpse";
         public string knowThought = "KnowButcheredHumanlikeCorpse";
     }
 
-    public class AteThought
+    public sealed class AteThought
     {
         public List<string> raceList;
         public string thought = "AteHumanlikeMeatDirect";
         public string ingredientThought = "AteHumanlikeMeatAsIngredient";
     }
 
-    public class ThoughtReplacer
+    public sealed class ThoughtReplacer
     {
         public string original;
         public string replacer;
     }
 
-    public class RelationSettings
+    public sealed class RelationSettings
     {
         public float relationChanceModifierChild = 1f;
         public float relationChanceModifierExLover = 1f;
@@ -148,7 +148,7 @@ namespace AlienRace
         public float relationChanceModifierSpouse = 1f;
     }
 
-    public class RaceRestrictionSettings
+    public sealed class RaceRestrictionSettings
     {
         public bool onlyUseRaceRestrictedApparel = false;
         public List<string> apparelList;
@@ -177,7 +177,7 @@ namespace AlienRace
         public List<string> workGiverList;
     }
 
-    public class ResearchProjectRestrictions
+    public sealed class ResearchProjectRestrictions
     {
         public List<string> projects;
         public List<string> apparelList;
@@ -185,9 +185,6 @@ namespace AlienRace
     
     static class GraphicPathsExtension
     {
-        public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef)
-        {
-            return list.FirstOrDefault(gp => gp.lifeStageDefs?.Contains(lifeStageDef) ?? false) ?? list.First();
-        }
+        public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef) => list.FirstOrDefault(gp => gp.lifeStageDefs?.Contains(lifeStageDef) ?? false) ?? list.First();
     }
 }

@@ -9,7 +9,7 @@ using Verse;
 
 namespace AlienRace
 {
-    public class AlienPartGenerator
+    public sealed class AlienPartGenerator
     {
         public List<string> aliencrowntypes = new List<string>() { "Average_Normal" };
 
@@ -45,15 +45,9 @@ namespace AlienRace
 
         static MethodInfo meshInfo = AccessTools.Method(AccessTools.TypeByName("MeshMakerPlanes"), "NewPlaneMesh", new Type[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
 
-        public string RandomAlienHead(string userpath, Gender gender)
-        {
-            return userpath + (UseGenderedHeads ? gender.ToString() + "_" : "") + aliencrowntypes[Rand.Range(0, aliencrowntypes.Count)];
-        }
+        public string RandomAlienHead(string userpath, Gender gender) => userpath + (UseGenderedHeads ? gender.ToString() + "_" : "") + aliencrowntypes[Rand.Range(0, aliencrowntypes.Count)];
 
-        public static Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath)
-        {
-            return GraphicDatabase.Get<Graphic_Multi>(userpath + "Naked_" + bodyType.ToString(), shader, Vector2.one, skinColor, skinColorSecond);
-        }
+        public static Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath) => GraphicDatabase.Get<Graphic_Multi>(userpath + "Naked_" + bodyType.ToString(), shader, Vector2.one, skinColor, skinColorSecond);
 
         public Color SkinColor(Pawn alien, bool first = true)
         {
@@ -73,6 +67,7 @@ namespace AlienRace
                     
                     {
                         if (!meshPools.Keys.Any(v => v.Equals(CustomDrawSize)))
+                        {
                             meshPools.Add(CustomDrawSize, new GraphicMeshSet[]
                                 {
                                 new GraphicMeshSet(1.5f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // bodySet
@@ -81,6 +76,7 @@ namespace AlienRace
                                 new GraphicMeshSet(1.3f * CustomDrawSize.x, 1.5f * CustomDrawSize.y), // hairSetNarrow
 
                                 });
+                        }
 
                         GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(CustomDrawSize))];
 
@@ -93,6 +89,7 @@ namespace AlienRace
                     }
                     {
                         if (!meshPools.Keys.Any(v => v.Equals(CustomPortraitDrawSize)))
+                        {
                             meshPools.Add(CustomPortraitDrawSize, new GraphicMeshSet[]
                                 {
                                 new GraphicMeshSet(1.5f * CustomPortraitDrawSize.x, 1.5f * CustomPortraitDrawSize.y), // bodySet
@@ -100,6 +97,7 @@ namespace AlienRace
                                 new GraphicMeshSet(1.5f * CustomPortraitDrawSize.x, 1.5f * CustomPortraitDrawSize.y), // hairSetAverage
                                 new GraphicMeshSet(1.3f * CustomPortraitDrawSize.x, 1.5f * CustomPortraitDrawSize.y), // hairSetNarrow
                                 });
+                        }
 
                         GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(CustomPortraitDrawSize))];
 
@@ -113,11 +111,8 @@ namespace AlienRace
                 }, "meshSetAlien", false, null);
         }
 
-        public bool CanDrawTail(Pawn pawn)
-        {
-            return RestUtility.CurrentBed(pawn) == null && !pawn.Downed && !pawn.Dead && (tailBodyPart == null ||
+        public bool CanDrawTail(Pawn pawn) => RestUtility.CurrentBed(pawn) == null && !pawn.Downed && !pawn.Dead && (tailBodyPart == null ||
                 pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == tailBodyPart));
-        }
 
         public class AlienComp : ThingComp
         {
@@ -129,9 +124,9 @@ namespace AlienRace
             public override void PostExposeData()
             {
                 base.PostExposeData();
-                Scribe_Values.LookValue<bool>(ref fixGenderPostSpawn, "fixAlienGenderPostSpawn", false);
-                Scribe_Values.LookValue<Color>(ref skinColor, "skinColorAlien");
-                Scribe_Values.LookValue<Color>(ref skinColorSecond, "skinColorSecondAlien");
+                Scribe_Values.LookValue(ref fixGenderPostSpawn, "fixAlienGenderPostSpawn", false);
+                Scribe_Values.LookValue(ref skinColor, "skinColorAlien");
+                Scribe_Values.LookValue(ref skinColorSecond, "skinColorSecondAlien");
             }
         }
     }

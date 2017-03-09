@@ -8,7 +8,7 @@ using Verse;
 namespace AlienRace
 {
     [StaticConstructorOnStartup]
-    class ScenPart_StartingHumanlikes : ScenPart
+    sealed class ScenPart_StartingHumanlikes : ScenPart
     {
         
         static ScenPart_StartingHumanlikes()
@@ -34,8 +34,8 @@ namespace AlienRace
 
         public override void DoEditInterface(Listing_ScenEdit listing)
         {
-            Rect scenPartRect = listing.GetScenPartRect(this, ScenPart.RowHeight * 3f);
-            if (Widgets.ButtonText(scenPartRect.TopPart(0.45f), this.kindDef.label.CapitalizeFirst(), true, false, true))
+            Rect scenPartRect = listing.GetScenPartRect(this, RowHeight * 3f);
+            if (Widgets.ButtonText(scenPartRect.TopPart(0.45f), kindDef.label.CapitalizeFirst(), true, false, true))
             {
                 List<FloatMenuOption> list = new List<FloatMenuOption>();
                 list.AddRange(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.pawnKindSettings.startingColonists != null).SelectMany(ar => ar.alienRace.pawnKindSettings.startingColonists.SelectMany(ste => ste.pawnKindEntries.SelectMany(pke => pke.kindDefs))).Where(s => DefDatabase<PawnKindDef>.GetNamedSilentFail(s) != null).Select(pkd => DefDatabase<PawnKindDef>.GetNamedSilentFail(pkd)).Select(pkd => new FloatMenuOption(pkd.label.CapitalizeFirst(), () => kindDef = pkd)));
@@ -43,34 +43,37 @@ namespace AlienRace
                 list.Add(new FloatMenuOption("Slave", () => kindDef = PawnKindDefOf.Slave));
                 Find.WindowStack.Add(new FloatMenu(list));
             }
-            Widgets.TextFieldNumeric<int>(scenPartRect.BottomPart(0.45f), ref pawnCount, ref buffer, 0);
+            Widgets.TextFieldNumeric(scenPartRect.BottomPart(0.45f), ref pawnCount, ref buffer, 0);
         }
 
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.LookValue<int>(ref pawnCount, "alienRaceScenPawnCount", 0);
-            Scribe_Defs.LookDef<PawnKindDef>(ref kindDef, "PawnKindDefAlienRaceScen");
+            Scribe_Values.LookValue(ref pawnCount, "alienRaceScenPawnCount", 0);
+            Scribe_Defs.LookDef(ref kindDef, "PawnKindDefAlienRaceScen");
         }
 
-        public override string Summary(Scenario scen)
-        {
-            return ScenSummaryList.SummaryWithList(scen, "PlayerStartsWith", ScenPart_StartingThing_Defined.PlayerStartWithIntro);
-        }
+        public override string Summary(Scenario scen) => ScenSummaryList.SummaryWithList(scen, "PlayerStartsWith", ScenPart_StartingThing_Defined.PlayerStartWithIntro);
 
         public override IEnumerable<string> GetSummaryListEntries(string tag)
         {
             if (tag == "PlayerStartsWith")
+            {
                 yield return kindDef.LabelCap + " x" + pawnCount;
+            }
+
             yield break;
         }
 
         public override bool TryMerge(ScenPart other)
         {
             ScenPart_StartingHumanlikes others = other as ScenPart_StartingHumanlikes;
-            if (others == null || others.kindDef != this.kindDef)
+            if (others == null || others.kindDef != kindDef)
+            {
                 return false;
-            this.pawnCount += others.pawnCount;
+            }
+
+            pawnCount += others.pawnCount;
             return true;
         }
 
@@ -79,14 +82,16 @@ namespace AlienRace
             Predicate<Pawn> pawnCheck = p => p != null && DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(wtd => wtd.requireCapableColonist).ToList().TrueForAll(w => !p.story.WorkTypeIsDisabled(w));
 
 
-            for (int i = 0; i < this.pawnCount; i++)
+            for (int i = 0; i < pawnCount; i++)
             {
                 Pawn newPawn = null;
                 for (int x = 0; x < 200; x++)
                 {
-                    newPawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(this.kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, null, true, false, false, false, true, false, 26f, true));
+                    newPawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, null, true, false, false, false, true, false, 26f, true));
                     if (pawnCheck(newPawn))
+                    {
                         x = 200;
+                    }
                 }
                 yield return newPawn;
             }

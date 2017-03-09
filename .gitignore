@@ -49,3 +49,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 AlienRace.zip
+*.ruleset
+/Source/AlienRace/AlienRace/AlienRace.pfx
+/Source/AlienRace/RuleSet2.ruleset

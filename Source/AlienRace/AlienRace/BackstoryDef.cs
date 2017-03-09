@@ -7,7 +7,7 @@ using Verse;
 
 namespace AlienRace
 {
-    public class BackstoryDef : Def
+    public sealed class BackstoryDef : Def
     {
 #pragma warning disable CS0649
         public string baseDescription;
@@ -45,7 +45,9 @@ namespace AlienRace
 
             
             if (!addToDatabase || BackstoryDatabase.allBackstories.ContainsKey(defName) || title.NullOrEmpty() || spawnCategories.NullOrEmpty())
+            {
                 return;
+            }
 
             Backstory b = new Backstory()
             {
@@ -67,7 +69,7 @@ namespace AlienRace
                 })() : ((Func<WorkTags>)delegate
                 {
                     WorkTags wt = WorkTags.None;
-                    Enum.GetValues(typeof(WorkTags)).Cast<WorkTags>().ToList().ForEach(tag => { if (workAllows.Contains(tag)) wt |= tag; });
+                    Enum.GetValues(typeof(WorkTags)).Cast<WorkTags>().ToList().ForEach(tag => { if (workAllows.Contains(tag)) { wt |= tag; } });
                     return wt;
                 })(),
                 identifier = defName
@@ -75,9 +77,13 @@ namespace AlienRace
 
             b.SetTitle(title);
             if (!titleShort.NullOrEmpty())
+            {
                 b.SetTitleShort(titleShort);
+            }
             else
+            {
                 b.SetTitleShort(b.Title);
+            }
 
             b.ResolveReferences();
             b.PostLoad();

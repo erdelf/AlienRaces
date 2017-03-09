@@ -17,26 +17,8 @@ namespace AlienRace
         {
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.erdelf.alien_race.main");
 
-            harmony.Patch(AccessTools.Method(typeof(PawnHairChooser), "RandomHairDefFor"), new HarmonyMethod(typeof(HarmonyPatches), nameof(RandomHairDefForPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawn", new Type[] { typeof(PawnGenerationRequest) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateBodyType"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateBodyTypePostfix)));
-            harmony.Patch(AccessTools.Property(typeof(Pawn_StoryTracker), "SkinColor").GetGetMethod(), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SkinColorPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateTraits"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateTraitsPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), "ResolveAllGraphics"), new HarmonyMethod(typeof(HarmonyPatches), nameof(ResolveAllGraphicsPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGiveSolidBioTo"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGiveSolidBioToPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetBackstoryInSlotPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), "RenderPawnInternal", new Type[] { typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(RenderPawnInternalPrefix)), null);
-            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "GenerateRandomOldAgeInjuries"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateRandomOldAgeInjuriesPrefix)), null);
-            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "RandomHediffsToGainOnBirthday", new Type[] { typeof(Pawn), typeof(int) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(RandomHediffsToGainOnBirthdayPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), "NewGeneratedStartingPawn"), new HarmonyMethod(typeof(HarmonyPatches), nameof(NewGeneratedStartingPawnPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GiveAppropriateBioAndNameTo"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GiveAppropriateBioAndNameToPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateRandomAge"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateRandomAgePrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GeneratePawnName"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnNamePrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), "CanDoNext"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanDoNextStartPawnPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(ThoughtHandler), "CanGetThought"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanGetThoughtPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(FloatMenuMakerMap), "AddHumanlikeOrders"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(AddHumanlikeOrdersPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(Corpse), "ButcherProducts"), new HarmonyMethod(typeof(HarmonyPatches), nameof(ButcherProductsPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(typeof(HarmonyPatches), nameof(BirthdayBiologicalPrefix)), null);
+
+            #region RelationSettings
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceChildPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceExLoverPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceExSpousePostfix)));
@@ -45,7 +27,16 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceParentPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceSiblingPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceSpousePostfix)));
-            harmony.Patch(AccessTools.Method(typeof(FoodUtility), "ThoughtsFromIngesting"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ThoughtsFromIngestingPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnRelationsPrefix)), null);
+            //harmony.Patch(AccessTools.Method(typeof(PawnRelationDef), nameof(PawnRelationDef.GetGenderSpecificLabel)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GetGenderSpecificLabelPrefix)), null);
+            #endregion
+
+            #region Backstory
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGiveSolidBioTo"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGiveSolidBioToPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetBackstoryInSlotPrefix)), null);
+            #endregion
+
+            #region RaceRestriction
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), "ShouldSkip"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ShouldSkipResearchPostfix)));
             harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), "PreOpen"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ResearchPreOpenPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GenConstruct), "CanConstruct"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanConstructPostfix)));
@@ -53,25 +44,10 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Bill), "PawnAllowedToStartAnew"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PawnAllowedToStartAnewPostfix)));
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_GrowerHarvest), "HasJobOnCell"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(HasJobOnCellHarvestPostfix)));
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_GrowerSow), "ExtraRequirements"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ExtraRequirementsGrowerSowPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), "TryGainMemoryThought", new Type[] { typeof(Thought_Memory), typeof(Pawn) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGainMemoryThoughtPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(GameInitData), "PrepForMapGen"), new HarmonyMethod(typeof(HarmonyPatches), nameof(PrepForMapGenPrefix)), null);
-            harmony.Patch(AccessTools.Property(typeof(JobDriver), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
-            harmony.Patch(AccessTools.Property(typeof(JobDriver_Skygaze), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
-            harmony.Patch(AccessTools.Method(typeof(JobGiver_OptimizeApparel), nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ApparelScoreGainPostFix)));
+            harmony.Patch(AccessTools.Method(typeof(FloatMenuMakerMap), "AddHumanlikeOrders"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(AddHumanlikeOrdersPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn), nameof(Pawn.SetFaction)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SetFactionPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Thing), nameof(Pawn.SetFactionDirect)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SetFactionDirectPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.SecondaryRomanceChanceFactor)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SecondaryRomanceChanceFactorPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.CompatibilityWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CompatibilityWith)));
-            harmony.Patch(AccessTools.Method(typeof(JobGiver_SatisfyChemicalNeed), "DrugValidator"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DrugValidatorPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(CompDrug), nameof(CompDrug.PostIngested)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PostIngestedPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanBingeNowPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(SituationalThoughtHandler), "TryCreateSituationalThought"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryCreateSituationalThoughtPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.TryMakeInitialRelationsWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryMakeInitialRelationsWithPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(TraitSet), nameof(TraitSet.GainTrait)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GainTraitPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnRelationsPrefix)), null);
-
-
-
+            harmony.Patch(AccessTools.Method(typeof(JobGiver_OptimizeApparel), nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ApparelScoreGainPostFix)));
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(ar =>
             {
                 ar.alienRace.raceRestriction.workGiverList?.ForEach(wgd =>
@@ -82,10 +58,58 @@ namespace AlienRace
                         harmony.Patch(AccessTools.Method(wg.giverClass, "JobOnThing"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenericJobOnThingPostfix)));
                         MethodInfo hasJobOnThingInfo = AccessTools.Method(wg.giverClass, "HasJobOnThing");
                         if (hasJobOnThingInfo != null)
+                        {
                             harmony.Patch(hasJobOnThingInfo, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenericHasJobOnThingPostfix)));
+                        }
                     }
                 });
             });
+            #endregion
+
+            #region ThoughtSettings
+            harmony.Patch(AccessTools.Method(typeof(ThoughtHandler), "CanGetThought"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanGetThoughtPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Corpse), "ButcherProducts"), new HarmonyMethod(typeof(HarmonyPatches), nameof(ButcherProductsPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(FoodUtility), "ThoughtsFromIngesting"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ThoughtsFromIngestingPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), "TryGainMemoryThought", new Type[] { typeof(Thought_Memory), typeof(Pawn) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGainMemoryThoughtPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(SituationalThoughtHandler), "TryCreateSituationalThought"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryCreateSituationalThoughtPrefix)), null);            
+            #endregion
+
+            #region GeneralSettings
+            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "GenerateRandomOldAgeInjuries"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateRandomOldAgeInjuriesPrefix)), null);
+            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "RandomHediffsToGainOnBirthday", new Type[] { typeof(Pawn), typeof(int) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(RandomHediffsToGainOnBirthdayPrefix)), null);
+            harmony.Patch(AccessTools.Property(typeof(JobDriver), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
+            harmony.Patch(AccessTools.Property(typeof(JobDriver_Skygaze), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateRandomAge"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateRandomAgePrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateTraits"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateTraitsPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(JobGiver_SatisfyChemicalNeed), "DrugValidator"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DrugValidatorPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(CompDrug), nameof(CompDrug.PostIngested)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PostIngestedPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanBingeNowPostfix)));
+            
+            #region PartGenerator
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateBodyType"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateBodyTypePostfix)));
+            harmony.Patch(AccessTools.Property(typeof(Pawn_StoryTracker), "SkinColor").GetGetMethod(), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SkinColorPostfix)));
+            #endregion
+            #endregion
+
+            harmony.Patch(AccessTools.Method(typeof(PawnHairChooser), "RandomHairDefFor"), new HarmonyMethod(typeof(HarmonyPatches), nameof(RandomHairDefForPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(typeof(HarmonyPatches), nameof(BirthdayBiologicalPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawn", new Type[] { typeof(PawnGenerationRequest) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnPrefix)), null);
+            
+            harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), "ResolveAllGraphics"), new HarmonyMethod(typeof(HarmonyPatches), nameof(ResolveAllGraphicsPrefix)), null);
+            
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), "RenderPawnInternal", new Type[] { typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(RenderPawnInternalPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), "NewGeneratedStartingPawn"), new HarmonyMethod(typeof(HarmonyPatches), nameof(NewGeneratedStartingPawnPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GiveAppropriateBioAndNameTo"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GiveAppropriateBioAndNameToPostfix)));
+            
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GeneratePawnName"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnNamePrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), "CanDoNext"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanDoNextStartPawnPostfix)));
+            
+            harmony.Patch(AccessTools.Method(typeof(GameInitData), "PrepForMapGen"), new HarmonyMethod(typeof(HarmonyPatches), nameof(PrepForMapGenPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.SecondaryRomanceChanceFactor)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SecondaryRomanceChanceFactorPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.CompatibilityWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CompatibilityWith)));
+            harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.TryMakeInitialRelationsWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryMakeInitialRelationsWithPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(TraitSet), nameof(TraitSet.GainTrait)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GainTraitPrefix)), null);
+
 
             #region prepareCarefully
             {
@@ -105,7 +129,7 @@ namespace AlienRace
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedStuff"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedStuff"), null);
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "GetSelectedStuff"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyGetSelectedStuff"), null);
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedApparelInternal"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedApparelInternal"), null);
-                            //harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.PawnLayers), "Label"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyLayerLabel"));
+                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.PawnLayers), "Label"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyLayerLabel"));
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "ConvertToPawn", new Type[] { typeof(bool) }), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyConvertToPawn"));
                         }
                     }))();
@@ -116,18 +140,34 @@ namespace AlienRace
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
+/*
+        public static bool GetGenderSpecificLabelPrefix(Pawn pawn, string __result, PawnRelationDef __instance)
+        {
+            if (pawn.def is ThingDef_AlienRace alienProps && alienProps.)
+            {
+                
 
+                return false;
+            }
+            return true;
+        }
+        */
         public static bool GeneratePawnRelationsPrefix(Pawn pawn)
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
             if (pawn.RaceProps.hasGenders || alienProps == null)
+            {
                 return true;
+            }
+
             RelationSettings relations = alienProps.alienRace.relationSettings;
             List<Pawn> pawns = PawnsFinder.AllMapsAndWorld_AliveOrDead.Where(p => p.def == pawn.def).ToList();
             if (pawns.NullOrEmpty())
+            {
                 return true;
-            
+            }
+
             Pawn other;
             if (Rand.Value < relations.relationChanceModifierChild * PawnRelationDefOf.Child.generationChanceFactor * 1.5)
             {
@@ -136,12 +176,18 @@ namespace AlienRace
                 {
                     temp.TryRandomElement(out other);
                     if (other == null)
+                    {
                         goto Step1;
+                    }
+
                     temp.Remove(other);
                 } while (other.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() > 2);
                 Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent);
                 if (parent != null)
+                {
                     pawn.relations.AddDirectRelation(LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8f ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent);
+                }
+
                 other.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
             }
             Step1:
@@ -150,14 +196,21 @@ namespace AlienRace
             {
                 pawns.TryRandomElement(out other);
                 if (other == null)
+                {
                     goto Step2;
-                if(!pawn.GetRelations(other).Contains(PawnRelationDefOf.ExLover))
-                pawn.relations.AddDirectRelation(PawnRelationDefOf.ExLover, other);
+                }
+
+                if (!pawn.GetRelations(other).Contains(PawnRelationDefOf.ExLover))
+                {
+                    pawn.relations.AddDirectRelation(PawnRelationDefOf.ExLover, other);
+                }
 
                 other.relations.Children.ToList().ForEach(p =>
                 {
                     if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && Rand.Value < 0.35)
+                    {
                         p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
+                    }
                 });
             }
             Step2:
@@ -166,14 +219,18 @@ namespace AlienRace
             {
                 pawns.TryRandomElement(out other);
                 if (other == null)
+                {
                     goto Step3;
+                }
 
                 pawn.relations.AddDirectRelation(PawnRelationDefOf.ExSpouse, other);
 
                 other.relations.Children.ToList().ForEach(p =>
                 {
                     if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && Rand.Value < 1)
+                    {
                         p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
+                    }
                 });
             }
             Step3:
@@ -182,14 +239,18 @@ namespace AlienRace
             {
                 pawns.TryRandomElement(out other);
                 if (other == null)
+                {
                     goto Step4;
+                }
 
                 pawn.relations.AddDirectRelation(PawnRelationDefOf.Fiance, other);
 
                 other.relations.Children.ToList().ForEach(p =>
                 {
                     if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && Rand.Value < 0.7)
+                    {
                         p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
+                    }
                 });
             }
             Step4:
@@ -201,7 +262,10 @@ namespace AlienRace
                 {
                     temp.TryRandomElement(out other);
                     if (other == null)
+                    {
                         goto Step5;
+                    }
+
                     temp.Remove(other);
                 } while (!LovePartnerRelationUtility.HasAnyLovePartner(other));
 
@@ -210,7 +274,9 @@ namespace AlienRace
                 other.relations.Children.ToList().ForEach(p =>
                 {
                     if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && Rand.Value < 0.35f)
+                    {
                         p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
+                    }
                 });
             }
             Step5:
@@ -222,13 +288,18 @@ namespace AlienRace
                 {
                     temp.TryRandomElement(out other);
                     if (other == null)
+                    {
                         goto Step6;
+                    }
+
                     temp.Remove(other);
                 } while (!LovePartnerRelationUtility.HasAnyLovePartner(other));
 
                 Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent);
                 if (parent != null && pawn != parent && !pawn.GetRelations(parent).Contains(PawnRelationDefOf.ExLover))
+                {
                     pawn.relations.AddDirectRelation(LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8f ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent);
+                }
 
                 pawn.relations.AddDirectRelation(PawnRelationDefOf.Parent, other);
             }
@@ -238,7 +309,9 @@ namespace AlienRace
             {
                 pawns.TryRandomElement(out other);
                 if (other == null)
+                {
                     goto Step7;
+                }
 
                 Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, null);
                 List<DirectPawnRelation> dprs = other.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent && dpr.otherPawn != parent).ToList();
@@ -248,23 +321,34 @@ namespace AlienRace
                 {
                     parent = PawnGenerator.GeneratePawn(other.kindDef, Find.FactionManager.FirstFactionOfDef(other.kindDef.defaultFactionType) ?? Find.FactionManager.AllFactions.RandomElement());
                     if (!other.GetRelations(parent).Contains(PawnRelationDefOf.Parent))
+                    {
                         other.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent);
+                    }
                 }
 
                 if (parent2 == null)
                 {
                     parent2 = PawnGenerator.GeneratePawn(other.kindDef, Find.FactionManager.FirstFactionOfDef(other.kindDef.defaultFactionType) ?? Find.FactionManager.AllFactions.RandomElement());
                     if (!other.GetRelations(parent2).Contains(PawnRelationDefOf.Parent))
+                    {
                         other.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent2);
+                    }
                 }
 
                 if (!parent.GetRelations(parent2).Any(prd => prd == PawnRelationDefOf.ExLover || prd == PawnRelationDefOf.Lover))
+                {
                     parent.relations.AddDirectRelation(LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8 ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Lover, parent2);
+                }
 
                 if (!pawn.GetRelations(parent).Contains(PawnRelationDefOf.Parent) && pawn != parent)
+                {
                     pawn.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent);
+                }
+
                 if (!pawn.GetRelations(parent2).Contains(PawnRelationDefOf.Parent) && pawn != parent2)
+                {
                     pawn.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent2);
+                }
             }
             Step7:
             
@@ -275,17 +359,24 @@ namespace AlienRace
                 {
                     temp.TryRandomElement(out other);
                     if (other == null)
+                    {
                         goto Step8;
+                    }
+
                     temp.Remove(other);
                 } while (!LovePartnerRelationUtility.HasAnyLovePartner(other));
 
                 if (!pawn.GetRelations(other).Contains(PawnRelationDefOf.Spouse))
+                {
                     pawn.relations.AddDirectRelation(PawnRelationDefOf.Spouse, other);
+                }
 
                 other.relations.Children.ToList().ForEach(p =>
                 {
                     if (pawn != p && p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && p.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, x => x == pawn) == null && Rand.Value < 0.7)
+                    {
                         p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
+                    }
                 });
             }
             Step8:
@@ -293,111 +384,40 @@ namespace AlienRace
             return false;
         }
 
-        public static bool CreateRelationSiblingPrefix(Pawn generated, Pawn other)
-        {
-            if (generated.RaceProps.hasGenders)
-                return true;
-
-            Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, null);
-            List<DirectPawnRelation> dprs = other.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent && dpr.otherPawn != parent).ToList();
-            Pawn parent2 = dprs.NullOrEmpty() ? null : dprs.First().otherPawn;
-            if (parent == null)
-            {
-                parent = PawnGenerator.GeneratePawn(other.kindDef, Find.FactionManager.FirstFactionOfDef(other.kindDef.defaultFactionType) ?? Find.FactionManager.AllFactions.RandomElement());
-                other.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent);
-            }
-            if (parent2 == null)
-            {
-                parent2 = PawnGenerator.GeneratePawn(other.kindDef, Find.FactionManager.FirstFactionOfDef(other.kindDef.defaultFactionType) ?? Find.FactionManager.AllFactions.RandomElement());
-                other.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent);
-            }
-
-            parent.relations.AddDirectRelation(parent.story.traits.HasTrait(TraitDefOf.Gay) || LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8 ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent2);
-
-            generated.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent);
-            generated.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent2);
-
-            return false;
-        }
-
         public static bool GainTraitPrefix(Trait trait, TraitSet __instance)
         {
             ThingDef_AlienRace alienProps = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def as ThingDef_AlienRace;
-
-            if (alienProps == null || !(alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.Any(ate => ate.defname.EqualsIgnoreCase(trait.def.defName)) ?? false))
+            if (alienProps == null)
+            {
                 return true;
+            }
 
-            return Rand.Range(0, 100) < alienProps.alienRace.generalSettings.forcedRaceTraitEntries.First(ate => ate.defname.EqualsIgnoreCase(trait.def.defName)).chance;
-        }
-
-        public static bool CreateRelationChildPrefix(Pawn generated, Pawn other)
-        {
-            if (generated.RaceProps.hasGenders)
+            AlienTraitEntry ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(at => at.defname.EqualsIgnoreCase(trait.def.defName));
+            if (ate == null)
+            {
                 return true;
+            }
 
-            Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, null);
-            if (parent != null)
-                    generated.relations.AddDirectRelation(parent.story.traits.HasTrait(TraitDefOf.Gay) || LovePartnerRelationUtility.HasAnyLovePartner(generated) || Rand.Value > 0.8 ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent);
-
-            other.relations.AddDirectRelation(PawnRelationDefOf.Parent, generated);
-
-            return false;
-        }
-
-        public static void DefinitelyHasNotBirthNamePostfix(Pawn pawn, ref bool __result)
-        {
-            if (!pawn.RaceProps.hasGenders)
-                __result = true;
-        }
-
-        public static void GetParentPostfix(this Pawn pawn, ref Pawn __result)
-        {
-            DirectPawnRelation dpr;
-            if (!pawn.RaceProps.hasGenders)
-                if (pawn.relations.DirectRelations.Where(dprs => dprs.def == PawnRelationDefOf.Parent).TryRandomElement(out dpr))
-                {
-                    __result = dpr.otherPawn;
-                }
-        }
-
-        public static void ChanceOfBecomingChildOfPostfix(Pawn father, Pawn mother)
-        {
-            if (!father?.RaceProps.hasGenders ?? false) father.gender = Gender.None;
-            if (!mother?.RaceProps.hasGenders ?? false) mother.gender = Gender.None;
-        }
-
-        public static void ChanceOfBecomingChildOfPrefix(Pawn father, Pawn mother)
-        {
-            if (!father?.RaceProps.hasGenders ?? false) father.gender = Gender.Male;
-            if (!mother?.RaceProps.hasGenders ?? false) mother.gender = Gender.Female;
-        }
-
-        public static void RemoveGenderFromGenderless(Pawn generated, Pawn other)
-        {
-            if (!generated.RaceProps.hasGenders) generated.gender = Gender.None;
-            if (!other.RaceProps.hasGenders) other.gender = Gender.None;
-        }
-
-        public static void AssignGenderToGenderless(Pawn generated, Pawn other)
-        {
-            if (!generated.RaceProps.hasGenders) generated.gender = Rand.Bool ? Gender.Male : Gender.Female;
-            if (!other.RaceProps.hasGenders) other.gender = Rand.Bool ? Gender.Male : Gender.Female;
+            return Rand.Range(0, 100) < ate.chance;
         }
 
         public static void TryMakeInitialRelationsWithPostfix(Faction __instance, Faction other)
         {
             if (!__instance.HasName || !other.HasName)
+            {
                 return;
-            
-            ThingDef_AlienRace alienProps = other.def.basicMemberKind?.race as ThingDef_AlienRace;
-            if (alienProps != null)
+            }
+
+            if (other.def.basicMemberKind?.race is ThingDef_AlienRace alienProps)
             {
                 alienProps.alienRace.generalSettings.factionRelations?.ForEach(frs =>
                 {
                     if (frs.factions.Contains(__instance.def.defName))
                     {
-                        if(other.RelationWith(__instance, true) != null)
-                            other.RelationWith(__instance,true).goodwill = frs.goodwill.RandomInRange;
+                        if (other.RelationWith(__instance, true) != null)
+                        {
+                            other.RelationWith(__instance, true).goodwill = frs.goodwill.RandomInRange;
+                        }
                     }
                 });
             }
@@ -410,7 +430,9 @@ namespace AlienRace
                     if (frs.factions.Contains(other.def.defName))
                     {
                         if (__instance.RelationWith(other) != null)
+                        {
                             __instance.RelationWith(other).goodwill = frs.goodwill.RandomInRange;
+                        }
                     }
                 });
             }
@@ -420,7 +442,9 @@ namespace AlienRace
         {
             Pawn pawn = __instance.pawn;
             if (DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => !ar.alienRace.thoughtSettings.replacerList.NullOrEmpty()).SelectMany(ar => ar.alienRace.thoughtSettings.replacerList.Select(tr => tr.replacer)).Contains(def.defName))
+            {
                 return false;
+            }
 
             if (pawn.def is ThingDef_AlienRace)
             {
@@ -430,7 +454,9 @@ namespace AlienRace
                 {
                     ThoughtDef replacerThoughtDef = DefDatabase<ThoughtDef>.GetNamedSilentFail(replacer.replacer);
                     if (replacerThoughtDef != null)
+                    {
                         def = replacerThoughtDef;
+                    }
                 }
             }
             return !Traverse.Create(__instance).Field("tmpCachedThoughts").GetValue<HashSet<ThoughtDef>>().Contains(def);
@@ -440,8 +466,7 @@ namespace AlienRace
         {
             if (__result)
             {
-                ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-                if (alienProps != null)
+                if (pawn.def is ThingDef_AlienRace alienProps)
                 {
                     bool result = __result;
                     alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(cs =>
@@ -459,21 +484,19 @@ namespace AlienRace
 
         public static void PostIngestedPostfix(Pawn ingester, CompDrug __instance)
         {
-            ThingDef_AlienRace alienProps = ingester.def as ThingDef_AlienRace;
-            if(alienProps != null)
+            if (ingester.def is ThingDef_AlienRace alienProps)
             {
                 alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(cs =>
                 {
                     if (cs.chemical.EqualsIgnoreCase(__instance.Props.chemical.defName))
+                    {
                         cs.reactions?.ForEach(iod => iod.DoIngestionOutcome(ingester, __instance.parent));
+                    }
                 });
             }
         }
 
-        public static void DrugValidatorPostfix(ref bool __result, Pawn pawn, Thing drug)
-        {
-            CanBingeNowPostfix(pawn, drug.TryGetComp<CompDrug>().Props.chemical, ref __result);
-        }
+        public static void DrugValidatorPostfix(ref bool __result, Pawn pawn, Thing drug) => CanBingeNowPostfix(pawn, drug.TryGetComp<CompDrug>().Props.chemical, ref __result);
 
         public static void CompatibilityWith(Pawn_RelationsTracker __instance, Pawn otherPawn, ref float __result)
         {
@@ -612,19 +635,21 @@ namespace AlienRace
         public static void PrepareCarefullyLayerLabel(int layer, ref string __result)
         {
             if (layer == 9)
+            {
                 __result = "Race";
+            }
         }
 
         public static bool PrepareCarefullySetSelectedApparelInternal(int layer, ThingDef def, object __instance)
         {
             if (layer != 9)
+            {
                 return true;
+            }
 
             Traverse traversePawn = Traverse.Create(__instance);
-            List<PawnKindDef> pkds = DefDatabase<PawnKindDef>.AllDefsListForReading.Where(pkd => pkd.race == def).ToList();
 
-            PawnKindDef pk;
-            Pawn pawn = PawnGenerator.GeneratePawn(pkds.TryRandomElement(out pk) ? pk : PawnKindDefOf.Villager, Faction.OfPlayer);
+            Pawn pawn = PawnGenerator.GeneratePawn(DefDatabase<PawnKindDef>.AllDefsListForReading.Where(pkd => pkd.race == def).ToList().TryRandomElement(out PawnKindDef pk) ? pk : PawnKindDefOf.Villager, Faction.OfPlayer);
 
             traversePawn.Method("InitializeWithPawn", pawn).GetValue();
 
@@ -647,15 +672,13 @@ namespace AlienRace
         public static bool PrepareCarefullySetSelectedStuff(int layer, ThingDef stuffDef, object __instance)
         {
             if (layer != 9)
+            {
                 return true;
+            }
 
             Traverse traversePawn = Traverse.Create(__instance);
-            List<PawnKindDef> pkds = DefDatabase<PawnKindDef>.AllDefsListForReading.Where(pkd => pkd.race == stuffDef).ToList();
 
-            Log.Message(pkds.Count.ToString() + (stuffDef?.defName ?? " no def here"));
-
-            PawnKindDef pk;
-            Pawn pawn = PawnGenerator.GeneratePawn(pkds.TryRandomElement(out pk) ? pk : PawnKindDefOf.Villager, Faction.OfPlayer);
+            Pawn pawn = PawnGenerator.GeneratePawn(DefDatabase<PawnKindDef>.AllDefsListForReading.Where(pkd => pkd.race == stuffDef).ToList().TryRandomElement(out PawnKindDef pk) ? pk : PawnKindDefOf.Villager, Faction.OfPlayer);
 
             traversePawn.Method("InitializeWithPawn", pawn).GetValue();
 
@@ -748,14 +771,15 @@ namespace AlienRace
             {
                 if (!((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(wgd => DefDatabase<WorkGiverDef>.GetNamedSilentFail(wgd)?.giverClass == __instance.GetType()) ?? false ||
                     !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.workGiverList?.Any(wgd => DefDatabase<WorkGiverDef>.GetNamedSilentFail(wgd)?.giverClass == __instance.GetType()) ?? false))))
+                {
                     __result = null;
+                }
             }
         }
 
         public static void SetFactionDirectPostfix(Thing __instance, Faction newFaction)
         {
-            ThingDef_AlienRace alienProps = __instance.def as ThingDef_AlienRace;
-            if (alienProps != null && newFaction == Faction.OfPlayerSilentFail)
+            if (__instance.def is ThingDef_AlienRace alienProps && newFaction == Faction.OfPlayerSilentFail)
             {
                 alienProps.alienRace.raceRestriction.conceptList?.ForEach(cdd =>
                 {
@@ -771,12 +795,11 @@ namespace AlienRace
 
         public static void SetFactionPostfix(Pawn __instance, Faction newFaction)
         {
-            ThingDef_AlienRace alienProps = __instance.def as ThingDef_AlienRace;
-            if (alienProps != null && newFaction == Faction.OfPlayerSilentFail && Current.ProgramState == ProgramState.Playing)
+            if (__instance.def is ThingDef_AlienRace alienProps && newFaction == Faction.OfPlayerSilentFail && Current.ProgramState == ProgramState.Playing)
             {
                 alienProps.alienRace.raceRestriction.conceptList?.ForEach(cdd =>
                 {
-                ConceptDef cd = DefDatabase<ConceptDef>.GetNamedSilentFail(cdd);
+                    ConceptDef cd = DefDatabase<ConceptDef>.GetNamedSilentFail(cdd);
                     if (cdd != null)
                     {
                         Find.Tutor.learningReadout.TryActivateConcept(cd);
@@ -793,8 +816,9 @@ namespace AlienRace
                 if (!((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.apparelList?.Contains(ap.def.defName) ?? false ? true : (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteApparelList?.Contains(ap.def.defName) ?? false ? true:
                     (((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel ?? false) ? false :
                     !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(ap.def.defName) ?? false)))))
+                {
                     __result = -50f;
-
+                }
             }
         }
 
@@ -802,27 +826,26 @@ namespace AlienRace
         {
             if (__result != PawnPosture.Standing)
             {
-                ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
-                if(alienProps != null)
+                if (__instance.pawn.def is ThingDef_AlienRace alienProps)
                 {
                     if (!alienProps.alienRace.generalSettings.CanLayDown && !(__instance.pawn.CurrentBed()?.def.defName.EqualsIgnoreCase("ET_Bed") ?? false))
+                    {
                         __result = PawnPosture.Standing;
+                    }
                 }
             }
         }
 
-        public static void PrepForMapGenPrefix(GameInitData __instance)
-        {
-            Find.Scenario.AllParts.Where(sp => sp is ScenPart_StartingHumanlikes).Select(sp => sp as ScenPart_StartingHumanlikes).ToList().ForEach(sp => __instance.startingPawns.AddRange(sp.GetPawns()));
-        }
+        public static void PrepForMapGenPrefix(GameInitData __instance) => Find.Scenario.AllParts.Where(sp => sp is ScenPart_StartingHumanlikes).Select(sp => sp as ScenPart_StartingHumanlikes).ToList().ForEach(sp => __instance.startingPawns.AddRange(sp.GetPawns()));
 
         public static bool TryGainMemoryThoughtPrefix(ref Thought_Memory newThought, MemoryThoughtHandler __instance)
         {
-
             string thoughtName = newThought.def.defName;
             Pawn pawn = __instance.pawn;
             if (DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => !ar.alienRace.thoughtSettings.replacerList.NullOrEmpty()).SelectMany(ar => ar.alienRace.thoughtSettings.replacerList.Select(tr => tr.replacer)).Contains(thoughtName))
+            {
                 return false;
+            }
 
             if (pawn.def is ThingDef_AlienRace)
             {
@@ -889,12 +912,16 @@ namespace AlienRace
                 Def toBuild = (d as Designator_Build).PlacingDef;
                 IEnumerable<ThingDef_AlienRace> races = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => (ar.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false) || (ar.alienRace.raceRestriction.whiteBuildingList?.Contains(toBuild.defName) ?? false));
                 if (races.Count() > 0)
+                {
                     __result = races.Any(ar => Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def == ar));
+                }
 
                 if (__result)
                 {
                     if (Find.ColonistBar.GetColonistsInOrder().Where(p => !p.Dead).ToList().TrueForAll(p => ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) && !((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false) && !((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteBuildingList?.Contains(toBuild.defName) ?? false)))
+                    {
                         __result = false;
+                    }
                 }
             }
         }
@@ -902,9 +929,11 @@ namespace AlienRace
         public static void CanConstructPostfix(Thing t, Pawn p, ref bool __result)
         {
             if (__result)
+            {
                 __result = ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(t.def.defName) ?? false) ? true : ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteBuildingList?.Contains(t.def.defName) ?? false) ? true :
                     (((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) ? false :
                     !(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => p.def != d && (d.alienRace.raceRestriction.buildingList?.Contains(t.def.entityDefToBuild.defName) ?? false))));
+            }
         }
 
         public static void ResearchPreOpenPostfix(MainTabWindow_Research __instance)
@@ -964,8 +993,7 @@ namespace AlienRace
 
         public static void ThoughtsFromIngestingPostfix(Pawn ingester, Thing t, ref List<ThoughtDef> __result)
         {
-            ThingDef_AlienRace alienProps = ingester.def as ThingDef_AlienRace;
-            if (alienProps != null)
+            if (ingester.def is ThingDef_AlienRace alienProps)
             {
                 if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatDirect) || __result.Contains(ThoughtDefOf.AteHumanlikeMeatDirectCannibal))
                 {
@@ -980,9 +1008,9 @@ namespace AlienRace
                 if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredient) || __result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))
                 {
                     CompIngredients compIngredients = t.TryGetComp<CompIngredients>();
-                    if(compIngredients != null)
+                    if (compIngredients != null)
                     {
-                        foreach(ThingDef ingredient in compIngredients.ingredients)
+                        foreach (ThingDef ingredient in compIngredients.ingredients)
                         {
                             if (FoodUtility.IsHumanlikeMeat(ingredient))
                             {
@@ -1004,12 +1032,19 @@ namespace AlienRace
         {
             //if (__result == 0) __result++;
             if (generated.def is ThingDef_AlienRace)
+            {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSpouse;
+            }
+
             if (other.def is ThingDef_AlienRace)
+            {
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSpouse;
+            }
 
             if (generated == other)
+            {
                 __result = 0;
+            }
         }
 
         public static void GenerationChanceSiblingPostfix(ref float __result, Pawn generated, Pawn other)
@@ -1017,12 +1052,19 @@ namespace AlienRace
             //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
+            {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSibling;
+            }
+
             if (other.def is ThingDef_AlienRace)
+            {
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSibling;
+            }
 
             if (generated == other)
+            {
                 __result = 0;
+            }
         }
 
         public static void GenerationChanceParentPostfix(ref float __result, Pawn generated, Pawn other)
@@ -1030,11 +1072,19 @@ namespace AlienRace
             //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
+            {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierParent;
+            }
+
             if (other.def is ThingDef_AlienRace)
+            {
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierParent;
+            }
+
             if (generated == other)
+            {
                 __result = 0;
+            }
         }
 
         public static void GenerationChanceLoverPostfix(ref float __result, Pawn generated, Pawn other)
@@ -1042,11 +1092,19 @@ namespace AlienRace
             //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
+            {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierLover;
+            }
+
             if (other.def is ThingDef_AlienRace)
+            {
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierLover;
+            }
+
             if (generated == other)
+            {
                 __result = 0;
+            }
         }
 
         public static void GenerationChanceFiancePostfix(ref float __result, Pawn generated, Pawn other)
@@ -1054,11 +1112,19 @@ namespace AlienRace
             //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
+            {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierFiance;
+            }
+
             if (other.def is ThingDef_AlienRace)
+            {
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierFiance;
+            }
+
             if (generated == other)
+            {
                 __result = 0;
+            }
         }
 
         public static void GenerationChanceExSpousePostfix(ref float __result, Pawn generated, Pawn other)
@@ -1066,11 +1132,19 @@ namespace AlienRace
             //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
+            {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExSpouse;
+            }
+
             if (other.def is ThingDef_AlienRace)
+            {
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExSpouse;
+            }
+
             if (generated == other)
+            {
                 __result = 0;
+            }
         }
 
         public static void GenerationChanceExLoverPostfix(ref float __result, Pawn generated, Pawn other)
@@ -1078,11 +1152,19 @@ namespace AlienRace
             //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
+            {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExLover;
+            }
+
             if (other.def is ThingDef_AlienRace)
+            {
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExLover;
+            }
+
             if (generated == other)
+            {
                 __result = 0;
+            }
         }
 
         public static void GenerationChanceChildPostfix(ref float __result, Pawn generated, Pawn other)
@@ -1090,22 +1172,31 @@ namespace AlienRace
             //if (__result == 0) __result++;
 
             if (generated.def is ThingDef_AlienRace)
+            {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierChild;
+            }
+
             if (other.def is ThingDef_AlienRace)
+            {
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierChild;
+            }
+
             if (generated == other)
+            {
                 __result = 0;
+            }
         }
 
         public static void BirthdayBiologicalPrefix(Pawn_AgeTracker __instance)
         {
             Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
-            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            if (alienProps != null)
+            if (pawn.def is ThingDef_AlienRace alienProps)
             {
                 string path = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStageRace.def).head;
-                if(path != null)
+                if (path != null)
+                {
                     Traverse.Create(pawn.story).Field("headGraphicPath").SetValue((pawn.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator.RandomAlienHead(path, pawn.gender));
+                }
             }
         }
 
@@ -1163,7 +1254,7 @@ namespace AlienRace
                         opts.Insert(index, new FloatMenuOption("CannotEquip".Translate(new object[]
                             {
                                     drugs.LabelShort
-                            }) + " (" + pawn.def.LabelCap + " can't consume this" + ")", null));
+                            }) + " (" + pawn.def.LabelCap + " can't consume this)", null));
                     }
                 }
             }
@@ -1268,21 +1359,32 @@ namespace AlienRace
         {
             ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
             if (__result && alienProps != null)
+            {
                 if (alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll)
+                {
                     __result = false;
+                }
                 else if (!alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.NullOrEmpty() && alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.Contains(def.defName))
+                {
                     __result = false;
+                }
+            }
         }
 
         public static void CanDoNextStartPawnPostfix(ref bool __result)
         {
             if (__result)
+            {
                 return;
+            }
+
             bool result = true;
             Find.GameInitData.startingPawns.ForEach(current =>
             {
                 if (!current.Name.IsValid && current.def.race.GetNameGenerator(current.gender) == null)
+                {
                     result = false;
+                }
             });
             __result = result;
         }
@@ -1291,17 +1393,23 @@ namespace AlienRace
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
             if(alienProps == null || alienProps.race.GetNameGenerator(pawn.gender) == null || style != NameStyle.Full)
+            {
                 return true;
+            }
 
             NameTriple nameTriple = NameTriple.FromString(NameGenerator.GenerateName(alienProps.race.GetNameGenerator(pawn.gender)));
 
             string first = nameTriple.First, nick = nameTriple.Nick, last = nameTriple.Last;
 
             if (nick == null)
+            {
                 nick = nameTriple.First;
+            }
 
             if (last != null && forcedLastName != null)
+            {
                 last = forcedLastName;
+            }
 
             __result = new NameTriple(first, nick, last);
 
@@ -1310,28 +1418,30 @@ namespace AlienRace
 
         public static void GenerateRandomAgePrefix(Pawn pawn, PawnGenerationRequest request)
         {
-            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
-            if (alienProps != null && alienProps.alienRace.generalSettings.MaleGenderProbability != 0.5f)
+            if (pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.MaleGenderProbability != 0.5f)
             {
                 if (!request.FixedGender.HasValue)
                 {
                     pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.alienRace.generalSettings.MaleGenderProbability ? Gender.Female : Gender.Male;
                 }
                 else
+                {
                     pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = true;
+                }
             }
         }
 
         public static void GiveAppropriateBioAndNameToPostfix(Pawn pawn)
         {
-            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
-            if (alienProps != null)
+            if (pawn.def is ThingDef_AlienRace alienProps)
             {
                 //Log.Message(pawn.LabelCap);
                 if (alienProps.alienRace.generalSettings.alienPartGenerator.alienhaircolorgen != null)
+                {
                     pawn.story.hairColor = alienProps.alienRace.generalSettings.alienPartGenerator.alienhaircolorgen.NewRandomizedColor();
+                }
 
                 if (alienProps.alienRace.hairSettings.GetsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                 {
@@ -1356,12 +1466,16 @@ namespace AlienRace
                     {
                         PawnKindDef pk = DefDatabase<PawnKindDef>.GetNamedSilentFail(pke.kindDefs.RandomElement());
                         if (pk != null)
+                        {
                             kindDef = pk;
+                        }
                     }
                 });
 
             if (kindDef == Faction.OfPlayer.def.basicMemberKind)
+            {
                 return true;
+            }
 
             PawnGenerationRequest request = new PawnGenerationRequest(kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, null, true, false, false, false, true, false, 26f, false, true, true, null, null, null, null, null, null);
             Pawn pawn = null;
@@ -1383,8 +1497,7 @@ namespace AlienRace
 
         public static bool RandomHediffsToGainOnBirthdayPrefix(ref IEnumerable<HediffGiver_Birthday> __result, Pawn pawn)
         {
-            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            if (alienProps != null && alienProps.alienRace.generalSettings.ImmuneToAge)
+            if (pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.ImmuneToAge)
             {
                 __result = new List<HediffGiver_Birthday>();
                 return false;
@@ -1394,22 +1507,28 @@ namespace AlienRace
 
         public static bool GenerateRandomOldAgeInjuriesPrefix(Pawn pawn)
         {
-            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            if (alienProps != null && alienProps.alienRace.generalSettings.ImmuneToAge)
+            if (pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.ImmuneToAge)
+            {
                 return false;
+            }
+
             return true;
         }
         
         public static bool SetBackstoryInSlotPrefix(Pawn pawn, BackstorySlot slot, ref Backstory backstory)
         {
 
-            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
-            if (alienProps != null && alienProps.alienRace.generalSettings.PawnsSpecificBackstories && !pawn.kindDef.backstoryCategory.NullOrEmpty())
+            if (pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.PawnsSpecificBackstories && !pawn.kindDef.backstoryCategory.NullOrEmpty())
+            {
                 if (BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) &&
                  kvp.Value.slot == slot && (slot != BackstorySlot.Adulthood ||
                  !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood.workDisables))).Select(kvp => kvp.Value).TryRandomElement(out backstory))
+                {
                     return false;
+                }
+            }
+
             return true;
         }
 
@@ -1423,29 +1542,25 @@ namespace AlienRace
             return true;
         }
 
-        public static void GiveShortHashPrefix(ref Def def)
-        {
-            if (def is BackstoryDef)
-                if (def.shortHash != 0)
-                    def.shortHash = 0;
-        }
-
         public static bool ResolveAllGraphicsPrefix(PawnGraphicSet __instance)
         {
             Pawn alien = __instance.pawn;
-            ThingDef_AlienRace alienProps = __instance.pawn.def as ThingDef_AlienRace;
-            if (alienProps != null)
+            if (__instance.pawn.def is ThingDef_AlienRace alienProps)
             {
                 LifeStageDef lifeStage = alien.ageTracker.CurLifeStageRace.def;
                 if (__instance.pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn)
                 {
                     if (alienProps.alienRace.generalSettings.MaleGenderProbability != 0.5f)
-                            __instance.pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.alienRace.generalSettings.MaleGenderProbability ? Gender.Female : Gender.Male;
+                    {
+                        __instance.pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.alienRace.generalSettings.MaleGenderProbability ? Gender.Female : Gender.Male;
+                    }
 
                     if (!alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty())
+                    {
                         Traverse.Create(__instance.pawn.story).Field("headGraphicPath").SetValue(alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head, __instance.pawn.gender));
+                    }
 
-                     __instance.pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = false;
+                    __instance.pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = false;
                 }
 
                 __instance.nakedGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(alien.story.bodyType, ShaderDatabase.Cutout, __instance.pawn.story.SkinColor, alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien, false), alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).body) : null;
@@ -1456,39 +1571,49 @@ namespace AlienRace
                 __instance.skullGraphic = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).skull, ShaderDatabase.Cutout, Vector2.one, Color.white) : null;
                 __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ShaderDatabase.Cutout, Vector2.one, alien.story.hairColor);
 
-                alien.GetComp<AlienPartGenerator.AlienComp>().Tail = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).tail.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).tail, ShaderDatabase.Transparent, new Vector3(1,0,1), alienProps.alienRace.generalSettings.alienPartGenerator.UseSkinColorForTail ? alien.story.SkinColor : alien.story.hairColor, alienProps.alienRace.generalSettings.alienPartGenerator.UseSkinColorForTail ? alien.story.SkinColor : alien.story.hairColor) : null;
+                alien.GetComp<AlienPartGenerator.AlienComp>().Tail = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).tail.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).tail, ShaderDatabase.Transparent, new Vector3(1, 0, 1), alienProps.alienRace.generalSettings.alienPartGenerator.UseSkinColorForTail ? alien.story.SkinColor : alien.story.hairColor, alienProps.alienRace.generalSettings.alienPartGenerator.UseSkinColorForTail ? alien.story.SkinColor : alien.story.hairColor) : null;
 
                 __instance.ResolveApparelGraphics();
                 return false;
             }
             else
+            {
                 return true;
+            }
         }
 
         public static void GenerateTraitsPrefix(Pawn pawn)
         {
-            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            if (alienProps != null && !alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
-                foreach (AlienTraitEntry ate in alienProps.alienRace.generalSettings.forcedRaceTraitEntries)
-                    if (Rand.Range(0, 100) < ate.chance)
-                        if ((pawn.gender == Gender.Male && (ate.commonalityMale == -1f || Rand.Range(0, 100) < ate.commonalityMale)) || (pawn.gender == Gender.Female && (ate.commonalityFemale == -1f || Rand.Range(0, 100) < ate.commonalityFemale)) || pawn.gender == Gender.None)
-                            if (pawn.story.traits.HasTrait(TraitDef.Named(ate.defname)))
-                                pawn.story.traits.GainTrait(new Trait(TraitDef.Named(ate.defname), ate.degree, true));
+            if (pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
+            {
+                alienProps.alienRace.generalSettings.forcedRaceTraitEntries.ForEach(ate =>
+                {
+                    if ((pawn.gender == Gender.Male && (ate.commonalityMale == -1f || Rand.Range(0, 100) < ate.commonalityMale)) || (pawn.gender == Gender.Female && (ate.commonalityFemale == -1f || Rand.Range(0, 100) < ate.commonalityFemale)) || pawn.gender == Gender.None)
+                    {
+                        if (pawn.story.traits.allTraits.Any(tr => tr.def.defName.EqualsIgnoreCase(ate.defname)))
+                        {
+                            pawn.story.traits.GainTrait(new Trait(TraitDef.Named(ate.defname), ate.degree, true));
+                        }
+                    }
+                });
+            }
         }
 
         public static void SkinColorPostfix(Pawn_StoryTracker __instance, ref Color __result)
         {
             Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
-            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            if (alienProps != null)
+            if (pawn.def is ThingDef_AlienRace alienProps)
+            {
                 __result = alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(pawn);
+            }
         }
 
         public static void GenerateBodyTypePostfix(ref Pawn pawn)
         {
-            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            if (alienProps != null && !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.NullOrEmpty() && !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.Contains(pawn.story.bodyType))
+            if (pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.NullOrEmpty() && !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.Contains(pawn.story.bodyType))
+            {
                 pawn.story.bodyType = alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.RandomElement();
+            }
         }
 
         static FactionDef noHairFaction = new FactionDef() { hairTags = new List<string>() { "alienNoHair" } };
@@ -1496,12 +1621,13 @@ namespace AlienRace
 
         public static void RandomHairDefForPrefix(Pawn pawn, ref FactionDef factionType)
         {
-            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            if (alienProps != null)
+            if (pawn.def is ThingDef_AlienRace alienProps)
             {
-                if(!alienProps.alienRace.hairSettings.HasHair)
+                if (!alienProps.alienRace.hairSettings.HasHair)
+                {
                     factionType = noHairFaction;
-                else if(!alienProps.alienRace.hairSettings.hairTags.NullOrEmpty())
+                }
+                else if (!alienProps.alienRace.hairSettings.hairTags.NullOrEmpty())
                 {
                     hairFaction.hairTags = alienProps.alienRace.hairSettings.hairTags;
                     factionType = hairFaction;
@@ -1513,8 +1639,9 @@ namespace AlienRace
         {
             PawnKindDef kindDef = request.KindDef;
             if (Faction.OfPlayerSilentFail != null && kindDef == PawnKindDefOf.Villager && request.Faction.IsPlayer && kindDef.race != Faction.OfPlayer?.def.basicMemberKind.race)
+            {
                 kindDef = Faction.OfPlayer.def.basicMemberKind;
-
+            }
 
             if (Rand.Value <= 0.4f)
             {
@@ -1526,7 +1653,9 @@ namespace AlienRace
                     {
                         PawnKindDef pkd = DefDatabase<PawnKindDef>.GetNamedSilentFail(pk.kindDefs.RandomElement());
                         if (pkd != null)
+                        {
                             kindDef = pkd;
+                        }
                     }
                 }
                 else if (request.KindDef == PawnKindDefOf.Slave)
@@ -1535,7 +1664,9 @@ namespace AlienRace
                     {
                         PawnKindDef pkd = DefDatabase<PawnKindDef>.GetNamedSilentFail(pk.kindDefs.RandomElement());
                         if (pkd != null)
+                        {
                             kindDef = pkd;
+                        }
                     }
                 }
                 else if (request.KindDef == PawnKindDefOf.Villager)
@@ -1547,7 +1678,9 @@ namespace AlienRace
                             {
                                 PawnKindDef fpk = DefDatabase<PawnKindDef>.GetNamedSilentFail(pke.kindDefs.RandomElement());
                                 if (fpk != null)
+                                {
                                     kindDef = fpk;
+                                }
                             }
                         });
                 }
@@ -1566,7 +1699,9 @@ namespace AlienRace
 
 
             if (alienProps == null)
+            {
                 return true;
+            }
 
             if (!__instance.graphics.AllResolved)
             {
@@ -1580,19 +1715,21 @@ namespace AlienRace
                 loc.y += 0.005f;
 
                 if (bodyDrawType == RotDrawMode.Rotting)
+                {
                     __instance.graphics.dessicatedGraphic.Draw(loc, bodyFacing, pawn);
+                }
                 else
                 {
                     mesh = (portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.bodyPortraitSet.MeshAt(bodyFacing) : alienProps.alienRace.generalSettings.alienPartGenerator.bodySet.MeshAt(bodyFacing));
                 }
 
                 List<Material> list = __instance.graphics.MatsBodyBaseAt(bodyFacing, bodyDrawType);
-                for (int i = 0; i < list.Count; i++)
+                list.ForEach(m =>
                 {
-                    Material damagedMat = __instance.graphics.flasher.GetDamagedMat(list[i]);
+                    Material damagedMat = __instance.graphics.flasher.GetDamagedMat(m);
                     GenDraw.DrawMeshNowOrLater(mesh, loc, quat, damagedMat, portrait);
                     loc.y += 0.005f;
-                }
+                });
                 if (bodyDrawType == RotDrawMode.Fresh)
                 {
                     Vector3 drawLoc = rootLoc;
@@ -1623,16 +1760,13 @@ namespace AlienRace
                 bool flag = false;
                 Mesh mesh3 = (pawn.story.crownType == CrownType.Narrow ? (portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.hairPortraitSetNarrow : alienProps.alienRace.generalSettings.alienPartGenerator.hairSetNarrow) : (portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.hairPortraitSetAverage : alienProps.alienRace.generalSettings.alienPartGenerator.hairSetAverage)).MeshAt(headFacing);
                 List<ApparelGraphicRecord> apparelGraphics = __instance.graphics.apparelGraphics;
-                for (int j = 0; j < apparelGraphics.Count; j++)
+                apparelGraphics.Where(apr => apr.sourceApparel.def.apparel.LastLayer == ApparelLayer.Overhead).ToList().ForEach(apr =>
                 {
-                    if (apparelGraphics[j].sourceApparel.def.apparel.LastLayer == ApparelLayer.Overhead)
-                    {
-                        flag = true;
-                        Material material = apparelGraphics[j].graphic.MatAt(bodyFacing, null);
-                        material = __instance.graphics.flasher.GetDamagedMat(material);
-                        GenDraw.DrawMeshNowOrLater(mesh3, loc2, quat, material, portrait);
-                    }
-                }
+                    flag = true;
+                    Material material = apr.graphic.MatAt(bodyFacing, null);
+                    material = __instance.graphics.flasher.GetDamagedMat(material);
+                    GenDraw.DrawMeshNowOrLater(mesh3, loc2, quat, material, portrait);
+                });
                 if (!flag && bodyDrawType != RotDrawMode.Dessicated)
                 {
                     Mesh mesh4 = (pawn.story.crownType == CrownType.Narrow ? (portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.hairPortraitSetNarrow : alienProps.alienRace.generalSettings.alienPartGenerator.hairSetNarrow) : (portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.hairPortraitSetAverage : alienProps.alienRace.generalSettings.alienPartGenerator.hairSetAverage)).MeshAt(headFacing);
@@ -1642,16 +1776,12 @@ namespace AlienRace
             }
             if (renderBody)
             {
-                for (int k = 0; k < __instance.graphics.apparelGraphics.Count; k++)
+                __instance.graphics.apparelGraphics.Where(apr => apr.sourceApparel.def.apparel.LastLayer == ApparelLayer.Shell).ToList().ForEach(apr =>
                 {
-                    ApparelGraphicRecord apparelGraphicRecord = __instance.graphics.apparelGraphics[k];
-                    if (apparelGraphicRecord.sourceApparel.def.apparel.LastLayer == ApparelLayer.Shell)
-                    {
-                        Material material2 = apparelGraphicRecord.graphic.MatAt(bodyFacing, null);
+                        Material material2 = apr.graphic.MatAt(bodyFacing, null);
                         material2 = __instance.graphics.flasher.GetDamagedMat(material2);
                         GenDraw.DrawMeshNowOrLater(mesh, vector, quat, material2, portrait);
-                    }
-                }
+                });
 
 
                 if (pawn.GetComp<AlienPartGenerator.AlienComp>().Tail != null && alienProps.alienRace.generalSettings.alienPartGenerator.CanDrawTail(pawn))
@@ -1693,10 +1823,10 @@ namespace AlienRace
             if (pawn.apparel != null)
             {
                 List<Apparel> wornApparel = pawn.apparel.WornApparel;
-                for (int l = 0; l < wornApparel.Count; l++)
+                wornApparel.ForEach(ap =>
                 {
-                    wornApparel[l].DrawWornExtras();
-                }
+                    ap.DrawWornExtras();
+                });
             }
             Vector3 bodyLoc = rootLoc;
             bodyLoc.y += 0.0449999981f;
