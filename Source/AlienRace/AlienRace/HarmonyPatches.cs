@@ -389,19 +389,18 @@ namespace AlienRace
 
         public static bool GainTraitPrefix(Trait trait, TraitSet __instance)
         {
-            ThingDef_AlienRace alienProps = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def as ThingDef_AlienRace;
-            if (alienProps == null)
+            if (Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.disallowedTraits.Contains(trait.def))
             {
-                return true;
-            }
 
-            AlienTraitEntry ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(at => at.defname.EqualsIgnoreCase(trait.def.defName));
-            if (ate == null)
-            {
-                return true;
-            }
+                AlienTraitEntry ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(at => at.defname.EqualsIgnoreCase(trait.def.defName));
+                if (ate == null)
+                {
+                    return true;
+                }
 
-            return Rand.Range(0, 100) < ate.chance;
+                return Rand.Range(0, 100) < ate.chance;
+            }
+            return true;
         }
 
         public static void TryMakeInitialRelationsWithPostfix(Faction __instance, Faction other)

@@ -44,41 +44,41 @@ namespace AlienRace
             base.ResolveReferences();
 
             
-            if (!addToDatabase || BackstoryDatabase.allBackstories.ContainsKey(defName) || title.NullOrEmpty() || spawnCategories.NullOrEmpty())
+            if (!this.addToDatabase || BackstoryDatabase.allBackstories.ContainsKey(this.defName) || this.title.NullOrEmpty() || this.spawnCategories.NullOrEmpty())
             {
                 return;
             }
 
             Backstory b = new Backstory()
             {
-                baseDesc = baseDescription.NullOrEmpty() ? "Empty." : baseDescription,
-                bodyTypeGlobal = bodyTypeGlobal,
-                bodyTypeFemale = bodyTypeFemale,
-                bodyTypeMale = bodyTypeMale,
-                slot = slot,
-                shuffleable = shuffleable,
-                spawnCategories = spawnCategories,
-                skillGains = skillGains.ToDictionary(i => i.defName, i => i.amount),
-                forcedTraits = forcedTraits.NullOrEmpty() ? null : forcedTraits.Where(trait => Rand.Range(0,100) < trait.chance).ToList().ConvertAll(trait => new TraitEntry(TraitDef.Named(trait.defname), trait.degree)),
-                disallowedTraits = disallowedTraits.NullOrEmpty() ? null : disallowedTraits.Where(trait => Rand.Range(0,100) < trait.chance).ToList().ConvertAll(trait => new TraitEntry(TraitDef.Named(trait.defname), trait.degree)),
-                workDisables = workAllows.NullOrEmpty() ? workDisables.NullOrEmpty() ? WorkTags.None : ((Func<WorkTags>)delegate
+                baseDesc = this.baseDescription.NullOrEmpty() ? "Empty." : this.baseDescription,
+                bodyTypeGlobal = this.bodyTypeGlobal,
+                bodyTypeFemale = this.bodyTypeFemale,
+                bodyTypeMale = this.bodyTypeMale,
+                slot = this.slot,
+                shuffleable = this.shuffleable,
+                spawnCategories = this.spawnCategories,
+                skillGains = this.skillGains.ToDictionary(i => i.defName, i => i.amount),
+                forcedTraits = this.forcedTraits.NullOrEmpty() ? null : this.forcedTraits.Where(trait => Rand.Range(0,100) < trait.chance).ToList().ConvertAll(trait => new TraitEntry(TraitDef.Named(trait.defname), trait.degree)),
+                disallowedTraits = this.disallowedTraits.NullOrEmpty() ? null : this.disallowedTraits.Where(trait => Rand.Range(0,100) < trait.chance).ToList().ConvertAll(trait => new TraitEntry(TraitDef.Named(trait.defname), trait.degree)),
+                workDisables = this.workAllows.NullOrEmpty() ? this.workDisables.NullOrEmpty() ? WorkTags.None : ((Func<WorkTags>)delegate
                 {
                     WorkTags wt = WorkTags.None;
-                    workDisables.ForEach(tag => wt |= tag);
+                    this.workDisables.ForEach(tag => wt |= tag);
                     return wt;
                 })() : ((Func<WorkTags>)delegate
                 {
                     WorkTags wt = WorkTags.None;
-                    Enum.GetValues(typeof(WorkTags)).Cast<WorkTags>().ToList().ForEach(tag => { if (workAllows.Contains(tag)) { wt |= tag; } });
+                    Enum.GetValues(typeof(WorkTags)).Cast<WorkTags>().ToList().ForEach(tag => { if (this.workAllows.Contains(tag)) { wt |= tag; } });
                     return wt;
                 })(),
-                identifier = defName
+                identifier = this.defName
             };
 
-            b.SetTitle(title);
-            if (!titleShort.NullOrEmpty())
+            b.SetTitle(this.title);
+            if (!this.titleShort.NullOrEmpty())
             {
-                b.SetTitleShort(titleShort);
+                b.SetTitleShort(this.titleShort);
             }
             else
             {
@@ -88,7 +88,7 @@ namespace AlienRace
             b.ResolveReferences();
             b.PostLoad();
 
-            b.identifier = defName;
+            b.identifier = this.defName;
 
 
             if (!b.ConfigErrors(false).Any())
@@ -96,7 +96,7 @@ namespace AlienRace
                 BackstoryDatabase.AddBackstory(b);
             } else
             {
-                Log.Error(defName + " has errors");
+                Log.Error(this.defName + " has errors");
             }
         }
 

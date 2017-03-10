@@ -11,8 +11,17 @@ namespace AlienRace
 
         public override void ResolveReferences()
         {
-            comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
+            this.comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
             base.ResolveReferences();
+            this.alienRace.generalSettings.disallowedTraits = new List<TraitDef>();
+
+            this.alienRace.generalSettings.forcedRaceTraitEntries?.ForEach(ate =>
+            {
+                TraitDef def = DefDatabase<TraitDef>.GetNamedSilentFail(ate.defname);
+                if (ate.chance == 0 && def != null)
+                    this.alienRace.generalSettings.disallowedTraits.Add(def);
+                this.alienRace.generalSettings.forcedRaceTraitEntries.Remove(ate);
+            });
         }
 
         public sealed class AlienSettings
@@ -36,6 +45,7 @@ namespace AlienRace
 
         public List<ChemicalSettings> chemicalSettings;
         public List<AlienTraitEntry> forcedRaceTraitEntries;
+        public List<TraitDef> disallowedTraits;
         public AlienPartGenerator alienPartGenerator = new AlienPartGenerator();
 
         public List<FactionRelationSettings> factionRelations;
