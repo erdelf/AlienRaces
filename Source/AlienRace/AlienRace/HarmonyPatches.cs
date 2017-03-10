@@ -149,6 +149,8 @@ namespace AlienRace
                 if (ren != null)
                 {
                     __result = pawn.gender == Gender.Female ? ren.femaleLabel : ren.label;
+                    if (__result.CanTranslate())
+                        __result = __result.Translate();
                     return false;
                 }
             }
