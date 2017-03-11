@@ -109,7 +109,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.CompatibilityWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CompatibilityWith)));
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.TryMakeInitialRelationsWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryMakeInitialRelationsWithPostfix)));
             harmony.Patch(AccessTools.Method(typeof(TraitSet), nameof(TraitSet.GainTrait)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GainTraitPrefix)), null);
-
+            harmony.Patch(AccessTools.Method(typeof(TraderCaravanUtility), nameof(TraderCaravanUtility.GetTraderCaravanRole)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GetTraderCaravanRolePostfix)));
 
             #region prepareCarefully
             {
@@ -141,6 +141,13 @@ namespace AlienRace
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
+        public static void GetTraderCaravanRolePostfix(this Pawn p, ref TraderCaravanRole __result)
+        {
+            if (__result == TraderCaravanRole.Guard)
+                if (p.def is ThingDef_AlienRace alienProps && alienProps.alienRace.pawnKindSettings.alienslavekinds.Any(pke => pke.kindDefs.Contains(p.kindDef.defName)))
+                    __result = TraderCaravanRole.Chattel;
+        }
+
         public static bool GetGenderSpecificLabelPrefix(Pawn pawn, ref string __result, PawnRelationDef __instance)
         {
             if (pawn.def is ThingDef_AlienRace alienProps)
@@ -167,7 +174,7 @@ namespace AlienRace
             }
 
             RelationSettings relations = alienProps.alienRace.relationSettings;
-            List<Pawn> pawns = PawnsFinder.AllMapsAndWorld_AliveOrDead.Where(p => p.def == pawn.def).ToList();
+            List<Pawn> pawns = PawnsFinder.AllMapsAndWorld_AliveOrDead.Where(p => p.def == pawn.def && !p.GetRelations(pawn).Any(prd => prd.familyByBloodRelation)).InRandomOrder().ToList();
             if (pawns.NullOrEmpty())
             {
                 return true;
