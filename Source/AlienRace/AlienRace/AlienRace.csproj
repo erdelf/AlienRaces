@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{74DCE0E4-19F5-415B-AF5E-BA651ECF87B1}</ProjectGuid>
+    <ProjectGuid>{E7AFA757-436C-40A3-AAFD-66351AA01536}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AlienRace</RootNamespace>
@@ -16,30 +16,40 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>..\..\..\Assemblies\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
+    <DefineConstants>
+    </DefineConstants>
+    <ErrorReport>none</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CodeAnalysisRuleSet>..\RuleSet2.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\..\Assemblies\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>AlienRace.pfx</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp, Version=0.15.6089.4186, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="0Harmony">
+      <HintPath>C:\Users\erdelfion\Documents\modfiles\rimworld\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\RimWorldWin_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Psychology">
-      <HintPath>..\..\..\..\..\..\..\workshop\content\294100\747313773\Assemblies\Psychology.dll</HintPath>
+    <Reference Include="EdBPrepareCarefully">
+      <HintPath>..\..\..\..\..\..\..\workshop\content\294100\735106432\Assemblies\EdBPrepareCarefully.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -48,57 +58,21 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\RimWorldWin_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlienColorKeys.cs" />
-    <Compile Include="AlienHairTypes.cs" />
     <Compile Include="AlienPartGenerator.cs" />
-    <Compile Include="AlienPawn.cs" />
-    <Compile Include="AlienPawnGenerator.cs" />
-    <Compile Include="AlienPawnRenderer.cs" />
-    <Compile Include="AlienTraitEntry.cs" />
     <Compile Include="BackstoryDef.cs" />
-    <Compile Include="CompImmuneToAge.cs" />
-    <Compile Include="CompProperties_RestrictedRace.cs" />
-    <Compile Include="CompRestritctedRace.cs" />
-    <Compile Include="Detours.cs" />
-    <Compile Include="GenSpawnAlien.cs" />
-    <Compile Include="GraphicGetterAlienBody.cs" />
-    <Compile Include="MenuMakerMapRestricted.cs" />
-    <Compile Include="ModInitializer.cs" />
-    <Compile Include="PawnHairColorsAlien.cs" />
-    <Compile Include="PawnKindDef_StartingColonist.cs" />
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-    <Compile Include="AlienRaceUtilities.cs" />
-    <Compile Include="StartingColonistEntry.cs" />
-    <Compile Include="ThingDef_AlienRace.cs" />
+    <Compile Include="HarmonyPatches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScenPart_StartingHumanlikes.cs" />
+    <Compile Include="ThingDef_AlienRace.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="xml\Initializer.xml">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="xml\TestPawn.xml">
-      <SubType>Designer</SubType>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
+    <None Include="AlienRace.pfx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
