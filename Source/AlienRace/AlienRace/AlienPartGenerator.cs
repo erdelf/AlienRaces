@@ -60,56 +60,52 @@ namespace AlienRace
             return first ? alienComp.skinColor : alienComp.skinColorSecond;
         }
 
-        public AlienPartGenerator()
-        {
-            LongEventHandler.QueueLongEvent(() =>
-                { 
-                    
-                    {
-                        if (!meshPools.Keys.Any(v => v.Equals(this.CustomDrawSize)))
-                        {
-                            meshPools.Add(this.CustomDrawSize, new GraphicMeshSet[]
-                                {
-                                new GraphicMeshSet(1.5f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // bodySet
-                                new GraphicMeshSet(1.5f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // headSet
-                                new GraphicMeshSet(1.5f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // hairSetAverage
-                                new GraphicMeshSet(1.3f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // hairSetNarrow
+        public AlienPartGenerator() => LongEventHandler.QueueLongEvent(() =>
+                                         {
 
-                                });
-                        }
+                                             {
+                                                 if (!meshPools.Keys.Any(v => v.Equals(this.CustomDrawSize)))
+                                                 {
+                                                     meshPools.Add(this.CustomDrawSize, new GraphicMeshSet[]
+                                                         {
+                                                            new GraphicMeshSet(1.5f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // bodySet
+                                                            new GraphicMeshSet(1.5f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // headSet
+                                                            new GraphicMeshSet(1.5f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // hairSetAverage
+                                                            new GraphicMeshSet(1.3f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // hairSetNarrow
+                                                         });
+                                                 }
 
-                        GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.CustomDrawSize))];
+                                                 GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.CustomDrawSize))];
 
-                        this.bodySet = meshSet[0];
-                        this.headSet = meshSet[1];
-                        this.hairSetAverage = meshSet[2];
-                        this.hairSetNarrow = meshSet[3];
-                        this.tailMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize, false, false, false });
-                        this.tailMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize, true, false, false });
-                    }
-                    {
-                        if (!meshPools.Keys.Any(v => v.Equals(this.CustomPortraitDrawSize)))
-                        {
-                            meshPools.Add(this.CustomPortraitDrawSize, new GraphicMeshSet[]
-                                {
-                                new GraphicMeshSet(1.5f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // bodySet
-                                new GraphicMeshSet(1.5f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // headSet
-                                new GraphicMeshSet(1.5f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // hairSetAverage
-                                new GraphicMeshSet(1.3f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // hairSetNarrow
-                                });
-                        }
+                                                 this.bodySet = meshSet[0];
+                                                 this.headSet = meshSet[1];
+                                                 this.hairSetAverage = meshSet[2];
+                                                 this.hairSetNarrow = meshSet[3];
+                                                 this.tailMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize, false, false, false });
+                                                 this.tailMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize, true, false, false });
+                                             }
+                                             {
+                                                 if (!meshPools.Keys.Any(v => v.Equals(this.CustomPortraitDrawSize)))
+                                                 {
+                                                     meshPools.Add(this.CustomPortraitDrawSize, new GraphicMeshSet[]
+                                                         {
+                                                            new GraphicMeshSet(1.5f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // bodySet
+                                                            new GraphicMeshSet(1.5f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // headSet
+                                                            new GraphicMeshSet(1.5f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // hairSetAverage
+                                                            new GraphicMeshSet(1.3f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // hairSetNarrow
+                                                         });
+                                                 }
 
-                        GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.CustomPortraitDrawSize))];
+                                                 GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.CustomPortraitDrawSize))];
 
-                        this.bodyPortraitSet = meshSet[0];
-                        this.headPortraitSet = meshSet[1];
-                        this.hairPortraitSetAverage = meshSet[2];
-                        this.hairPortraitSetNarrow = meshSet[3];
-                        this.tailPortraitMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize, false, false, false });
-                        this.tailPortraitMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize, true, false, false });
-                    }
-                }, "meshSetAlien", false, null);
-        }
+                                                 this.bodyPortraitSet = meshSet[0];
+                                                 this.headPortraitSet = meshSet[1];
+                                                 this.hairPortraitSetAverage = meshSet[2];
+                                                 this.hairPortraitSetNarrow = meshSet[3];
+                                                 this.tailPortraitMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize, false, false, false });
+                                                 this.tailPortraitMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize, true, false, false });
+                                             }
+                                         }, "meshSetAlien", false, null);
 
         public bool CanDrawTail(Pawn pawn) => RestUtility.CurrentBed(pawn) == null && !pawn.Downed && !pawn.Dead && (this.tailBodyPart == null ||
                 pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == this.tailBodyPart));

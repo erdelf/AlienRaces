@@ -164,59 +164,146 @@ namespace AlienRace
             return true;
         }
         
-        public static bool GeneratePawnRelationsPrefix(Pawn pawn)
+        public static bool GeneratePawnRelationsPrefix(Pawn pawn, ref PawnGenerationRequest request)
         {
+            PawnGenerationRequest localReq = request;
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
-            if (pawn.RaceProps.hasGenders || alienProps == null)
+            if (!pawn.RaceProps.Humanlike || pawn.RaceProps.hasGenders || alienProps == null)
             {
                 return true;
             }
+            
+            List<KeyValuePair<Pawn, PawnRelationDef>> list = new List<KeyValuePair<Pawn, PawnRelationDef>>();
+            List<PawnRelationDef> allDefsListForReading = DefDatabase<PawnRelationDef>.AllDefsListForReading;
+            List<Pawn> enumerable = (from x in PawnsFinder.AllMapsAndWorld_AliveOrDead
+                                           where x.def == pawn.def
+                                           select x).ToList();
 
             RelationSettings relations = alienProps.alienRace.relationSettings;
-            List<Pawn> pawns = PawnsFinder.AllMapsAndWorld_AliveOrDead.Where(p => p.def == pawn.def && !p.GetRelations(pawn).Any(prd => prd.familyByBloodRelation)).InRandomOrder().ToList();
-            if (pawns.NullOrEmpty())
+
+            enumerable.ForEach(current =>
             {
-                return true;
+                if (current.Discarded)
+                {
+                    Log.Warning(string.Concat(new object[]
+                    {
+                        "Warning during generating pawn relations for ",
+                        pawn,
+                        ": Pawn ",
+                        current,
+                        " is discarded, yet he was yielded by PawnUtility. Discarding a pawn means that he is no longer managed by anything."
+                            }));
+                }
+                else
+                {
+                    allDefsListForReading.ForEach(relationDef =>
+                    {
+                        if (relationDef.generationChanceFactor > 0f)
+                        {
+                            list.Add(new KeyValuePair<Pawn, PawnRelationDef>(current, relationDef));
+                        }
+                    });
+                }
+            });
+
+            KeyValuePair<Pawn, PawnRelationDef> keyValuePair = list.RandomElementByWeightWithDefault(delegate (KeyValuePair<Pawn, PawnRelationDef> x)
+            {
+                if (!x.Value.familyByBloodRelation)
+                {
+                    return 0f;
+                }
+                return GenerationChanceGenderless(x.Value, pawn, x.Key, localReq);
+            }, 82f);
+
+            Pawn other = keyValuePair.Key;
+            if (other != null)
+            {
+                CreateRelationGenderless(keyValuePair.Value, pawn, other);
+            }
+            KeyValuePair<Pawn, PawnRelationDef> keyValuePair2 = list.RandomElementByWeightWithDefault(delegate (KeyValuePair<Pawn, PawnRelationDef> x)
+            {
+                if (x.Value.familyByBloodRelation)
+                {
+                    return 0f;
+                }
+                return GenerationChanceGenderless(x.Value, pawn, x.Key, localReq);
+            }, 82f);
+            other = keyValuePair2.Key;
+            if (other != null)
+            {
+                CreateRelationGenderless(keyValuePair2.Value, pawn, other);
+            }
+            return false;
+        }
+
+        private static float GenerationChanceGenderless(PawnRelationDef relationDef, Pawn pawn, Pawn current, PawnGenerationRequest request)
+        {
+            float generationChance = relationDef.generationChanceFactor;
+            float lifeExpectancy = pawn.RaceProps.lifeExpectancy;
+
+            if (relationDef == PawnRelationDefOf.Child)
+            {
+                generationChance = ChanceOfBecomingGenderlessChildOf(current, pawn, current.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, p => p != pawn));
+                HarmonyPatches.GenerationChanceChildPostfix(ref generationChance, pawn, current);
+            }
+            else if (relationDef == PawnRelationDefOf.ExLover)
+            {
+                generationChance = 0.5f;
+                HarmonyPatches.GenerationChanceExLoverPostfix(ref generationChance, pawn, current);
+            }
+            else if (relationDef == PawnRelationDefOf.ExSpouse)
+            {
+                generationChance = 0.5f;
+                HarmonyPatches.GenerationChanceExSpousePostfix(ref generationChance, pawn, current);
+            }
+            else if (relationDef == PawnRelationDefOf.Fiance)
+            {
+                generationChance =
+                Mathf.Clamp(GenMath.LerpDouble(lifeExpectancy / 1.6f, lifeExpectancy, 1f, 0.01f, pawn.ageTracker.AgeBiologicalYearsFloat), 0.01f, 1f) *
+                Mathf.Clamp(GenMath.LerpDouble(lifeExpectancy / 1.6f, lifeExpectancy, 1f, 0.01f, current.ageTracker.AgeBiologicalYearsFloat), 0.01f, 1f);
+                HarmonyPatches.GenerationChanceFiancePostfix(ref generationChance, pawn, current);
+            }
+            else if (relationDef == PawnRelationDefOf.Lover)
+            {
+                generationChance = 0.5f;
+                HarmonyPatches.GenerationChanceLoverPostfix(ref generationChance, pawn, current);
+            }
+            else if (relationDef == PawnRelationDefOf.Parent)
+            {
+                generationChance = ChanceOfBecomingGenderlessChildOf(current, pawn, current.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, p => p != pawn));
+                HarmonyPatches.GenerationChanceParentPostfix(ref generationChance, pawn, current);
+            }
+            else if (relationDef == PawnRelationDefOf.Sibling)
+            {
+                generationChance = ChanceOfBecomingGenderlessChildOf(current, pawn, current.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, p => p != pawn));
+                generationChance *= 0.65f;
+                HarmonyPatches.GenerationChanceSiblingPostfix(ref generationChance, pawn, current);
+            }
+            else if (relationDef == PawnRelationDefOf.Spouse)
+            {
+                generationChance = 0.5f;
+                HarmonyPatches.GenerationChanceSpousePostfix(ref generationChance, pawn, current);
             }
 
-            Pawn other;
-            if (Rand.Value < relations.relationChanceModifierChild * PawnRelationDefOf.Child.generationChanceFactor * 1.5)
-            {
-                List<Pawn> temp = new List<Pawn>(pawns);
-                do
-                {
-                    temp.TryRandomElement(out other);
-                    if (other == null)
-                    {
-                        goto Step1;
-                    }
+            return generationChance *= relationDef.Worker.BaseGenerationChanceFactor(pawn, current, request);
+        }
 
-                    temp.Remove(other);
-                } while (other.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() > 2 && !other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
+        private static void CreateRelationGenderless(PawnRelationDef relationDef, Pawn pawn, Pawn other)
+        {
+            if (relationDef == PawnRelationDefOf.Child)
+            {
                 Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent);
                 if (parent != null)
                 {
-                    pawn.relations.AddDirectRelation(LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8f ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent);
+                    pawn.relations.AddDirectRelation(LovePartnerRelationUtility.HasAnyLovePartner(parent) || UnityEngine.Random.value > 0.8f ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent);
                 }
 
                 other.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
             }
-            Step1:
-            
-            if (Rand.Value < relations.relationChanceModifierExLover * PawnRelationDefOf.ExLover.generationChanceFactor * 1.5)
-            {
-                List<Pawn> temp = new List<Pawn>(pawns);
-                do
-                {
-                    temp.TryRandomElement(out other);
-                    if (other == null)
-                    {
-                        goto Step2;
-                    }
-                    temp.Remove(other);
-                } while (!other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
 
+            if (relationDef == PawnRelationDefOf.ExLover)
+            {
                 if (!pawn.GetRelations(other).Contains(PawnRelationDefOf.ExLover))
                 {
                     pawn.relations.AddDirectRelation(PawnRelationDefOf.ExLover, other);
@@ -224,127 +311,65 @@ namespace AlienRace
 
                 other.relations.Children.ToList().ForEach(p =>
                 {
-                    if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && Rand.Value < 0.35)
+                    if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && UnityEngine.Random.value < 0.35)
                     {
                         p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
                     }
                 });
             }
-            Step2:
-            
-            if (Rand.Value < relations.relationChanceModifierExSpouse * PawnRelationDefOf.ExSpouse.generationChanceFactor * 1.5)
-            {
-                List<Pawn> temp = new List<Pawn>(pawns);
-                do
-                {
-                    temp.TryRandomElement(out other);
-                    if (other == null)
-                    {
-                        goto Step3;
-                    }
-                    temp.Remove(other);
-                } while (!other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
 
+            if (relationDef == PawnRelationDefOf.ExSpouse)
+            {
                 pawn.relations.AddDirectRelation(PawnRelationDefOf.ExSpouse, other);
 
                 other.relations.Children.ToList().ForEach(p =>
                 {
-                    if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && Rand.Value < 1)
+                    if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && UnityEngine.Random.value < 1)
                     {
                         p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
                     }
                 });
             }
-            Step3:
-            
-            if (Rand.Value < relations.relationChanceModifierFiance * PawnRelationDefOf.Fiance.generationChanceFactor * 1.5)
-            {
-                List<Pawn> temp = new List<Pawn>(pawns);
-                do
-                {
-                    temp.TryRandomElement(out other);
-                    if (other == null)
-                    {
-                        goto Step4;
-                    }
-                    temp.Remove(other);
-                } while (!other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
 
+            if (relationDef == PawnRelationDefOf.Fiance)
+            {
                 pawn.relations.AddDirectRelation(PawnRelationDefOf.Fiance, other);
 
                 other.relations.Children.ToList().ForEach(p =>
                 {
-                    if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && Rand.Value < 0.7)
+                    if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && UnityEngine.Random.value < 0.7)
                     {
                         p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
                     }
                 });
             }
-            Step4:
-            
-            if (Rand.Value < relations.relationChanceModifierLover * PawnRelationDefOf.Lover.generationChanceFactor * 1.5)
+
+            if (relationDef == PawnRelationDefOf.Lover)
             {
-                List<Pawn> temp = new List<Pawn>(pawns);
-                do
-                {
-                    temp.TryRandomElement(out other);
-                    if (other == null)
-                    {
-                        goto Step5;
-                    }
-
-                    temp.Remove(other);
-                } while (!LovePartnerRelationUtility.HasAnyLovePartner(other) && !other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
-
                 pawn.relations.AddDirectRelation(PawnRelationDefOf.Lover, other);
 
                 other.relations.Children.ToList().ForEach(p =>
                 {
-                    if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && Rand.Value < 0.35f)
+                    if (p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && UnityEngine.Random.value < 0.35f)
                     {
                         p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
                     }
                 });
             }
-            Step5:
-            
-            if (Rand.Value < relations.relationChanceModifierParent * PawnRelationDefOf.Parent.generationChanceFactor * 1.5)
+
+            if (relationDef == PawnRelationDefOf.Parent)
             {
-                List<Pawn> temp = new List<Pawn>(pawns);
-                do
-                {
-                    temp.TryRandomElement(out other);
-                    if (other == null)
-                    {
-                        goto Step6;
-                    }
-
-                    temp.Remove(other);
-                } while (!LovePartnerRelationUtility.HasAnyLovePartner(other) && !other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
-
                 Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent);
                 if (parent != null && pawn != parent && !pawn.GetRelations(parent).Contains(PawnRelationDefOf.ExLover))
                 {
-                    pawn.relations.AddDirectRelation(LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8f ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent);
+                    pawn.relations.AddDirectRelation(LovePartnerRelationUtility.HasAnyLovePartner(parent) || UnityEngine.Random.value > 0.8f ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Spouse, parent);
                 }
 
                 pawn.relations.AddDirectRelation(PawnRelationDefOf.Parent, other);
             }
-            Step6:
-            
-            if (Rand.Value < relations.relationChanceModifierSibling * PawnRelationDefOf.Sibling.generationChanceFactor * 1.5)
-            {
-                List<Pawn> temp = new List<Pawn>(pawns);
-                do
-                {
-                    temp.TryRandomElement(out other);
-                    if (other == null)
-                    {
-                        goto Step7;
-                    }
-                    temp.Remove(other);
-                } while (!other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
 
+            if (relationDef == PawnRelationDefOf.Sibling)
+            {
                 Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, null);
                 List<DirectPawnRelation> dprs = other.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent && dpr.otherPawn != parent).ToList();
                 Pawn parent2 = dprs.NullOrEmpty() ? null : dprs.First().otherPawn;
@@ -369,7 +394,7 @@ namespace AlienRace
 
                 if (!parent.GetRelations(parent2).Any(prd => prd == PawnRelationDefOf.ExLover || prd == PawnRelationDefOf.Lover))
                 {
-                    parent.relations.AddDirectRelation(LovePartnerRelationUtility.HasAnyLovePartner(parent) || Rand.Value > 0.8 ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Lover, parent2);
+                    parent.relations.AddDirectRelation(LovePartnerRelationUtility.HasAnyLovePartner(parent) || UnityEngine.Random.value > 0.8 ? PawnRelationDefOf.ExLover : PawnRelationDefOf.Lover, parent2);
                 }
 
                 if (!pawn.GetRelations(parent).Contains(PawnRelationDefOf.Parent) && pawn != parent)
@@ -382,22 +407,9 @@ namespace AlienRace
                     pawn.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent2);
                 }
             }
-            Step7:
-            
-            if (Rand.Value < relations.relationChanceModifierSpouse * PawnRelationDefOf.Spouse.generationChanceFactor * 1.5)
+
+            if (relationDef == PawnRelationDefOf.Spouse)
             {
-                List<Pawn> temp = new List<Pawn>(pawns);
-                do
-                {
-                    temp.TryRandomElement(out other);
-                    if (other == null)
-                    {
-                        goto Step8;
-                    }
-
-                    temp.Remove(other);
-                } while (!LovePartnerRelationUtility.HasAnyLovePartner(other) && !other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
-
                 if (!pawn.GetRelations(other).Contains(PawnRelationDefOf.Spouse))
                 {
                     pawn.relations.AddDirectRelation(PawnRelationDefOf.Spouse, other);
@@ -405,15 +417,63 @@ namespace AlienRace
 
                 other.relations.Children.ToList().ForEach(p =>
                 {
-                    if (pawn != p && p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && p.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, x => x == pawn) == null && Rand.Value < 0.7)
+                    if (pawn != p && p.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() < 2 && p.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, x => x == pawn) == null && UnityEngine.Random.value < 0.7)
                     {
                         p.relations.AddDirectRelation(PawnRelationDefOf.Parent, pawn);
                     }
                 });
             }
-            Step8:
-            
-            return false;
+
+        }
+
+        private static float ChanceOfBecomingGenderlessChildOf(Pawn child, Pawn parent1, Pawn parent2)
+        {
+            if (child == null || parent1 == null || !(parent2 == null || child.relations.DirectRelations.Count(dpr => dpr.def == PawnRelationDefOf.Parent) > 1))
+                return 0f;
+            if(parent1 != null && parent2 != null && !LovePartnerRelationUtility.LovePartnerRelationExists(parent1, parent2) && !LovePartnerRelationUtility.ExLovePartnerRelationExists(parent1, parent2))
+                return 0f;
+
+            float num = 1f;
+            float num2 = 1f;
+            float num3 = 1f;
+            Traverse childRelation = Traverse.Create(typeof(ChildRelationUtility));
+
+            if (parent1 != null)
+            {
+                num = childRelation.Method("GetParentAgeFactor", parent1, child, parent1.RaceProps.lifeExpectancy/5f, parent1.RaceProps.lifeExpectancy/2.5f, parent1.RaceProps.lifeExpectancy/1.6f).GetValue<float>();
+                if (num == 0f)
+                {
+                    return 0f;
+                }
+            }
+            if (parent2 != null)
+            {
+                num2 = childRelation.Method("GetParentAgeFactor", parent2, child, parent1.RaceProps.lifeExpectancy / 5f, parent1.RaceProps.lifeExpectancy / 2.5f, parent1.RaceProps.lifeExpectancy / 1.6f).GetValue<float>();
+                if (num2 == 0f)
+                {
+                    return 0f;
+                }
+                num3 = 1f;
+            }
+            float num6 = 1f;
+            if (parent2 != null)
+            {
+                Pawn firstDirectRelationPawn = parent2.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Spouse, null);
+                if (firstDirectRelationPawn != null && firstDirectRelationPawn != parent2)
+                {
+                    num6 *= 0.15f;
+                }
+            }
+            if (parent2 != null)
+            {
+                Pawn firstDirectRelationPawn2 = parent2.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Spouse, null);
+                if (firstDirectRelationPawn2 != null && firstDirectRelationPawn2 != parent2)
+                {
+                    num6 *= 0.15f;
+                }
+            }
+            return num * num2 * num3 * num6;
+
         }
 
         public static bool GainTraitPrefix(Trait trait, TraitSet __instance)
@@ -560,7 +620,7 @@ namespace AlienRace
             }
             Rand.PushSeed();
             Rand.Seed = pawn.HashOffset();
-            bool flag = Rand.Value < 0.015f;
+            bool flag = UnityEngine.Random.value < 0.015f;
             Rand.PopSeed();
             float num = 1f;
             float num2 = 1f;
@@ -1672,7 +1732,7 @@ namespace AlienRace
                 kindDef = Faction.OfPlayer.def.basicMemberKind;
             }
 
-            if (Rand.Value <= 0.4f)
+            if (UnityEngine.Random.value <= 0.4f)
             {
                 IEnumerable<ThingDef_AlienRace> comps = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading;
                 PawnKindEntry pk;
