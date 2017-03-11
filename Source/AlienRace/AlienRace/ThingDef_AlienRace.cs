@@ -13,14 +13,24 @@ namespace AlienRace
         {
             this.comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
             base.ResolveReferences();
-            this.alienRace.generalSettings.disallowedTraits = new List<TraitDef>();
+
+            if (this.alienRace.generalSettings.disallowedTraits == null)
+            {
+                this.alienRace.generalSettings.disallowedTraits = new List<TraitDef>();
+            }
 
             this.alienRace.generalSettings.forcedRaceTraitEntries?.ForEach(ate =>
             {
                 TraitDef def = DefDatabase<TraitDef>.GetNamedSilentFail(ate.defname);
-                if (ate.chance == 0 && def != null)
-                    this.alienRace.generalSettings.disallowedTraits.Add(def);
-                this.alienRace.generalSettings.forcedRaceTraitEntries.Remove(ate);
+                if (def != null)
+                {
+                    if (ate.chance == 0)
+                    {
+                        this.alienRace.generalSettings.disallowedTraits.Add(def);
+                        this.alienRace.generalSettings.forcedRaceTraitEntries.Remove(ate);
+                    }
+                }else
+                    this.alienRace.generalSettings.forcedRaceTraitEntries.Remove(ate);
             });
         }
 

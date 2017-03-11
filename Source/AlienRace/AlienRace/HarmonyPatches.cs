@@ -76,7 +76,7 @@ namespace AlienRace
 
             #region GeneralSettings
             harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "GenerateRandomOldAgeInjuries"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateRandomOldAgeInjuriesPrefix)), null);
-            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "RandomHediffsToGainOnBirthday", new Type[] { typeof(Pawn), typeof(int) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(RandomHediffsToGainOnBirthdayPrefix)), null);
+            harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "RandomHediffsToGainOnBirthday", new Type[] { typeof(ThingDef), typeof(int) }), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RandomHediffsToGainOnBirthdayPostfix)));
             harmony.Patch(AccessTools.Property(typeof(JobDriver), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
             harmony.Patch(AccessTools.Property(typeof(JobDriver_Skygaze), "Posture").GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateRandomAge"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateRandomAgePrefix)), null);
@@ -186,7 +186,7 @@ namespace AlienRace
                     }
 
                     temp.Remove(other);
-                } while (other.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() > 2);
+                } while (other.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent).Count() > 2 && !other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
                 Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent);
                 if (parent != null)
                 {
@@ -199,11 +199,16 @@ namespace AlienRace
             
             if (Rand.Value < relations.relationChanceModifierExLover * PawnRelationDefOf.ExLover.generationChanceFactor * 1.5)
             {
-                pawns.TryRandomElement(out other);
-                if (other == null)
+                List<Pawn> temp = new List<Pawn>(pawns);
+                do
                 {
-                    goto Step2;
-                }
+                    temp.TryRandomElement(out other);
+                    if (other == null)
+                    {
+                        goto Step2;
+                    }
+                    temp.Remove(other);
+                } while (!other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
 
                 if (!pawn.GetRelations(other).Contains(PawnRelationDefOf.ExLover))
                 {
@@ -222,11 +227,16 @@ namespace AlienRace
             
             if (Rand.Value < relations.relationChanceModifierExSpouse * PawnRelationDefOf.ExSpouse.generationChanceFactor * 1.5)
             {
-                pawns.TryRandomElement(out other);
-                if (other == null)
+                List<Pawn> temp = new List<Pawn>(pawns);
+                do
                 {
-                    goto Step3;
-                }
+                    temp.TryRandomElement(out other);
+                    if (other == null)
+                    {
+                        goto Step3;
+                    }
+                    temp.Remove(other);
+                } while (!other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
 
                 pawn.relations.AddDirectRelation(PawnRelationDefOf.ExSpouse, other);
 
@@ -242,11 +252,16 @@ namespace AlienRace
             
             if (Rand.Value < relations.relationChanceModifierFiance * PawnRelationDefOf.Fiance.generationChanceFactor * 1.5)
             {
-                pawns.TryRandomElement(out other);
-                if (other == null)
+                List<Pawn> temp = new List<Pawn>(pawns);
+                do
                 {
-                    goto Step4;
-                }
+                    temp.TryRandomElement(out other);
+                    if (other == null)
+                    {
+                        goto Step4;
+                    }
+                    temp.Remove(other);
+                } while (!other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
 
                 pawn.relations.AddDirectRelation(PawnRelationDefOf.Fiance, other);
 
@@ -272,7 +287,7 @@ namespace AlienRace
                     }
 
                     temp.Remove(other);
-                } while (!LovePartnerRelationUtility.HasAnyLovePartner(other));
+                } while (!LovePartnerRelationUtility.HasAnyLovePartner(other) && !other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
 
                 pawn.relations.AddDirectRelation(PawnRelationDefOf.Lover, other);
 
@@ -298,7 +313,7 @@ namespace AlienRace
                     }
 
                     temp.Remove(other);
-                } while (!LovePartnerRelationUtility.HasAnyLovePartner(other));
+                } while (!LovePartnerRelationUtility.HasAnyLovePartner(other) && !other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
 
                 Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent);
                 if (parent != null && pawn != parent && !pawn.GetRelations(parent).Contains(PawnRelationDefOf.ExLover))
@@ -312,11 +327,16 @@ namespace AlienRace
             
             if (Rand.Value < relations.relationChanceModifierSibling * PawnRelationDefOf.Sibling.generationChanceFactor * 1.5)
             {
-                pawns.TryRandomElement(out other);
-                if (other == null)
+                List<Pawn> temp = new List<Pawn>(pawns);
+                do
                 {
-                    goto Step7;
-                }
+                    temp.TryRandomElement(out other);
+                    if (other == null)
+                    {
+                        goto Step7;
+                    }
+                    temp.Remove(other);
+                } while (!other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
 
                 Pawn parent = other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, null);
                 List<DirectPawnRelation> dprs = other.relations.DirectRelations.Where(dpr => dpr.def == PawnRelationDefOf.Parent && dpr.otherPawn != parent).ToList();
@@ -369,7 +389,7 @@ namespace AlienRace
                     }
 
                     temp.Remove(other);
-                } while (!LovePartnerRelationUtility.HasAnyLovePartner(other));
+                } while (!LovePartnerRelationUtility.HasAnyLovePartner(other) && !other.GetRelations(pawn).Any(prd => prd.familyByBloodRelation));
 
                 if (!pawn.GetRelations(other).Contains(PawnRelationDefOf.Spouse))
                 {
@@ -391,8 +411,10 @@ namespace AlienRace
 
         public static bool GainTraitPrefix(Trait trait, TraitSet __instance)
         {
-            if (Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.disallowedTraits.Contains(trait.def))
+            if (Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def is ThingDef_AlienRace alienProps)
             {
+                if (alienProps.alienRace.generalSettings.disallowedTraits.Contains(trait.def))
+                    return false;
 
                 AlienTraitEntry ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(at => at.defname.EqualsIgnoreCase(trait.def.defName));
                 if (ate == null)
@@ -1499,14 +1521,10 @@ namespace AlienRace
             return false;
         }
 
-        public static bool RandomHediffsToGainOnBirthdayPrefix(ref IEnumerable<HediffGiver_Birthday> __result, Pawn pawn)
+        public static void RandomHediffsToGainOnBirthdayPostfix(ref IEnumerable<HediffGiver_Birthday> __result, ThingDef raceDef)
         {
-            if (pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.ImmuneToAge)
-            {
+            if ((raceDef as ThingDef_AlienRace)?.alienRace.generalSettings.ImmuneToAge ?? false)
                 __result = new List<HediffGiver_Birthday>();
-                return false;
-            }
-            return true;
         }
 
         public static bool GenerateRandomOldAgeInjuriesPrefix(Pawn pawn)
