@@ -564,7 +564,7 @@ namespace AlienRace
                     bool result = __result;
                     alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(cs =>
                     {
-                        if (cs.chemical.EqualsIgnoreCase(chemical.defName) && !cs.ingestible)
+                        if (cs.chemical?.EqualsIgnoreCase(chemical.defName) ?? false && !cs.ingestible)
                         {
                             result = false;
                         }
@@ -581,7 +581,7 @@ namespace AlienRace
             {
                 alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(cs =>
                 {
-                    if (cs.chemical.EqualsIgnoreCase(__instance.Props.chemical.defName))
+                    if (cs.chemical?.EqualsIgnoreCase(__instance.Props?.chemical?.defName) ?? false)
                     {
                         cs.reactions?.ForEach(iod => iod.DoIngestionOutcome(ingester, __instance.parent));
                     }
@@ -589,7 +589,8 @@ namespace AlienRace
             }
         }
 
-        public static void DrugValidatorPostfix(ref bool __result, Pawn pawn, Thing drug) => CanBingeNowPostfix(pawn, drug.TryGetComp<CompDrug>().Props.chemical, ref __result);
+        public static void DrugValidatorPostfix(ref bool __result, Pawn pawn, Thing drug) => 
+            CanBingeNowPostfix(pawn, drug?.TryGetComp<CompDrug>()?.Props?.chemical, ref __result);
 
         public static void CompatibilityWith(Pawn_RelationsTracker __instance, Pawn otherPawn, ref float __result)
         {
@@ -1511,7 +1512,6 @@ namespace AlienRace
 
         public static void GenerateRandomAgePrefix(Pawn pawn, PawnGenerationRequest request)
         {
-
             if (pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.MaleGenderProbability != 0.5f)
             {
                 if (!request.FixedGender.HasValue)
@@ -1642,6 +1642,7 @@ namespace AlienRace
                     if (alienProps.alienRace.generalSettings.MaleGenderProbability != 0.5f)
                     {
                         __instance.pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.alienRace.generalSettings.MaleGenderProbability ? Gender.Female : Gender.Male;
+                        __instance.pawn.Name = PawnBioAndNameGenerator.GeneratePawnName(__instance.pawn, NameStyle.Full);
                     }
 
                     if (!alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty())
@@ -1731,7 +1732,7 @@ namespace AlienRace
             {
                 kindDef = Faction.OfPlayer.def.basicMemberKind;
             }
-
+            
             if (UnityEngine.Random.value <= 0.4f)
             {
                 IEnumerable<ThingDef_AlienRace> comps = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading;
