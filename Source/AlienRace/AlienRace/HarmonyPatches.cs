@@ -17,7 +17,6 @@ namespace AlienRace
         {
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.erdelf.alien_race.main");
 
-
             #region RelationSettings
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceChildPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), "GenerationChance"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceExLoverPostfix)));
@@ -30,7 +29,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnRelationsPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(PawnRelationDef), nameof(PawnRelationDef.GetGenderSpecificLabel)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GetGenderSpecificLabelPrefix)), null);
             #endregion
-
+            
             #region Backstory
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGiveSolidBioTo"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGiveSolidBioToPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetBackstoryInSlotPrefix)), null);
@@ -144,7 +143,7 @@ namespace AlienRace
         public static void GetTraderCaravanRolePostfix(this Pawn p, ref TraderCaravanRole __result)
         {
             if (__result == TraderCaravanRole.Guard)
-                if (p.def is ThingDef_AlienRace alienProps && alienProps.alienRace.pawnKindSettings.alienslavekinds.Any(pke => pke.kindDefs.Contains(p.kindDef.defName)))
+                if (p.def is ThingDef_AlienRace alienProps && (alienProps.alienRace.pawnKindSettings.alienslavekinds?.Any(pke => pke.kindDefs?.Contains(p.kindDef.defName) ?? false) ?? false))
                     __result = TraderCaravanRole.Chattel;
         }
 
@@ -740,12 +739,9 @@ namespace AlienRace
             {
                 return true;
             }
-
-            Traverse traversePawn = Traverse.Create(__instance);
-
             Pawn pawn = PawnGenerator.GeneratePawn(DefDatabase<PawnKindDef>.AllDefsListForReading.Where(pkd => pkd.race == def).ToList().TryRandomElement(out PawnKindDef pk) ? pk : PawnKindDefOf.Villager, Faction.OfPlayer);
 
-            traversePawn.Method("InitializeWithPawn", pawn).GetValue();
+            Traverse.Create(__instance).Method("InitializeWithPawn", pawn).GetValue();
 
             return false;
         }
@@ -760,7 +756,6 @@ namespace AlienRace
                 return false;
             }
             return true;
-
         }
 
         public static bool PrepareCarefullySetSelectedStuff(int layer, ThingDef stuffDef, object __instance)
@@ -769,12 +764,9 @@ namespace AlienRace
             {
                 return true;
             }
-
-            Traverse traversePawn = Traverse.Create(__instance);
-
+            
             Pawn pawn = PawnGenerator.GeneratePawn(DefDatabase<PawnKindDef>.AllDefsListForReading.Where(pkd => pkd.race == stuffDef).ToList().TryRandomElement(out PawnKindDef pk) ? pk : PawnKindDefOf.Villager, Faction.OfPlayer);
-
-            traversePawn.Method("InitializeWithPawn", pawn).GetValue();
+            Traverse.Create(__instance).Method("InitializeWithPawn", pawn).GetValue();
 
             return false;
         }
@@ -814,7 +806,7 @@ namespace AlienRace
 
             if (pawnLayerActions.Count == 9)
             {
-                pawnLayerActions.Add(() => traverseInstance.Method("ChangePawnLayer", 9).GetValue());
+                pawnLayerActions.Add(() => traverseInstance.Method("ChangePawnLayer", new Type[] { typeof(int) }, 9).GetValue() /* AccessTools.Method(__instance.GetType(), "ChangePawnLayer").Invoke(__instance, new object[] { 9 })*/);
                 traverseInstance.Field("pawnLayers").GetValue<List<int>>().Add(9);
 
                 List<ThingDef> raceList = new List<ThingDef>();

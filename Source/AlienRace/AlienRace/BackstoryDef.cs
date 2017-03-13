@@ -27,17 +27,6 @@ namespace AlienRace
         public List<AlienTraitEntry> disallowedTraits = new List<AlienTraitEntry>();
 #pragma warning restore CS0649
 
-        private static bool patched = false;
-
-        public BackstoryDef()
-        {
-            if (!patched)
-            {
-                HarmonyInstance.Create("rimworld.erdelf.alien_race.backstory").Patch(AccessTools.Method(typeof(ShortHashGiver), "GiveShortHash"), new HarmonyMethod(typeof(HarmonyPatches), "GiveShortHashPrefix"), null);
-                patched = true;
-            }
-        }
-
         public override void ResolveReferences()
         {
 
