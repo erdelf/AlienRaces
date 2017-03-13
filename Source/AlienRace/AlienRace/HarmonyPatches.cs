@@ -1071,9 +1071,16 @@ namespace AlienRace
             {
                 ResearchProjectDef project = Find.ResearchManager.currentProj;
 
-                __result = (!(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project.defName) && 
-                (rpr.apparelList?.TrueForAll(ap => pawn.apparel.WornApparel.Select(twc => twc.def.defName).Contains(ap)) ?? false))) ?? 
-                    DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project.defName)) ?? false));
+                ResearchProjectRestrictions rprest = (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.FirstOrDefault(rpr => rpr.projects.Contains(project.defName));
+                if (rprest != null)
+                {
+                    IEnumerable<string> apparel = pawn.apparel.WornApparel.Select(twc => twc.def.defName);
+                    if (!rprest.apparelList?.TrueForAll(ap => apparel.Contains(ap)) ?? false)
+                        __result = true;
+                } else
+                    __result = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project.defName)) ?? false));
+
+                Log.Message(__result.ToString());
             }
         }
 
