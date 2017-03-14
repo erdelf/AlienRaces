@@ -109,6 +109,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.TryMakeInitialRelationsWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryMakeInitialRelationsWithPostfix)));
             harmony.Patch(AccessTools.Method(typeof(TraitSet), nameof(TraitSet.GainTrait)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GainTraitPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(TraderCaravanUtility), nameof(TraderCaravanUtility.GetTraderCaravanRole)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GetTraderCaravanRolePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(ApparelUtility), nameof(ApparelUtility.CanWearTogether)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanWearTogetherPostfix)));
 
             #region prepareCarefully
             {
@@ -138,6 +139,56 @@ namespace AlienRace
             #endregion
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void CanWearTogetherPostfix(ThingDef A, ThingDef B, bool __result)
+        {
+            /*
+            if (__result)
+            {
+                Log.Message(A.defName + " - " + B.defName);
+
+                bool flag = false;
+                for (int i = 0; i < A.apparel.layers.Count; i++)
+                {
+                    for (int j = 0; j < B.apparel.layers.Count; j++)
+                    {
+                        if (A.apparel.layers[i] == B.apparel.layers[j])
+                        {
+                            flag = true;
+                        }
+                        if (flag)
+                        {
+                            break;
+                        }
+                    }
+                    if (flag)
+                    {
+                        break;
+                    }
+                }
+                if (!flag)
+                    Log.Message("You are out");
+                else
+                {
+                    for (int k = 0; k < A.apparel.bodyPartGroups.Count; k++)
+                    {
+                        for (int l = 0; l < B.apparel.bodyPartGroups.Count; l++)
+                        {
+                            BodyPartGroupDef item = A.apparel.bodyPartGroups[k];
+                            BodyPartGroupDef item2 = B.apparel.bodyPartGroups[l];
+                            for (int m = 0; m < BodyDefOf.Human.AllParts.Count; m++)
+                            {
+                                BodyPartRecord bodyPartRecord = BodyDefOf.Human.AllParts[m];
+                                if (bodyPartRecord.groups.Contains(item) && bodyPartRecord.groups.Contains(item2))
+                                {
+                                    Log.Message("you are in");
+                                }
+                            }
+                        }
+                    }
+                }
+            }*/
         }
 
         public static void GetTraderCaravanRolePostfix(this Pawn p, ref TraderCaravanRole __result)
@@ -1024,7 +1075,8 @@ namespace AlienRace
 
         public static void ResearchPreOpenPostfix(MainTabWindow_Research __instance)
         {
-            List<ResearchProjectDef> projects = Traverse.Create(__instance).Field("relevantProjects").GetValue<IEnumerable<ResearchProjectDef>>().ToList();
+            FieldInfo info = AccessTools.Field(typeof(MainTabWindow_Research), "relevantProjects");
+            List<ResearchProjectDef> projects = (info.GetValue(__instance) as IEnumerable<ResearchProjectDef>).ToList();
             for(int i=0; i<projects.Count;i++)
             {
                 ResearchProjectDef project = projects[i];
@@ -1062,7 +1114,7 @@ namespace AlienRace
                 }
             }
             
-            Traverse.Create(__instance).Field("relevantProjects").SetValue(projects);
+            info.SetValue(__instance, projects);
         }
 
         public static void ShouldSkipResearchPostfix(Pawn pawn, ref bool __result)
