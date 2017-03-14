@@ -129,7 +129,7 @@ namespace AlienRace
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedStuff"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedStuff"), null);
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "GetSelectedStuff"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyGetSelectedStuff"), null);
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedApparelInternal"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedApparelInternal"), null);
-                            //harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.PawnLayers), "Label"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyLayerLabel"));
+                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.PawnLayers), "Label"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyLayerLabel"));
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "ConvertToPawn", new Type[] { typeof(bool) }), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyConvertToPawn"));
                         }
                     }))();
@@ -857,7 +857,7 @@ namespace AlienRace
 
             if (pawnLayerActions.Count == 9)
             {
-                pawnLayerActions.Add(() => traverseInstance.Method("ChangePawnLayer", new Type[] { typeof(int) }, 9).GetValue() /* AccessTools.Method(__instance.GetType(), "ChangePawnLayer").Invoke(__instance, new object[] { 9 })*/);
+                pawnLayerActions.Add(() => traverseInstance.Method("ChangePawnLayer", new Type[] { typeof(int) }).GetValue(9) /* AccessTools.Method(__instance.GetType(), "ChangePawnLayer").Invoke(__instance, new object[] { 9 })*/);
                 traverseInstance.Field("pawnLayers").GetValue<List<int>>().Add(9);
 
                 List<ThingDef> raceList = new List<ThingDef>();
@@ -1075,9 +1075,9 @@ namespace AlienRace
 
         public static void ResearchPreOpenPostfix(MainTabWindow_Research __instance)
         {
-            FieldInfo info = AccessTools.Field(typeof(MainTabWindow_Research), "relevantProjects");
-            List<ResearchProjectDef> projects = (info.GetValue(__instance) as IEnumerable<ResearchProjectDef>).ToList();
-            for(int i=0; i<projects.Count;i++)
+            Traverse info = Traverse.Create(__instance).Field("relevantProjects");
+            List<ResearchProjectDef> projects = info.GetValue<IEnumerable<ResearchProjectDef>>().ToList();
+            for (int i=0; i<projects.Count;i++)
             {
                 ResearchProjectDef project = projects[i];
                 if (!project.IsFinished)
@@ -1113,8 +1113,8 @@ namespace AlienRace
                     }
                 }
             }
-            
-            info.SetValue(__instance, projects);
+
+            info.SetValue(projects);
         }
 
         public static void ShouldSkipResearchPostfix(Pawn pawn, ref bool __result)
