@@ -1960,7 +1960,7 @@ namespace AlienRace
                 }
             }
 
-            Traverse.Create(__instance).Method("DrawEquipment", new object[] { rootLoc });
+            Traverse.Create(__instance).Method("DrawEquipment", new object[] { rootLoc }).GetValue();
             if (pawn.apparel != null)
             {
                 List<Apparel> wornApparel = pawn.apparel.WornApparel;
