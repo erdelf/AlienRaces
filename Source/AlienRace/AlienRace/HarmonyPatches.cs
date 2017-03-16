@@ -1857,7 +1857,37 @@ namespace AlienRace
 
                 if (bodyDrawType == RotDrawMode.Rotting)
                 {
-                    __instance.graphics.dessicatedGraphic.Draw(loc, bodyFacing, pawn);
+                    Mesh mesh2;
+                    if (__instance.graphics.dessicatedGraphic.ShouldDrawRotated)
+                    {
+                        mesh2 = MeshPool.GridPlane(portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize);
+                    }
+                    else
+                    {
+                        Vector2 size = portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize;
+                        if (bodyFacing.IsHorizontal)
+                        {
+                            size = size.Rotated();
+                        }
+                        if (bodyFacing == Rot4.West && (__instance.graphics.dessicatedGraphic.data == null || __instance.graphics.dessicatedGraphic.data.allowFlip))
+                        {
+                            return MeshPool.GridPlaneFlip(size);
+                        }
+                        return MeshPool.GridPlane(size);
+                    }
+
+
+
+                    Quaternion rotation = (Quaternion) Traverse.Create(__instance.graphics.dessicatedGraphic).Method("QuatFromRot").GetValue<Quaternion>(bodyFacing);
+                    Material material = __instance.graphics.dessicatedGraphic.MatAt(bodyFacing, pawn);
+                    Graphics.DrawMesh(mesh2, loc, rotation, material, 0);
+                    if (__instance.graphics.dessicatedGraphic.ShadowGraphic != null)
+                    {
+                        __instance.graphics.dessicatedGraphic.ShadowGraphic.DrawWorker(loc, bodyFacing, pawn.def, pawn);
+                    }
+
+
+                    //__instance.graphics.dessicatedGraphic.Draw(loc, bodyFacing, pawn);
                 }
                 else
                 {
