@@ -1986,7 +1986,7 @@ namespace AlienRace
                     scaleVector.x *= 1f + (1f - (portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize).x);
                     scaleVector.y *= 1f + (1f - (portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize).y);
 
-                    Graphics.DrawMesh(mesh, pawn.DrawPos + scaleVector, Quaternion.AngleAxis(num, Vector3.up), pawn.GetComp<AlienPartGenerator.AlienComp>().Tail.MatAt(pawn.Rotation), 0);
+                    Graphics.DrawMesh(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), pawn.GetComp<AlienPartGenerator.AlienComp>().Tail.MatAt(pawn.Rotation), 0);
                 }
             }
 
