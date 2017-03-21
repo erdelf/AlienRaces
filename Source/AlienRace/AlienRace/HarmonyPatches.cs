@@ -7,6 +7,7 @@ using System.Reflection;
 using UnityEngine;
 using Verse;
 using Verse.AI;
+using System.Reflection.Emit;
 
 namespace AlienRace
 {
@@ -104,7 +105,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), "CanDoNext"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanDoNextStartPawnPostfix)));
             
             harmony.Patch(AccessTools.Method(typeof(GameInitData), "PrepForMapGen"), new HarmonyMethod(typeof(HarmonyPatches), nameof(PrepForMapGenPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.SecondaryRomanceChanceFactor)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SecondaryRomanceChanceFactorPostfix)));
+
+            harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.SecondaryRomanceChanceFactor)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SecondaryRomanceChanceFactorTranspiler)));
+
             harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.CompatibilityWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CompatibilityWith)));
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.TryMakeInitialRelationsWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryMakeInitialRelationsWithPostfix)));
             harmony.Patch(AccessTools.Method(typeof(TraitSet), nameof(TraitSet.GainTrait)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GainTraitPrefix)), null);
@@ -659,102 +662,27 @@ namespace AlienRace
             __result = num + num2;
         }
 
-        public static void SecondaryRomanceChanceFactorPostfix(Pawn_RelationsTracker __instance, Pawn otherPawn, ref float __result)
+        public static IEnumerable<CodeInstruction> SecondaryRomanceChanceFactorTranspiler(MethodBase original, IEnumerable<CodeInstruction> instructions)
         {
-            Traverse traverse = Traverse.Create(__instance);
-            Pawn pawn = traverse.Field("pawn").GetValue<Pawn>();
+            FieldInfo defField = AccessTools.Field(typeof(Pawn), nameof(Pawn.def));
+            MethodInfo racePropsProperty = AccessTools.Property(typeof(Pawn), nameof(Pawn.RaceProps)).GetGetMethod();
+            MethodInfo humanlikeProperty = AccessTools.Property(typeof(RaceProperties), nameof(RaceProperties.Humanlike)).GetGetMethod();
+            int counter = 0;
+            foreach (CodeInstruction instruction in instructions)
+            {
+                counter++;
+                if (counter < 6)
+                {
+                    if (instruction.opcode == OpCodes.Ldfld && instruction.operand == defField)
+                    {
+                        yield return new CodeInstruction(OpCodes.Callvirt, racePropsProperty);
 
-            if (pawn.RaceProps.Humanlike != otherPawn.RaceProps.Humanlike || pawn == otherPawn)
-            {
-                __result = 0f;
-                return;
-            }
-            Rand.PushSeed();
-            Rand.Seed = pawn.HashOffset();
-            bool flag = UnityEngine.Random.value < 0.015f;
-            Rand.PopSeed();
-            float num = 1f;
-            float num2 = 1f;
-            float ageBiologicalYearsFloat = pawn.ageTracker.AgeBiologicalYearsFloat;
-            float ageBiologicalYearsFloat2 = otherPawn.ageTracker.AgeBiologicalYearsFloat;
-            if (pawn.gender == Gender.Male)
-            {
-                if (!flag)
-                {
-                    if (pawn.RaceProps.Humanlike && pawn.story.traits.HasTrait(TraitDefOf.Gay))
-                    {
-                        if (otherPawn.gender == Gender.Female)
-                        {
-                            __result = 0f;
-                            return;
-                        }
-                    }
-                    else if (otherPawn.gender == Gender.Male)
-                    {
-                        __result = 0f;
-                        return;
+                        instruction.opcode = OpCodes.Callvirt;
+                        instruction.operand = humanlikeProperty;
                     }
                 }
-                num2 = GenMath.FlatHill(0f, 16f, 20f, ageBiologicalYearsFloat, ageBiologicalYearsFloat + 15f, 0.07f, ageBiologicalYearsFloat2);
+                yield return instruction;
             }
-            else if (pawn.gender == Gender.Female)
-            {
-                if (!flag)
-                {
-                    if (pawn.RaceProps.Humanlike && pawn.story.traits.HasTrait(TraitDefOf.Gay))
-                    {
-                        if (otherPawn.gender == Gender.Male)
-                        {
-                            __result = 0f;
-                            return;
-                        }
-                    }
-                    else if (otherPawn.gender == Gender.Female)
-                    {
-                        num = 0f;
-                    }
-                }
-                if (ageBiologicalYearsFloat2 < ageBiologicalYearsFloat - 10f)
-                {
-                    __result = 0f;
-                    return;
-                }
-                if (ageBiologicalYearsFloat2 < ageBiologicalYearsFloat - 3f)
-                {
-                    num2 = Mathf.InverseLerp(ageBiologicalYearsFloat - 10f, ageBiologicalYearsFloat - 3f, ageBiologicalYearsFloat2) * 0.2f;
-                }
-                else
-                {
-                    num2 = GenMath.FlatHill(0.2f, ageBiologicalYearsFloat - 3f, ageBiologicalYearsFloat, ageBiologicalYearsFloat + 10f, ageBiologicalYearsFloat + 30f, 0.1f, ageBiologicalYearsFloat2);
-                }
-            }
-            float num3 = 1f;
-            num3 *= Mathf.Lerp(0.2f, 1f, otherPawn.health.capacities.GetEfficiency(PawnCapacityDefOf.Talking));
-            num3 *= Mathf.Lerp(0.2f, 1f, otherPawn.health.capacities.GetEfficiency(PawnCapacityDefOf.Manipulation));
-            num3 *= Mathf.Lerp(0.2f, 1f, otherPawn.health.capacities.GetEfficiency(PawnCapacityDefOf.Moving));
-            float num4 = 1f;
-            foreach (PawnRelationDef current in pawn.GetRelations(otherPawn))
-            {
-                num4 *= current.attractionFactor;
-            }
-            int num5 = 0;
-            if (otherPawn.RaceProps.Humanlike)
-            {
-                num5 = otherPawn.story.traits.DegreeOfTrait(TraitDefOf.Beauty);
-            }
-            float num6 = 1f;
-            if (num5 < 0)
-            {
-                num6 = 0.3f;
-            }
-            else if (num5 > 0)
-            {
-                num6 = 2.3f;
-            }
-            float num7 = Mathf.InverseLerp(15f, 18f, ageBiologicalYearsFloat);
-            float num8 = Mathf.InverseLerp(15f, 18f, ageBiologicalYearsFloat2);
-            __result = num * num2 * num3 * num4 * num7 * num8 * num6;
-            return;
         }
 
         public static void PrepareCarefullyConvertToPawn(ref Pawn __result, object __instance, bool resolveGraphics)
@@ -1131,8 +1059,6 @@ namespace AlienRace
                         __result = true;
                 } else
                     __result = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project.defName)) ?? false));
-
-                Log.Message(__result.ToString());
             }
         }
 
@@ -1567,7 +1493,7 @@ namespace AlienRace
             {
                 if (!request.FixedGender.HasValue)
                 {
-                    pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.alienRace.generalSettings.MaleGenderProbability ? Gender.Female : Gender.Male;
+                    pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.MaleGenderProbability ? Gender.Female : Gender.Male;
                 }
                 else
                 {
@@ -1692,7 +1618,7 @@ namespace AlienRace
                 {
                     if (alienProps.alienRace.generalSettings.MaleGenderProbability != 0.5f)
                     {
-                        __instance.pawn.gender = Rand.RangeInclusive(0, 100) >= alienProps.alienRace.generalSettings.MaleGenderProbability ? Gender.Female : Gender.Male;
+                        __instance.pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.MaleGenderProbability ? Gender.Female : Gender.Male;
                         __instance.pawn.Name = PawnBioAndNameGenerator.GeneratePawnName(__instance.pawn, NameStyle.Full);
                     }
 
@@ -1715,6 +1641,7 @@ namespace AlienRace
                 alien.GetComp<AlienPartGenerator.AlienComp>().Tail = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).tail.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).tail, ShaderDatabase.Transparent, new Vector3(1, 0, 1), alienProps.alienRace.generalSettings.alienPartGenerator.UseSkinColorForTail ? alien.story.SkinColor : alien.story.hairColor, alienProps.alienRace.generalSettings.alienPartGenerator.UseSkinColorForTail ? alien.story.SkinColor : alien.story.hairColor) : null;
 
                 __instance.ResolveApparelGraphics();
+
                 return false;
             }
             else
