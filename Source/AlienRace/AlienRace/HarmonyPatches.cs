@@ -1360,7 +1360,7 @@ namespace AlienRace
                     {
                         options = opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains("Equip".Translate(new object[] { equipment.LabelShort }))).ToList();
                         
-                        if (!options.NullOrEmpty() && !(alienProps.alienRace.raceRestriction.weaponList?.Contains(equipment.def.defName) ?? false ||
+                        if (!options.NullOrEmpty() && !((alienProps.alienRace.raceRestriction.weaponList?.Contains(equipment.def.defName) ?? false) ||
                         (alienProps.alienRace.raceRestriction.whiteWeaponList?.Contains(equipment.def.defName) ?? false)))
                         {
                             foreach (FloatMenuOption fmo in options)
@@ -1386,7 +1386,7 @@ namespace AlienRace
                     List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains("ForceWear".Translate(new object[] { apparel.LabelShort }))).ToList();
 
                     bool restrictionsOff = (alienProps?.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false) ? true :
-                    (alienProps?.alienRace.raceRestriction.whiteApparelList?.Contains(apparel.def.defName) ?? false);
+                    (alienProps?.alienRace.raceRestriction.whiteApparelList?.Contains(apparel.def.defName) ?? true);
 
                     if (!options.NullOrEmpty() && (!restrictionsOff || DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
                     pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false))))
@@ -1406,8 +1406,7 @@ namespace AlienRace
                     if (alienProps != null && alienProps.alienRace.raceRestriction.onlyUseRaceRestrictedApparel)
                     {
                         options = opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains("ForceWear".Translate(new object[] { apparel.LabelShort }))).ToList();
-
-                        if (!options.NullOrEmpty() && !(alienProps.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false ||
+                        if (!options.NullOrEmpty() && !((alienProps.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false) ||
                         (alienProps.alienRace.raceRestriction.whiteApparelList?.Contains(apparel.def.defName) ?? false)))
                         {
                             foreach (FloatMenuOption fmo in options)
