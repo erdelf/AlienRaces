@@ -97,7 +97,7 @@ namespace AlienRace
             
             harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), "ResolveAllGraphics"), new HarmonyMethod(typeof(HarmonyPatches), nameof(ResolveAllGraphicsPrefix)), null);
             
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), "RenderPawnInternal", new Type[] { typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool) }), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RenderPawnInternalTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), "RenderPawnInternal", new Type[] { typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool) }), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RenderPawnInternalPrefix)));
             harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), "NewGeneratedStartingPawn"), new HarmonyMethod(typeof(HarmonyPatches), nameof(NewGeneratedStartingPawnPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GiveAppropriateBioAndNameTo"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GiveAppropriateBioAndNameToPostfix)));
             
@@ -1760,70 +1760,6 @@ namespace AlienRace
             request.ForceAddFreeWarmLayerIfNeeded, request.AllowGay, request.AllowFood, request.Validator, request.FixedBiologicalAge,
             request.FixedChronologicalAge, request.FixedGender, request.FixedMelanin, request.FixedLastName);
         }
-
-        public static IEnumerable<CodeInstruction> RenderPawnInternalTranspiler(MethodBase original, IEnumerable<CodeInstruction> instructions, ILGenerator il)
-        {
-            FieldInfo humanlikeBodySetInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeBodySet));
-            FieldInfo pawnInfo = AccessTools.Field(typeof(PawnRenderer), "pawn");
-            FieldInfo pawnDefInfo = AccessTools.Field(typeof(Thing), nameof(Thing.def));
-            FieldInfo alienRaceInfo = AccessTools.Field(typeof(ThingDef_AlienRace), nameof(ThingDef_AlienRace.alienRace));
-            FieldInfo generalSettingsInfo = AccessTools.Field(typeof(ThingDef_AlienRace.AlienSettings), nameof(ThingDef_AlienRace.AlienSettings.generalSettings));
-            FieldInfo partGeneratorInfo = AccessTools.Field(typeof(GeneralSettings), nameof(GeneralSettings.alienPartGenerator));
-            FieldInfo bodySetInfo = AccessTools.Field(typeof(AlienPartGenerator), nameof(AlienPartGenerator.bodySet));
-            FieldInfo bodyPortraitSetInfo = AccessTools.Field(typeof(AlienPartGenerator), nameof(AlienPartGenerator.bodyPortraitSet));
-
-
-            foreach (CodeInstruction instruction in instructions)
-            {
-                if(instruction.opcode == OpCodes.Ldsfld && instruction.operand == humanlikeBodySetInfo)
-                {
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Ldfld, pawnInfo);
-                    yield return new CodeInstruction(OpCodes.Ldfld, pawnDefInfo);
-                    yield return new CodeInstruction(OpCodes.Isinst, typeof(ThingDef_AlienRace));
-                    yield return new CodeInstruction(OpCodes.Dup);
-                    yield return new CodeInstruction(OpCodes.Stloc_0);
-                    Label IL_001b = il.DefineLabel();
-                    yield return new CodeInstruction(OpCodes.Brtrue_S, IL_001b);
-                    yield return instruction;
-                    Label IL_004a = il.DefineLabel();
-                    yield return new CodeInstruction(OpCodes.Br_S, IL_004a);
-                    yield return new CodeInstruction(OpCodes.Ldarg_2) { labels = new List<Label>() { IL_001b } };
-                    Label IL_0035 = il.DefineLabel();
-                    yield return new CodeInstruction(OpCodes.Brtrue_S, IL_0035);
-                    yield return new CodeInstruction(OpCodes.Ldloc_0);
-                    yield return new CodeInstruction(OpCodes.Ldfld, alienRaceInfo);
-                    yield return new CodeInstruction(OpCodes.Ldfld, generalSettingsInfo);
-                    yield return new CodeInstruction(OpCodes.Ldfld, partGeneratorInfo);
-                    yield return new CodeInstruction(OpCodes.Ldfld, bodySetInfo);
-                    yield return new CodeInstruction(OpCodes.Br_S, IL_004a);
-                    yield return new CodeInstruction(OpCodes.Ldloc_0) { labels = new List<Label>() { IL_0035 } };
-                    yield return new CodeInstruction(OpCodes.Ldfld, alienRaceInfo);
-                    yield return new CodeInstruction(OpCodes.Ldfld, generalSettingsInfo);
-                    yield return new CodeInstruction(OpCodes.Ldfld, partGeneratorInfo);
-                    yield return new CodeInstruction(OpCodes.Ldfld, bodyPortraitSetInfo);
-                    yield return new CodeInstruction(OpCodes.Nop) { labels = new List<Label>() { IL_004a } };
-                } else
-                    yield return instruction;
-            }
-        }
-
-        class dummyClass
-        {
-            Pawn pawn;
-
-            public void dummy(Rot4 bodyFacing, bool portrait)
-            {
-                Mesh mesh = default(Mesh);
-
-                Log.Message("hey");
-
-                mesh = (pawn.def is ThingDef_AlienRace alienProps ? (portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.bodyPortraitSet : alienProps.alienRace.generalSettings.alienPartGenerator.bodySet) : MeshPool.humanlikeBodySet).MeshAt(bodyFacing);
-
-                Log.Message("hey");
-            }
-        }
-
         
         public static bool RenderPawnInternalPrefix(PawnRenderer __instance, Vector3 rootLoc, Quaternion quat, bool renderBody, Rot4 bodyFacing, Rot4 headFacing, RotDrawMode bodyDrawType, bool portrait)
         {
