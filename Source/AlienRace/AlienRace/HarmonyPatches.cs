@@ -97,7 +97,7 @@ namespace AlienRace
             
             harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), "ResolveAllGraphics"), new HarmonyMethod(typeof(HarmonyPatches), nameof(ResolveAllGraphicsPrefix)), null);
             
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), "RenderPawnInternal", new Type[] { typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool) }), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RenderPawnInternalPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), "RenderPawnInternal", new Type[] { typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(RenderPawnInternalPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), "NewGeneratedStartingPawn"), new HarmonyMethod(typeof(HarmonyPatches), nameof(NewGeneratedStartingPawnPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GiveAppropriateBioAndNameTo"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GiveAppropriateBioAndNameToPostfix)));
             
