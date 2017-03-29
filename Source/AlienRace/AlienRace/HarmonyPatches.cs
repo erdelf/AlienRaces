@@ -111,8 +111,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.CompatibilityWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CompatibilityWith)));
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.TryMakeInitialRelationsWith)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryMakeInitialRelationsWithPostfix)));
             harmony.Patch(AccessTools.Method(typeof(TraitSet), nameof(TraitSet.GainTrait)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GainTraitPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(TraderCaravanUtility), nameof(TraderCaravanUtility.GetTraderCaravanRole)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GetTraderCaravanRolePostfix)));
-            harmony.Patch(AccessTools.Method(typeof(ApparelUtility), nameof(ApparelUtility.CanWearTogether)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanWearTogetherPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(TraderCaravanUtility), nameof(TraderCaravanUtility.GetTraderCaravanRole)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GetTraderCaravanRoleTranspiler)));
+            //harmony.Patch(AccessTools.Method(typeof(ApparelUtility), nameof(ApparelUtility.CanWearTogether)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanWearTogetherPostfix)));
 
             #region prepareCarefully
             {
@@ -193,12 +193,44 @@ namespace AlienRace
                 }
             }*/
         }
-
-        public static void GetTraderCaravanRolePostfix(this Pawn p, ref TraderCaravanRole __result)
+        
+        public static IEnumerable<CodeInstruction> GetTraderCaravanRoleTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
-            if (__result == TraderCaravanRole.Guard)
-                if (p.def is ThingDef_AlienRace alienProps && (alienProps.alienRace.pawnKindSettings.alienslavekinds?.Any(pke => pke.kindDefs?.Contains(p.kindDef.defName) ?? false) ?? false))
-                    __result = TraderCaravanRole.Chattel;
+            FieldInfo pawnDefInfo = AccessTools.Field(typeof(Pawn), nameof(Pawn.def));
+            FieldInfo alienRaceInfo = AccessTools.Field(typeof(ThingDef_AlienRace), nameof(ThingDef_AlienRace.alienRace));
+            FieldInfo pawnKindInfo = AccessTools.Field(typeof(ThingDef_AlienRace.AlienSettings), nameof(ThingDef_AlienRace.AlienSettings.pawnKindSettings));
+            FieldInfo slaveKindInfo = AccessTools.Field(typeof(PawnKindSettings), nameof(PawnKindSettings.alienslavekinds));
+            MethodInfo traderRoleInfo = AccessTools.Method(typeof(HarmonyPatches), nameof(GetTraderCaravanRoleInfix));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+            foreach(CodeInstruction instruction in instructions)
+            { 
+                if(instruction.opcode == OpCodes.Ldc_I4_3)
+                {
+                    Label jumpToEnd = il.DefineLabel();
+                    yield return new CodeInstruction(OpCodes.Ldarg_0) { labels = instruction.labels.ListFullCopy() };
+                    instruction.labels.Clear();
+                    yield return new CodeInstruction(OpCodes.Call, traderRoleInfo);
+                    yield return new CodeInstruction(OpCodes.Brfalse_S, jumpToEnd);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_4);
+                    yield return new CodeInstruction(OpCodes.Ret);
+                    yield return new CodeInstruction(OpCodes.Nop) { labels = new List<Label>() { jumpToEnd } };
+                }
+                yield return instruction;
+            }
+        }
+
+        private static bool GetTraderCaravanRoleInfix(Pawn p)
+        {
+            Log.Message(p.Name?.ToStringFull ?? p.ToString());
+            if (p.def is ThingDef_AlienRace)
+            {
+                if ((p.def as ThingDef_AlienRace).alienRace.pawnKindSettings.alienslavekinds?.Any(pke => pke.kindDefs?.Contains(p.kindDef.defName) ?? false) ?? false)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public static bool GetGenderSpecificLabelPrefix(Pawn pawn, ref string __result, PawnRelationDef __instance)
