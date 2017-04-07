@@ -9,6 +9,6 @@ namespace AlienRace
     {
         public List<string> races;
 
-        protected override bool Satisfied(Pawn pawn) => races.Contains(pawn.def.defName);
+        protected override bool Satisfied(Pawn pawn) => this.races.Contains(pawn.def.defName);
     }
 }
