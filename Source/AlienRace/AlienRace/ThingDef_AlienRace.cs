@@ -32,6 +32,9 @@ namespace AlienRace
                 }else
                     this.alienRace.generalSettings.forcedRaceTraitEntries.Remove(ate);
             });
+
+            if (this.alienRace.graphicPaths.NullOrEmpty())
+                this.alienRace.graphicPaths.Add(new GraphicPaths());
         }
 
         public sealed class AlienSettings
