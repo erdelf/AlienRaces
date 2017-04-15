@@ -1524,7 +1524,7 @@ namespace AlienRace
                 {
                     pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.MaleGenderProbability ? Gender.Female : Gender.Male;
                 }
-                else
+                else if (alienProps.alienRace.generalSettings.MaleGenderProbability == 0f || alienProps.alienRace.generalSettings.MaleGenderProbability == 100f)
                 {
                     pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = true;
                 }
