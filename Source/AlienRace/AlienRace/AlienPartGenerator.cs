@@ -107,7 +107,7 @@ namespace AlienRace
                                              }
                                          }, "meshSetAlien", false, null);
 
-        public bool CanDrawTail(Pawn pawn) => RestUtility.CurrentBed(pawn) == null && !pawn.Downed && !pawn.Dead && (this.tailBodyPart == null ||
+        public bool CanDrawTail(Pawn pawn) => RestUtility.CurrentBed(pawn) == null && !pawn.Downed && pawn.GetPosture() == PawnPosture.Standing && !pawn.Dead && (this.tailBodyPart == null ||
                 pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == this.tailBodyPart));
 
         public class AlienComp : ThingComp
