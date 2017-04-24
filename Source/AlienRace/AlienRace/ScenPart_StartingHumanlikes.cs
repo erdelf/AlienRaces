@@ -49,8 +49,8 @@ namespace AlienRace
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.LookValue(ref this.pawnCount, "alienRaceScenPawnCount", 0);
-            Scribe_Defs.LookDef(ref this.kindDef, "PawnKindDefAlienRaceScen");
+            Scribe_Values.Look(ref this.pawnCount, "alienRaceScenPawnCount", 0);
+            Scribe_Defs.Look(ref this.kindDef, "PawnKindDefAlienRaceScen");
         }
 
         public override string Summary(Scenario scen) => ScenSummaryList.SummaryWithList(scen, "PlayerStartsWith", ScenPart_StartingThing_Defined.PlayerStartWithIntro);
@@ -87,7 +87,7 @@ namespace AlienRace
                 Pawn newPawn = null;
                 for (int x = 0; x < 200; x++)
                 {
-                    newPawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(this.kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, null, true, false, false, false, true, false, 26f, true));
+                    newPawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(this.kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, -1, true, false, false, false, true, false, 26f, true));
                     if (pawnCheck(newPawn))
                     {
                         x = 200;
