@@ -112,8 +112,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(TraitSet), nameof(TraitSet.GainTrait)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GainTraitPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(TraderCaravanUtility), nameof(TraderCaravanUtility.GetTraderCaravanRole)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GetTraderCaravanRoleTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(ITab_Pawn_Gear), "TryDrawAverageArmor"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryDrawAverageArmorTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(RestUtility), nameof(RestUtility.CanUseBedEver)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanUseBedEverPostfix)));
+            harmony.Patch(AccessTools.Property(typeof(Building_Bed), nameof(Building_Bed.AssigningCandidates)).GetGetMethod(), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(AssigningCandidatesPostfix)));
             //harmony.Patch(AccessTools.Method(typeof(ApparelUtility), nameof(ApparelUtility.CanWearTogether)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanWearTogetherPostfix)));
-
             #region prepareCarefully
             {
                 try
@@ -142,6 +143,20 @@ namespace AlienRace
             #endregion
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, Building_Bed __instance)
+        {
+            __result = __result.Where(p => RestUtility.CanUseBedEver(p, __instance.def));
+        }
+
+        public static void CanUseBedEverPostfix(ref bool __result, Pawn p, ThingDef bedDef)
+        {
+            if (__result)
+            {
+                __result = (p.def is ThingDef_AlienRace alienProps && (alienProps.alienRace.generalSettings.validBeds?.Contains(bedDef.defName) ?? false)) ||
+                    !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(td => td.alienRace.generalSettings.validBeds?.Contains(bedDef.defName) ?? false);
+            }
         }
 
         public static IEnumerable<CodeInstruction> TryDrawAverageArmorTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -590,7 +605,7 @@ namespace AlienRace
         {
             if (Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def is ThingDef_AlienRace alienProps)
             {
-                if (alienProps.alienRace.generalSettings.disallowedTraits.Contains(trait.def))
+                if (alienProps.alienRace.generalSettings.disallowedTraits?.Contains(trait.def.defName) ?? false)
                     return false;
 
                 AlienTraitEntry ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(at => at.defname.EqualsIgnoreCase(trait.def.defName));

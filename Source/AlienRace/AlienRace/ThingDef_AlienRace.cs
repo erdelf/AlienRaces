@@ -36,9 +36,10 @@ namespace AlienRace
         public bool ImmuneToAge = false;
         public bool CanLayDown = true;
 
+        public List<string> validBeds;
         public List<ChemicalSettings> chemicalSettings;
         public List<AlienTraitEntry> forcedRaceTraitEntries;
-        public List<TraitDef> disallowedTraits;
+        public List<string> disallowedTraits;
         public AlienPartGenerator alienPartGenerator = new AlienPartGenerator();
 
         public List<FactionRelationSettings> factionRelations;
