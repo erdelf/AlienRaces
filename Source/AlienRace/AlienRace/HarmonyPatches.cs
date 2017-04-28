@@ -79,7 +79,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Property(typeof(JobDriver), nameof(JobDriver.Posture)).GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
             harmony.Patch(AccessTools.Property(typeof(JobDriver_Skygaze), nameof(JobDriver_Skygaze.Posture)).GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateRandomAge"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateRandomAgePrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateTraits"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateTraitsPrefix)), null);
+            HarmonyInstance.DEBUG = true;
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateTraits"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateTraitsPrefix)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateTraitsTranspiler)));
+            HarmonyInstance.DEBUG = false;
             harmony.Patch(AccessTools.Method(typeof(JobGiver_SatisfyChemicalNeed), "DrugValidator"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DrugValidatorPostfix)));
             harmony.Patch(AccessTools.Method(typeof(CompDrug), nameof(CompDrug.PostIngested)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PostIngestedPostfix)));
             harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanBingeNowPostfix)));
@@ -143,6 +145,40 @@ namespace AlienRace
             #endregion
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static IEnumerable<CodeInstruction> GenerateTraitsTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+            MethodInfo defListInfo = AccessTools.Property(typeof(DefDatabase<TraitDef>), nameof(DefDatabase<TraitDef>.AllDefsListForReading)).GetGetMethod();
+            MethodInfo validatorInfo = AccessTools.Method(typeof(HarmonyPatches), nameof(GenerateTraitsValidator));
+            
+            for (int i=0; i<instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                if(instruction.opcode == OpCodes.Call && instruction.operand == defListInfo)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    instruction.operand = validatorInfo;
+
+                    for(int x=0;x<4;x++)
+                        instructionList.RemoveAt(i+1);
+                }
+
+                yield return instruction;
+            }
+        }
+
+        public static TraitDef GenerateTraitsValidator(Pawn p)
+        {
+            IEnumerable<TraitDef> defs = DefDatabase<TraitDef>.AllDefs;
+            ThingDef_AlienRace alienProps = p.def as ThingDef_AlienRace;
+            defs = defs.Where(tr => (p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.traitList?.Contains(tr.defName) ?? false ? true : (p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteTraitList?.Contains(tr.defName) ?? false ? true :
+                    ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyGetRaceRestrictedTraits ?? false ? false :
+                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => p.def != d && (d.alienRace.raceRestriction.traitList?.Contains(tr.defName) ?? false))));
+
+            return defs.RandomElementByWeight(tr => tr.GetGenderSpecificCommonality(p));
         }
 
         public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, Building_Bed __instance)
@@ -1072,9 +1108,10 @@ namespace AlienRace
                     !(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => p.def != d && (d.alienRace.raceRestriction.buildingList?.Contains(t.def.entityDefToBuild.defName) ?? false))));
             }
         }
-
+        
         public static void ResearchPreOpenPostfix(MainTabWindow_Research __instance)
         {
+            /*
             Traverse info = Traverse.Create(__instance).Field("relevantProjects");
             List<ResearchProjectDef> projects = info.GetValue<IEnumerable<ResearchProjectDef>>().ToList();
             for (int i=0; i<projects.Count;i++)
@@ -1115,6 +1152,7 @@ namespace AlienRace
             }
 
             info.SetValue(projects);
+            */
         }
 
         public static void ShouldSkipResearchPostfix(Pawn pawn, ref bool __result)
@@ -1658,7 +1696,8 @@ namespace AlienRace
             {
                 if (BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) &&
                  kvp.Value.slot == slot && (slot != BackstorySlot.Adulthood ||
-                 !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood.workDisables))).Select(kvp => kvp.Value).TryRandomElement(out backstory))
+                 !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood.workDisables)) && 
+                (DefDatabase<BackstoryDef>.GetNamedSilentFail(kvp.Value.identifier)?.commonalityApproved(pawn.gender) ?? true)).Select(kvp => kvp.Value).TryRandomElement(out backstory))
                 {
                     return false;
                 }

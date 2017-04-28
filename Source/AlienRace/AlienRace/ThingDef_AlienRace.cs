@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
+using System.Xml;
 
 namespace AlienRace
 {
@@ -185,6 +186,10 @@ namespace AlienRace
         public bool onlyDoRaceRastrictedPlants = false;
         public List<string> plantList;
         public List<string> whitePlantList;
+
+        public bool onlyGetRaceRestrictedTraits = false;
+        public List<string> traitList;
+        public List<string> whiteTraitList;
 
         public List<string> conceptList;
 

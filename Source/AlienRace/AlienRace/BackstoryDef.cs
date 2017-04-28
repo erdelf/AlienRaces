@@ -9,7 +9,6 @@ namespace AlienRace
 {
     public sealed class BackstoryDef : Def
     {
-#pragma warning disable CS0649
         public string baseDescription;
         public BodyType bodyTypeGlobal = BodyType.Undefined;
         public BodyType bodyTypeMale = BodyType.Male;
@@ -25,7 +24,13 @@ namespace AlienRace
         public List<string> spawnCategories = new List<string>();
         public List<AlienTraitEntry> forcedTraits = new List<AlienTraitEntry>();
         public List<AlienTraitEntry> disallowedTraits = new List<AlienTraitEntry>();
-#pragma warning restore CS0649
+        public float maleCommonality = 100f;
+        public float femaleCommonality = 100f;
+
+        public bool commonalityApproved(Gender g)
+        {
+            return Rand.Range(0, 100) > (g == Gender.Female ? femaleCommonality : maleCommonality);
+        }
 
         public override void ResolveReferences()
         {
