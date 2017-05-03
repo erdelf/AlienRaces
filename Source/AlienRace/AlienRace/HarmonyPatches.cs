@@ -1690,14 +1690,13 @@ namespace AlienRace
         
         public static bool SetBackstoryInSlotPrefix(Pawn pawn, BackstorySlot slot, ref Backstory backstory)
         {
-
-
             if (pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.PawnsSpecificBackstories && !pawn.kindDef.backstoryCategory.NullOrEmpty())
             {
                 if (BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) &&
-                 kvp.Value.slot == slot && (slot != BackstorySlot.Adulthood ||
-                 !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood.workDisables)) && 
-                (DefDatabase<BackstoryDef>.GetNamedSilentFail(kvp.Value.identifier)?.commonalityApproved(pawn.gender) ?? true)).Select(kvp => kvp.Value).TryRandomElement(out backstory))
+                    kvp.Value.slot == slot && (slot == BackstorySlot.Childhood ||
+                    !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood.workDisables)) && 
+                    (DefDatabase<BackstoryDef>.GetNamedSilentFail(kvp.Value.identifier)?.commonalityApproved(pawn.gender) ?? true)).
+                    Select(kvp => kvp.Value).TryRandomElement(out backstory))
                 {
                     return false;
                 }
@@ -1719,7 +1718,7 @@ namespace AlienRace
         public static bool ResolveAllGraphicsPrefix(PawnGraphicSet __instance)
         {
             Pawn alien = __instance.pawn;
-            if (__instance.pawn.def is ThingDef_AlienRace alienProps)
+            if (alien.def is ThingDef_AlienRace alienProps)
             {
                 AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
 
@@ -1760,10 +1759,7 @@ namespace AlienRace
 
                 return false;
             }
-            else
-            {
-                return true;
-            }
+            return true;
         }
 
         public static void GenerateTraitsPrefix(Pawn pawn)
