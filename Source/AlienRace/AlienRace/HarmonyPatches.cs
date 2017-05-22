@@ -884,13 +884,11 @@ namespace AlienRace
         {
             Traverse traverse = Traverse.Create(__instance);
             Pawn pawn = traverse.Field("pawn").GetValue<Pawn>();
-            Log.Message("melanin: " + value + "\tColor: " + PawnSkinColors.GetSkinColor(value).ToString());
             if (pawn.def is ThingDef_AlienRace)
             {
 
                 pawn.GetComp<AlienPartGenerator.AlienComp>().skinColor = PawnSkinColors.GetSkinColor(value); //traverse.Method("GetColor", 0).GetValue<Color>();
                 pawn.GetComp<AlienPartGenerator.AlienComp>().skinColorSecond = PawnSkinColors.GetSkinColor(value);
-                pawn.Drawer.renderer.graphics.ResolveAllGraphics();
             }
         }
   
