@@ -1694,14 +1694,12 @@ namespace AlienRace
             {
                 if (BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) &&
                     kvp.Value.slot == slot && (slot == BackstorySlot.Childhood ||
-                    !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood.workDisables)) && 
-                    (DefDatabase<BackstoryDef>.GetNamedSilentFail(kvp.Value.identifier)?.commonalityApproved(pawn.gender) ?? true)).
-                    Select(kvp => kvp.Value).TryRandomElement(out backstory))
+                    !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood?.workDisables ?? WorkTags.None)) && 
+                    (DefDatabase<BackstoryDef>.GetNamedSilentFail(kvp.Value.identifier)?.commonalityApproved(pawn.gender) ?? true)).TryRandomElement(out KeyValuePair<string, Backstory> backstoryPair))
                 {
-                    return false;
+                    return (backstory = backstoryPair.Value) != null;
                 }
             }
-
             return true;
         }
 
