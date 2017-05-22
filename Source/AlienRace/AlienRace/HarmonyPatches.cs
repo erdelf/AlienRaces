@@ -125,18 +125,15 @@ namespace AlienRace
                     {
                         if (AccessTools.Method(typeof(EdB.PrepareCarefully.PrepareCarefully), nameof(EdB.PrepareCarefully.PrepareCarefully.Initialize)) != null)
                         {
-                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "CopyPawn"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyCopyPawn"));
-                            harmony.Patch(AccessTools.Property(typeof(EdB.PrepareCarefully.CustomPawn), "MelaninLevel").GetSetMethod(false), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyMelaninLevel"), null);
-                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.Page_ConfigureStartingPawnsCarefully), "DrawAppearance"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyDrawAppearance"));
+                            harmony.Patch(AccessTools.Property(typeof(EdB.PrepareCarefully.CustomPawn), "MelaninLevel").GetSetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyMelaninLevel"));
+                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.PanelAppearance), "DrawPanelContent"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyDrawPanelAppearanceContent"));
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "GetSelectedApparel"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySelectedApparel"), null);
-                            harmony.Patch(AccessTools.Property(typeof(EdB.PrepareCarefully.Page_ConfigureStartingPawnsCarefully), "PawnLayerLabel").GetGetMethod(true), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyPawnLayerLabel"));
-
-                            //harmony.Patch(AccessTools.Constructor(typeof(EdB.PrepareCarefully.Page_ConfigureStartingPawnsCarefully)), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyCtor"));
+                            harmony.Patch(AccessTools.Property(typeof(EdB.PrepareCarefully.PanelAppearance), "PawnLayerLabel").GetGetMethod(true), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyPawnLayerLabel"));
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedStuff"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedStuff"), null);
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "GetSelectedStuff"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyGetSelectedStuff"), null);
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedApparelInternal"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedApparelInternal"), null);
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.PawnLayers), "Label"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyLayerLabel"));
-                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "ConvertToPawn", new Type[] { typeof(bool) }), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyConvertToPawn"));
+                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "ResetCachedHead"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyResetCachedHead"), null);
                         }
                     }))();
                 }
@@ -181,10 +178,8 @@ namespace AlienRace
             return defs.RandomElementByWeight(tr => tr.GetGenderSpecificCommonality(p));
         }
 
-        public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, Building_Bed __instance)
-        {
+        public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, Building_Bed __instance) => 
             __result = __result.Where(p => RestUtility.CanUseBedEver(p, __instance.def));
-        }
 
         public static void CanUseBedEverPostfix(ref bool __result, Pawn p, ThingDef bedDef)
         {
@@ -793,25 +788,9 @@ namespace AlienRace
             }
         }
 
-        public static void PrepareCarefullyConvertToPawn(ref Pawn __result, object __instance, bool resolveGraphics)
-        {
-            Traverse traverse = Traverse.Create(__instance);
-            Pawn source = traverse.Field("pawn").GetValue<Pawn>();
-            AlienPartGenerator.AlienComp sourceComp = source.TryGetComp<AlienPartGenerator.AlienComp>();
-            if (sourceComp != null)
-            {
-                AlienPartGenerator.AlienComp resultComp = __result.TryGetComp<AlienPartGenerator.AlienComp>();
+        public static bool PrepareCarefullyResetCachedHead(object __instance) => 
+            Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def == ThingDefOf.Human;
 
-                resultComp.skinColor = sourceComp.skinColor;
-                resultComp.skinColorSecond = sourceComp.skinColorSecond;
-                resultComp.Tail = sourceComp.Tail;
-                resultComp.fixGenderPostSpawn = sourceComp.fixGenderPostSpawn;
-
-                //if (resolveGraphics)
-                    __result.Drawer.renderer.graphics.ResolveAllGraphics();
-            }
-        }
- 
         public static void PrepareCarefullyLayerLabel(int layer, ref string __result)
         {
             if (layer == 9)
@@ -864,9 +843,7 @@ namespace AlienRace
 
             if (traverseInstance.Field("selectedPawnLayer").GetValue<int>() == 9)
             {
-                string name = Traverse.Create(traverseInstance.Property("CurrentPawn").GetValue()).Field("pawn").GetValue<Pawn>().def.LabelCap;
-                __result = name;
-                traverseInstance.Field("pawnLayerLabel").SetValue(__result);
+                traverseInstance.Field("pawnLayerLabel").SetValue(__result = EdB.PrepareCarefully.PrepareCarefully.Instance.State.CurrentPawn.Pawn.def.LabelCap);
             }
         }
 
@@ -883,10 +860,9 @@ namespace AlienRace
             return true;
         }
 
-        public static void PrepareCarefullyDrawAppearance(object __instance, object customPawn)
+        public static void PrepareCarefullyDrawPanelAppearanceContent(object __instance, object state)
         {
-            Traverse traversePawn = Traverse.Create(customPawn);
-            Pawn pawn = traversePawn.Field("pawn").GetValue<Pawn>();
+            Pawn pawn = Traverse.Create(state).Property("CurrentPawn").Field("pawn").GetValue<Pawn>();
 
             Traverse traverseInstance = Traverse.Create(__instance);
             List<Action> pawnLayerActions = traverseInstance.Field("pawnLayerActions").GetValue<List<Action>>();
@@ -908,26 +884,16 @@ namespace AlienRace
         {
             Traverse traverse = Traverse.Create(__instance);
             Pawn pawn = traverse.Field("pawn").GetValue<Pawn>();
+            Log.Message("melanin: " + value + "\tColor: " + PawnSkinColors.GetSkinColor(value).ToString());
             if (pawn.def is ThingDef_AlienRace)
             {
-                pawn.GetComp<AlienPartGenerator.AlienComp>().skinColor = PawnSkinColors.GetSkinColor(value);
+
+                pawn.GetComp<AlienPartGenerator.AlienComp>().skinColor = PawnSkinColors.GetSkinColor(value); //traverse.Method("GetColor", 0).GetValue<Color>();
+                pawn.GetComp<AlienPartGenerator.AlienComp>().skinColorSecond = PawnSkinColors.GetSkinColor(value);
+                pawn.Drawer.renderer.graphics.ResolveAllGraphics();
             }
         }
-
-        public static void PrepareCarefullyCopyPawn(Pawn source, ref Pawn __result)
-        {
-            AlienPartGenerator.AlienComp sourceComp = source.TryGetComp<AlienPartGenerator.AlienComp>();
-            if (sourceComp != null)
-            {
-                AlienPartGenerator.AlienComp resultComp = __result.TryGetComp<AlienPartGenerator.AlienComp>();
-
-                resultComp.skinColor = sourceComp.skinColor;
-                resultComp.skinColorSecond = sourceComp.skinColorSecond;
-                resultComp.Tail = sourceComp.Tail;
-                resultComp.fixGenderPostSpawn = sourceComp.fixGenderPostSpawn;
-            }
-        }
-    
+  
         public static void GenericHasJobOnThingPostfix(WorkGiver __instance, Pawn pawn, ref bool __result)
         {
             if(__result)
