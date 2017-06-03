@@ -49,7 +49,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(JobGiver_OptimizeApparel), nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ApparelScoreGainPostFix)));
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(ar =>
             {
-                ar.alienRace.raceRestriction.workGiverList?.ForEach(wgd =>
+                ar.alienRace.raceRestriction?.workGiverList?.ForEach(wgd =>
                 {
                     WorkGiverDef wg = DefDatabase<WorkGiverDef>.GetNamedSilentFail(wgd);
                     if (wg != null)
