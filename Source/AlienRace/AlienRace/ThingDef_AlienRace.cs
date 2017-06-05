@@ -73,6 +73,8 @@ namespace AlienRace
     {
         public List<LifeStageDef> lifeStageDefs;
 
+        public const string vanillaHeadPath = "Things/Pawn/Humanlike/Heads/";
+
         public string body = "Things/Pawn/Humanlike/Bodies/";
         public string head = "Things/Pawn/Humanlike/Heads/";
         public string skeleton = "Things/Pawn/Humanlike/HumanoidDessicated";

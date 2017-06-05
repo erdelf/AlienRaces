@@ -45,7 +45,7 @@ namespace AlienRace
 
         static MethodInfo meshInfo = AccessTools.Method(AccessTools.TypeByName("MeshMakerPlanes"), "NewPlaneMesh", new Type[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
 
-        public string RandomAlienHead(string userpath, Gender gender) => userpath + (this.UseGenderedHeads ? gender.ToString() + "_" : "") + this.aliencrowntypes[Rand.Range(0, this.aliencrowntypes.Count)];
+        public string RandomAlienHead(string userpath, Gender gender) => userpath + (userpath == GraphicPaths.vanillaHeadPath ? gender.ToString() + "/" : "") + (this.UseGenderedHeads ? gender.ToString() + "_" : "") + this.aliencrowntypes[Rand.Range(0, this.aliencrowntypes.Count)];
 
         public static Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath) => GraphicDatabase.Get<Graphic_Multi>(userpath + "Naked_" + bodyType.ToString(), shader, Vector2.one, skinColor, skinColorSecond);
 
