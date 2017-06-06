@@ -79,9 +79,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Property(typeof(JobDriver), nameof(JobDriver.Posture)).GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
             harmony.Patch(AccessTools.Property(typeof(JobDriver_Skygaze), nameof(JobDriver_Skygaze.Posture)).GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateRandomAge"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateRandomAgePrefix)), null);
-            HarmonyInstance.DEBUG = true;
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateTraits"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateTraitsPrefix)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateTraitsTranspiler)));
-            HarmonyInstance.DEBUG = false;
             harmony.Patch(AccessTools.Method(typeof(JobGiver_SatisfyChemicalNeed), "DrugValidator"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DrugValidatorPostfix)));
             harmony.Patch(AccessTools.Method(typeof(CompDrug), nameof(CompDrug.PostIngested)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PostIngestedPostfix)));
             harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanBingeNowPostfix)));
@@ -1648,7 +1646,6 @@ namespace AlienRace
             {
                 return false;
             }
-
             return true;
         }
         
