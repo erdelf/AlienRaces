@@ -212,4 +212,9 @@ namespace AlienRace
     {
         public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef) => list.FirstOrDefault(gp => gp.lifeStageDefs?.Contains(lifeStageDef) ?? false) ?? list.First();
     }
+
+    public class Info : DefModExtension
+    {
+        public bool usePawnKindBackstories = false;
+    }
 }
