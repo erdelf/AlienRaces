@@ -116,6 +116,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Property(typeof(Building_Bed), nameof(Building_Bed.AssigningCandidates)).GetGetMethod(), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(AssigningCandidatesPostfix)));
             //harmony.Patch(AccessTools.Method(typeof(ApparelUtility), nameof(ApparelUtility.CanWearTogether)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanWearTogetherPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GenText), nameof(GenText.AdjustedFor)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenTextAdjustedForPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(FoodUtility), nameof(FoodUtility.FoodSourceOptimality)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(FoodSourceOptimalityPostfix)));
             #region prepareCarefully
             {
                 try
@@ -142,6 +143,12 @@ namespace AlienRace
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
+
+        public static void FoodSourceOptimalityPostfix(ref float __result, Pawn eater, Thing t) => 
+            __result = ((eater.def as ThingDef_AlienRace)?.alienRace.raceRestriction.foodList?.Contains(t.def.defName) ?? false ? true : (eater.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteFoodList?.Contains(t.def.defName) ?? false ? true :
+                    (((eater.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyEatRaceRestrictedFood ?? false) ? false :
+                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => eater.def != d && (d.alienRace.raceRestriction.foodList?.Contains(t.def.defName) ?? false))))
+                    ? __result == -9999999f ? __result = 0 : __result : -9999999f;
 
         public static void GenTextAdjustedForPostfix(ref string __result, Pawn p) => __result.Replace("ALIENRACE", p.def.LabelCap);
 

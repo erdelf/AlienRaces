@@ -193,6 +193,10 @@ namespace AlienRace
         public List<string> traitList;
         public List<string> whiteTraitList;
 
+        public bool onlyEatRaceRestrictedFood = false;
+        public List<string> foodList;
+        public List<string> whiteFoodList;
+
         public List<string> conceptList;
 
         public List<string> workGiverList;
