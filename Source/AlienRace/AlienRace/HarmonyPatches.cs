@@ -150,8 +150,8 @@ namespace AlienRace
                 new List<ThingDef_AlienRace>(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading).Cast<ThingDef>()).First(td => td.race == __instance);
 
             __result = (eater as ThingDef_AlienRace)?.alienRace.raceRestriction.foodList?.Contains(t.defName) ?? false ? true : (eater as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteFoodList?.Contains(t.defName) ?? false ?
-                    true : ((eater as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyEatRaceRestrictedFood ?? false) ? __result :
-                    !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => eater != d && (d.alienRace.raceRestriction.foodList?.Contains(t.defName) ?? false));
+                    true : ((eater as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyEatRaceRestrictedFood ?? false) ? false :
+                    DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => eater != d && (d.alienRace.raceRestriction.foodList?.Contains(t.defName) ?? false)) ? false : __result;
         }
 
         public static void GenTextAdjustedForPostfix(ref string __result, Pawn p) => __result.Replace("ALIENRACE", p.def.LabelCap);
