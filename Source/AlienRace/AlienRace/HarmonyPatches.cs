@@ -962,7 +962,7 @@ namespace AlienRace
         {
             if (__result >= 0f)
             {
-                if (!((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.apparelList?.Contains(ap.def.defName) ?? false ? true : (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteApparelList?.Contains(ap.def.defName) ?? false ? true: ap.def.apparel.tags?.Contains(pawn.def.defName) ?? false ? true :
+                if (!((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.apparelList?.Contains(ap.def.defName) ?? false ? true : (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteApparelList?.Contains(ap.def.defName) ?? false ? true:
                     (((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel ?? false) ? false :
                     !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(ap.def.defName) ?? false)))))
                 {
@@ -1470,7 +1470,7 @@ namespace AlienRace
                     List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains("ForceWear".Translate(new object[] { apparel.LabelShort }))).ToList();
 
                     bool restrictionsOff = (alienProps?.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false) ? true :
-                    (alienProps?.alienRace.raceRestriction.whiteApparelList?.Contains(apparel.def.defName) ?? true) ? true : apparel.def.apparel.tags.Contains(alienProps.defName);
+                    (alienProps?.alienRace.raceRestriction.whiteApparelList?.Contains(apparel.def.defName) ?? true) ? true : false;
 
                     if (!options.NullOrEmpty() && (!restrictionsOff || DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
                     pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false))))
@@ -1491,7 +1491,7 @@ namespace AlienRace
                     {
                         options = opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains("ForceWear".Translate(new object[] { apparel.LabelShort }))).ToList();
                         if (!options.NullOrEmpty() && !((alienProps.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false) ||
-                        (alienProps.alienRace.raceRestriction.whiteApparelList?.Contains(apparel.def.defName) ?? false) || apparel.def.apparel.tags.Contains(alienProps.defName)))
+                        (alienProps.alienRace.raceRestriction.whiteApparelList?.Contains(apparel.def.defName) ?? false)))
                         {
                             foreach (FloatMenuOption fmo in options)
                             {
