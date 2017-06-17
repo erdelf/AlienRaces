@@ -1753,7 +1753,7 @@ namespace AlienRace
                 {
                     if ((pawn.gender == Gender.Male && (ate.commonalityMale == -1f || Rand.Range(0, 100) < ate.commonalityMale)) || (pawn.gender == Gender.Female && (ate.commonalityFemale == -1f || Rand.Range(0, 100) < ate.commonalityFemale)) || pawn.gender == Gender.None)
                     {
-                        if (pawn.story.traits.allTraits.Any(tr => tr.def.defName.EqualsIgnoreCase(ate.defname)))
+                        if (!pawn.story.traits.allTraits.Any(tr => tr.def.defName.EqualsIgnoreCase(ate.defname)))
                         {
                             pawn.story.traits.GainTrait(new Trait(TraitDef.Named(ate.defname), ate.degree, true));
                         }
