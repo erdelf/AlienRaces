@@ -20,6 +20,7 @@ namespace AlienRace
         public ColorGenerator alienskincolorgen;
         public ColorGenerator alienskinsecondcolorgen;
         public ColorGenerator alienhaircolorgen;
+        public bool useSkincolorForHair = false;
 
         public Vector2 CustomDrawSize = Vector2.one;
         public Vector2 CustomPortraitDrawSize = Vector2.one;

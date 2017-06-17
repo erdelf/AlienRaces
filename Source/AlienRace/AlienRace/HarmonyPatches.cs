@@ -1592,9 +1592,9 @@ namespace AlienRace
             {
                 //Log.Message(pawn.LabelCap);
                 if (alienProps.alienRace.generalSettings.alienPartGenerator.alienhaircolorgen != null)
-                {
                     pawn.story.hairColor = alienProps.alienRace.generalSettings.alienPartGenerator.alienhaircolorgen.NewRandomizedColor();
-                }
+                else if (alienProps.alienRace.generalSettings.alienPartGenerator.useSkincolorForHair && alienProps.alienRace.generalSettings.alienPartGenerator.alienskincolorgen != null)
+                    pawn.story.hairColor = pawn.story.SkinColor;
 
                 if (alienProps.alienRace.hairSettings.GetsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                 {
