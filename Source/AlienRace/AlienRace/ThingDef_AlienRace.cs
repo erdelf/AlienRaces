@@ -44,6 +44,7 @@ namespace AlienRace
         public AlienPartGenerator alienPartGenerator = new AlienPartGenerator();
 
         public List<FactionRelationSettings> factionRelations;
+        public int maxDamageForSocialfight = int.MaxValue;
     }
 
     public sealed class FactionRelationSettings
