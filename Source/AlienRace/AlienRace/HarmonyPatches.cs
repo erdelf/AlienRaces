@@ -1686,7 +1686,7 @@ namespace AlienRace
                 if (BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) &&
                     kvp.Value.slot == slot && (slot == BackstorySlot.Childhood ||
                     !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood?.workDisables ?? WorkTags.None)) && 
-                    (DefDatabase<BackstoryDef>.GetNamedSilentFail(kvp.Value.identifier)?.commonalityApproved(pawn.gender) ?? true)).TryRandomElement(out KeyValuePair<string, Backstory> backstoryPair))
+                    (DefDatabase<BackstoryDef>.GetNamedSilentFail(kvp.Value.identifier)?.CommonalityApproved(pawn.gender) ?? true)).TryRandomElement(out KeyValuePair<string, Backstory> backstoryPair))
                 {
                     backstory = backstoryPair.Value;
                     return false;

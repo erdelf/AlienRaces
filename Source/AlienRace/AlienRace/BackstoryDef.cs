@@ -27,10 +27,7 @@ namespace AlienRace
         public float maleCommonality = 100f;
         public float femaleCommonality = 100f;
 
-        public bool commonalityApproved(Gender g)
-        {
-            return Rand.Range(0, 100) < (g == Gender.Female ? femaleCommonality : maleCommonality);
-        }
+        public bool CommonalityApproved(Gender g) => Rand.Range(0, 100) < (g == Gender.Female ? this.femaleCommonality : this.maleCommonality);
 
         public override void ResolveReferences()
         {
