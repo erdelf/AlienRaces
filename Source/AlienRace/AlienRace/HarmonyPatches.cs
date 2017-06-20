@@ -31,7 +31,7 @@ namespace AlienRace
             #endregion
             
             #region Backstory
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGiveSolidBioTo"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGiveSolidBioToPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGetRandomUnusedSolidBioFor"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGetRandomUnusedSolidBioForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetBackstoryInSlotPrefix)), null);
             #endregion
 
@@ -1696,14 +1696,19 @@ namespace AlienRace
             return true;
         }
 
-        public static bool TryGiveSolidBioToPrefix(Pawn pawn, ref bool __result)
+        public static void TryGetRandomUnusedSolidBioForPostfix(string backstoryCategory, ref PawnBio __result, PawnKindDef kind, Gender gender, string requiredLastName)
         {
-            if(pawn.def is ThingDef_AlienRace)
+            if (kind.race is ThingDef_AlienRace alienProps)
             {
-                __result = false;
-                return false;
+                if (SolidBioDatabase.allBios.Where(pb => (alienProps.alienRace.generalSettings.allowHumanBios || 
+                    DefDatabase<PawnBioDef>.AllDefs.Any(pbd => pb.name.ConfusinglySimilarTo(pbd.name) && (pbd.validRaces?.Contains(kind.race) ?? false))) && 
+                    pb.gender == GenderPossibility.Either || (pb.gender == GenderPossibility.Male && gender == Gender.Male) && 
+                    (requiredLastName.NullOrEmpty() || !(pb.name.Last != requiredLastName)) && (!kind.factionLeader || pb.pirateKing) && 
+                    pb.adulthood.spawnCategories.Contains(backstoryCategory) && !pb.name.UsedThisGame).TryRandomElement(out PawnBio bio))
+                {
+                    __result = bio;
+                }
             }
-            return true;
         }
 
         public static bool ResolveAllGraphicsPrefix(PawnGraphicSet __instance)
