@@ -154,12 +154,16 @@ namespace AlienRace
 
         public static void CanEverEat(ref bool __result, RaceProperties __instance, ThingDef t)
         {
-            ThingDef eater = new List<ThingDef>(DefDatabase<ThingDef>.AllDefsListForReading).Concat(
-                new List<ThingDef_AlienRace>(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading).Cast<ThingDef>()).First(td => td.race == __instance);
+            if (__instance.Humanlike)
+            {
 
-            __result = (eater as ThingDef_AlienRace)?.alienRace.raceRestriction.foodList?.Contains(t.defName) ?? false ? true : (eater as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteFoodList?.Contains(t.defName) ?? false ?
-                    true : ((eater as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyEatRaceRestrictedFood ?? false) ? false :
-                    DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => eater != d && (d.alienRace.raceRestriction.foodList?.Contains(t.defName) ?? false)) ? false : __result;
+                ThingDef eater = new List<ThingDef>(DefDatabase<ThingDef>.AllDefsListForReading).Concat(
+                    new List<ThingDef_AlienRace>(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading).Cast<ThingDef>()).First(td => td.race == __instance);
+
+                __result = (eater as ThingDef_AlienRace)?.alienRace.raceRestriction.foodList?.Contains(t.defName) ?? false ? true : (eater as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteFoodList?.Contains(t.defName) ?? false ?
+                        true : ((eater as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyEatRaceRestrictedFood ?? false) ? false :
+                        DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => eater != d && (d.alienRace.raceRestriction.foodList?.Contains(t.defName) ?? false)) ? false : __result;
+            }
         }
 
         public static void GenTextAdjustedForPostfix(ref string __result, Pawn p) => __result.Replace("ALIENRACE", p.def.LabelCap);
@@ -1677,7 +1681,7 @@ namespace AlienRace
             {
                 /*
                 Log.Message(pawn.def.defName);
-
+re
                 Log.Message(string.Join("\n", BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) &&
                     kvp.Value.slot == slot && (slot == BackstorySlot.Childhood ||
                     !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood?.workDisables ?? WorkTags.None)) &&
