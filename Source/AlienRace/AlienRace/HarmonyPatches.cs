@@ -118,6 +118,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(GenText), nameof(GenText.AdjustedFor)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenTextAdjustedForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(RaceProperties), nameof(RaceProperties.CanEverEat), new Type[] { typeof(ThingDef) }), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanEverEat)));
             harmony.Patch(AccessTools.Method(typeof(Verb_MeleeAttack), "DamageInfosToApply"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(MeleeVerbDamageInfoPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnWeaponGenerator), nameof(PawnWeaponGenerator.TryGenerateWeaponFor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGenerateWeaponForPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGenerateWeaponForPostfix)));
 
             #region prepareCarefully
             {
@@ -144,6 +145,30 @@ namespace AlienRace
             #endregion
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void TryGenerateWeaponForPostfix() => 
+            Traverse.Create(typeof(PawnWeaponGenerator)).Field("allWeaponPairs").GetValue<List<ThingStuffPair>>().AddRange(weaponList);
+
+        static List<ThingStuffPair> weaponList;
+
+        public static void TryGenerateWeaponForPrefix(Pawn pawn)
+        {
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+
+            Traverse weaponInfo = Traverse.Create(typeof(PawnWeaponGenerator)).Field("allWeaponPairs");
+            weaponList = new List<ThingStuffPair>();
+            
+            foreach(ThingStuffPair pair in weaponInfo.GetValue<List<ThingStuffPair>>().ListFullCopy())
+            {
+                ThingDef equipment = pair.thing;
+                if ((alienProps?.alienRace.raceRestriction.weaponList?.Contains(equipment.defName) ?? false) ||
+                        (alienProps?.alienRace.raceRestriction.whiteWeaponList?.Contains(equipment.defName) ?? false) ||
+                        ((!alienProps?.alienRace.raceRestriction.onlyUseRaceRestrictedWeapons) ?? false && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
+                        pawn.def != d && (d.alienRace.raceRestriction.weaponList?.Contains(equipment.defName) ?? false))))
+                    weaponList.Add(pair);
+            }
+            weaponInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => weaponList.Contains(tsp));
         }
 
         public static void MeleeVerbDamageInfoPostfix(Verb __instance, ref IEnumerable<DamageInfo> __result)
