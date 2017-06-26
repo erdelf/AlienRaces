@@ -19,18 +19,13 @@ namespace AlienRace
         public bool factionLeader;
 
 
-        public override IEnumerable<string> ConfigErrors()
-        {
-            foreach (string s in base.ConfigErrors())
-                yield return s;
-            if (BackstoryDatabase.TryGetWithIdentifier(this.childhoodDef, out this.resolvedChildhood))
-                yield return "Childhood backstory not found";
-            if (BackstoryDatabase.TryGetWithIdentifier(this.adulthoodDef, out this.resolvedAdulthood))
-                yield return "Adulthood backstory not found";
-        }
-
         public override void ResolveReferences()
         {
+            if (BackstoryDatabase.TryGetWithIdentifier(this.childhoodDef, out this.resolvedChildhood))
+                Log.Error("Error in " + this.defName + ": Childhood backstory not found");
+            if (BackstoryDatabase.TryGetWithIdentifier(this.adulthoodDef, out this.resolvedAdulthood))
+                Log.Error("Error in " + this.defName + ": Adulthood backstory not found");
+
             base.ResolveReferences();
 
             if (this.resolvedAdulthood.slot != BackstorySlot.Adulthood || this.resolvedChildhood.slot != BackstorySlot.Childhood)
