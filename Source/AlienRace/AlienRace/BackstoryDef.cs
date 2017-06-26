@@ -26,6 +26,7 @@ namespace AlienRace
         public List<AlienTraitEntry> disallowedTraits = new List<AlienTraitEntry>();
         public float maleCommonality = 100f;
         public float femaleCommonality = 100f;
+        public Backstory linkedBackstory;
 
         public bool CommonalityApproved(Gender g) => Rand.Range(0, 100) < (g == Gender.Female ? this.femaleCommonality : this.maleCommonality);
 

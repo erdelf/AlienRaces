@@ -1677,6 +1677,12 @@ namespace AlienRace
         
         public static bool SetBackstoryInSlotPrefix(Pawn pawn, BackstorySlot slot, ref Backstory backstory)
         {
+            if(slot == BackstorySlot.Adulthood && (DefDatabase<BackstoryDef>.GetNamedSilentFail(pawn.story.childhood.identifier)?.linkedBackstory is Backstory b))
+            {
+                backstory = b;
+                return false;
+            }
+
             if (((pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.PawnsSpecificBackstories) || (pawn.def.GetModExtension<Info>()?.usePawnKindBackstories ?? false)) && !pawn.kindDef.backstoryCategory.NullOrEmpty())
             {
                 /*
@@ -1690,7 +1696,7 @@ re
                 if (BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) &&
                     kvp.Value.slot == slot && (slot == BackstorySlot.Childhood ||
                     !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood?.workDisables ?? WorkTags.None)) && 
-                    (DefDatabase<BackstoryDef>.GetNamedSilentFail(kvp.Value.identifier)?.CommonalityApproved(pawn.gender) ?? true)).TryRandomElement(out KeyValuePair<string, Backstory> backstoryPair))
+                    (!(DefDatabase<BackstoryDef>.GetNamedSilentFail(kvp.Value.identifier) is BackstoryDef bs) || (bs.CommonalityApproved(pawn.gender) && (slot == BackstorySlot.Childhood || bs.linkedBackstory == null)))).TryRandomElement(out KeyValuePair<string, Backstory> backstoryPair))
                 {
                     backstory = backstoryPair.Value;
                     return false;
