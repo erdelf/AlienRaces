@@ -1702,11 +1702,8 @@ namespace AlienRace
         
         public static bool SetBackstoryInSlotPrefix(Pawn pawn, BackstorySlot slot, ref Backstory backstory)
         {
-            if(slot == BackstorySlot.Adulthood && (DefDatabase<BackstoryDef>.GetNamedSilentFail(pawn.story.childhood.identifier)?.linkedBackstory is Backstory b))
-            {
-                backstory = b;
+            if(slot == BackstorySlot.Adulthood && BackstoryDatabase.TryGetWithIdentifier(DefDatabase<BackstoryDef>.GetNamedSilentFail(pawn.story.childhood.identifier)?.linkedBackstory, out backstory))
                 return false;
-            }
 
             if (((pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.PawnsSpecificBackstories) || (pawn.def.GetModExtension<Info>()?.usePawnKindBackstories ?? false)) && !pawn.kindDef.backstoryCategory.NullOrEmpty())
             {
