@@ -18,19 +18,13 @@ namespace AlienRace
         public List<ThingDef> validRaces;
         public bool factionLeader;
 
-        public override IEnumerable<string> ConfigErrors()
+        public override void ResolveReferences()
         {
-            foreach (string s in base.ConfigErrors())
-                yield return s;
             if (!BackstoryDatabase.TryGetWithIdentifier(this.childhoodDef, out this.resolvedChildhood))
                 Log.Error("Error in " + this.defName + ": Childhood backstory not found");
             if (!BackstoryDatabase.TryGetWithIdentifier(this.adulthoodDef, out this.resolvedAdulthood))
                 Log.Error("Error in " + this.defName + ": Adulthood backstory not found");
 
-        }
-
-        public override void ResolveReferences()
-        {
             base.ResolveReferences();
 
             if (this.resolvedAdulthood.slot != BackstorySlot.Adulthood || this.resolvedChildhood.slot != BackstorySlot.Childhood)
@@ -44,8 +38,9 @@ namespace AlienRace
                 adulthood = this.resolvedAdulthood,
                 pirateKing = this.factionLeader
             };
-            bio.ResolveReferences();
-            bio.PostLoad();
+
+            if (this.resolvedAdulthood.spawnCategories.Count == 1 && this.resolvedAdulthood.spawnCategories[0] == "Trader")
+                this.resolvedAdulthood.spawnCategories.Add("Civil");
 
             if(!bio.ConfigErrors().Any())
                 SolidBioDatabase.allBios.Add(bio);
