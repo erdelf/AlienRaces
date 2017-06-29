@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using Verse;
+using System.Xml;
 
 namespace AlienRace
 {
@@ -43,7 +44,7 @@ namespace AlienRace
 
         public BodyPartDef tailBodyPart;
         public bool UseSkinColorForTail = true;
-        public Vector2 tailOffset = Vector2.zero;
+        public List<TailOffset> tailOffsets;
 
         static MethodInfo meshInfo = AccessTools.Method(AccessTools.TypeByName("MeshMakerPlanes"), "NewPlaneMesh", new Type[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
 
@@ -125,6 +126,18 @@ namespace AlienRace
                 Scribe_Values.Look(ref this.fixGenderPostSpawn, "fixAlienGenderPostSpawn", false);
                 Scribe_Values.Look(ref this.skinColor, "skinColorAlien");
                 Scribe_Values.Look(ref this.skinColorSecond, "skinColorSecondAlien");
+            }
+        }
+
+        public class TailOffset
+        {
+            public BodyType bodyType;
+            public Vector2 offset = new Vector2(0, 0);
+
+            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+            {
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(BodyType), xmlRoot.Name);
+                this.offset = (Vector2)ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
             }
         }
     }
