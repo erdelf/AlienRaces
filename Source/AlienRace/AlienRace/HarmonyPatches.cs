@@ -2031,9 +2031,9 @@ re
 
                     mesh = portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.tailPortraitMesh : alienProps.alienRace.generalSettings.alienPartGenerator.tailMesh;
 
-                    float MoffsetX = 0.42f;
+                    float MoffsetX = 0.42f + alienProps.alienRace.generalSettings.alienPartGenerator.tailOffset.x;
                     float MoffsetZ = -0.22f;
-                    float MoffsetY = -0.3f;
+                    float MoffsetY = -0.3f + alienProps.alienRace.generalSettings.alienPartGenerator.tailOffset.y;
                     float num = -40;
 
                     if (pawn.Rotation == Rot4.North)

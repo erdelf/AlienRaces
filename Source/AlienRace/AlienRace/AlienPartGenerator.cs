@@ -43,6 +43,7 @@ namespace AlienRace
 
         public BodyPartDef tailBodyPart;
         public bool UseSkinColorForTail = true;
+        public Vector2 tailOffset = Vector2.zero;
 
         static MethodInfo meshInfo = AccessTools.Method(AccessTools.TypeByName("MeshMakerPlanes"), "NewPlaneMesh", new Type[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
 
