@@ -119,6 +119,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(RaceProperties), nameof(RaceProperties.CanEverEat), new Type[] { typeof(ThingDef) }), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanEverEat)));
             harmony.Patch(AccessTools.Method(typeof(Verb_MeleeAttack), "DamageInfosToApply"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(MeleeVerbDamageInfoPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnWeaponGenerator), nameof(PawnWeaponGenerator.TryGenerateWeaponFor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGenerateWeaponForPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGenerateWeaponForPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnApparelGenerator), nameof(PawnApparelGenerator.GenerateStartingApparelFor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateStartingApparelForPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateStartingApparelForPostfix)));
 
             #region prepareCarefully
             {
@@ -146,6 +147,31 @@ namespace AlienRace
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
+
+        public static void GenerateStartingApparelForPostfix() =>
+            Traverse.Create(typeof(PawnWeaponGenerator)).Field("allApparelPairs").GetValue<List<ThingStuffPair>>().AddRange(apparelList);
+
+        static List<ThingStuffPair> apparelList;
+
+        public static void GenerateStartingApparelForPrefix(Pawn pawn)
+        {
+            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
+
+            Traverse apparelInfo = Traverse.Create(typeof(PawnWeaponGenerator)).Field("allApparelPairs");
+            apparelList = new List<ThingStuffPair>();
+
+            foreach (ThingStuffPair pair in apparelInfo.GetValue<List<ThingStuffPair>>().ListFullCopy())
+            {
+                ThingDef equipment = pair.thing;
+                if ((alienProps?.alienRace.raceRestriction.apparelList?.Contains(equipment.defName) ?? false) ||
+                        (alienProps?.alienRace.raceRestriction.whiteApparelList?.Contains(equipment.defName) ?? false) ||
+                        ((!alienProps?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel) ?? false && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
+                        pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(equipment.defName) ?? false))))
+                    apparelList.Add(pair);
+            }
+            apparelInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => apparelList.Contains(tsp));
+        }
+
 
         public static void TryGenerateWeaponForPostfix() => 
             Traverse.Create(typeof(PawnWeaponGenerator)).Field("allWeaponPairs").GetValue<List<ThingStuffPair>>().AddRange(weaponList);
