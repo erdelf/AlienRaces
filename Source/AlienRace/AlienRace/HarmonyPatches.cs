@@ -165,11 +165,11 @@ namespace AlienRace
                 ThingDef equipment = pair.thing;
                 if ((alienProps?.alienRace.raceRestriction.apparelList?.Contains(equipment.defName) ?? false) ||
                         (alienProps?.alienRace.raceRestriction.whiteApparelList?.Contains(equipment.defName) ?? false) ||
-                        ((!alienProps?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel) ?? false && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
+                        (((!alienProps?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel) ?? false) && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
                         pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(equipment.defName) ?? false))))
                     apparelList.Add(pair);
             }
-            apparelInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => !apparelList.Contains(tsp));
+            apparelInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => apparelList.Contains(tsp));
         }
 
 
@@ -190,11 +190,11 @@ namespace AlienRace
                 ThingDef equipment = pair.thing;
                 if ((alienProps?.alienRace.raceRestriction.weaponList?.Contains(equipment.defName) ?? false) ||
                         (alienProps?.alienRace.raceRestriction.whiteWeaponList?.Contains(equipment.defName) ?? false) ||
-                        ((!alienProps?.alienRace.raceRestriction.onlyUseRaceRestrictedWeapons) ?? false && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
+                        (((!alienProps?.alienRace.raceRestriction.onlyUseRaceRestrictedWeapons) ?? false) && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
                         pawn.def != d && (d.alienRace.raceRestriction.weaponList?.Contains(equipment.defName) ?? false))))
                     weaponList.Add(pair);
             }
-            weaponInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => !weaponList.Contains(tsp));
+            weaponInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => weaponList.Contains(tsp));
         }
 
         public static void MeleeVerbDamageInfoPostfix(Verb __instance, ref IEnumerable<DamageInfo> __result)
