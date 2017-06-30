@@ -136,7 +136,8 @@ namespace AlienRace
 
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
-                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(BodyType), xmlRoot.Name);
+                this.bodyType = (BodyType) Enum.Parse(typeof(BodyType), xmlRoot.Name);
+                //DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(BodyType), xmlRoot.Name);
                 this.offset = (Vector2)ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
             }
         }
