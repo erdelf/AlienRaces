@@ -157,7 +157,7 @@ namespace AlienRace
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
-            Traverse apparelInfo = Traverse.Create(typeof(PawnWeaponGenerator)).Field("allApparelPairs");
+            Traverse apparelInfo = Traverse.Create(typeof(PawnApparelGenerator)).Field("allApparelPairs");
             apparelList = new List<ThingStuffPair>();
 
             foreach (ThingStuffPair pair in apparelInfo.GetValue<List<ThingStuffPair>>().ListFullCopy())
