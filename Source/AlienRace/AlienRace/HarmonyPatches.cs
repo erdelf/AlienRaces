@@ -149,7 +149,7 @@ namespace AlienRace
         }
 
         public static void GenerateStartingApparelForPostfix() =>
-            Traverse.Create(typeof(PawnWeaponGenerator)).Field("allApparelPairs").GetValue<List<ThingStuffPair>>().AddRange(apparelList);
+            Traverse.Create(typeof(PawnApparelGenerator)).Field("allApparelPairs").GetValue<List<ThingStuffPair>>().AddRange(apparelList);
 
         static List<ThingStuffPair> apparelList;
 
