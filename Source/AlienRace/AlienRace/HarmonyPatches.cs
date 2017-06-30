@@ -169,7 +169,7 @@ namespace AlienRace
                         pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(equipment.defName) ?? false))))
                     apparelList.Add(pair);
             }
-            apparelInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => apparelList.Contains(tsp));
+            apparelInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => !apparelList.Contains(tsp));
         }
 
 
@@ -194,7 +194,7 @@ namespace AlienRace
                         pawn.def != d && (d.alienRace.raceRestriction.weaponList?.Contains(equipment.defName) ?? false))))
                     weaponList.Add(pair);
             }
-            weaponInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => weaponList.Contains(tsp));
+            weaponInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => !weaponList.Contains(tsp));
         }
 
         public static void MeleeVerbDamageInfoPostfix(Verb __instance, ref IEnumerable<DamageInfo> __result)
