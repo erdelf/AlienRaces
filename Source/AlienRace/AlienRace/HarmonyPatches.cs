@@ -119,6 +119,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Verb_MeleeAttack), "DamageInfosToApply"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(MeleeVerbDamageInfoPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnWeaponGenerator), nameof(PawnWeaponGenerator.TryGenerateWeaponFor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGenerateWeaponForPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGenerateWeaponForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnApparelGenerator), nameof(PawnApparelGenerator.GenerateStartingApparelFor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateStartingApparelForPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateStartingApparelForPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateInitialHediffs"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateInitialHediffsPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateInitialHediffsPostfix)));
 
             #region prepareCarefully
             {
@@ -145,6 +146,12 @@ namespace AlienRace
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
+
+        static List<Hediff> hediffSave;
+
+        public static void GenerateInitialHediffsPrefix(Pawn pawn) => hediffSave = pawn.health.hediffSet.hediffs.ListFullCopy();
+
+        public static void GenerateInitialHediffsPostfix(Pawn pawn) => hediffSave.ForEach(h => pawn.health.hediffSet.AddDirect(h));
 
         public static void GenerateStartingApparelForPostfix() =>
             Traverse.Create(typeof(PawnApparelGenerator)).Field("allApparelPairs").GetValue<List<ThingStuffPair>>().AddRange(apparelList);
