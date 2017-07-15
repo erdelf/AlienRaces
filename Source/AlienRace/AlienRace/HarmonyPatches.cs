@@ -1638,7 +1638,6 @@ namespace AlienRace
 
         public static void GiveAppropriateBioAndNameToPostfix(Pawn pawn)
         {
-
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
                 //Log.Message(pawn.LabelCap);
@@ -1803,8 +1802,17 @@ re
             return true;
         }
 
-        public static void GenerateTraitsPrefix(Pawn pawn)
+        public static void GenerateTraitsPrefix(Pawn pawn, PawnGenerationRequest request)
         {
+
+            if (!request.Newborn && request.CanGeneratePawnRelations && pawn.story.AllBackstories.Any(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)?.relationSettings != null))
+            {
+                pawn.relations.ClearAllRelations();
+                AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations").Invoke(null, new object[] { pawn, request });
+            }
+
+
+
             if (pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
             {
                 alienProps.alienRace.generalSettings.forcedRaceTraitEntries.ForEach(ate =>
@@ -1818,6 +1826,7 @@ re
                     }
                 });
             }
+
         }
 
         public static void SkinColorPostfix(Pawn_StoryTracker __instance, ref Color __result)
@@ -1917,8 +1926,6 @@ re
             MethodInfo hairInfo = AccessTools.Property(typeof(PawnGraphicSet), nameof(PawnGraphicSet.HairMeshSet)).GetGetMethod();
             MethodInfo isAnimalInfo = AccessTools.Property(typeof(RaceProperties), nameof(RaceProperties.Animal)).GetGetMethod();
 
-            int state = 0;
-
             List<CodeInstruction> instructionList = instructions.ToList();
 
             for(int i = 0; i < instructionList.Count; i++)
@@ -1974,21 +1981,19 @@ re
                         alienProps.alienRace.generalSettings.alienPartGenerator.bodySet.MeshAt(facing) :
                         alienProps.alienRace.generalSettings.alienPartGenerator.headSet.MeshAt(facing) :
                 wantsBody ?
-                    MeshPool.humanlikeBodySet.MeshAt(facing) : MeshPool.humanlikeHeadSet.MeshAt(facing);
+                    MeshPool.humanlikeBodySet.MeshAt(facing) : 
+                    MeshPool.humanlikeHeadSet.MeshAt(facing);
 
-        public static Mesh GetPawnHairMesh(bool portrait, Pawn pawn, Rot4 headFacing, PawnGraphicSet graphics)
-        {
-            return 
-                pawn.def is ThingDef_AlienRace alienProps ?
-                    (pawn.story.crownType == CrownType.Narrow ? 
-                        (portrait ? 
-                            alienProps.alienRace.generalSettings.alienPartGenerator.hairPortraitSetNarrow : 
-                            alienProps.alienRace.generalSettings.alienPartGenerator.hairSetNarrow) : 
-                        (portrait ? 
-                            alienProps.alienRace.generalSettings.alienPartGenerator.hairPortraitSetAverage : 
+        public static Mesh GetPawnHairMesh(bool portrait, Pawn pawn, Rot4 headFacing, PawnGraphicSet graphics) => 
+            pawn.def is ThingDef_AlienRace alienProps ?
+                    (pawn.story.crownType == CrownType.Narrow ?
+                        (portrait ?
+                            alienProps.alienRace.generalSettings.alienPartGenerator.hairPortraitSetNarrow :
+                            alienProps.alienRace.generalSettings.alienPartGenerator.hairSetNarrow) :
+                        (portrait ?
+                            alienProps.alienRace.generalSettings.alienPartGenerator.hairPortraitSetAverage :
                             alienProps.alienRace.generalSettings.alienPartGenerator.hairSetAverage)).MeshAt(headFacing) :
                     graphics.HairMeshSet.MeshAt(headFacing);
-        }
 
         public static void DrawTail(bool portrait, Pawn pawn, Vector3 vector)
         {
