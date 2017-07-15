@@ -143,6 +143,8 @@ namespace AlienRace
             }
             #endregion
 
+            Log.Message("Alien race successfully completed all " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
+
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
