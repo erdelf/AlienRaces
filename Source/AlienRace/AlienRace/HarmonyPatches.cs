@@ -113,7 +113,6 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(ITab_Pawn_Gear), "TryDrawAverageArmor"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryDrawAverageArmorTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(RestUtility), nameof(RestUtility.CanUseBedEver)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanUseBedEverPostfix)));
             harmony.Patch(AccessTools.Property(typeof(Building_Bed), nameof(Building_Bed.AssigningCandidates)).GetGetMethod(), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(AssigningCandidatesPostfix)));
-            //harmony.Patch(AccessTools.Method(typeof(ApparelUtility), nameof(ApparelUtility.CanWearTogether)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanWearTogetherPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GenText), nameof(GenText.AdjustedFor)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenTextAdjustedForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(RaceProperties), nameof(RaceProperties.CanEverEat), new Type[] { typeof(ThingDef) }), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanEverEat)));
             harmony.Patch(AccessTools.Method(typeof(Verb_MeleeAttack), "DamageInfosToApply"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(MeleeVerbDamageInfoPostfix)));
@@ -147,9 +146,9 @@ namespace AlienRace
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
-        static List<Hediff> hediffSave;
-
         public static void GenerateInitialHediffsPrefix(Pawn pawn) => hediffSave = pawn.health.hediffSet.hediffs.ListFullCopy();
+
+        static List<Hediff> hediffSave;
 
         public static void GenerateInitialHediffsPostfix(Pawn pawn) => hediffSave.ForEach(h => pawn.health.hediffSet.AddDirect(h));
 
@@ -1247,7 +1246,6 @@ namespace AlienRace
 
         public static void GenerationChanceSpousePostfix(ref float __result, Pawn generated, Pawn other)
         {
-            //if (__result == 0) __result++;
             if (generated.def is ThingDef_AlienRace)
             {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSpouse;
@@ -1258,6 +1256,11 @@ namespace AlienRace
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSpouse;
             }
 
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierSpouse ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierSpouse ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierSpouse ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierSpouse ?? 1;
+
             if (generated == other)
             {
                 __result = 0;
@@ -1266,8 +1269,6 @@ namespace AlienRace
 
         public static void GenerationChanceSiblingPostfix(ref float __result, Pawn generated, Pawn other)
         {
-            //if (__result == 0) __result++;
-
             if (generated.def is ThingDef_AlienRace)
             {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSibling;
@@ -1278,6 +1279,11 @@ namespace AlienRace
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierSibling;
             }
 
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierSibling ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierSibling ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierSibling ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierSibling ?? 1;
+
             if (generated == other)
             {
                 __result = 0;
@@ -1286,8 +1292,6 @@ namespace AlienRace
 
         public static void GenerationChanceParentPostfix(ref float __result, Pawn generated, Pawn other)
         {
-            //if (__result == 0) __result++;
-
             if (generated.def is ThingDef_AlienRace)
             {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierParent;
@@ -1298,6 +1302,11 @@ namespace AlienRace
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierParent;
             }
 
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierParent ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierParent ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierParent ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierParent ?? 1;
+
             if (generated == other)
             {
                 __result = 0;
@@ -1306,8 +1315,6 @@ namespace AlienRace
 
         public static void GenerationChanceLoverPostfix(ref float __result, Pawn generated, Pawn other)
         {
-            //if (__result == 0) __result++;
-
             if (generated.def is ThingDef_AlienRace)
             {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierLover;
@@ -1318,6 +1325,11 @@ namespace AlienRace
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierLover;
             }
 
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierLover ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierLover ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierLover ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierLover ?? 1;
+
             if (generated == other)
             {
                 __result = 0;
@@ -1326,8 +1338,6 @@ namespace AlienRace
 
         public static void GenerationChanceFiancePostfix(ref float __result, Pawn generated, Pawn other)
         {
-            //if (__result == 0) __result++;
-
             if (generated.def is ThingDef_AlienRace)
             {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierFiance;
@@ -1337,6 +1347,11 @@ namespace AlienRace
             {
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierFiance;
             }
+            
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierFiance ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierFiance ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierFiance ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierFiance ?? 1;
 
             if (generated == other)
             {
@@ -1346,8 +1361,6 @@ namespace AlienRace
 
         public static void GenerationChanceExSpousePostfix(ref float __result, Pawn generated, Pawn other)
         {
-            //if (__result == 0) __result++;
-
             if (generated.def is ThingDef_AlienRace)
             {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExSpouse;
@@ -1358,6 +1371,12 @@ namespace AlienRace
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExSpouse;
             }
 
+
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierExSpouse ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierExSpouse ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierExSpouse ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierExSpouse ?? 1;
+
             if (generated == other)
             {
                 __result = 0;
@@ -1366,8 +1385,6 @@ namespace AlienRace
 
         public static void GenerationChanceExLoverPostfix(ref float __result, Pawn generated, Pawn other)
         {
-            //if (__result == 0) __result++;
-
             if (generated.def is ThingDef_AlienRace)
             {
                 __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExLover;
@@ -1377,6 +1394,11 @@ namespace AlienRace
             {
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExLover;
             }
+            
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierExLover ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierExLover ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierExLover ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierExLover ?? 1;
 
             if (generated == other)
             {
@@ -1386,17 +1408,19 @@ namespace AlienRace
 
         public static void GenerationChanceChildPostfix(ref float __result, Pawn generated, Pawn other)
         {
-            //if (__result == 0) __result++;
-
-            if (generated.def is ThingDef_AlienRace)
+            if (generated.def is ThingDef_AlienRace alienProps)
             {
-                __result *= (generated.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierChild;
+                __result *= alienProps.alienRace.relationSettings.relationChanceModifierChild;
             }
 
-            if (other.def is ThingDef_AlienRace)
+            if (other.def is ThingDef_AlienRace alienProps2)
             {
-                __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierChild;
+                __result *= alienProps2.alienRace.relationSettings.relationChanceModifierChild;
             }
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierChild ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierChild ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierChild ?? 1;
+            __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierChild ?? 1;
 
             if (generated == other)
             {

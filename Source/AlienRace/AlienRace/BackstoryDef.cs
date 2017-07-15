@@ -27,7 +27,7 @@ namespace AlienRace
         public float maleCommonality = 100f;
         public float femaleCommonality = 100f;
         public string linkedBackstory;
-        public RelationSettings relationSettings;
+        public RelationSettings relationSettings = new RelationSettings();
         public List<string> forcedHediffs = new List<string>();
 
         public bool CommonalityApproved(Gender g) => Rand.Range(0, 100) < (g == Gender.Female ? this.femaleCommonality : this.maleCommonality);
