@@ -17,6 +17,7 @@ namespace AlienRace
         public NameTriple name;
         public List<ThingDef> validRaces;
         public bool factionLeader;
+        public List<string> forcedHediffs = new List<string>();
 
         public override void ResolveReferences()
         {

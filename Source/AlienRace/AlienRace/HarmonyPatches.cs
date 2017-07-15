@@ -118,7 +118,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Verb_MeleeAttack), "DamageInfosToApply"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(MeleeVerbDamageInfoPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnWeaponGenerator), nameof(PawnWeaponGenerator.TryGenerateWeaponFor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGenerateWeaponForPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGenerateWeaponForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnApparelGenerator), nameof(PawnApparelGenerator.GenerateStartingApparelFor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateStartingApparelForPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateStartingApparelForPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateInitialHediffs"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateInitialHediffsPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateInitialHediffsPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateInitialHediffs"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateInitialHediffsPostfix)));
 
             #region prepareCarefully
             {
@@ -148,11 +148,9 @@ namespace AlienRace
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
-        public static void GenerateInitialHediffsPrefix(Pawn pawn) => hediffSave = pawn.health.hediffSet.hediffs.ListFullCopy();
-
-        static List<Hediff> hediffSave;
-
-        public static void GenerateInitialHediffsPostfix(Pawn pawn) => hediffSave.ForEach(h => pawn.health.hediffSet.AddDirect(h));
+        public static void GenerateInitialHediffsPostfix(Pawn pawn) => 
+            pawn.story?.AllBackstories?.Select(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)).OfType<BackstoryDef>().SelectMany(bd => bd.forcedHediffs).Concat(bioReference?.forcedHediffs ?? new List<string>(0)).Select(s => 
+                DefDatabase<HediffDef>.GetNamedSilentFail(s)).Select(hd => HediffMaker.MakeHediff(hd, pawn)).ToList().ForEach(h => pawn.health.hediffSet.AddDirect(h));
 
         public static void GenerateStartingApparelForPostfix() =>
             Traverse.Create(typeof(PawnApparelGenerator)).Field("allApparelPairs").GetValue<List<ThingStuffPair>>().AddRange(apparelList);
@@ -1747,6 +1745,7 @@ namespace AlienRace
 
         public static bool SetBackstoryInSlotPrefix(Pawn pawn, BackstorySlot slot, ref Backstory backstory)
         {
+            bioReference = null;
             if (slot == BackstorySlot.Adulthood && DefDatabase<BackstoryDef>.GetNamedSilentFail(pawn.story.childhood.identifier)?.linkedBackstory is string id && BackstoryDatabase.TryGetWithIdentifier(id, out backstory))
                 return false;
 
@@ -1773,6 +1772,8 @@ re
             return true;
         }
 
+        static PawnBioDef bioReference;
+
         public static void TryGetRandomUnusedSolidBioForPostfix(string backstoryCategory, ref PawnBio __result, PawnKindDef kind, Gender gender, string requiredLastName)
         {
             if (SolidBioDatabase.allBios.Where(pb => (((kind.race as ThingDef_AlienRace)?.alienRace.generalSettings.allowHumanBios ?? true) ||
@@ -1782,6 +1783,7 @@ re
                 pb.adulthood.spawnCategories.Contains(backstoryCategory) && !pb.name.UsedThisGame).TryRandomElement(out PawnBio bio))
             {
                 __result = bio;
+                bioReference = DefDatabase<PawnBioDef>.AllDefs.FirstOrDefault(pbd => bio.name.ConfusinglySimilarTo(pbd.name));
             } else
             {
                 __result = null;
