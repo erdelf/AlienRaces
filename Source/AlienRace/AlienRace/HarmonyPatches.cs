@@ -16,7 +16,7 @@ namespace AlienRace
     class HarmonyPatches
     {
         static HarmonyPatches() =>
-            new Thread(new ThreadStart(() =>
+            ThreadPool.QueueUserWorkItem((a) =>
             {
                 HarmonyInstance harmony = HarmonyInstance.Create("rimworld.erdelf.alien_race.main");
                 #region RelationSettings
@@ -148,7 +148,7 @@ namespace AlienRace
                 Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
 
                 DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
-            })).Start();
+            });
 
         public static void GenerateInitialHediffsPostfix(Pawn pawn) => 
             pawn.story?.AllBackstories?.Select(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)).OfType<BackstoryDef>().SelectMany(bd => bd.forcedHediffs).Concat(bioReference?.forcedHediffs ?? new List<string>(0)).Select(s => 
