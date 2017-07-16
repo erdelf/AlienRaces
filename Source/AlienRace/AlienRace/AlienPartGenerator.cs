@@ -32,23 +32,18 @@ namespace AlienRace
         public GraphicMeshSet headSet;
         public GraphicMeshSet hairSetAverage;
         public GraphicMeshSet hairSetNarrow;
-        public Mesh tailMesh;
-        public Mesh tailMeshFlipped;
 
         public GraphicMeshSet bodyPortraitSet;
         public GraphicMeshSet headPortraitSet;
         public GraphicMeshSet hairPortraitSetAverage;
         public GraphicMeshSet hairPortraitSetNarrow;
-        public Mesh tailPortraitMesh;
-        public Mesh tailPortraitMeshFlipped;
 
-        public BodyPartDef tailBodyPart;
-        public bool UseSkinColorForTail = true;
-        public List<TailOffset> tailOffsets;
+        public List<BodyAddon> bodyAddons = new List<BodyAddon>();
+        
 
         static MethodInfo meshInfo = AccessTools.Method(AccessTools.TypeByName("MeshMakerPlanes"), "NewPlaneMesh", new Type[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
 
-        public string RandomAlienHead(string userpath, Gender gender) => userpath + (userpath == GraphicPaths.vanillaHeadPath ? gender.ToString() + "/" : "") + (this.UseGenderedHeads ? gender.ToString() + "_" : "") + this.aliencrowntypes[Rand.Range(0, this.aliencrowntypes.Count)];
+        public string RandomAlienHead(string userpath, Pawn pawn) => userpath + (userpath == GraphicPaths.vanillaHeadPath ? pawn.gender.ToString() + "/" : "") + (this.UseGenderedHeads ? pawn.gender.ToString() + "_" : "") + (pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[Rand.Range(0, this.aliencrowntypes.Count)]);
 
         public static Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath) => GraphicDatabase.Get<Graphic_Multi>(userpath + "Naked_" + bodyType.ToString(), shader, Vector2.one, skinColor, skinColorSecond);
 
@@ -84,8 +79,11 @@ namespace AlienRace
                                                  this.headSet = meshSet[1];
                                                  this.hairSetAverage = meshSet[2];
                                                  this.hairSetNarrow = meshSet[3];
-                                                 this.tailMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize, false, false, false });
-                                                 this.tailMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize, true, false, false });
+                                                 bodyAddons.ForEach(ba =>
+                                                 {
+                                                     ba.addonMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize, false, false, false });
+                                                     ba.addonMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize, true, false, false });
+                                                 });
                                              }
                                              {
                                                  if (!meshPools.Keys.Any(v => v.Equals(this.CustomPortraitDrawSize)))
@@ -105,20 +103,29 @@ namespace AlienRace
                                                  this.headPortraitSet = meshSet[1];
                                                  this.hairPortraitSetAverage = meshSet[2];
                                                  this.hairPortraitSetNarrow = meshSet[3];
-                                                 this.tailPortraitMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize, false, false, false });
-                                                 this.tailPortraitMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize, true, false, false });
+                                                 bodyAddons.ForEach(ba =>
+                                                 {
+                                                     ba.addonPortraitMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize, false, false, false });
+                                                     ba.addonPortraitMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize, true, false, false });
+                                                 });
+                                             }
+                                             {
+                                                 bodyAddons.Where(ba => ba.variants).ToList().ForEach(ba =>
+                                                 {
+                                                     while (ContentFinder<Texture2D>.Get(ba.path + ba.variantCount++, false) != null)
+                                                         ;
+                                                 });
                                              }
                                          }, "meshSetAlien", false, null);
-
-        public bool CanDrawTail(Pawn pawn) => RestUtility.CurrentBed(pawn) == null && !pawn.Downed && pawn.GetPosture() == PawnPosture.Standing && !pawn.Dead && (this.tailBodyPart == null ||
-                pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == this.tailBodyPart));
 
         public class AlienComp : ThingComp
         {
             public bool fixGenderPostSpawn;
             public Color skinColor;
             public Color skinColorSecond;
-            public Graphic Tail;
+            public string crownType;
+
+            public List<Graphic> addonGraphics;
 
             public override void PostExposeData()
             {
@@ -129,15 +136,52 @@ namespace AlienRace
             }
         }
 
-        public class TailOffset
+        public class BodyAddon
+        {
+            public string path;
+            public BodyPartDef bodyPart;
+            public bool UseSkinColor = true;
+            public BodyAddonOffsets offsets;
+            public bool variants = false;
+            public bool linkVariantIndexWithPrevious = false;
+            public int variantCount = -1;
+
+            public Mesh addonMesh;
+            public Mesh addonMeshFlipped;
+
+            public Mesh addonPortraitMesh;
+            public Mesh addonPortraitMeshFlipped;
+
+            public bool CanDrawAddon(Pawn pawn) => RestUtility.CurrentBed(pawn) == null && !pawn.Downed && pawn.GetPosture() == PawnPosture.Standing && !pawn.Dead && (this.bodyPart == null ||
+                    pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == this.bodyPart));
+        }
+
+        public class BodyAddonOffsets
+        {
+            public List<BodyTypeOffset> bodyTypes;
+            public List<CrownTypeOffset> crownTypes;
+        }
+
+        public class BodyTypeOffset
         {
             public BodyType bodyType;
-            public Vector2 offset = new Vector2(0, 0);
+            public Vector2 offset = Vector2.zero;
 
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.bodyType = (BodyType) Enum.Parse(typeof(BodyType), xmlRoot.Name);
-                //DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(BodyType), xmlRoot.Name);
+                this.offset = (Vector2)ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
+            }
+        }
+
+        public class CrownTypeOffset
+        {
+            public string crownType;
+            public Vector2 offset = Vector2.zero;
+
+            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+            {
+                this.crownType = xmlRoot.Name;
                 this.offset = (Vector2)ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
             }
         }

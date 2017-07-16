@@ -1437,7 +1437,7 @@ namespace AlienRace
                 string path = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStageRace.def).head;
                 if (path != null)
                 {
-                    Traverse.Create(pawn.story).Field("headGraphicPath").SetValue((pawn.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator.RandomAlienHead(path, pawn.gender));
+                    Traverse.Create(pawn.story).Field("headGraphicPath").SetValue((pawn.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator.RandomAlienHead(path, pawn));
                 }
             }
         }
@@ -1685,7 +1685,7 @@ namespace AlienRace
                 }
                 if (!alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).head.NullOrEmpty())
                 {
-                    Traverse.Create(pawn.story).Field("headGraphicPath").SetValue(alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).head, pawn.gender));
+                    Traverse.Create(pawn.story).Field("headGraphicPath").SetValue(alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).head, pawn));
                 }
             }
         }
@@ -1809,7 +1809,7 @@ re
 
                     if (!alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty())
                     {
-                        Traverse.Create(__instance.pawn.story).Field("headGraphicPath").SetValue(alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head, __instance.pawn.gender));
+                        Traverse.Create(__instance.pawn.story).Field("headGraphicPath").SetValue(alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head, __instance.pawn));
                     }
 
                     alienComp.fixGenderPostSpawn = false;
@@ -1829,7 +1829,26 @@ re
                 __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump, alienComp.skinColor == alienComp.skinColorSecond ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, Vector2.one, alien.story.SkinColor, alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien, false)) : null;
                 __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump, alienComp.skinColor == alienComp.skinColorSecond ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, Vector2.one, PawnGraphicSet.RottingColor) : null;
 
-                alienComp.Tail = !alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).tail.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).tail, ShaderDatabase.Transparent, new Vector3(1, 0, 1), alienProps.alienRace.generalSettings.alienPartGenerator.UseSkinColorForTail ? alien.story.SkinColor : alien.story.hairColor, alienProps.alienRace.generalSettings.alienPartGenerator.UseSkinColorForTail ? alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien, false) : alien.story.hairColor) : null;
+                AlienPartGenerator apg = alienProps.alienRace.generalSettings.alienPartGenerator;
+                alienComp.addonGraphics = new List<Graphic>();
+                int sharedIndex = 0;
+                apg.bodyAddons.ForEach(ba =>
+                    alienComp.addonGraphics.Add(
+                        !ba.path.NullOrEmpty() ?
+                            GraphicDatabase.Get<Graphic_Multi>(ba.path + 
+                                (ba.variants ? 
+                                    (ba.linkVariantIndexWithPrevious ? 
+                                        sharedIndex : 
+                                        sharedIndex = Rand.Range(0, ba.variantCount)).ToString() : ""),
+                                ShaderDatabase.Transparent,
+                                    new Vector3(1, 0, 1),
+                                        ba.UseSkinColor ?
+                                            alien.story.SkinColor :
+                                            alien.story.hairColor,
+                                                ba.UseSkinColor ?
+                                                    alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien, false) :
+                                                    alien.story.hairColor) :
+                            null));
 
                 __instance.ResolveApparelGraphics();
 
@@ -2001,7 +2020,7 @@ re
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), "pawn"));
                     yield return new CodeInstruction(OpCodes.Ldloc_S, 6); //vector
-                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(HarmonyPatches), nameof(DrawTail)));
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(HarmonyPatches), nameof(DrawAddons)));
                 }
                 yield return instruction;
             }
@@ -2031,39 +2050,55 @@ re
                             alienProps.alienRace.generalSettings.alienPartGenerator.hairSetAverage)).MeshAt(headFacing) :
                     graphics.HairMeshSet.MeshAt(headFacing);
 
-        public static void DrawTail(bool portrait, Pawn pawn, Vector3 vector)
+        public static void DrawAddons(bool portrait, Pawn pawn, Vector3 vector)
         {
-            if (pawn.def is ThingDef_AlienRace alienProps && pawn.GetComp<AlienPartGenerator.AlienComp>().Tail != null && alienProps.alienRace.generalSettings.alienPartGenerator.CanDrawTail(pawn))
+            if (pawn.def is ThingDef_AlienRace alienProps)
             {
-                Mesh mesh = portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.tailPortraitMesh : alienProps.alienRace.generalSettings.alienPartGenerator.tailMesh;
-
-                Vector2 tailOffset = alienProps.alienRace.generalSettings.alienPartGenerator.tailOffsets?.FirstOrDefault(to => to.bodyType == pawn.story.bodyType)?.offset ?? new Vector2(0, 0);
-
-                float MoffsetX = 0.42f + tailOffset.x;
-                float MoffsetZ = -0.22f;
-                float MoffsetY = -0.3f + tailOffset.y;
-                float num = -40;
-
-                if (pawn.Rotation == Rot4.North)
+                List<AlienPartGenerator.BodyAddon> addons = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
+                AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
+                for (int i = 0; i < addons.Count; i++)
                 {
-                    MoffsetX = 0f;
-                    MoffsetY = 0.3f;
-                    MoffsetZ = -0.55f;
-                    mesh = portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.tailPortraitMesh : alienProps.alienRace.generalSettings.alienPartGenerator.tailMesh;
-                    num = 0;
-                } else if (pawn.Rotation == Rot4.East)
-                {
-                    MoffsetX = -MoffsetX;
-                    num = -num + 0; //TailAngle
-                    mesh = portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.tailPortraitMeshFlipped : alienProps.alienRace.generalSettings.alienPartGenerator.tailMeshFlipped;
+                    AlienPartGenerator.BodyAddon ba = addons[i];
+
+                    Mesh mesh = portrait ? ba.addonPortraitMesh : ba.addonMesh;
+
+                    Vector2 bodyOffset = ba.offsets?.bodyTypes?.FirstOrDefault(to => to.bodyType == pawn.story.bodyType)?.offset ?? Vector2.zero;
+                    Vector2 crownOffset = ba.offsets?.crownTypes?.FirstOrDefault(to => to.crownType == alienComp.crownType)?.offset ?? Vector2.zero;
+
+
+                    float MoffsetX = 0.42f + bodyOffset.x + crownOffset.x;
+                    float MoffsetZ = -0.22f;
+                    float MoffsetY = -0.3f + bodyOffset.y + crownOffset.y;
+                    float num = -40;
+
+                    if (pawn.Rotation == Rot4.North)
+                    {
+                        MoffsetX = 0f;
+                        MoffsetY = 0.3f;
+                        MoffsetZ = -0.55f;
+                        num = 0;
+                    } else if (pawn.Rotation == Rot4.East)
+                    {
+                        MoffsetX = -MoffsetX;
+                        num = -num + 0; //TailAngle
+                        mesh = portrait ? 
+                            ba.addonPortraitMeshFlipped : 
+                            ba.addonMeshFlipped;
+                    }
+
+
+                    Vector3 scaleVector = new Vector3(MoffsetX, MoffsetY, MoffsetZ);
+                    scaleVector.x *= 1f + (1f - (portrait ? 
+                                                    alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : 
+                                                    alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize)
+                                                .x);
+                    scaleVector.y *= 1f + (1f - (portrait ? 
+                                                    alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : 
+                                                    alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize)
+                                                .y);
+
+                    Graphics.DrawMesh(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), alienComp.addonGraphics[i].MatAt(pawn.Rotation), 0);
                 }
-
-
-                Vector3 scaleVector = new Vector3(MoffsetX, MoffsetY, MoffsetZ);
-                scaleVector.x *= 1f + (1f - (portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize).x);
-                scaleVector.y *= 1f + (1f - (portrait ? alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize).y);
-
-                Graphics.DrawMesh(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), pawn.GetComp<AlienPartGenerator.AlienComp>().Tail.MatAt(pawn.Rotation), 0);
             }
         }
     }
