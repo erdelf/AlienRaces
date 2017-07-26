@@ -8,7 +8,6 @@ using UnityEngine;
 using Verse;
 using Verse.AI;
 using System.Reflection.Emit;
-using System.Threading;
 
 namespace AlienRace
 {
@@ -92,7 +91,7 @@ namespace AlienRace
             #endregion
 
             harmony.Patch(AccessTools.Method(typeof(PawnHairChooser), nameof(PawnHairChooser.RandomHairDefFor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RandomHairDefForPrefix)), null);
-            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(typeof(HarmonyPatches), nameof(BirthdayBiologicalPrefix)), null);
+            //harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(typeof(HarmonyPatches), nameof(BirthdayBiologicalPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), nameof(PawnGenerator.GeneratePawn), new Type[] { typeof(PawnGenerationRequest) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnPrefix)), null);
 
             harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), nameof(PawnGraphicSet.ResolveAllGraphics)), new HarmonyMethod(typeof(HarmonyPatches), nameof(ResolveAllGraphicsPrefix)), null);
