@@ -2062,14 +2062,19 @@ re
 
                     Mesh mesh = portrait ? ba.addonPortraitMesh : ba.addonMesh;
 
-                    Vector2 bodyOffset = ba.offsets?.bodyTypes?.FirstOrDefault(to => to.bodyType == pawn.story.bodyType)?.offset ?? Vector2.zero;
-                    Vector2 crownOffset = ba.offsets?.crownTypes?.FirstOrDefault(to => to.crownType == alienComp.crownType)?.offset ?? Vector2.zero;
+                    AlienPartGenerator.RotationOffset offset = pawn.Rotation == Rot4.South ? ba.offsets.front : pawn.Rotation == Rot4.North ? ba.offsets.back : ba.offsets.side;
 
+                    Vector2 bodyOffset = offset?.bodyTypes?.FirstOrDefault(to => to.bodyType == pawn.story.bodyType)?.offset ?? Vector2.zero;
+                    Vector2 crownOffset = offset?.crownTypes?.FirstOrDefault(to => to.crownType == alienComp.crownType)?.offset ?? Vector2.zero;
+
+                    //front 0.42f, -0.3f, -0.22f
+                    //back     0f,  0.3f, -0.55f
+                    //side     
 
                     float MoffsetX = 0.42f + bodyOffset.x + crownOffset.x;
                     float MoffsetZ = -0.22f;
                     float MoffsetY = -0.3f + bodyOffset.y + crownOffset.y;
-                    float num = -40;
+                    float num = ba.angle;
 
                     if (pawn.Rotation == Rot4.North)
                     {
@@ -2080,7 +2085,7 @@ re
                     } else if (pawn.Rotation == Rot4.East)
                     {
                         MoffsetX = -MoffsetX;
-                        num = -num + 0; //TailAngle
+                        num = -num; //Angle
                         mesh = portrait ? 
                             ba.addonPortraitMeshFlipped : 
                             ba.addonMeshFlipped;

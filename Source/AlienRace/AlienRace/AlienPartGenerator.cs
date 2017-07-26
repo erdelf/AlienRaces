@@ -39,7 +39,6 @@ namespace AlienRace
         public GraphicMeshSet hairPortraitSetNarrow;
 
         public List<BodyAddon> bodyAddons = new List<BodyAddon>();
-        
 
         static MethodInfo meshInfo = AccessTools.Method(AccessTools.TypeByName("MeshMakerPlanes"), "NewPlaneMesh", new Type[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
 
@@ -112,8 +111,9 @@ namespace AlienRace
                                              {
                                                  bodyAddons.Where(ba => ba.variants).ToList().ForEach(ba =>
                                                  {
-                                                     while (ContentFinder<Texture2D>.Get(ba.path + ba.variantCount++, false) != null)
+                                                     while (ContentFinder<Texture2D>.Get(ba.path + ba.variantCount++, true) != null)
                                                          ;
+                                                     Log.Message("Variants found for " + ba.path + ": " + ba.variantCount.ToString());
                                                  });
                                              }
                                          }, "meshSetAlien", false, null);
@@ -144,6 +144,8 @@ namespace AlienRace
             public BodyAddonOffsets offsets;
             public bool variants = false;
             public bool linkVariantIndexWithPrevious = false;
+            public float angle = 0f;
+
             public int variantCount = -1;
 
             public Mesh addonMesh;
@@ -157,6 +159,13 @@ namespace AlienRace
         }
 
         public class BodyAddonOffsets
+        {
+            public RotationOffset front;
+            public RotationOffset back;
+            public RotationOffset side;
+        }
+
+        public class RotationOffset
         {
             public List<BodyTypeOffset> bodyTypes;
             public List<CrownTypeOffset> crownTypes;
