@@ -114,8 +114,8 @@ namespace AlienRace
                                              {
                                                  bodyAddons.Where(ba => ba.variants).ToList().ForEach(ba =>
                                                  {
-                                                     while (ContentFinder<Texture2D>.Get(ba.path + ba.variantCount++, true) != null)
-                                                         ;
+                                                     while (ContentFinder<Texture2D>.Get(ba.path + ba.variantCount + "_back", false) != null)
+                                                         ba.variantCount++;
                                                      Log.Message("Variants found for " + ba.path + ": " + ba.variantCount.ToString());
                                                  });
                                              }
@@ -150,7 +150,7 @@ namespace AlienRace
             public bool linkVariantIndexWithPrevious = false;
             public float angle = 0f;
 
-            public int variantCount = -1;
+            public int variantCount = 0;
 
             public Mesh addonMesh;
             public Mesh addonMeshFlipped;
