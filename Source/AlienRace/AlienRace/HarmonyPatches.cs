@@ -2086,14 +2086,14 @@ re
 
 
                     Vector3 scaleVector = new Vector3(MoffsetX, MoffsetY, MoffsetZ);
-                    scaleVector.x *= (portrait ? 
+                    scaleVector.x *= 1f + (1f - (portrait ? 
                                                     alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : 
                                                     alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize)
-                                                .x;
-                    scaleVector.z *= (portrait ? 
+                                                .x);
+                    scaleVector.z *= 1f + (1f - (portrait ? 
                                                     alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : 
                                                     alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize)
-                                                .y;
+                                                .y);
 
                     Graphics.DrawMesh(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), alienComp.addonGraphics[i].MatAt(pawn.Rotation), 0);
                 }
