@@ -17,7 +17,7 @@ namespace AlienRace
         static HarmonyPatches()
         {
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.erdelf.alien_race.main");
-            #region RelationSettings
+
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.GenerationChance)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceChildPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), nameof(PawnRelationWorker_ExLover.GenerationChance)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceExLoverPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), nameof(PawnRelationWorker_ExSpouse.GenerationChance)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceExSpousePostfix)));
@@ -28,14 +28,10 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), nameof(PawnRelationWorker_Spouse.GenerationChance)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerationChanceSpousePostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GeneratePawnRelationsPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(PawnRelationDef), nameof(PawnRelationDef.GetGenderSpecificLabel)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GetGenderSpecificLabelPrefix)), null);
-            #endregion
 
-            #region Backstory
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGetRandomUnusedSolidBioFor"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGetRandomUnusedSolidBioForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetBackstoryInSlotPrefix)), null);
-            #endregion
-
-            #region RaceRestriction
+            
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), nameof(WorkGiver_Researcher.ShouldSkip)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ShouldSkipResearchPostfix)));
             harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), nameof(MainTabWindow_Research.PreOpen)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ResearchPreOpenPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.CanConstruct)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanConstructPostfix)));
@@ -63,17 +59,14 @@ namespace AlienRace
                     }
                 });
             });
-            #endregion
-
-            #region ThoughtSettings
+            
             harmony.Patch(AccessTools.Method(typeof(ThoughtUtility), nameof(ThoughtUtility.CanGetThought)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanGetThoughtPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Corpse), nameof(Corpse.ButcherProducts)), new HarmonyMethod(typeof(HarmonyPatches), nameof(ButcherProductsPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(FoodUtility), nameof(FoodUtility.ThoughtsFromIngesting)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ThoughtsFromIngestingPostfix)));
             harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), nameof(MemoryThoughtHandler.TryGainMemory), new Type[] { typeof(Thought_Memory), typeof(Pawn) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGainMemoryThoughtPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(SituationalThoughtHandler), "TryCreateThought"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryCreateSituationalThoughtPrefix)), null);
-            #endregion
-
-            #region GeneralSettings
+            
+            
             harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "GenerateRandomOldAgeInjuries"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateRandomOldAgeInjuriesPrefix)), null);
             harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "RandomHediffsToGainOnBirthday", new Type[] { typeof(ThingDef), typeof(int) }), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RandomHediffsToGainOnBirthdayPostfix)));
             harmony.Patch(AccessTools.Property(typeof(JobDriver), nameof(JobDriver.Posture)).GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
@@ -83,12 +76,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(JobGiver_SatisfyChemicalNeed), "DrugValidator"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DrugValidatorPostfix)));
             harmony.Patch(AccessTools.Method(typeof(CompDrug), nameof(CompDrug.PostIngested)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PostIngestedPostfix)));
             harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanBingeNowPostfix)));
-
-            #region PartGenerator
+            
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateBodyType"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateBodyTypePostfix)));
             harmony.Patch(AccessTools.Property(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.SkinColor)).GetGetMethod(), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SkinColorPostfix)));
-            #endregion
-            #endregion
 
             harmony.Patch(AccessTools.Method(typeof(PawnHairChooser), nameof(PawnHairChooser.RandomHairDefFor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RandomHairDefForPrefix)), null);
             //harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(typeof(HarmonyPatches), nameof(BirthdayBiologicalPrefix)), null);
