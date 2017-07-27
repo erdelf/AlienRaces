@@ -1677,6 +1677,8 @@ namespace AlienRace
                 else if (alienProps.alienRace.generalSettings.alienPartGenerator.useSkincolorForHair && alienProps.alienRace.generalSettings.alienPartGenerator.alienskincolorgen != null)
                     pawn.story.hairColor = pawn.story.SkinColor;
 
+                pawn.GetComp<AlienPartGenerator.AlienComp>().hairColorSecond = alienProps.alienRace.generalSettings.alienPartGenerator.alienhairsecondcolorgen?.NewRandomizedColor() ?? pawn.story.hairColor;
+
                 if (alienProps.alienRace.hairSettings.GetsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                 {
                     float grey = Rand.Range(0.65f, 0.85f);
@@ -1818,15 +1820,14 @@ re
 
                 GraphicPaths graphicPaths = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage);
 
-                __instance.nakedGraphic = !graphicPaths.body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(alien.story.bodyType, alienComp.skinColor == alienComp.skinColorSecond ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, __instance.pawn.story.SkinColor, alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien, false), graphicPaths.body) : null;
+                __instance.nakedGraphic = !graphicPaths.body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(alien.story.bodyType, ContentFinder<Texture2D>.Get(AlienPartGenerator.GetNakedPath(alien.story.bodyType, graphicPaths.body) + "_backm") == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, __instance.pawn.story.SkinColor, alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien, false), graphicPaths.body) : null;
                 __instance.rottingGraphic = !graphicPaths.body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(alien.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, PawnGraphicSet.RottingColor, graphicPaths.body) : null;
                 __instance.dessicatedGraphic = !graphicPaths.skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(graphicPaths.skeleton, ShaderDatabase.Cutout) : null;
-                __instance.headGraphic = !graphicPaths.head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath, alienComp.skinColor == alienComp.skinColorSecond ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, Vector2.one, alien.story.SkinColor, alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien, false)) : null;
-                __instance.desiccatedHeadGraphic = !graphicPaths.head.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one, PawnGraphicSet.RottingColor) : null;
+                __instance.headGraphic = !alien.story.HeadGraphicPath.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath, ContentFinder<Texture2D>.Get(alien.story.HeadGraphicPath + "m") == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, Vector2.one, alien.story.SkinColor, alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien, false)) : null;
+                __instance.desiccatedHeadGraphic = !alien.story.HeadGraphicPath.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one, PawnGraphicSet.RottingColor) : null;
                 __instance.skullGraphic = !graphicPaths.skull.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(graphicPaths.skull, ShaderDatabase.Cutout, Vector2.one, Color.white) : null;
-                __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ShaderDatabase.Cutout, Vector2.one, alien.story.hairColor);
+                __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "m") == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, Vector2.one, alien.story.hairColor, alien.story.hairColor);
                 __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump, alienComp.skinColor == alienComp.skinColorSecond ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, Vector2.one, alien.story.SkinColor, alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien, false)) : null;
-                __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump, alienComp.skinColor == alienComp.skinColorSecond ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, Vector2.one, PawnGraphicSet.RottingColor) : null;
 
                 AlienPartGenerator apg = alienProps.alienRace.generalSettings.alienPartGenerator;
                 alienComp.addonGraphics = new List<Graphic>();

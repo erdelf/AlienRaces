@@ -21,6 +21,7 @@ namespace AlienRace
         public ColorGenerator alienskincolorgen;
         public ColorGenerator alienskinsecondcolorgen;
         public ColorGenerator alienhaircolorgen;
+        public ColorGenerator alienhairsecondcolorgen;
         public bool useSkincolorForHair = false;
 
         public Vector2 CustomDrawSize = Vector2.one;
@@ -44,7 +45,9 @@ namespace AlienRace
 
         public string RandomAlienHead(string userpath, Pawn pawn) => userpath + (userpath == GraphicPaths.vanillaHeadPath ? pawn.gender.ToString() + "/" : "") + (this.UseGenderedHeads ? pawn.gender.ToString() + "_" : "") + (pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[Rand.Range(0, this.aliencrowntypes.Count)]);
 
-        public static Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath) => GraphicDatabase.Get<Graphic_Multi>(userpath + "Naked_" + bodyType.ToString(), shader, Vector2.one, skinColor, skinColorSecond);
+        public static Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath) => GraphicDatabase.Get<Graphic_Multi>(GetNakedPath(bodyType, userpath), shader, Vector2.one, skinColor, skinColorSecond);
+
+        public static string GetNakedPath(BodyType bodyType, string userpath) => userpath + "Naked_" + bodyType.ToString();
 
         public Color SkinColor(Pawn alien, bool first = true)
         {
@@ -123,6 +126,7 @@ namespace AlienRace
             public bool fixGenderPostSpawn;
             public Color skinColor;
             public Color skinColorSecond;
+            public Color hairColorSecond;
             public string crownType;
 
             public List<Graphic> addonGraphics;
