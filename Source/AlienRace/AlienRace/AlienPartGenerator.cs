@@ -83,8 +83,8 @@ namespace AlienRace
                                                  this.hairSetNarrow = meshSet[3];
                                                  bodyAddons.ForEach(ba =>
                                                  {
-                                                     ba.addonMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize, false, false, false });
-                                                     ba.addonMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize, true, false, false });
+                                                     ba.addonMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize * 1.5f, false, false, false });
+                                                     ba.addonMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize * 1.5f, true, false, false });
                                                  });
                                              }
                                              {
@@ -107,8 +107,8 @@ namespace AlienRace
                                                  this.hairPortraitSetNarrow = meshSet[3];
                                                  bodyAddons.ForEach(ba =>
                                                  {
-                                                     ba.addonPortraitMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize, false, false, false });
-                                                     ba.addonPortraitMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize, true, false, false });
+                                                     ba.addonPortraitMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize * 1.5f, false, false, false });
+                                                     ba.addonPortraitMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize * 1.5f, true, false, false });
                                                  });
                                              }
                                              {
