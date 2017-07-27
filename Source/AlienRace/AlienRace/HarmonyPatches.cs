@@ -2063,13 +2063,13 @@ re
 
                     float MoffsetX = 0.42f;
                     float MoffsetZ = -0.22f;
-                    float MoffsetY = -0.3f;
+                    float MoffsetY = ba.inFrontOfBody ? 0.3f : -0.3f;
                     float num = ba.angle;
 
                     if (pawn.Rotation == Rot4.North)
                     {
                         MoffsetX = 0f;
-                        MoffsetY = 0.3f;
+                        MoffsetY = !ba.inFrontOfBody ? 0.3f : -0.3f;
                         MoffsetZ = -0.55f;
                         num = 0;
                     } else if (pawn.Rotation == Rot4.East)

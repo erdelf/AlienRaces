@@ -149,6 +149,7 @@ namespace AlienRace
             public bool variants = false;
             public bool linkVariantIndexWithPrevious = false;
             public float angle = 0f;
+            public bool inFrontOfBody = false;
 
             public int variantCount = 0;
 
