@@ -12,7 +12,7 @@ using System.Reflection.Emit;
 namespace AlienRace
 {
     [StaticConstructorOnStartup]
-    class HarmonyPatches
+    static class HarmonyPatches
     {
         static HarmonyPatches()
         {
