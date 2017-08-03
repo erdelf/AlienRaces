@@ -1823,22 +1823,7 @@ re
                 alienComp.addonGraphics = new List<Graphic>();
                 int sharedIndex = 0;
                 apg.bodyAddons.ForEach(ba =>
-                    alienComp.addonGraphics.Add(
-                        !ba.path.NullOrEmpty() ?
-                            GraphicDatabase.Get<Graphic_Multi>(ba.path + 
-                                (ba.variants ? 
-                                    (ba.linkVariantIndexWithPrevious ? 
-                                        sharedIndex : 
-                                        sharedIndex = Rand.Range(0, ba.variantCount)).ToString() : ""),
-                                ShaderDatabase.Transparent,
-                                    new Vector3(1, 0, 1),
-                                        ba.UseSkinColor ?
-                                            alien.story.SkinColor :
-                                            alien.story.hairColor,
-                                                ba.UseSkinColor ?
-                                                    alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien, false) :
-                                                    alien.story.hairColor) :
-                            null));
+                    alienComp.addonGraphics.Add(ba.GetPath(alien, ref sharedIndex)));
 
                 __instance.ResolveApparelGraphics();
 

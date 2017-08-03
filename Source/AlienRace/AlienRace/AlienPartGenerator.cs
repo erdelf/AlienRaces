@@ -112,7 +112,7 @@ namespace AlienRace
                                                  });
                                              }
                                              {
-                                                 bodyAddons.Where(ba => ba.variants).ToList().ForEach(ba =>
+                                                 bodyAddons.Do(ba =>
                                                  {
                                                      while (ContentFinder<Texture2D>.Get(ba.path + ba.variantCount + "_back", false) != null)
                                                          ba.variantCount++;
@@ -147,7 +147,6 @@ namespace AlienRace
             public BodyPartDef bodyPart;
             public bool UseSkinColor = true;
             public BodyAddonOffsets offsets;
-            public bool variants = false;
             public bool linkVariantIndexWithPrevious = false;
             public float angle = 0f;
             public bool inFrontOfBody = false;
@@ -162,6 +161,22 @@ namespace AlienRace
 
             public bool CanDrawAddon(Pawn pawn) => RestUtility.CurrentBed(pawn) == null && !pawn.Downed && pawn.GetPosture() == PawnPosture.Standing && !pawn.Dead && (this.bodyPart == null ||
                     pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == this.bodyPart));
+
+            public Graphic GetPath(Pawn pawn, ref int sharedIndex) => 
+                !this.path.NullOrEmpty() ?
+                            GraphicDatabase.Get<Graphic_Multi>(this.path +
+                                    (this.linkVariantIndexWithPrevious ?
+                                        sharedIndex % this.variantCount :
+                                        sharedIndex = Rand.Range(0, this.variantCount)).ToString(),
+                                ShaderDatabase.Transparent,
+                                    new Vector3(1, 0, 1),
+                                        this.UseSkinColor ?
+                                            pawn.story.SkinColor :
+                                            pawn.story.hairColor,
+                                                this.UseSkinColor ?
+                                                    (pawn.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator.SkinColor(pawn, false) :
+                                                    pawn.story.hairColor) :
+                            null;
         }
 
         public class BodyAddonOffsets
