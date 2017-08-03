@@ -157,10 +157,10 @@ namespace AlienRace
             foreach (ThingStuffPair pair in apparelInfo.GetValue<List<ThingStuffPair>>().ListFullCopy())
             {
                 ThingDef equipment = pair.thing;
-                if ((alienProps?.alienRace.raceRestriction.apparelList?.Contains(equipment.defName) ?? false) ||
+                if (!((alienProps?.alienRace.raceRestriction.apparelList?.Contains(equipment.defName) ?? false) ||
                         (alienProps?.alienRace.raceRestriction.whiteApparelList?.Contains(equipment.defName) ?? false) ||
                         (((!alienProps?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel) ?? false) && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
-                        pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(equipment.defName) ?? false))))
+                        pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(equipment.defName) ?? false)))))
                     apparelList.Add(pair);
             }
             apparelInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => apparelList.Contains(tsp));
@@ -182,10 +182,10 @@ namespace AlienRace
             foreach (ThingStuffPair pair in weaponInfo.GetValue<List<ThingStuffPair>>().ListFullCopy())
             {
                 ThingDef equipment = pair.thing;
-                if ((alienProps?.alienRace.raceRestriction.weaponList?.Contains(equipment.defName) ?? false) ||
+                if (!((alienProps?.alienRace.raceRestriction.weaponList?.Contains(equipment.defName) ?? false) ||
                         (alienProps?.alienRace.raceRestriction.whiteWeaponList?.Contains(equipment.defName) ?? false) ||
                         (((!alienProps?.alienRace.raceRestriction.onlyUseRaceRestrictedWeapons) ?? false) && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
-                        pawn.def != d && (d.alienRace.raceRestriction.weaponList?.Contains(equipment.defName) ?? false))))
+                        pawn.def != d && (d.alienRace.raceRestriction.weaponList?.Contains(equipment.defName) ?? false)))))
                     weaponList.Add(pair);
             }
             weaponInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => weaponList.Contains(tsp));
