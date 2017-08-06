@@ -1588,7 +1588,7 @@ namespace AlienRace
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
             if (__result && alienProps != null)
             {
-                if (alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll)
+                if (alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && (alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(def.defName) ?? false))
                 {
                     __result = false;
                 } else if (!alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.NullOrEmpty() && alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.Contains(def.defName))

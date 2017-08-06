@@ -115,6 +115,7 @@ namespace AlienRace
     {
         public List<string> cannotReceiveThoughts;
         public bool cannotReceiveThoughtsAtAll = false;
+        public List<string> canStillReceiveThoughts;
 
         public ButcherThought butcherThoughtGeneral = new ButcherThought();
         public List<ButcherThought> butcherThoughtSpecific = new List<ButcherThought>();
