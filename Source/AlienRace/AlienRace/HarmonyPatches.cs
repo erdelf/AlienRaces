@@ -2034,53 +2034,55 @@ re
                 for (int i = 0; i < addons.Count; i++)
                 {
                     AlienPartGenerator.BodyAddon ba = addons[i];
-
-                    Mesh mesh = portrait ? ba.addonPortraitMesh : ba.addonMesh;
-
-                    AlienPartGenerator.RotationOffset offset = pawn.Rotation == Rot4.South ? ba.offsets.front : pawn.Rotation == Rot4.North ? ba.offsets.back : ba.offsets.side;
-
-                    Vector2 bodyOffset = offset?.bodyTypes?.FirstOrDefault(to => to.bodyType == pawn.story.bodyType)?.offset ?? Vector2.zero;
-                    Vector2 crownOffset = offset?.crownTypes?.FirstOrDefault(to => to.crownType == alienComp.crownType)?.offset ?? Vector2.zero;
-
-                    //front 0.42f, -0.3f, -0.22f
-                    //back     0f,  0.3f, -0.55f
-                    //side -0.42f, -0.3f, -0.22f   
-
-                    float MoffsetX = 0.42f;
-                    float MoffsetZ = -0.22f;
-                    float MoffsetY = ba.inFrontOfBody ? 0.3f : -0.3f;
-                    float num = ba.angle;
-
-                    if (pawn.Rotation == Rot4.North)
+                    if (ba.CanDrawAddon(pawn))
                     {
-                        MoffsetX = 0f;
-                        MoffsetY = !ba.inFrontOfBody ? 0.3f : -0.3f;
-                        MoffsetZ = -0.55f;
-                        num = 0;
-                    } else if (pawn.Rotation == Rot4.East)
-                    {
-                        MoffsetX = -MoffsetX;
-                        num = -num; //Angle
-                        mesh = portrait ? 
-                            ba.addonPortraitMeshFlipped : 
-                            ba.addonMeshFlipped;
+                        Mesh mesh = portrait ? ba.addonPortraitMesh : ba.addonMesh;
+
+                        AlienPartGenerator.RotationOffset offset = pawn.Rotation == Rot4.South ? ba.offsets.front : pawn.Rotation == Rot4.North ? ba.offsets.back : ba.offsets.side;
+
+                        Vector2 bodyOffset = offset?.bodyTypes?.FirstOrDefault(to => to.bodyType == pawn.story.bodyType)?.offset ?? Vector2.zero;
+                        Vector2 crownOffset = offset?.crownTypes?.FirstOrDefault(to => to.crownType == alienComp.crownType)?.offset ?? Vector2.zero;
+
+                        //front 0.42f, -0.3f, -0.22f
+                        //back     0f,  0.3f, -0.55f
+                        //side -0.42f, -0.3f, -0.22f   
+
+                        float MoffsetX = 0.42f;
+                        float MoffsetZ = -0.22f;
+                        float MoffsetY = ba.inFrontOfBody ? 0.3f : -0.3f;
+                        float num = ba.angle;
+
+                        if (pawn.Rotation == Rot4.North)
+                        {
+                            MoffsetX = 0f;
+                            MoffsetY = !ba.inFrontOfBody ? 0.3f : -0.3f;
+                            MoffsetZ = -0.55f;
+                            num = 0;
+                        } else if (pawn.Rotation == Rot4.East)
+                        {
+                            MoffsetX = -MoffsetX;
+                            num = -num; //Angle
+                            mesh = portrait ?
+                                ba.addonPortraitMeshFlipped :
+                                ba.addonMeshFlipped;
+                        }
+
+                        MoffsetX += bodyOffset.x + crownOffset.x;
+                        MoffsetZ += bodyOffset.y + crownOffset.y;
+
+
+                        Vector3 scaleVector = new Vector3(MoffsetX, MoffsetY, MoffsetZ);
+                        scaleVector.x *= 1f + (1f - (portrait ?
+                                                        alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize :
+                                                        alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize)
+                                                    .x);
+                        scaleVector.z *= 1f + (1f - (portrait ?
+                                                        alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize :
+                                                        alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize)
+                                                    .y);
+
+                        Graphics.DrawMesh(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), alienComp.addonGraphics[i].MatAt(pawn.Rotation), 0);
                     }
-
-                    MoffsetX += bodyOffset.x + crownOffset.x;
-                    MoffsetZ += bodyOffset.y + crownOffset.y;
-
-
-                    Vector3 scaleVector = new Vector3(MoffsetX, MoffsetY, MoffsetZ);
-                    scaleVector.x *= 1f + (1f - (portrait ? 
-                                                    alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : 
-                                                    alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize)
-                                                .x);
-                    scaleVector.z *= 1f + (1f - (portrait ? 
-                                                    alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize : 
-                                                    alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize)
-                                                .y);
-
-                    Graphics.DrawMesh(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), alienComp.addonGraphics[i].MatAt(pawn.Rotation), 0);
                 }
             }
         }
