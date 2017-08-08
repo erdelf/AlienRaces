@@ -152,14 +152,15 @@ namespace AlienRace
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
             Traverse apparelInfo = Traverse.Create(typeof(PawnApparelGenerator)).Field("allApparelPairs");
-            apparelList = new List<ThingStuffPair>();
 
+            apparelList = new List<ThingStuffPair>();
+            
             foreach (ThingStuffPair pair in apparelInfo.GetValue<List<ThingStuffPair>>().ListFullCopy())
             {
                 ThingDef equipment = pair.thing;
                 if (!((alienProps?.alienRace.raceRestriction.apparelList?.Contains(equipment.defName) ?? false) ||
                         (alienProps?.alienRace.raceRestriction.whiteApparelList?.Contains(equipment.defName) ?? false) ||
-                        (((!alienProps?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel) ?? false) && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
+                        (((!alienProps?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel) ?? true) && !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
                         pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(equipment.defName) ?? false)))))
                     apparelList.Add(pair);
             }
@@ -184,7 +185,7 @@ namespace AlienRace
                 ThingDef equipment = pair.thing;
                 if (!((alienProps?.alienRace.raceRestriction.weaponList?.Contains(equipment.defName) ?? false) ||
                         (alienProps?.alienRace.raceRestriction.whiteWeaponList?.Contains(equipment.defName) ?? false) ||
-                        (((!alienProps?.alienRace.raceRestriction.onlyUseRaceRestrictedWeapons) ?? false) && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
+                        (((!alienProps?.alienRace.raceRestriction.onlyUseRaceRestrictedWeapons) ?? true) && !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
                         pawn.def != d && (d.alienRace.raceRestriction.weaponList?.Contains(equipment.defName) ?? false)))))
                     weaponList.Add(pair);
             }
