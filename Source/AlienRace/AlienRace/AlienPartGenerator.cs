@@ -116,7 +116,7 @@ namespace AlienRace
                                                  {
                                                      if (ba.variantCount == 0)
                                                      {
-                                                         while (ContentFinder<Texture2D>.Get(ba.path + ba.variantCount + "_back", false) != null)
+                                                         while (ContentFinder<Texture2D>.Get(ba.path + (ba.variantCount == 0 ? "" : ba.variantCount.ToString()) + "_back", false) != null)
                                                              ba.variantCount++;
                                                          Log.Message("Variants found for " + ba.path + ": " + ba.variantCount.ToString());
                                                          if (ba.hediffGraphics != null)
