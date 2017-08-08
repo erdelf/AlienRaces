@@ -124,11 +124,12 @@ namespace AlienRace
                                                              {
                                                                  if (bahg.variantCount == 0)
                                                                  {
-                                                                     while (ContentFinder<Texture2D>.Get(bahg.path + bahg.variantCount + "_back", false) != null)
-                                                                         ba.variantCount++;
+                                                                     while (ContentFinder<Texture2D>.Get(bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_back", false) != null)
+                                                                         bahg.variantCount++;
                                                                      Log.Message("Variants found for " + bahg.path + ": " + bahg.variantCount.ToString());
                                                                  }
                                                              }
+
                                                      }
                                                  });
                                              }
