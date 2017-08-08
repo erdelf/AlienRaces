@@ -190,11 +190,12 @@ namespace AlienRace
                     path = this.path;
                     variantCount = this.variantCount;
                 }
+                int tv;
                 return !path.NullOrEmpty() ?
                             GraphicDatabase.Get<Graphic_Multi>(path +
-                                    (this.linkVariantIndexWithPrevious ?
+                                    ((tv = this.linkVariantIndexWithPrevious ?
                                         sharedIndex % variantCount :
-                                        sharedIndex = Rand.Range(0, variantCount)).ToString(),
+                                        sharedIndex = Rand.Range(0, variantCount)) == 0 ? "" : tv.ToString()),
                                 ShaderDatabase.Transparent,
                                     new Vector3(1, 0, 1),
                                         this.UseSkinColor ?
