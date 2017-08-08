@@ -119,15 +119,16 @@ namespace AlienRace
                                                          while (ContentFinder<Texture2D>.Get(ba.path + ba.variantCount + "_back", false) != null)
                                                              ba.variantCount++;
                                                          Log.Message("Variants found for " + ba.path + ": " + ba.variantCount.ToString());
-                                                         foreach(BodyAddonHediffGraphic bahg in ba.hediffGraphics)
-                                                         {
-                                                             if (bahg.variantCount == 0)
+                                                         if (ba.hediffGraphics != null)
+                                                             foreach (BodyAddonHediffGraphic bahg in ba.hediffGraphics)
                                                              {
-                                                                 while (ContentFinder<Texture2D>.Get(bahg.path + bahg.variantCount + "_back", false) != null)
-                                                                     ba.variantCount++;
-                                                                 Log.Message("Variants found for " + bahg.path + ": " + bahg.variantCount.ToString());
+                                                                 if (bahg.variantCount == 0)
+                                                                 {
+                                                                     while (ContentFinder<Texture2D>.Get(bahg.path + bahg.variantCount + "_back", false) != null)
+                                                                         ba.variantCount++;
+                                                                     Log.Message("Variants found for " + bahg.path + ": " + bahg.variantCount.ToString());
+                                                                 }
                                                              }
-                                                         }
                                                      }
                                                  });
                                              }
@@ -180,7 +181,7 @@ namespace AlienRace
             {
                 string path = "";
                 int variantCount = 0;
-                if(hediffGraphics.FirstOrDefault(bahgs => pawn.health.hediffSet.hediffs.Any(h => h.def.defName == bahgs.hediff)) is BodyAddonHediffGraphic bahg)
+                if(hediffGraphics?.FirstOrDefault(bahgs => pawn.health.hediffSet.hediffs.Any(h => h.def.defName == bahgs.hediff)) is BodyAddonHediffGraphic bahg)
                 {
                     path = bahg.path;
                     variantCount = bahg.variantCount;
