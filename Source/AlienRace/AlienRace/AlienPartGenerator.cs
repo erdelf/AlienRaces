@@ -114,9 +114,21 @@ namespace AlienRace
                                              {
                                                  bodyAddons.Do(ba =>
                                                  {
-                                                     while (ContentFinder<Texture2D>.Get(ba.path + ba.variantCount + "_back", false) != null)
-                                                         ba.variantCount++;
-                                                     Log.Message("Variants found for " + ba.path + ": " + ba.variantCount.ToString());
+                                                     if (ba.variantCount == 0)
+                                                     {
+                                                         while (ContentFinder<Texture2D>.Get(ba.path + ba.variantCount + "_back", false) != null)
+                                                             ba.variantCount++;
+                                                         Log.Message("Variants found for " + ba.path + ": " + ba.variantCount.ToString());
+                                                         foreach(BodyAddonHediffGraphic bahg in ba.hediffGraphics)
+                                                         {
+                                                             if (bahg.variantCount == 0)
+                                                             {
+                                                                 while (ContentFinder<Texture2D>.Get(bahg.path + bahg.variantCount + "_back", false) != null)
+                                                                     ba.variantCount++;
+                                                                 Log.Message("Variants found for " + bahg.path + ": " + bahg.variantCount.ToString());
+                                                             }
+                                                         }
+                                                     }
                                                  });
                                              }
                                          }, "meshSetAlien", false, null);
@@ -153,6 +165,8 @@ namespace AlienRace
 
             public int variantCount = 0;
 
+            public List<BodyAddonHediffGraphic> hediffGraphics;
+
             public Mesh addonMesh;
             public Mesh addonMeshFlipped;
 
@@ -162,12 +176,24 @@ namespace AlienRace
             public bool CanDrawAddon(Pawn pawn) => RestUtility.CurrentBed(pawn) == null && !pawn.Downed && pawn.GetPosture() == PawnPosture.Standing && !pawn.Dead && (this.bodyPart == null ||
                     pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == this.bodyPart));
 
-            public Graphic GetPath(Pawn pawn, ref int sharedIndex) => 
-                !this.path.NullOrEmpty() ?
-                            GraphicDatabase.Get<Graphic_Multi>(this.path +
+            public Graphic GetPath(Pawn pawn, ref int sharedIndex)
+            {
+                string path = "";
+                int variantCount = 0;
+                if(hediffGraphics.FirstOrDefault(bahgs => pawn.health.hediffSet.hediffs.Any(h => h.def.defName == bahgs.hediff)) is BodyAddonHediffGraphic bahg)
+                {
+                    path = bahg.path;
+                    variantCount = bahg.variantCount;
+                } else
+                {
+                    path = this.path;
+                    variantCount = this.variantCount;
+                }
+                return !path.NullOrEmpty() ?
+                            GraphicDatabase.Get<Graphic_Multi>(path +
                                     (this.linkVariantIndexWithPrevious ?
-                                        sharedIndex % this.variantCount :
-                                        sharedIndex = Rand.Range(0, this.variantCount)).ToString(),
+                                        sharedIndex % variantCount :
+                                        sharedIndex = Rand.Range(0, variantCount)).ToString(),
                                 ShaderDatabase.Transparent,
                                     new Vector3(1, 0, 1),
                                         this.UseSkinColor ?
@@ -177,6 +203,20 @@ namespace AlienRace
                                                     (pawn.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator.SkinColor(pawn, false) :
                                                     pawn.story.hairColor) :
                             null;
+            }
+        }
+
+        public class BodyAddonHediffGraphic
+        {
+            public string hediff;
+            public string path;
+            public int variantCount = 0;
+
+            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+            {
+                this.hediff = xmlRoot.Name;
+                this.path = xmlRoot.FirstChild.Value;
+            }
         }
 
         public class BodyAddonOffsets
