@@ -84,13 +84,13 @@ namespace AlienRace
 
             b.identifier = this.defName;
 
-
-            if (!b.ConfigErrors(false).Any())
+            IEnumerable<string> errors;
+            if (!(errors = b.ConfigErrors(false)).Any())
             {
                 BackstoryDatabase.AddBackstory(b);
             } else
             {
-                Log.Error(this.defName + " has errors");
+                Log.Error(this.defName + " has errors: " + string.Join("\n", errors.ToArray()));
             }
         }
 
