@@ -31,7 +31,7 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGetRandomUnusedSolidBioFor"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGetRandomUnusedSolidBioForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetBackstoryInSlotPrefix)), null);
-            
+
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), nameof(WorkGiver_Researcher.ShouldSkip)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ShouldSkipResearchPostfix)));
             harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), nameof(MainTabWindow_Research.PreOpen)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ResearchPreOpenPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.CanConstruct)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanConstructPostfix)));
@@ -59,14 +59,14 @@ namespace AlienRace
                     }
                 });
             });
-            
+
             harmony.Patch(AccessTools.Method(typeof(ThoughtUtility), nameof(ThoughtUtility.CanGetThought)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanGetThoughtPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Corpse), nameof(Corpse.ButcherProducts)), new HarmonyMethod(typeof(HarmonyPatches), nameof(ButcherProductsPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(FoodUtility), nameof(FoodUtility.ThoughtsFromIngesting)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ThoughtsFromIngestingPostfix)));
             harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), nameof(MemoryThoughtHandler.TryGainMemory), new Type[] { typeof(Thought_Memory), typeof(Pawn) }), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGainMemoryThoughtPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(SituationalThoughtHandler), "TryCreateThought"), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryCreateSituationalThoughtPrefix)), null);
-            
-            
+
+
             harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "GenerateRandomOldAgeInjuries"), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateRandomOldAgeInjuriesPrefix)), null);
             harmony.Patch(AccessTools.Method(AccessTools.TypeByName("AgeInjuryUtility"), "RandomHediffsToGainOnBirthday", new Type[] { typeof(ThingDef), typeof(int) }), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RandomHediffsToGainOnBirthdayPostfix)));
             harmony.Patch(AccessTools.Property(typeof(JobDriver), nameof(JobDriver.Posture)).GetGetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PosturePostfix)));
@@ -76,7 +76,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(JobGiver_SatisfyChemicalNeed), "DrugValidator"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DrugValidatorPostfix)));
             harmony.Patch(AccessTools.Method(typeof(CompDrug), nameof(CompDrug.PostIngested)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PostIngestedPostfix)));
             harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanBingeNowPostfix)));
-            
+
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateBodyType"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateBodyTypePostfix)));
             harmony.Patch(AccessTools.Property(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.SkinColor)).GetGetMethod(), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SkinColorPostfix)));
 
@@ -2028,16 +2028,21 @@ re
 
         public static void DrawAddons(bool portrait, Pawn pawn, Vector3 vector)
         {
+
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
+
                 List<AlienPartGenerator.BodyAddon> addons = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
                 AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
                 for (int i = 0; i < addons.Count; i++)
                 {
                     AlienPartGenerator.BodyAddon ba = addons[i];
+                    
+
                     if (ba.CanDrawAddon(pawn))
                     {
-                        Mesh mesh = portrait ? ba.addonPortraitMesh : ba.addonMesh;
+
+                        Mesh mesh = portrait ? ba.addonPortraitMeshFlipped : ba.addonMesh;
 
                         AlienPartGenerator.RotationOffset offset = pawn.Rotation == Rot4.South ? ba.offsets.front : pawn.Rotation == Rot4.North ? ba.offsets.back : ba.offsets.side;
 
@@ -2050,7 +2055,7 @@ re
 
                         float MoffsetX = 0.42f;
                         float MoffsetZ = -0.22f;
-                        float MoffsetY = ba.inFrontOfBody ? 0.3f : -0.3f;
+                        float MoffsetY =  ba.inFrontOfBody ? 0.3f : -0.3f;
                         float num = ba.angle;
 
                         if (pawn.Rotation == Rot4.North)
@@ -2063,9 +2068,7 @@ re
                         {
                             MoffsetX = -MoffsetX;
                             num = -num; //Angle
-                            mesh = portrait ?
-                                ba.addonPortraitMeshFlipped :
-                                ba.addonMeshFlipped;
+                            mesh = ba.addonMeshFlipped;
                         }
 
                         MoffsetX += bodyOffset.x + crownOffset.x;
@@ -2082,7 +2085,7 @@ re
                                                         alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize)
                                                     .y);
 
-                        Graphics.DrawMesh(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), alienComp.addonGraphics[i].MatAt(pawn.Rotation), 0);
+                        GenDraw.DrawMeshNowOrLater(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), alienComp.addonGraphics[i].MatAt(pawn.Rotation), portrait);
                     }
                 }
             }
