@@ -2045,7 +2045,7 @@ re
                         Mesh mesh = portrait ? ba.addonPortraitMeshFlipped : ba.addonMesh;
 
                         AlienPartGenerator.RotationOffset offset = pawn.Rotation == Rot4.South ? ba.offsets.front : pawn.Rotation == Rot4.North ? ba.offsets.back : ba.offsets.side;
-
+                        Log.Message("front: " + (offset == ba.offsets.front).ToString() + "\nback: " + (offset == ba.offsets.back).ToString() + "\nside :" + (offset == ba.offsets.side).ToString());
                         Vector2 bodyOffset = offset?.bodyTypes?.FirstOrDefault(to => to.bodyType == pawn.story.bodyType)?.offset ?? Vector2.zero;
                         Vector2 crownOffset = offset?.crownTypes?.FirstOrDefault(to => to.crownType == alienComp.crownType)?.offset ?? Vector2.zero;
 
@@ -2064,16 +2064,17 @@ re
                             MoffsetY = !ba.inFrontOfBody ? 0.3f : -0.3f;
                             MoffsetZ = -0.55f;
                             num = 0;
-                        } else if (pawn.Rotation == Rot4.East)
-                        {
-                            MoffsetX = -MoffsetX;
-                            num = -num; //Angle
-                            mesh = ba.addonMeshFlipped;
                         }
 
                         MoffsetX += bodyOffset.x + crownOffset.x;
                         MoffsetZ += bodyOffset.y + crownOffset.y;
 
+                        if (pawn.Rotation == Rot4.East)
+                        {
+                            MoffsetX = -MoffsetX;
+                            num = -num; //Angle
+                            mesh = ba.addonMeshFlipped;
+                        }
 
                         Vector3 scaleVector = new Vector3(MoffsetX, MoffsetY, MoffsetZ);
                         scaleVector.x *= 1f + (1f - (portrait ?
