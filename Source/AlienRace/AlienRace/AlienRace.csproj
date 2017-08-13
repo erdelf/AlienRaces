@@ -18,8 +18,7 @@
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\..\Assemblies\</OutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>none</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>..\RuleSet2.ruleset</CodeAnalysisRuleSet>
@@ -51,7 +50,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="EdBPrepareCarefully">
-      <HintPath>D:\Games\Steam\steamapps\common\RimWorld\Mods\EdBPrepareCarefully\Assemblies\EdBPrepareCarefully.dll</HintPath>
+      <HintPath>D:\Games\Steam\steamapps\workshop\content\294100\735106432\Assemblies\EdBPrepareCarefully.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />

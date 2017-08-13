@@ -127,9 +127,20 @@ namespace AlienRace
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedApparelInternal"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedApparelInternal"), null);
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.PawnLayers), "Label"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyLayerLabel"));
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "ResetCachedHead"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyResetCachedHead"), null);
+                            /*
+#if DEBUG
+                            HarmonyMethod pre = new HarmonyMethod(typeof(HarmonyPatches), nameof(PCTESTPREFIX));
+                            HarmonyMethod post = new HarmonyMethod(typeof(HarmonyPatches), nameof(PCTESTPOSTFIX));
+                            typeof(EdB.PrepareCarefully.PrepareCarefully).Assembly.GetTypes().Where(t => !t.IsAbstract).SelectMany(t => t.GetMethods(AccessTools.all).Where(mi => mi.DeclaringType == t && !mi.Name.Contains("SetDisabledTargets") && AccessTools.Method(mi.DeclaringType, "Invoke") == null)).Do(mi =>
+                            {
+                                Log.Message(mi.DeclaringType + ": " + mi.Name);
+                                harmony.Patch(mi, pre, post);
+                            });
+#endif
+                            */
                         }
-                    }))();
-                } catch (TypeLoadException) { }
+                    })).Invoke();
+                } catch (TypeLoadException ex) { /*Log.Message(ex.ToString());*/ }
             }
             #endregion
 
@@ -138,8 +149,12 @@ namespace AlienRace
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
-        public static void GenerateInitialHediffsPostfix(Pawn pawn) => 
-            pawn.story?.AllBackstories?.Select(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)).OfType<BackstoryDef>().SelectMany(bd => bd.forcedHediffs).Concat(bioReference?.forcedHediffs ?? new List<string>(0)).Select(s => 
+        public static void PCTESTPREFIX() => Debug.Log("PRE: " + StackTraceUtility.ExtractStackTrace().ToString());
+
+        public static void PCTESTPOSTFIX() => Debug.Log("POST: " + StackTraceUtility.ExtractStackTrace().ToString());
+
+        public static void GenerateInitialHediffsPostfix(Pawn pawn) =>
+            pawn.story?.AllBackstories?.Select(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)).OfType<BackstoryDef>().SelectMany(bd => bd.forcedHediffs).Concat(bioReference?.forcedHediffs ?? new List<string>(0)).Select(s =>
                 DefDatabase<HediffDef>.GetNamedSilentFail(s)).Select(hd => HediffMaker.MakeHediff(hd, pawn)).ToList().ForEach(h => pawn.health.hediffSet.AddDirect(h));
 
         public static void GenerateStartingApparelForPostfix() =>
@@ -154,7 +169,7 @@ namespace AlienRace
             Traverse apparelInfo = Traverse.Create(typeof(PawnApparelGenerator)).Field("allApparelPairs");
 
             apparelList = new List<ThingStuffPair>();
-            
+
             foreach (ThingStuffPair pair in apparelInfo.GetValue<List<ThingStuffPair>>().ListFullCopy())
             {
                 ThingDef equipment = pair.thing;
@@ -1338,7 +1353,7 @@ namespace AlienRace
             {
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierFiance;
             }
-            
+
             __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierFiance ?? 1;
             __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierFiance ?? 1;
             __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierFiance ?? 1;
@@ -1385,7 +1400,7 @@ namespace AlienRace
             {
                 __result *= (other.def as ThingDef_AlienRace).alienRace.relationSettings.relationChanceModifierExLover;
             }
-            
+
             __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierExLover ?? 1;
             __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(generated.story.GetBackstory(BackstorySlot.Adulthood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierExLover ?? 1;
             __result *= DefDatabase<BackstoryDef>.GetNamedSilentFail(other.story.GetBackstory(BackstorySlot.Childhood)?.identifier ?? "nothingHere")?.relationSettings.relationChanceModifierExLover ?? 1;
@@ -1959,10 +1974,10 @@ re
 
             List<CodeInstruction> instructionList = instructions.ToList();
 
-            for(int i = 0; i < instructionList.Count; i++)
+            for (int i = 0; i < instructionList.Count; i++)
             {
                 CodeInstruction instruction = instructionList[i];
-                if(instruction.operand == humanlikeBodyInfo)
+                if (instruction.operand == humanlikeBodyInfo)
                 {
                     instructionList.RemoveRange(i, 2);
                     yield return new CodeInstruction(OpCodes.Ldarg_S, 7); // portrait
@@ -1980,7 +1995,7 @@ re
                     yield return new CodeInstruction(OpCodes.Ldarg_S, 5); //headfacing
                     yield return new CodeInstruction(OpCodes.Ldc_I4_0);
                     instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(HarmonyPatches), nameof(GetPawnMesh)));
-                }  else if(i+4 < instructionList.Count && instructionList[i+2].operand == hairInfo)
+                } else if (i + 4 < instructionList.Count && instructionList[i + 2].operand == hairInfo)
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_S, 7) { labels = instruction.labels }; // portrait
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
@@ -1990,7 +2005,7 @@ re
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), nameof(PawnRenderer.graphics)));
                     instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(HarmonyPatches), nameof(GetPawnHairMesh)));
                     instructionList.RemoveRange(i, 4);
-                } else if(i+5 < instructionList.Count && instructionList[i+5].operand == isAnimalInfo)
+                } else if (i + 5 < instructionList.Count && instructionList[i + 5].operand == isAnimalInfo)
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_S, 7); // portrait
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
@@ -2012,10 +2027,10 @@ re
                         alienProps.alienRace.generalSettings.alienPartGenerator.bodySet.MeshAt(facing) :
                         alienProps.alienRace.generalSettings.alienPartGenerator.headSet.MeshAt(facing) :
                 wantsBody ?
-                    MeshPool.humanlikeBodySet.MeshAt(facing) : 
+                    MeshPool.humanlikeBodySet.MeshAt(facing) :
                     MeshPool.humanlikeHeadSet.MeshAt(facing);
 
-        public static Mesh GetPawnHairMesh(bool portrait, Pawn pawn, Rot4 headFacing, PawnGraphicSet graphics) => 
+        public static Mesh GetPawnHairMesh(bool portrait, Pawn pawn, Rot4 headFacing, PawnGraphicSet graphics) =>
             pawn.def is ThingDef_AlienRace alienProps ?
                     (pawn.story.crownType == CrownType.Narrow ?
                         (portrait ?
@@ -2037,15 +2052,18 @@ re
                 for (int i = 0; i < addons.Count; i++)
                 {
                     AlienPartGenerator.BodyAddon ba = addons[i];
-                    
+
 
                     if (ba.CanDrawAddon(pawn))
                     {
 
                         Mesh mesh = portrait ? ba.addonPortraitMeshFlipped : ba.addonMesh;
 
-                        AlienPartGenerator.RotationOffset offset = pawn.Rotation == Rot4.South ? ba.offsets.front : pawn.Rotation == Rot4.North ? ba.offsets.back : ba.offsets.side;
-                        Log.Message("front: " + (offset == ba.offsets.front).ToString() + "\nback: " + (offset == ba.offsets.back).ToString() + "\nside :" + (offset == ba.offsets.side).ToString());
+                        Rot4 rotation = pawn.Rotation;
+                        if (portrait)
+                            rotation = Rot4.South;
+                        AlienPartGenerator.RotationOffset offset = rotation == Rot4.South ? ba.offsets.front : rotation == Rot4.North ? ba.offsets.back : ba.offsets.side;
+                        //Log.Message("front: " + (offset == ba.offsets.front).ToString() + "\nback: " + (offset == ba.offsets.back).ToString() + "\nside :" + (offset == ba.offsets.side).ToString());
                         Vector2 bodyOffset = offset?.bodyTypes?.FirstOrDefault(to => to.bodyType == pawn.story.bodyType)?.offset ?? Vector2.zero;
                         Vector2 crownOffset = offset?.crownTypes?.FirstOrDefault(to => to.crownType == alienComp.crownType)?.offset ?? Vector2.zero;
 
@@ -2055,10 +2073,10 @@ re
 
                         float MoffsetX = 0.42f;
                         float MoffsetZ = -0.22f;
-                        float MoffsetY =  ba.inFrontOfBody ? 0.3f : -0.3f;
+                        float MoffsetY = ba.inFrontOfBody ? 0.3f : -0.3f;
                         float num = ba.angle;
 
-                        if (pawn.Rotation == Rot4.North)
+                        if (rotation == Rot4.North)
                         {
                             MoffsetX = 0f;
                             MoffsetY = !ba.inFrontOfBody ? 0.3f : -0.3f;
@@ -2069,7 +2087,7 @@ re
                         MoffsetX += bodyOffset.x + crownOffset.x;
                         MoffsetZ += bodyOffset.y + crownOffset.y;
 
-                        if (pawn.Rotation == Rot4.East)
+                        if (rotation == Rot4.East)
                         {
                             MoffsetX = -MoffsetX;
                             num = -num; //Angle
@@ -2086,7 +2104,7 @@ re
                                                         alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize)
                                                     .y);
 
-                        GenDraw.DrawMeshNowOrLater(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), alienComp.addonGraphics[i].MatAt(pawn.Rotation), portrait);
+                        GenDraw.DrawMeshNowOrLater(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), alienComp.addonGraphics[i].MatAt(rotation), portrait);
                     }
                 }
             }
