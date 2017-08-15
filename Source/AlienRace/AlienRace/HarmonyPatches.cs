@@ -111,6 +111,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateInitialHediffs"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateInitialHediffsPostfix)));
 
             #region prepareCarefully
+            /*
             {
                 try
                 {
@@ -127,7 +128,6 @@ namespace AlienRace
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedApparelInternal"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedApparelInternal"), null);
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.PawnLayers), "Label"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyLayerLabel"));
                             harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "ResetCachedHead"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyResetCachedHead"), null);
-                            /*
 #if DEBUG
                             HarmonyMethod pre = new HarmonyMethod(typeof(HarmonyPatches), nameof(PCTESTPREFIX));
                             HarmonyMethod post = new HarmonyMethod(typeof(HarmonyPatches), nameof(PCTESTPOSTFIX));
@@ -137,11 +137,11 @@ namespace AlienRace
                                 harmony.Patch(mi, pre, post);
                             });
 #endif
-                            */
                         }
                     })).Invoke();
-                } catch (TypeLoadException ex) { /*Log.Message(ex.ToString());*/ }
+                } catch (TypeLoadException ex) { Log.Message(ex.ToString()); }
             }
+            */
             #endregion
 
             Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
