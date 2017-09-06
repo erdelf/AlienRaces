@@ -8,6 +8,7 @@ using UnityEngine;
 using Verse;
 using Verse.AI;
 using System.Reflection.Emit;
+using System.Diagnostics;
 
 namespace AlienRace
 {
@@ -119,18 +120,26 @@ namespace AlienRace
             pawn.story?.AllBackstories?.Select(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)).OfType<BackstoryDef>().SelectMany(bd => bd.forcedHediffs).Concat(bioReference?.forcedHediffs ?? new List<string>(0)).Select(s =>
                 DefDatabase<HediffDef>.GetNamedSilentFail(s)).Select(hd => HediffMaker.MakeHediff(hd, pawn)).ToList().ForEach(h => pawn.health.hediffSet.AddDirect(h));
 
-        public static void GenerateStartingApparelForPostfix() =>
+        public static void GenerateStartingApparelForPostfix()
+        {
             Traverse.Create(typeof(PawnApparelGenerator)).Field("allApparelPairs").GetValue<List<ThingStuffPair>>().AddRange(apparelList);
+            stopwatch.Stop();
+            Log.Message(stopwatch.ElapsedMilliseconds.ToString());
+        }
 
-        static List<ThingStuffPair> apparelList;
+        static HashSet<ThingStuffPair> apparelList;
+
+        static Stopwatch stopwatch;
 
         public static void GenerateStartingApparelForPrefix(Pawn pawn)
         {
+            stopwatch = new Stopwatch();
+            stopwatch.Start();
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
             Traverse apparelInfo = Traverse.Create(typeof(PawnApparelGenerator)).Field("allApparelPairs");
 
-            apparelList = new List<ThingStuffPair>();
+            apparelList = new HashSet<ThingStuffPair>();
 
             foreach (ThingStuffPair pair in apparelInfo.GetValue<List<ThingStuffPair>>().ListFullCopy())
             {
@@ -144,18 +153,17 @@ namespace AlienRace
             apparelInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => apparelList.Contains(tsp));
         }
 
-
         public static void TryGenerateWeaponForPostfix() =>
             Traverse.Create(typeof(PawnWeaponGenerator)).Field("allWeaponPairs").GetValue<List<ThingStuffPair>>().AddRange(weaponList);
 
-        static List<ThingStuffPair> weaponList;
+        static HashSet<ThingStuffPair> weaponList;
 
         public static void TryGenerateWeaponForPrefix(Pawn pawn)
         {
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
             Traverse weaponInfo = Traverse.Create(typeof(PawnWeaponGenerator)).Field("allWeaponPairs");
-            weaponList = new List<ThingStuffPair>();
+            weaponList = new HashSet<ThingStuffPair>();
 
             foreach (ThingStuffPair pair in weaponInfo.GetValue<List<ThingStuffPair>>().ListFullCopy())
             {
