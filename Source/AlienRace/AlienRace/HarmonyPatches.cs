@@ -8,6 +8,7 @@ using UnityEngine;
 using Verse;
 using Verse.AI;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 
 namespace AlienRace
 {
@@ -109,11 +110,23 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnWeaponGenerator), nameof(PawnWeaponGenerator.TryGenerateWeaponFor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGenerateWeaponForPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(TryGenerateWeaponForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnApparelGenerator), nameof(PawnApparelGenerator.GenerateStartingApparelFor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateStartingApparelForPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateStartingApparelForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateInitialHediffs"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateInitialHediffsPostfix)));
+            harmony.Patch(typeof(HediffSet).GetMethods(AccessTools.all).Where(mi => mi.HasAttribute<CompilerGeneratedAttribute>() && mi.ReturnType == typeof(bool) && mi.GetParameters().First().ParameterType == typeof(BodyPartRecord)).First(), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(HasHeadPostfix)));
+            harmony.Patch(AccessTools.Property(typeof(HediffSet), nameof(HediffSet.HasHead)).GetGetMethod(), new HarmonyMethod(typeof(HarmonyPatches), nameof(HasHeadPrefix)), null);
 
             //Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
+
+        public static void HasHeadPrefix(HediffSet __instance)
+        {
+            headPawnDef = (__instance.pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.headBodyPartDef;
+        }
+
+        static BodyPartDef headPawnDef;
+
+        public static void HasHeadPostfix(BodyPartRecord x, bool __result) => 
+            __result = x.def == headPawnDef;
 
         public static void GenerateInitialHediffsPostfix(Pawn pawn) =>
             pawn.story?.AllBackstories?.Select(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)).OfType<BackstoryDef>().SelectMany(bd => bd.forcedHediffs).Concat(bioReference?.forcedHediffs ?? new List<string>(0)).Select(s =>

@@ -27,6 +27,8 @@ namespace AlienRace
         public Vector2 CustomDrawSize = Vector2.one;
         public Vector2 CustomPortraitDrawSize = Vector2.one;
 
+        public BodyPartDef headBodyPartDef;
+
         static Dictionary<Vector2, GraphicMeshSet[]> meshPools = new Dictionary<Vector2, GraphicMeshSet[]>();
 
         public GraphicMeshSet bodySet;
