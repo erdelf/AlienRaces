@@ -110,48 +110,10 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnApparelGenerator), nameof(PawnApparelGenerator.GenerateStartingApparelFor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateStartingApparelForPrefix)), new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateStartingApparelForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateInitialHediffs"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateInitialHediffsPostfix)));
 
-            #region prepareCarefully
-            /*
-            {
-                try
-                {
-                    ((Action)(() =>
-                    {
-                        if (AccessTools.Method(typeof(EdB.PrepareCarefully.PrepareCarefully), nameof(EdB.PrepareCarefully.PrepareCarefully.Initialize)) != null)
-                        {
-                            harmony.Patch(AccessTools.Property(typeof(EdB.PrepareCarefully.CustomPawn), "MelaninLevel").GetSetMethod(false), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyMelaninLevel"));
-                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.PanelAppearance), "DrawPanelContent"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyDrawPanelAppearanceContent"));
-                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "GetSelectedApparel"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySelectedApparel"), null);
-                            harmony.Patch(AccessTools.Property(typeof(EdB.PrepareCarefully.PanelAppearance), "PawnLayerLabel").GetGetMethod(true), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyPawnLayerLabel"));
-                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedStuff"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedStuff"), null);
-                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "GetSelectedStuff"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyGetSelectedStuff"), null);
-                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "SetSelectedApparelInternal"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullySetSelectedApparelInternal"), null);
-                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.PawnLayers), "Label"), null, new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyLayerLabel"));
-                            harmony.Patch(AccessTools.Method(typeof(EdB.PrepareCarefully.CustomPawn), "ResetCachedHead"), new HarmonyMethod(typeof(HarmonyPatches), "PrepareCarefullyResetCachedHead"), null);
-#if DEBUG
-                            HarmonyMethod pre = new HarmonyMethod(typeof(HarmonyPatches), nameof(PCTESTPREFIX));
-                            HarmonyMethod post = new HarmonyMethod(typeof(HarmonyPatches), nameof(PCTESTPOSTFIX));
-                            typeof(EdB.PrepareCarefully.PrepareCarefully).Assembly.GetTypes().Where(t => !t.IsAbstract).SelectMany(t => t.GetMethods(AccessTools.all).Where(mi => mi.DeclaringType == t && !mi.Name.Contains("SetDisabledTargets") && AccessTools.Method(mi.DeclaringType, "Invoke") == null)).Do(mi =>
-                            {
-                                Log.Message(mi.DeclaringType + ": " + mi.Name);
-                                harmony.Patch(mi, pre, post);
-                            });
-#endif
-                        }
-                    })).Invoke();
-                } catch (TypeLoadException ex) { Log.Message(ex.ToString()); }
-            }
-            */
-            #endregion
-
-            Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
+            //Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
-
-        public static void PCTESTPREFIX() => Debug.Log("PRE: " + StackTraceUtility.ExtractStackTrace().ToString());
-
-        public static void PCTESTPOSTFIX() => Debug.Log("POST: " + StackTraceUtility.ExtractStackTrace().ToString());
 
         public static void GenerateInitialHediffsPostfix(Pawn pawn) =>
             pawn.story?.AllBackstories?.Select(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)).OfType<BackstoryDef>().SelectMany(bd => bd.forcedHediffs).Concat(bioReference?.forcedHediffs ?? new List<string>(0)).Select(s =>
