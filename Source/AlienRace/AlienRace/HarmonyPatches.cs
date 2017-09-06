@@ -8,7 +8,6 @@ using UnityEngine;
 using Verse;
 using Verse.AI;
 using System.Reflection.Emit;
-using System.Diagnostics;
 
 namespace AlienRace
 {
@@ -120,21 +119,12 @@ namespace AlienRace
             pawn.story?.AllBackstories?.Select(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)).OfType<BackstoryDef>().SelectMany(bd => bd.forcedHediffs).Concat(bioReference?.forcedHediffs ?? new List<string>(0)).Select(s =>
                 DefDatabase<HediffDef>.GetNamedSilentFail(s)).Select(hd => HediffMaker.MakeHediff(hd, pawn)).ToList().ForEach(h => pawn.health.hediffSet.AddDirect(h));
 
-        public static void GenerateStartingApparelForPostfix()
-        {
-            Traverse.Create(typeof(PawnApparelGenerator)).Field("allApparelPairs").GetValue<List<ThingStuffPair>>().AddRange(apparelList);
-            stopwatch.Stop();
-            Log.Message(stopwatch.ElapsedMilliseconds.ToString());
-        }
+        public static void GenerateStartingApparelForPostfix() => Traverse.Create(typeof(PawnApparelGenerator)).Field("allApparelPairs").GetValue<List<ThingStuffPair>>().AddRange(apparelList);
 
         static HashSet<ThingStuffPair> apparelList;
 
-        static Stopwatch stopwatch;
-
         public static void GenerateStartingApparelForPrefix(Pawn pawn)
         {
-            stopwatch = new Stopwatch();
-            stopwatch.Start();
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
 
             Traverse apparelInfo = Traverse.Create(typeof(PawnApparelGenerator)).Field("allApparelPairs");
