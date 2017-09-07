@@ -118,10 +118,8 @@ namespace AlienRace
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
-        public static void HasHeadPrefix(HediffSet __instance)
-        {
+        public static void HasHeadPrefix(HediffSet __instance) => 
             headPawnDef = (__instance.pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.headBodyPartDef;
-        }
 
         static BodyPartDef headPawnDef;
 

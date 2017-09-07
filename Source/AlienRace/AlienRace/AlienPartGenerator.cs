@@ -184,7 +184,7 @@ namespace AlienRace
             {
                 string path = "";
                 int variantCount = 0;
-                if(hediffGraphics?.FirstOrDefault(bahgs => pawn.health.hediffSet.hediffs.Any(h => h.def.defName == bahgs.hediff)) is BodyAddonHediffGraphic bahg)
+                if(this.hediffGraphics?.FirstOrDefault(bahgs => pawn.health.hediffSet.hediffs.Any(h => h.def.defName == bahgs.hediff)) is BodyAddonHediffGraphic bahg)
                 {
                     path = bahg.path;
                     variantCount = bahg.variantCount;
