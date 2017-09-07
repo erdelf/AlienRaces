@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ThoughtDefs>
+  <ThoughtDef>
+    <defName>XenophobeVsXenophile</defName>
+    <thoughtClass>AlienRace.Thought_XenophobeVsXenophile</thoughtClass>
+    <workerClass>AlienRace.ThoughtWorker_XenophobeVsXenophile</workerClass>
+    <validWhileDespawned>true</validWhileDespawned>
+    <stages>
+      <li>
+        <label>xenophobe vs xenophile</label>
+      </li>
+    </stages>
+  </ThoughtDef>
+  <ThoughtDef>
+    <defName>XenophobiaVsAlien</defName>
+    <thoughtClass>AlienRace.Thought_XenophobiaVsAlien</thoughtClass>
+    <workerClass>AlienRace.ThoughtWorker_XenophobiaVsAlien</workerClass>
+    <validWhileDespawned>true</validWhileDespawned>
+    <stages>
+      <li>
+        <label>xenophile loves aliens</label>
+      </li>
+      <li>
+        <label>xenophobe hates aliens</label>
+      </li>
+    </stages>
+  </ThoughtDef>
+</ThoughtDefs>

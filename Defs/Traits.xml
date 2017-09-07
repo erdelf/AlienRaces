@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TraitDefs>
+    <TraitDef>
+        <defName>Xenophobia</defName>
+        <commonality>1</commonality>
+        <degreeDatas>
+            <li>
+                <label>xenophobe</label>
+                <description>NAME hates aliens.</description>
+                <degree>1</degree>
+            </li>
+            <li>
+                <label>xenophile</label>
+                <description>NAME loves aliens.</description>
+                <degree>-1</degree>
+            </li>
+        </degreeDatas>
+    </TraitDef>
+</TraitDefs>
