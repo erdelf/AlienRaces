@@ -13,15 +13,33 @@
   </ThoughtDef>
   <ThoughtDef>
     <defName>XenophobiaVsAlien</defName>
-    <thoughtClass>AlienRace.Thought_XenophobiaVsAlien</thoughtClass>
+    <thoughtClass>Thought_SituationalSocial</thoughtClass>
     <workerClass>AlienRace.ThoughtWorker_XenophobiaVsAlien</workerClass>
     <validWhileDespawned>true</validWhileDespawned>
     <stages>
       <li>
-        <label>xenophile loves aliens</label>
+        <label>xenophile loves alien</label>
+        <baseOpinionOffset>20</baseOpinionOffset>
       </li>
       <li>
-        <label>xenophobe hates aliens</label>
+        <label>xenophobe hates alien</label>
+        <baseOpinionOffset>-20</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+  <ThoughtDef>
+    <defName>AlienVsXenophobia</defName>
+    <thoughtClass>Thought_SituationalSocial</thoughtClass>
+    <workerClass>AlienRace.ThoughtWorker_AlienVsXenophobia</workerClass>
+    <validWhileDespawned>true</validWhileDespawned>
+    <stages>
+      <li>
+        <label>alien loved by xenophile</label>
+        <baseOpinionOffset>10</baseOpinionOffset>
+      </li>
+      <li>
+        <label>alien hated by xenophobe</label>
+        <baseOpinionOffset>-10</baseOpinionOffset>
       </li>
     </stages>
   </ThoughtDef>
