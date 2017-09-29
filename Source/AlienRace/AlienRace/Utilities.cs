@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
 using Verse;
 
@@ -8,6 +9,7 @@ namespace AlienRace
     public static class AlienDefOf
     {
         public static TraitDef Xenophobia;
+        public static ThoughtDef XenophobiaVsAlien;
     }
 
     public class ThinkNode_ConditionalIsMemberOfRace : ThinkNode_Conditional
@@ -41,7 +43,9 @@ namespace AlienRace
     public class ThoughtWorker_XenophobiaVsAlien : ThoughtWorker
     {
         protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) =>
-            p.def != otherPawn.def && p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && RelationsUtility.PawnsKnowEachOther(p, otherPawn) ?
+            p.def != otherPawn.def && p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && RelationsUtility.PawnsKnowEachOther(p, otherPawn) &&
+            !(p.def is ThingDef_AlienRace par && par.alienRace.generalSettings.notXenophobistTowards.Contains(otherPawn.def.defName)) &&
+            !(otherPawn.def is ThingDef_AlienRace oar && oar.alienRace.generalSettings.ImmuneToXenophobia) ?
                 p.story.traits.HasTrait(AlienDefOf.Xenophobia) ?
                     p.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == -1 ?
                         ThoughtState.ActiveAtStage(0) :
@@ -52,13 +56,17 @@ namespace AlienRace
 
     public class ThoughtWorker_AlienVsXenophobia : ThoughtWorker
     {
-        protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) =>
-            p.def != otherPawn.def && p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && RelationsUtility.PawnsKnowEachOther(p, otherPawn) ?
-                otherPawn.story.traits.HasTrait(AlienDefOf.Xenophobia) ?
-                    otherPawn.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == -1 ?
-                        ThoughtState.ActiveAtStage(0) :
-                        ThoughtState.ActiveAtStage(1) :
-                    false :
+        protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn)
+        {
+            List<ISocialThought> thoughts = new List<ISocialThought>();
+            otherPawn.needs.mood.thoughts.GetSocialThoughts(p, thoughts);
+            Thought_SituationalSocial thought_SituationalSocial;
+
+            return (thought_SituationalSocial = thoughts.OfType<Thought_SituationalSocial>().FirstOrDefault(tss => tss.def == AlienDefOf.XenophobiaVsAlien)) != null ?
+                thought_SituationalSocial.CurStageIndex == 0 ?
+                ThoughtState.ActiveAtStage(0) :
+                ThoughtState.ActiveAtStage(1) :
                 false;
+        }
     }
 }

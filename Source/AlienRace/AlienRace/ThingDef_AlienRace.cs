@@ -45,6 +45,8 @@ namespace AlienRace
         public List<FactionRelationSettings> factionRelations;
         public int maxDamageForSocialfight = int.MaxValue;
         public bool allowHumanBios = false;
+        public bool ImmuneToXenophobia = false;
+        public List<string> notXenophobistTowards;
     }
 
     public sealed class FactionRelationSettings
