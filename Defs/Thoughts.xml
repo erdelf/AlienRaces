@@ -18,12 +18,14 @@
     <validWhileDespawned>true</validWhileDespawned>
     <stages>
       <li>
-        <label>xenophile loves alien</label>
+        <label>xenophile loves aliens</label>
         <baseOpinionOffset>20</baseOpinionOffset>
+        <baseMoodEffect>2</baseMoodEffect>
       </li>
       <li>
-        <label>xenophobe hates me</label>
+        <label>xenophobe hates aliens</label>
         <baseOpinionOffset>-20</baseOpinionOffset>
+        <baseMoodEffect>-2</baseMoodEffect>
       </li>
     </stages>
   </ThoughtDef>
