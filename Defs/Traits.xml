@@ -8,11 +8,13 @@
                 <label>xenophobe</label>
                 <description>NAME hates aliens.</description>
                 <degree>1</degree>
+                <commonality>0.8</commonality>
             </li>
             <li>
                 <label>xenophile</label>
                 <description>NAME loves aliens.</description>
                 <degree>-1</degree>
+                <commonality>1</commonality>
             </li>
         </degreeDatas>
     </TraitDef>
