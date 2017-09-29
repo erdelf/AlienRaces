@@ -153,6 +153,7 @@ namespace AlienRace
                 Scribe_Values.Look(ref this.fixGenderPostSpawn, "fixAlienGenderPostSpawn", false);
                 Scribe_Values.Look(ref this.skinColor, "skinColorAlien");
                 Scribe_Values.Look(ref this.skinColorSecond, "skinColorSecondAlien");
+                Scribe_Values.Look(ref this.hairColorSecond, "hairColorSecondAlien");
                 Scribe_Values.Look(ref this.crownType, "crownType");
             }
         }
