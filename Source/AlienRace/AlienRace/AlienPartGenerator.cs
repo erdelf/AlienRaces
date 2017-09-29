@@ -178,8 +178,18 @@ namespace AlienRace
             public Mesh addonPortraitMesh;
             public Mesh addonPortraitMeshFlipped;
 
-            public bool CanDrawAddon(Pawn pawn) => RestUtility.CurrentBed(pawn) == null && !pawn.Downed && pawn.GetPosture() == PawnPosture.Standing && !pawn.Dead && (this.bodyPart == null ||
-                    pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == this.bodyPart));
+            public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
+            public List<string> hiddenUnderApparelTag = new List<string>();
+
+            public string backstoryRequirement;
+
+            public bool CanDrawAddon(Pawn pawn) => 
+                ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
+                !pawn.apparel.WornApparel.Any(ap => ap.def.apparel.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
+                ap.def.apparel.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)))) &&
+                    (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(b=> b.identifier == this.backstoryRequirement)) && 
+                    RestUtility.CurrentBed(pawn) == null && !pawn.Downed && pawn.GetPosture() == PawnPosture.Standing && !pawn.Dead && 
+                    (this.bodyPart == null || pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == this.bodyPart));
 
             public Graphic GetPath(Pawn pawn, ref int sharedIndex)
             {
