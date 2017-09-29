@@ -1755,7 +1755,7 @@ re
         {
             if (SolidBioDatabase.allBios.Where(pb => (((kind.race as ThingDef_AlienRace)?.alienRace.generalSettings.allowHumanBios ?? true) ||
                 (DefDatabase<PawnBioDef>.AllDefs.FirstOrDefault(pbd => pb.name.ConfusinglySimilarTo(pbd.name))?.validRaces.Contains(kind.race) ?? false)) &&
-                pb.gender == GenderPossibility.Either || (pb.gender == GenderPossibility.Male && gender == Gender.Male) &&
+                (pb.gender == GenderPossibility.Either || (pb.gender == GenderPossibility.Male && gender == Gender.Male)) &&
                 (requiredLastName.NullOrEmpty() || !(pb.name.Last != requiredLastName)) && (!kind.factionLeader || pb.pirateKing) &&
                 pb.adulthood.spawnCategories.Contains(backstoryCategory) && !pb.name.UsedThisGame).TryRandomElement(out PawnBio bio))
             {
