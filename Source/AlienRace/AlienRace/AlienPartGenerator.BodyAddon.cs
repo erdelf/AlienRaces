@@ -8,7 +8,7 @@ using System;
 
 namespace AlienRace
 {
-    public sealed partial class AlienPartGenerator
+    public partial class AlienPartGenerator
     {
         public class BodyAddon
         {
@@ -36,7 +36,7 @@ namespace AlienRace
 
             public string backstoryRequirement;
 
-            public bool CanDrawAddon(Pawn pawn) => 
+            public virtual bool CanDrawAddon(Pawn pawn) => 
                 ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
                 !pawn.apparel.WornApparel.Any(ap => ap.def.apparel.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
                 ap.def.apparel.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)))) &&
@@ -44,7 +44,7 @@ namespace AlienRace
                     RestUtility.CurrentBed(pawn) == null && !pawn.Downed && pawn.GetPosture() == PawnPosture.Standing && !pawn.Dead && 
                     (this.bodyPart == null || pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == this.bodyPart));
 
-            public Graphic GetPath(Pawn pawn, ref int sharedIndex)
+            public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex)
             {
                 string path = "";
                 int variantCount = 0;
