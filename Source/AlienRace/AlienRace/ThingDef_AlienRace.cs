@@ -15,6 +15,7 @@ namespace AlienRace
             base.ResolveReferences();
             if (this.alienRace.graphicPaths.NullOrEmpty())
                 this.alienRace.graphicPaths.Add(new GraphicPaths());
+            this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
         }
 
         public sealed class AlienSettings

@@ -43,6 +43,8 @@ namespace AlienRace
 
         public List<BodyAddon> bodyAddons = new List<BodyAddon>();
 
+        public ThingDef_AlienRace alienProps;
+
         static MethodInfo meshInfo = AccessTools.Method(AccessTools.TypeByName("MeshMakerPlanes"), "NewPlaneMesh", new Type[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
 
         public string RandomAlienHead(string userpath, Pawn pawn) => userpath + (userpath == GraphicPaths.vanillaHeadPath ? pawn.gender.ToString() + "/" : "") + (this.UseGenderedHeads ? pawn.gender.ToString() + "_" : "") + (pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[Rand.Range(0, this.aliencrowntypes.Count)]);
@@ -131,6 +133,17 @@ namespace AlienRace
                                                                      Log.Message("Variants found for " + bahg.path + ": " + bahg.variantCount.ToString());
                                                                  }
                                                              }
+                                                         if (ba.backstoryGraphics != null)
+                                                             foreach (BodyAddonBackstoryGraphic babg in ba.backstoryGraphics)
+                                                             {
+                                                                 if (babg.variantCount == 0)
+                                                                 {
+                                                                     while (ContentFinder<Texture2D>.Get(babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_back", false) != null)
+                                                                         babg.variantCount++;
+                                                                     Log.Message("Variants found for " + babg.path + ": " + babg.variantCount.ToString());
+                                                                 }
+                                                             }
+
 
                                                      }
                                                  });
@@ -171,6 +184,7 @@ namespace AlienRace
             public int variantCount = 0;
 
             public List<BodyAddonHediffGraphic> hediffGraphics;
+            public List<BodyAddonBackstoryGraphic> backstoryGraphics;
 
             public Mesh addonMesh;
             public Mesh addonMeshFlipped;
@@ -195,7 +209,12 @@ namespace AlienRace
             {
                 string path = "";
                 int variantCount = 0;
-                if(this.hediffGraphics?.FirstOrDefault(bahgs => pawn.health.hediffSet.hediffs.Any(h => h.def.defName == bahgs.hediff)) is BodyAddonHediffGraphic bahg)
+
+                if (this.backstoryGraphics?.FirstOrDefault(babgs => pawn.story.AllBackstories.Any(bs => bs.identifier == babgs.backstory)) is BodyAddonBackstoryGraphic babg)
+                {
+                    path = babg.path;
+                    variantCount = babg.variantCount;
+                }else if(this.hediffGraphics?.FirstOrDefault(bahgs => pawn.health.hediffSet.hediffs.Any(h => h.def.defName == bahgs.hediff)) is BodyAddonHediffGraphic bahg)
                 {
                     path = bahg.path;
                     variantCount = bahg.variantCount;
@@ -231,6 +250,19 @@ namespace AlienRace
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.hediff = xmlRoot.Name;
+                this.path = xmlRoot.FirstChild.Value;
+            }
+        }
+
+        public class BodyAddonBackstoryGraphic
+        {
+            public string backstory;
+            public string path;
+            public int variantCount = 0;
+
+            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+            {
+                this.backstory = xmlRoot.Name;
                 this.path = xmlRoot.FirstChild.Value;
             }
         }
