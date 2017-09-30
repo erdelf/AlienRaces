@@ -58,6 +58,8 @@ namespace AlienRace
     {
         protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn)
         {
+            if (!p.RaceProps.Humanlike || !otherPawn.RaceProps.Humanlike)
+                return false;
             List<ISocialThought> thoughts = new List<ISocialThought>();
             otherPawn.needs.mood.thoughts.GetSocialThoughts(p, thoughts);
             Thought_SituationalSocial thought_SituationalSocial;
