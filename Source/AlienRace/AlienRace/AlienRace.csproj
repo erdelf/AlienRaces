@@ -60,6 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlienPartGenerator.BodyAddon.cs" />
     <Compile Include="AlienPartGenerator.cs" />
     <Compile Include="BackstoryDef.cs" />
     <Compile Include="HarmonyPatches.cs" />
