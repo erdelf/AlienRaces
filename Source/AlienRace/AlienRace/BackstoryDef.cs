@@ -28,8 +28,14 @@ namespace AlienRace
         public string linkedBackstory;
         public RelationSettings relationSettings = new RelationSettings();
         public List<string> forcedHediffs = new List<string>();
+        public IntRange bioAgeRange;
+        public IntRange chronoAgeRange;
 
         public bool CommonalityApproved(Gender g) => Rand.Range(0, 100) < (g == Gender.Female ? this.femaleCommonality : this.maleCommonality);
+
+        public bool Approved(Pawn p) => CommonalityApproved(p.gender) && 
+            (this.bioAgeRange == null || (this.bioAgeRange.min < p.ageTracker.AgeBiologicalYears && p.ageTracker.AgeBiologicalYears < this.bioAgeRange.max)) &&
+            (this.chronoAgeRange == null || (this.chronoAgeRange.min < p.ageTracker.AgeBiologicalYears && p.ageTracker.AgeBiologicalYears < this.chronoAgeRange.max));
 
         public override void ResolveReferences()
         {
