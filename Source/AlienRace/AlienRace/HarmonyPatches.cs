@@ -986,24 +986,31 @@ namespace AlienRace
             }
         }
 
+        static HashSet<ThingDef> colonistRaces;
+        static int colonistRacesTick;
+        const int colonistRacesTickTimer = GenDate.TicksPerHour*2;
+
         public static void DesignatorAllowedPostfix(Designator d, ref bool __result)
         {
             if (__result && d is Designator_Build)
             {
+                if (Find.TickManager.TicksAbs > colonistRacesTick + colonistRacesTickTimer || Find.TickManager.TicksAbs < colonistRacesTick)
+                    if((colonistRaces = new HashSet<ThingDef>(PawnsFinder.AllMaps_FreeColonistsSpawned.Select(p => p.def))).Count > 0)
+                        colonistRacesTick = Find.TickManager.TicksAbs;
+
                 Def toBuild = (d as Designator_Build).PlacingDef;
-                IEnumerable<ThingDef_AlienRace> races = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => (ar.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false) || (ar.alienRace.raceRestriction.whiteBuildingList?.Contains(toBuild.defName) ?? false));
+                IEnumerable<ThingDef_AlienRace> races = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => 
+                    (ar.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false) || 
+                    (ar.alienRace.raceRestriction.whiteBuildingList?.Contains(toBuild.defName) ?? false));
                 if (races.Count() > 0)
-                {
-                    __result = races.Any(ar => Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def == ar));
-                }
+                    __result = races.Any(ar => colonistRaces.Contains(ar));
 
                 if (__result)
-                {
-                    if (Find.ColonistBar.GetColonistsInOrder().Where(p => !p.Dead).ToList().TrueForAll(p => ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) && !((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false) && !((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteBuildingList?.Contains(toBuild.defName) ?? false)))
-                    {
+                    if (colonistRaces.ToList().TrueForAll(p => 
+                        ((p as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) && 
+                        !((p as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false) && 
+                        !((p as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteBuildingList?.Contains(toBuild.defName) ?? false)))
                         __result = false;
-                    }
-                }
             }
         }
 
