@@ -34,7 +34,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "SetBackstoryInSlot"), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetBackstoryInSlotPrefix)), null);
 
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), nameof(WorkGiver_Researcher.ShouldSkip)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ShouldSkipResearchPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), nameof(MainTabWindow_Research.PreOpen)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ResearchPreOpenPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), "ViewSize"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ResearchScreenTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), "DrawRightRect"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ResearchScreenTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.CanConstruct)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(CanConstructPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GameRules), nameof(GameRules.DesignatorAllowed)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(DesignatorAllowedPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Bill), nameof(Bill.PawnAllowedToStartAnew)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PawnAllowedToStartAnewPostfix)));
@@ -1024,51 +1025,26 @@ namespace AlienRace
             }
         }
 
-        public static void ResearchPreOpenPostfix(MainTabWindow_Research __instance)
+        public static IEnumerable<CodeInstruction> ResearchScreenTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            /*
-            Traverse info = Traverse.Create(__instance).Field("relevantProjects");
-            List<ResearchProjectDef> projects = info.GetValue<IEnumerable<ResearchProjectDef>>().ToList();
-            for (int i=0; i<projects.Count;i++)
+            MethodInfo defListInfo = AccessTools.Method(
+                typeof(DefDatabase<ResearchProjectDef>), nameof(DefDatabase<ResearchProjectDef>.AllDefsListForReading));
+
+            foreach (CodeInstruction instruction in instructions)
             {
-                ResearchProjectDef project = projects[i];
-                if (!project.IsFinished)
+                if (instruction.opcode == OpCodes.Call && instruction.operand == defListInfo)
                 {
-                    List<ThingDef_AlienRace> alienRaces =
-                        DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.raceRestriction?.researchList?.Any(rpr => rpr.projects.Contains(project.defName)) ?? false).ToList();
-
-                    if (!alienRaces.NullOrEmpty() && !Find.ColonistBar.GetColonistsInOrder().Any(p => !p.Dead && p.def is ThingDef_AlienRace && alienRaces.Contains(p.def as ThingDef_AlienRace) && (alienRaces.First(ar => ar == p.def).alienRace.raceRestriction.researchList.First(rp => (rp.projects.Contains(project.defName)))?.apparelList?.TrueForAll(ap => p.apparel.WornApparel.Select(apd => apd.def.defName).Contains(ap)) ?? true)))
-                    {
-                        projects.RemoveAt(i);
-                        i--;
-                    }
+                    yield return instruction;
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(HarmonyPatches), nameof(ResearchFixed)));
                 }
+                else
+                    yield return instruction;
             }
-            bool changed = true;
-
-            while (changed)
-            {
-                changed = false;
-                for (int i = 0; i < projects.Count; i++)
-                {
-                    if (projects[i].prerequisites != null)
-                    {
-                        foreach (ResearchProjectDef project in projects[i].prerequisites)
-                        {
-                            if (!projects.Contains(project))
-                            {
-                                projects.RemoveAt(i);
-                                i--;
-                                changed = true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            info.SetValue(projects);
-            */
         }
+
+        private static List<ResearchProjectDef> ResearchFixed(List<ResearchProjectDef> researchList) =>
+            researchList.Where(prj => !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(ar => !colonistRaces.Contains(ar) &&
+                (ar.alienRace.raceRestriction?.researchList?.Any(rpr => rpr.projects.Contains(prj.defName)) ?? false))).ToList();
 
         public static void ShouldSkipResearchPostfix(Pawn pawn, ref bool __result)
         {
