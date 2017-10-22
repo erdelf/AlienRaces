@@ -113,10 +113,18 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateInitialHediffs"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GenerateInitialHediffsPostfix)));
             harmony.Patch(typeof(HediffSet).GetMethods(AccessTools.all).Where(mi => mi.HasAttribute<CompilerGeneratedAttribute>() && mi.ReturnType == typeof(bool) && mi.GetParameters().First().ParameterType == typeof(BodyPartRecord)).First(), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(HasHeadPostfix)));
             harmony.Patch(AccessTools.Property(typeof(HediffSet), nameof(HediffSet.HasHead)).GetGetMethod(), new HarmonyMethod(typeof(HarmonyPatches), nameof(HasHeadPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "RecalculateLifeStageIndex"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RecalculateLifeStageIndexPostfix)));
 
             //Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+        }
+
+        public static void RecalculateLifeStageIndexPostfix(Pawn_AgeTracker __instance)
+        {
+            Pawn pawn;
+            if ((pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>()).def is ThingDef_AlienRace)
+                pawn.Drawer.renderer.graphics.ResolveAllGraphics();
         }
 
         public static void HasHeadPrefix(HediffSet __instance) => 
