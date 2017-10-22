@@ -114,7 +114,7 @@ namespace AlienRace
             harmony.Patch(typeof(HediffSet).GetMethods(AccessTools.all).Where(mi => mi.HasAttribute<CompilerGeneratedAttribute>() && mi.ReturnType == typeof(bool) && mi.GetParameters().First().ParameterType == typeof(BodyPartRecord)).First(), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(HasHeadPostfix)));
             harmony.Patch(AccessTools.Property(typeof(HediffSet), nameof(HediffSet.HasHead)).GetGetMethod(), new HarmonyMethod(typeof(HarmonyPatches), nameof(HasHeadPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "RecalculateLifeStageIndex"), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RecalculateLifeStageIndexPostfix)));
-            harmony.Patch(typeof(FactionGenerator).GetNestedTypes(BindingFlags.Instance | BindingFlags.NonPublic).First(t => t.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Count() > 1).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).MaxBy(mi => mi.GetMethodBody()?.GetILAsByteArray()?.Count() ?? -1), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(EnsureEnemiesPostfix)));
+            harmony.Patch(typeof(FactionGenerator).GetNestedTypes(BindingFlags.Instance | BindingFlags.NonPublic).MaxBy(t => t.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Count()).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).MaxBy(mi => mi.GetMethodBody()?.GetILAsByteArray()?.Count() ?? -1), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(EnsureEnemiesPostfix)));
 
 
             //Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
@@ -122,18 +122,20 @@ namespace AlienRace
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
-        public static void EnsureEnemiesPostfix(ref bool __result, Faction f) => 
+        public static void EnsureEnemiesPostfix(ref bool __result, Faction f)
+        {
             __result = __result &&
                 !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(ar =>
-                    (f.def.basicMemberKind.race == ar &&
-                        ar.alienRace.generalSettings.factionRelations.Any(frs => frs.factions.Contains(Faction.OfPlayer.def.defName))) ||
-                    (Faction.OfPlayer.def.basicMemberKind.race == ar &&
-                        ((f.def.basicMemberKind.race as ThingDef_AlienRace)?.alienRace.generalSettings.factionRelations.Any(frs => frs.factions.Contains(Faction.OfPlayer.def.defName)) ?? false)));
+                    (f.def?.basicMemberKind?.race == ar &&
+                        (ar.alienRace.generalSettings?.factionRelations?.Any(frs => frs.factions?.Contains(Find.GameInitData.playerFaction.def.defName) ?? false) ?? false)) ||
+                    (Find.GameInitData.playerFaction.def?.basicMemberKind?.race == ar &&
+                        ((f.def.basicMemberKind.race as ThingDef_AlienRace)?.alienRace.generalSettings?.factionRelations?.Any(frs => frs.factions?.Contains(f.def.defName) ?? false) ?? false)));
+        }
 
         public static void RecalculateLifeStageIndexPostfix(Pawn_AgeTracker __instance)
         {
             Pawn pawn;
-            if ((pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>()).def is ThingDef_AlienRace)
+            if (Current.ProgramState == ProgramState.Playing && (pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>()).def is ThingDef_AlienRace)
                 pawn.Drawer.renderer.graphics.ResolveAllGraphics();
         }
 
