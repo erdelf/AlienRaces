@@ -9,6 +9,7 @@ using Verse;
 using Verse.AI;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Collections;
 
 namespace AlienRace
 {
@@ -146,29 +147,8 @@ namespace AlienRace
                         (ar.alienRace.generalSettings?.factionRelations?.Any(frs => frs.factions?.Contains(f.def.defName) ?? false) ?? false)));
         }
 
-        public static void EnsureRequiredEnemiesPostfix(ref bool __result, Faction f)
-        {
-            Log.Message(f.def.defName);
-
-            Log.Message("1: " + __result.ToString());
-
-            Log.Message("2: " + DefDatabase<ThingDef_AlienRace>.AllDefs.Any(ar =>
-                    (f.def?.basicMemberKind?.race == ar &&
-                        (ar.alienRace.generalSettings?.factionRelations?.Any(frs => frs.factions?.Contains(Find.GameInitData.playerFaction.def.defName) ?? false) ?? false)) ||
-                    (Find.GameInitData.playerFaction.def?.basicMemberKind?.race == ar &&
-                        (ar.alienRace.generalSettings?.factionRelations?.Any(frs => frs.factions?.Contains(f.def.defName) ?? false) ?? false))).ToString());
-
-            Log.Message("3: " + DefDatabase<ThingDef_AlienRace>.AllDefs.Any(ar =>
-                    (f.def?.basicMemberKind?.race == ar &&
-                        (ar.alienRace.generalSettings?.factionRelations?.Any(frs => frs.factions?.Contains(Find.GameInitData.playerFaction.def.defName) ?? false) ?? false))).ToString());
-
-            Log.Message("4: " + DefDatabase<ThingDef_AlienRace>.AllDefs.Any(ar =>
-                    (Find.GameInitData.playerFaction.def?.basicMemberKind?.race == ar &&
-                        (ar.alienRace.generalSettings?.factionRelations?.Any(frs => frs.factions?.Contains(f.def.defName) ?? false) ?? false))).ToString());
-
-            __result = __result ||
+        public static void EnsureRequiredEnemiesPostfix(ref bool __result, Faction f) => __result = __result ||
                 !FactionTickFactionRelationCheck(f);
-        }
 
         public static void RecalculateLifeStageIndexPostfix(Pawn_AgeTracker __instance)
         {
@@ -759,21 +739,15 @@ namespace AlienRace
 
         public static void TryMakeInitialRelationsWithPostfix(Faction __instance, Faction other)
         {
-            if (!__instance.HasName || !other.HasName)
-            {
-                return;
-            }
-
             if (other.def.basicMemberKind?.race is ThingDef_AlienRace alienProps)
             {
                 alienProps.alienRace.generalSettings.factionRelations?.ForEach(frs =>
                 {
                     if (frs.factions.Contains(__instance.def.defName))
                     {
-                        if (other.RelationWith(__instance, true) != null)
-                        {
-                            other.RelationWith(__instance, true).goodwill = frs.goodwill.RandomInRange;
-                        }
+                        float offset = frs.goodwill.RandomInRange;
+                        other.RelationWith(__instance, false).goodwill = frs.goodwill.RandomInRange;
+                        __instance.RelationWith(other, false).goodwill = frs.goodwill.RandomInRange;
                     }
                 });
             }
@@ -785,10 +759,9 @@ namespace AlienRace
                 {
                     if (frs.factions.Contains(other.def.defName))
                     {
-                        if (__instance.RelationWith(other) != null)
-                        {
-                            __instance.RelationWith(other).goodwill = frs.goodwill.RandomInRange;
-                        }
+                        float offset = frs.goodwill.RandomInRange;
+                        other.RelationWith(__instance, false).goodwill = frs.goodwill.RandomInRange;
+                        __instance.RelationWith(other, false).goodwill = frs.goodwill.RandomInRange;
                     }
                 });
             }
