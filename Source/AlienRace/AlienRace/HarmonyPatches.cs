@@ -745,9 +745,12 @@ namespace AlienRace
                 {
                     if (frs.factions.Contains(__instance.def.defName))
                     {
+                        FactionRelation fr;
                         float offset = frs.goodwill.RandomInRange;
-                        other.RelationWith(__instance, false).goodwill = frs.goodwill.RandomInRange;
-                        __instance.RelationWith(other, false).goodwill = frs.goodwill.RandomInRange;
+                        (fr = other.RelationWith(__instance, false)).goodwill = frs.goodwill.RandomInRange;
+                        fr.hostile = fr.goodwill < 0;
+                        (fr = __instance.RelationWith(other, false)).goodwill = frs.goodwill.RandomInRange;
+                        fr.hostile = fr.goodwill < 0;
                     }
                 });
             }
@@ -759,9 +762,12 @@ namespace AlienRace
                 {
                     if (frs.factions.Contains(other.def.defName))
                     {
+                        FactionRelation fr;
                         float offset = frs.goodwill.RandomInRange;
-                        other.RelationWith(__instance, false).goodwill = frs.goodwill.RandomInRange;
-                        __instance.RelationWith(other, false).goodwill = frs.goodwill.RandomInRange;
+                        (fr = other.RelationWith(__instance, false)).goodwill = frs.goodwill.RandomInRange;
+                        fr.hostile = fr.goodwill < 0;
+                        (fr = __instance.RelationWith(other, false)).goodwill = frs.goodwill.RandomInRange;
+                        fr.hostile = fr.goodwill < 0;
                     }
                 });
             }
