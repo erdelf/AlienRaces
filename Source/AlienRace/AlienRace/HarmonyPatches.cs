@@ -1706,7 +1706,7 @@ re
                 }
                 GraphicPaths graphicPaths = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage);
                 
-                Traverse.Create(alien.story).Field("headGraphicPath").SetValue(AlienPartGenerator.GetAlienHead(graphicPaths.head, (alienProps.alienRace.generalSettings.alienPartGenerator.UseGenderedHeads ? alien.gender.ToString() : ""), alienComp.crownType));
+                Traverse.Create(alien.story).Field("headGraphicPath").SetValue(alienComp.crownType.NullOrEmpty() ? alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(graphicPaths.head, alien) : AlienPartGenerator.GetAlienHead(graphicPaths.head, (alienProps.alienRace.generalSettings.alienPartGenerator.UseGenderedHeads ? alien.gender.ToString() : ""), alienComp.crownType));
 
                 __instance.nakedGraphic = !graphicPaths.body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(alien.story.bodyType, ContentFinder<Texture2D>.Get(AlienPartGenerator.GetNakedPath(alien.story.bodyType, graphicPaths.body) + "_backm", false) == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, __instance.pawn.story.SkinColor, alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien, false), graphicPaths.body) : null;
                 __instance.rottingGraphic = !graphicPaths.body.NullOrEmpty() ? AlienPartGenerator.GetNakedGraphic(alien.story.bodyType, ShaderDatabase.Cutout, PawnGraphicSet.RottingColor, PawnGraphicSet.RottingColor, graphicPaths.body) : null;
