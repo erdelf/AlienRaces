@@ -15,7 +15,8 @@ namespace AlienRace
 
         public List<BodyType> alienbodytypes = new List<BodyType>();
 
-        public bool UseGenderedHeads = true;
+        public bool useGenderedHeads = true;
+        public bool useGenderedBodies = false;
 
         public ColorGenerator alienskincolorgen;
         public ColorGenerator alienskinsecondcolorgen;
@@ -46,13 +47,13 @@ namespace AlienRace
 
         static MethodInfo meshInfo = AccessTools.Method(AccessTools.TypeByName("MeshMakerPlanes"), "NewPlaneMesh", new Type[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
 
-        public string RandomAlienHead(string userpath, Pawn pawn) => GetAlienHead(userpath, (this.UseGenderedHeads ? pawn.gender.ToString() : ""), pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[Rand.Range(0, this.aliencrowntypes.Count)]);
+        public string RandomAlienHead(string userpath, Pawn pawn) => GetAlienHead(userpath, (this.useGenderedHeads ? pawn.gender.ToString() : ""), pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[Rand.Range(0, this.aliencrowntypes.Count)]);
 
         public static string GetAlienHead(string userpath, string gender, string crowntype) => userpath.NullOrEmpty() ? "" : userpath + (userpath == GraphicPaths.vanillaHeadPath ? gender + "/" : "") + (!gender.NullOrEmpty() ? gender + "_" : "") + crowntype;
 
-        public static Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath) => GraphicDatabase.Get<Graphic_Multi>(GetNakedPath(bodyType, userpath), shader, Vector2.one, skinColor, skinColorSecond);
+        public Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender) => GraphicDatabase.Get<Graphic_Multi>(GetNakedPath(bodyType, userpath, (this.useGenderedBodies ? gender : "")), shader, Vector2.one, skinColor, skinColorSecond);
 
-        public static string GetNakedPath(BodyType bodyType, string userpath) => userpath + "Naked_" + bodyType.ToString();
+        public static string GetNakedPath(BodyType bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + bodyType.ToString();
 
         public Color SkinColor(Pawn alien, bool first = true)
         {
