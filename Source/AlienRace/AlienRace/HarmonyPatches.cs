@@ -953,7 +953,7 @@ namespace AlienRace
             {
                 if (__instance.pawn.def is ThingDef_AlienRace alienProps)
                 {
-                    if (!alienProps.alienRace.generalSettings.CanLayDown && !(__instance.pawn.CurrentBed()?.def.defName.EqualsIgnoreCase("ET_Bed") ?? false))
+                    if (!alienProps.alienRace.generalSettings.canLayDown && !(__instance.pawn.CurrentBed()?.def.defName.EqualsIgnoreCase("ET_Bed") ?? false))
                     {
                         __result = PawnPosture.Standing;
                     }
@@ -1554,12 +1554,12 @@ namespace AlienRace
 
         public static void GenerateRandomAgePrefix(Pawn pawn, PawnGenerationRequest request)
         {
-            if (pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.MaleGenderProbability != 0.5f)
+            if (pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.maleGenderProbability != 0.5f)
             {
                 if (!request.FixedGender.HasValue)
                 {
-                    pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.MaleGenderProbability ? Gender.Female : Gender.Male;
-                } else if (alienProps.alienRace.generalSettings.MaleGenderProbability == 0f || alienProps.alienRace.generalSettings.MaleGenderProbability == 100f)
+                    pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.maleGenderProbability ? Gender.Female : Gender.Male;
+                } else if (alienProps.alienRace.generalSettings.maleGenderProbability == 0f || alienProps.alienRace.generalSettings.maleGenderProbability == 100f)
                 {
                     pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = true;
                 }
@@ -1578,7 +1578,7 @@ namespace AlienRace
 
                 pawn.GetComp<AlienPartGenerator.AlienComp>().hairColorSecond = alienProps.alienRace.generalSettings.alienPartGenerator.alienhairsecondcolorgen?.NewRandomizedColor() ?? pawn.story.hairColor;
 
-                if (alienProps.alienRace.hairSettings.GetsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
+                if (alienProps.alienRace.hairSettings.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                 {
                     float grey = Rand.Range(0.65f, 0.85f);
                     pawn.story.hairColor = new Color(grey, grey, grey);
@@ -1629,13 +1629,13 @@ namespace AlienRace
 
         public static void RandomHediffsToGainOnBirthdayPostfix(ref IEnumerable<HediffGiver_Birthday> __result, ThingDef raceDef)
         {
-            if ((raceDef as ThingDef_AlienRace)?.alienRace.generalSettings.ImmuneToAge ?? false)
+            if ((raceDef as ThingDef_AlienRace)?.alienRace.generalSettings.immuneToAge ?? false)
                 __result = new List<HediffGiver_Birthday>();
         }
 
         public static bool GenerateRandomOldAgeInjuriesPrefix(Pawn pawn)
         {
-            if (pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.ImmuneToAge)
+            if (pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.immuneToAge)
             {
                 return false;
             }
@@ -1648,7 +1648,7 @@ namespace AlienRace
             if (slot == BackstorySlot.Adulthood && DefDatabase<BackstoryDef>.GetNamedSilentFail(pawn.story.childhood.identifier)?.linkedBackstory is string id && BackstoryDatabase.TryGetWithIdentifier(id, out backstory))
                 return false;
 
-            if (((pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.PawnsSpecificBackstories) || (pawn.def.GetModExtension<Info>()?.usePawnKindBackstories ?? false)) && !pawn.kindDef.backstoryCategory.NullOrEmpty())
+            if (((pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.pawnsSpecificBackstories) || (pawn.def.GetModExtension<Info>()?.usePawnKindBackstories ?? false)) && !pawn.kindDef.backstoryCategory.NullOrEmpty())
             {
                 /*
                 Log.Message(pawn.def.defName);
@@ -1697,9 +1697,9 @@ re
                 AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
                 if (alienComp.fixGenderPostSpawn)
                 {
-                    if (alienProps.alienRace.generalSettings.MaleGenderProbability != 0.5f)
+                    if (alienProps.alienRace.generalSettings.maleGenderProbability != 0.5f)
                     {
-                        __instance.pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.MaleGenderProbability ? Gender.Female : Gender.Male;
+                        __instance.pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.maleGenderProbability ? Gender.Female : Gender.Male;
                         __instance.pawn.Name = PawnBioAndNameGenerator.GeneratePawnName(__instance.pawn, NameStyle.Full);
                     }
 
@@ -1712,8 +1712,8 @@ re
                 }
                 GraphicPaths graphicPaths = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage);
 
-                alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize = graphicPaths.CustomDrawSize;
-                alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize = graphicPaths.CustomPortraitDrawSize;
+                alienProps.alienRace.generalSettings.alienPartGenerator.customDrawSize = graphicPaths.customDrawSize;
+                alienProps.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize = graphicPaths.customPortraitDrawSize;
                 alienProps.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
 
                 Traverse.Create(alien.story).Field("headGraphicPath").SetValue(alienComp.crownType.NullOrEmpty() ? alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(graphicPaths.head, alien) : AlienPartGenerator.GetAlienHead(graphicPaths.head, (alienProps.alienRace.generalSettings.alienPartGenerator.useGenderedHeads ? alien.gender.ToString() : ""), alienComp.crownType));
@@ -1791,7 +1791,7 @@ re
         {
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
-                if (!alienProps.alienRace.hairSettings.HasHair)
+                if (!alienProps.alienRace.hairSettings.hasHair)
                 {
                     factionType = noHairFaction;
                 } else if (!alienProps.alienRace.hairSettings.hairTags.NullOrEmpty())
@@ -1989,12 +1989,12 @@ re
 
                         Vector3 scaleVector = new Vector3(MoffsetX, MoffsetY, MoffsetZ);
                         scaleVector.x *= 1f + (1f - (portrait ?
-                                                        alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize :
-                                                        alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize)
+                                                        alienProps.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize :
+                                                        alienProps.alienRace.generalSettings.alienPartGenerator.customDrawSize)
                                                     .x);
                         scaleVector.z *= 1f + (1f - (portrait ?
-                                                        alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize :
-                                                        alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize)
+                                                        alienProps.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize :
+                                                        alienProps.alienRace.generalSettings.alienPartGenerator.customDrawSize)
                                                     .y);
 
                         GenDraw.DrawMeshNowOrLater(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), alienComp.addonGraphics[i].MatAt(rotation), portrait);

@@ -45,7 +45,7 @@ namespace AlienRace
         protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) =>
             p.def != otherPawn.def && p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && RelationsUtility.PawnsKnowEachOther(p, otherPawn) &&
             !(p.def is ThingDef_AlienRace par && par.alienRace.generalSettings.notXenophobistTowards.Contains(otherPawn.def.defName)) &&
-            !(otherPawn.def is ThingDef_AlienRace oar && oar.alienRace.generalSettings.ImmuneToXenophobia) ?
+            !(otherPawn.def is ThingDef_AlienRace oar && oar.alienRace.generalSettings.immuneToXenophobia) ?
                 p.story.traits.HasTrait(AlienDefOf.Xenophobia) ?
                     p.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == -1 ?
                         ThoughtState.ActiveAtStage(0) :
@@ -59,7 +59,7 @@ namespace AlienRace
         protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) =>
             p.def != otherPawn.def && p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && RelationsUtility.PawnsKnowEachOther(p, otherPawn) &&
             !(otherPawn.def is ThingDef_AlienRace par && par.alienRace.generalSettings.notXenophobistTowards.Contains(p.def.defName)) &&
-            !(p.def is ThingDef_AlienRace oar && oar.alienRace.generalSettings.ImmuneToXenophobia) ?
+            !(p.def is ThingDef_AlienRace oar && oar.alienRace.generalSettings.immuneToXenophobia) ?
                 otherPawn.story.traits.HasTrait(AlienDefOf.Xenophobia) ?
                     otherPawn.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == -1 ?
                         ThoughtState.ActiveAtStage(0) :

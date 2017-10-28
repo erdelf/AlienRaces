@@ -24,8 +24,8 @@ namespace AlienRace
         public ColorGenerator alienhairsecondcolorgen;
         public bool useSkincolorForHair = false;
 
-        public Vector2 CustomDrawSize = Vector2.one;
-        public Vector2 CustomPortraitDrawSize = Vector2.one;
+        public Vector2 customDrawSize = Vector2.one;
+        public Vector2 customPortraitDrawSize = Vector2.one;
 
         public BodyPartDef headBodyPartDef;
 
@@ -70,18 +70,18 @@ namespace AlienRace
         {
 
             {
-                if (!meshPools.Keys.Any(v => v.Equals(this.CustomDrawSize)))
+                if (!meshPools.Keys.Any(v => v.Equals(this.customDrawSize)))
                 {
-                    meshPools.Add(this.CustomDrawSize, new GraphicMeshSet[]
+                    meshPools.Add(this.customDrawSize, new GraphicMeshSet[]
                         {
-                                                            new GraphicMeshSet(1.5f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // bodySet
-                                                            new GraphicMeshSet(1.5f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // headSet
-                                                            new GraphicMeshSet(1.5f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // hairSetAverage
-                                                            new GraphicMeshSet(1.3f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // hairSetNarrow
+                                                            new GraphicMeshSet(1.5f * this.customDrawSize.x, 1.5f * this.customDrawSize.y), // bodySet
+                                                            new GraphicMeshSet(1.5f * this.customDrawSize.x, 1.5f * this.customDrawSize.y), // headSet
+                                                            new GraphicMeshSet(1.5f * this.customDrawSize.x, 1.5f * this.customDrawSize.y), // hairSetAverage
+                                                            new GraphicMeshSet(1.3f * this.customDrawSize.x, 1.5f * this.customDrawSize.y), // hairSetNarrow
                         });
                 }
 
-                GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.CustomDrawSize))];
+                GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.customDrawSize))];
 
                 this.bodySet = meshSet[0];
                 this.headSet = meshSet[1];
@@ -89,23 +89,23 @@ namespace AlienRace
                 this.hairSetNarrow = meshSet[3];
                 this.bodyAddons.ForEach(ba =>
                 {
-                    ba.addonMesh = (Mesh) meshInfo.Invoke(null, new object[] { this.CustomDrawSize * 1.5f, false, false, false });
-                    ba.addonMeshFlipped = (Mesh) meshInfo.Invoke(null, new object[] { this.CustomDrawSize * 1.5f, true, false, false });
+                    ba.addonMesh = (Mesh) meshInfo.Invoke(null, new object[] { this.customDrawSize * 1.5f, false, false, false });
+                    ba.addonMeshFlipped = (Mesh) meshInfo.Invoke(null, new object[] { this.customDrawSize * 1.5f, true, false, false });
                 });
             }
             {
-                if (!meshPools.Keys.Any(v => v.Equals(this.CustomPortraitDrawSize)))
+                if (!meshPools.Keys.Any(v => v.Equals(this.customPortraitDrawSize)))
                 {
-                    meshPools.Add(this.CustomPortraitDrawSize, new GraphicMeshSet[]
+                    meshPools.Add(this.customPortraitDrawSize, new GraphicMeshSet[]
                         {
-                                                            new GraphicMeshSet(1.5f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // bodySet
-                                                            new GraphicMeshSet(1.5f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // headSet
-                                                            new GraphicMeshSet(1.5f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // hairSetAverage
-                                                            new GraphicMeshSet(1.3f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // hairSetNarrow
+                                                            new GraphicMeshSet(1.5f * this.customPortraitDrawSize.x, 1.5f * this.customPortraitDrawSize.y), // bodySet
+                                                            new GraphicMeshSet(1.5f * this.customPortraitDrawSize.x, 1.5f * this.customPortraitDrawSize.y), // headSet
+                                                            new GraphicMeshSet(1.5f * this.customPortraitDrawSize.x, 1.5f * this.customPortraitDrawSize.y), // hairSetAverage
+                                                            new GraphicMeshSet(1.3f * this.customPortraitDrawSize.x, 1.5f * this.customPortraitDrawSize.y), // hairSetNarrow
                         });
                 }
 
-                GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.CustomPortraitDrawSize))];
+                GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.customPortraitDrawSize))];
 
                 this.bodyPortraitSet = meshSet[0];
                 this.headPortraitSet = meshSet[1];
@@ -113,8 +113,8 @@ namespace AlienRace
                 this.hairPortraitSetNarrow = meshSet[3];
                 this.bodyAddons.ForEach(ba =>
                 {
-                    ba.addonPortraitMesh = (Mesh) meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize * 1.5f, false, false, false });
-                    ba.addonPortraitMeshFlipped = (Mesh) meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize * 1.5f, true, false, false });
+                    ba.addonPortraitMesh = (Mesh) meshInfo.Invoke(null, new object[] { this.customPortraitDrawSize * 1.5f, false, false, false });
+                    ba.addonPortraitMeshFlipped = (Mesh) meshInfo.Invoke(null, new object[] { this.customPortraitDrawSize * 1.5f, true, false, false });
                 });
             }
             {
