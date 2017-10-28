@@ -1712,7 +1712,11 @@ re
                     alienComp.fixGenderPostSpawn = false;
                 }
                 GraphicPaths graphicPaths = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage);
-                
+
+                alienProps.alienRace.generalSettings.alienPartGenerator.CustomDrawSize = graphicPaths.CustomDrawSize;
+                alienProps.alienRace.generalSettings.alienPartGenerator.CustomPortraitDrawSize = graphicPaths.CustomPortraitDrawSize;
+                alienProps.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
+
                 Traverse.Create(alien.story).Field("headGraphicPath").SetValue(alienComp.crownType.NullOrEmpty() ? alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(graphicPaths.head, alien) : AlienPartGenerator.GetAlienHead(graphicPaths.head, (alienProps.alienRace.generalSettings.alienPartGenerator.useGenderedHeads ? alien.gender.ToString() : ""), alienComp.crownType));
 
                 __instance.nakedGraphic = !graphicPaths.body.NullOrEmpty() ? alienProps.alienRace.generalSettings.alienPartGenerator.GetNakedGraphic(alien.story.bodyType, ContentFinder<Texture2D>.Get(AlienPartGenerator.GetNakedPath(alien.story.bodyType, graphicPaths.body, alienProps.alienRace.generalSettings.alienPartGenerator.useGenderedBodies ? alien.gender.ToString() : "") + "_backm", false) == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, __instance.pawn.story.SkinColor, alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien, false), graphicPaths.body, alien.gender.ToString()) : null;

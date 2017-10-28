@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
+using UnityEngine;
 
 namespace AlienRace
 {
@@ -76,6 +77,8 @@ namespace AlienRace
     public sealed class GraphicPaths
     {
         public List<LifeStageDef> lifeStageDefs;
+        public Vector2 CustomDrawSize = Vector2.one;
+        public Vector2 CustomPortraitDrawSize = Vector2.one;
 
         public const string vanillaHeadPath = "Things/Pawn/Humanlike/Heads/";
 
