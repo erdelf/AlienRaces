@@ -9,7 +9,6 @@ using Verse;
 using Verse.AI;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
-using System.Collections;
 
 namespace AlienRace
 {
