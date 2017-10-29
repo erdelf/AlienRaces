@@ -1141,6 +1141,12 @@ namespace AlienRace
                     }
                 }
             }
+            if (ingester.story.traits.HasTrait(AlienDefOf.Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1)
+                if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatDirect) && foodSource.def.ingestible.sourceDef != ingester.def)
+                    __result.Remove(ThoughtDefOf.AteHumanlikeMeatDirect);
+                else if(__result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredient) && (foodSource.TryGetComp<CompIngredients>()?.ingredients.Any(td => FoodUtility.IsHumanlikeMeat(td) && td.ingestible.sourceDef != ingester.def) ?? false))
+                    __result.Remove(ThoughtDefOf.AteHumanlikeMeatAsIngredient);
+
         }
 
         public static void GenerationChanceSpousePostfix(ref float __result, Pawn generated, Pawn other)
