@@ -26,6 +26,14 @@ namespace AlienRace
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
         }
 
+        public override void PostLoad()
+        {
+            base.PostLoad();
+            if (this.alienRace.generalSettings.humanRecipeImport)
+                this.recipes.AddRange(ThingDefOf.Human.AllRecipes);
+            this.recipes.RemoveDuplicates();
+        }
+
         public sealed class AlienSettings
         {
             public GeneralSettings generalSettings = new GeneralSettings();
@@ -56,6 +64,7 @@ namespace AlienRace
         public bool allowHumanBios = false;
         public bool immuneToXenophobia = false;
         public List<string> notXenophobistTowards = new List<string>();
+        public bool humanRecipeImport = false;
     }
 
     public sealed class FactionRelationSettings
