@@ -220,6 +220,10 @@ namespace AlienRace
         public List<string> foodList;
         public List<string> whiteFoodList;
 
+        public bool onlyTameRaceRestrictedPets = false;
+        public List<string> petList;
+        public List<string> whitePetList;
+
         public List<string> conceptList;
 
         public List<string> workGiverList;
