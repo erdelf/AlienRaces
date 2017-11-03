@@ -30,7 +30,7 @@ namespace AlienRace
         {
             base.PostLoad();
             if (this.alienRace.generalSettings.humanRecipeImport)
-                this.recipes.AddRange(ThingDefOf.Human.AllRecipes.Where(rd => !rd.targetsBodyPart || rd.appliedOnFixedBodyParts.Any(bpd => this.race.body.AllParts.Any(bpr => bpr.def == bpd))));
+                this.recipes.AddRange(ThingDefOf.Human.AllRecipes.Where(rd => !rd.targetsBodyPart || (rd.appliedOnFixedBodyParts?.Any(bpd => this.race.body.AllParts.Any(bpr => bpr.def == bpd)) ?? false)));
             this.recipes.RemoveDuplicates();
         }
 
