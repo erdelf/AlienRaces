@@ -26,14 +26,6 @@ namespace AlienRace
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
         }
 
-        public override void PostLoad()
-        {
-            base.PostLoad();
-            if (this.alienRace.generalSettings.humanRecipeImport)
-                this.recipes.AddRange(ThingDefOf.Human.AllRecipes.Where(rd => !rd.targetsBodyPart || (rd.appliedOnFixedBodyParts?.Any(bpd => this.race.body.AllParts.Any(bpr => bpr.def == bpd)) ?? false)));
-            this.recipes.RemoveDuplicates();
-        }
-
         public sealed class AlienSettings
         {
             public GeneralSettings generalSettings = new GeneralSettings();

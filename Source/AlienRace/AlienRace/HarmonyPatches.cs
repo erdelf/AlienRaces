@@ -56,6 +56,10 @@ namespace AlienRace
             
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(ar =>
             {
+                if (ar.alienRace.generalSettings.humanRecipeImport)
+                    ar.recipes.AddRange(ThingDefOf.Human.AllRecipes.Where(rd => !rd.targetsBodyPart || (rd.appliedOnFixedBodyParts?.Any(bpd => ar.race.body.AllParts.Any(bpr => bpr.def == bpd)) ?? false)));
+                ar.recipes.RemoveDuplicates();
+
                 ar.alienRace.raceRestriction?.workGiverList?.ForEach(wgd =>
                 {
                     WorkGiverDef wg = DefDatabase<WorkGiverDef>.GetNamedSilentFail(wgd);
@@ -130,6 +134,7 @@ namespace AlienRace
             //Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+
         }
 
         public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) => 
@@ -448,7 +453,7 @@ namespace AlienRace
 
             List<KeyValuePair<Pawn, PawnRelationDef>> list = new List<KeyValuePair<Pawn, PawnRelationDef>>();
             List<PawnRelationDef> allDefsListForReading = DefDatabase<PawnRelationDef>.AllDefsListForReading;
-            List<Pawn> enumerable = (from x in PawnsFinder.AllMapsAndWorld_AliveOrDead
+            List<Pawn> enumerable = (from x in PawnsFinder.AllMapsWorldAndTemporary_AliveOrDead
                                      where x.def == pawn.def
                                      select x).ToList();
 
