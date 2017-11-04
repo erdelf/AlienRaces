@@ -57,7 +57,15 @@ namespace AlienRace
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(ar =>
             {
                 if (ar.alienRace.generalSettings.humanRecipeImport)
-                    ar.recipes.AddRange(ThingDefOf.Human.AllRecipes.Where(rd => !rd.targetsBodyPart || (rd.appliedOnFixedBodyParts?.Any(bpd => ar.race.body.AllParts.Any(bpr => bpr.def == bpd)) ?? false)));
+                {
+                    ar.recipes.AddRange(ThingDefOf.Human.recipes.Where(rd => !rd.targetsBodyPart || (rd.appliedOnFixedBodyParts?.Any(bpd => ar.race.body.AllParts.Any(bpr => bpr.def == bpd)) ?? false)));
+
+                    DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(rd =>
+                    {
+                        if (rd.recipeUsers?.Contains(ThingDefOf.Human) ?? false)
+                            rd.recipeUsers.Add(ar);
+                    });
+                }
                 ar.recipes.RemoveDuplicates();
 
                 ar.alienRace.raceRestriction?.workGiverList?.ForEach(wgd =>
@@ -68,9 +76,7 @@ namespace AlienRace
                         harmony.Patch(AccessTools.Method(wg.giverClass, "JobOnThing"), null, new HarmonyMethod(patchType, nameof(GenericJobOnThingPostfix)));
                         MethodInfo hasJobOnThingInfo = AccessTools.Method(wg.giverClass, "HasJobOnThing");
                         if (hasJobOnThingInfo != null)
-                        {
                             harmony.Patch(hasJobOnThingInfo, null, new HarmonyMethod(patchType, nameof(GenericHasJobOnThingPostfix)));
-                        }
                     }
                 });
             });
