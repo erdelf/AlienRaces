@@ -114,7 +114,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(GameInitData), nameof(GameInitData.PrepForMapGen)), new HarmonyMethod(patchType, nameof(PrepForMapGenPrefix)), null);
             
 
-            harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.SecondaryRomanceChanceFactor)), null, null, new HarmonyMethod(patchType, nameof(SecondaryRomanceChanceFactorTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.SecondaryLovinChanceFactor)), null, null, new HarmonyMethod(patchType, nameof(SecondaryLovinChanceFactorTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.CompatibilityWith)), null, new HarmonyMethod(patchType, nameof(CompatibilityWith)));
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.TryMakeInitialRelationsWith)), null, new HarmonyMethod(patchType, nameof(TryMakeInitialRelationsWithPostfix)));
@@ -883,7 +883,7 @@ namespace AlienRace
             __result = num + num2;
         }
 
-        public static IEnumerable<CodeInstruction> SecondaryRomanceChanceFactorTranspiler(MethodBase original, IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> SecondaryLovinChanceFactorTranspiler(MethodBase original, IEnumerable<CodeInstruction> instructions)
         {
             FieldInfo defField = AccessTools.Field(typeof(Pawn), nameof(Pawn.def));
             MethodInfo racePropsProperty = AccessTools.Property(typeof(Pawn), nameof(Pawn.RaceProps)).GetGetMethod();
