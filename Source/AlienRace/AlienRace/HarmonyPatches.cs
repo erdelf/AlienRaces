@@ -892,7 +892,7 @@ namespace AlienRace
             foreach (CodeInstruction instruction in instructions)
             {
                 counter++;
-                if (counter < 6)
+                if (counter < 10)
                 {
                     if (instruction.opcode == OpCodes.Ldfld && instruction.operand == defField)
                     {
