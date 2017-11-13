@@ -21,25 +21,25 @@ namespace AlienRace
         {
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.erdelf.alien_race.main");
 
-            
+
 
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.GenerationChance)), null, new HarmonyMethod(patchType, nameof(GenerationChanceChildPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), nameof(PawnRelationWorker_ExLover.GenerationChance)), null, new HarmonyMethod(patchType, nameof(GenerationChanceExLoverPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), nameof(PawnRelationWorker_ExSpouse.GenerationChance)), null, new HarmonyMethod(patchType, nameof(GenerationChanceExSpousePostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Fiance), nameof(PawnRelationWorker_Spouse.GenerationChance)), null, new HarmonyMethod(patchType, nameof(GenerationChanceFiancePostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Lover), nameof(PawnRelationWorker_Lover.GenerationChance)), null, new HarmonyMethod(patchType, nameof(GenerationChanceLoverPostfix)));
-            
+
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), nameof(PawnRelationWorker_Parent.GenerationChance)), null, new HarmonyMethod(patchType, nameof(GenerationChanceParentPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), nameof(PawnRelationWorker_Sibling.GenerationChance)), null, new HarmonyMethod(patchType, nameof(GenerationChanceSiblingPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), nameof(PawnRelationWorker_Spouse.GenerationChance)), null, new HarmonyMethod(patchType, nameof(GenerationChanceSpousePostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"), new HarmonyMethod(patchType, nameof(GeneratePawnRelationsPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(PawnRelationDef), nameof(PawnRelationDef.GetGenderSpecificLabel)), new HarmonyMethod(patchType, nameof(GetGenderSpecificLabelPrefix)), null);
-            
+
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGetRandomUnusedSolidBioFor"), null, new HarmonyMethod(patchType, nameof(TryGetRandomUnusedSolidBioForPostfix)));
-            
+
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "FillBackstorySlotShuffled"), new HarmonyMethod(patchType, nameof(FillBackstoryInSlotShuffledPrefix)), null);
 
-            
+
 
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), nameof(WorkGiver_Researcher.ShouldSkip)), null, new HarmonyMethod(patchType, nameof(ShouldSkipResearchPostfix)));
             harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), "ViewSize"), null, null, new HarmonyMethod(patchType, nameof(ResearchScreenTranspiler)));
@@ -53,7 +53,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn), nameof(Pawn.SetFaction)), null, new HarmonyMethod(patchType, nameof(SetFactionPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Thing), nameof(Pawn.SetFactionDirect)), null, new HarmonyMethod(patchType, nameof(SetFactionDirectPostfix)));
             harmony.Patch(AccessTools.Method(typeof(JobGiver_OptimizeApparel), nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), null, new HarmonyMethod(patchType, nameof(ApparelScoreGainPostFix)));
-            
+
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(ar =>
             {
                 if (ar.alienRace.generalSettings.humanRecipeImport)
@@ -112,7 +112,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), "CanDoNext"), null, new HarmonyMethod(patchType, nameof(CanDoNextStartPawnPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(GameInitData), nameof(GameInitData.PrepForMapGen)), new HarmonyMethod(patchType, nameof(PrepForMapGenPrefix)), null);
-            
+
 
             harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.SecondaryLovinChanceFactor)), null, null, new HarmonyMethod(patchType, nameof(SecondaryLovinChanceFactorTranspiler)));
 
@@ -143,16 +143,16 @@ namespace AlienRace
 
         }
 
-        public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) => 
+        public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) =>
             __result = __result ? (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.petList?.Contains(animal.def.defName) ?? false ? true : (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whitePetList?.Contains(animal.def.defName) ?? false ? true :
                     (((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyTameRaceRestrictedPets ?? false) ? false :
                     !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.petList?.Contains(animal.def.defName) ?? false))) : false;
 
-        public static void CanDesignateThingTamePostfix(ref bool __result, Thing t) => 
-            __result = __result ? colonistRaces.OfType<ThingDef_AlienRace>().Any(td => 
+        public static void CanDesignateThingTamePostfix(ref bool __result, Thing t) =>
+            __result = __result ? colonistRaces.OfType<ThingDef_AlienRace>().Any(td =>
                     td.alienRace.raceRestriction.petList.Contains(t.def.defName) ||
                     td.alienRace.raceRestriction.whitePetList.Contains(t.def.defName) ||
-                    !td.alienRace.raceRestriction.onlyTameRaceRestrictedPets) || 
+                    !td.alienRace.raceRestriction.onlyTameRaceRestrictedPets) ||
                 !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(ar => ar.alienRace.raceRestriction.petList.Contains(t.def.defName)) : false;
 
         public static IEnumerable<CodeInstruction> FactionTickTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -189,12 +189,12 @@ namespace AlienRace
                 pawn.Drawer.renderer.graphics.ResolveAllGraphics();
         }
 
-        public static void HasHeadPrefix(HediffSet __instance) => 
+        public static void HasHeadPrefix(HediffSet __instance) =>
             headPawnDef = (__instance.pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.headBodyPartDef;
 
         static BodyPartDef headPawnDef;
 
-        public static void HasHeadPostfix(BodyPartRecord x, bool __result) => 
+        public static void HasHeadPostfix(BodyPartRecord x, bool __result) =>
             __result = headPawnDef != null ? x.def == headPawnDef : __result;
 
         public static void GenerateInitialHediffsPostfix(Pawn pawn) =>
@@ -987,7 +987,11 @@ namespace AlienRace
             }
         }
 
-        public static void PrepForMapGenPrefix(GameInitData __instance) => Find.Scenario.AllParts.Where(sp => sp is ScenPart_StartingHumanlikes).Select(sp => sp as ScenPart_StartingHumanlikes).ToList().ForEach(sp => __instance.startingPawns.AddRange(sp.GetPawns()));
+        public static void PrepForMapGenPrefix(GameInitData __instance) => Find.Scenario.AllParts.OfType<ScenPart_StartingHumanlikes>().Select(sp => sp.GetPawns()).ToList().ForEach(sp =>
+            {
+                __instance.startingPawns.InsertRange(__instance.startingPawnCount, sp);
+                __instance.startingPawnCount += sp.Count();
+            });
 
         public static bool TryGainMemoryThoughtPrefix(ref Thought_Memory newThought, MemoryThoughtHandler __instance)
         {
