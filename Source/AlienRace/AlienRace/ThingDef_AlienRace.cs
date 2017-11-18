@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
+using UnityEngine;
 
 namespace AlienRace
 {
@@ -15,6 +16,13 @@ namespace AlienRace
             base.ResolveReferences();
             if (this.alienRace.graphicPaths.NullOrEmpty())
                 this.alienRace.graphicPaths.Add(new GraphicPaths());
+            this.alienRace.graphicPaths.ForEach(gp =>
+            {
+                if(gp.customDrawSize == Vector2.one)
+                    gp.customDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
+                if (gp.customPortraitDrawSize == Vector2.one)
+                    gp.customPortraitDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
+            });
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
         }
 
@@ -32,10 +40,10 @@ namespace AlienRace
 
     public sealed class GeneralSettings
     {
-        public float MaleGenderProbability = 0.5f;
-        public bool PawnsSpecificBackstories = false;
-        public bool ImmuneToAge = false;
-        public bool CanLayDown = true;
+        public float maleGenderProbability = 0.5f;
+        public bool pawnsSpecificBackstories = false;
+        public bool immuneToAge = false;
+        public bool canLayDown = true;
 
         public List<string> validBeds;
         public List<ChemicalSettings> chemicalSettings;
@@ -46,8 +54,9 @@ namespace AlienRace
         public List<FactionRelationSettings> factionRelations;
         public int maxDamageForSocialfight = int.MaxValue;
         public bool allowHumanBios = false;
-        public bool ImmuneToXenophobia = false;
+        public bool immuneToXenophobia = false;
         public List<string> notXenophobistTowards = new List<string>();
+        public bool humanRecipeImport = false;
     }
 
     public sealed class FactionRelationSettings
@@ -76,6 +85,8 @@ namespace AlienRace
     public sealed class GraphicPaths
     {
         public List<LifeStageDef> lifeStageDefs;
+        public Vector2 customDrawSize = Vector2.one;
+        public Vector2 customPortraitDrawSize = Vector2.one;
 
         public const string vanillaHeadPath = "Things/Pawn/Humanlike/Heads/";
 
@@ -88,9 +99,9 @@ namespace AlienRace
 
     public sealed class HairSettings
     {
-        public bool HasHair = true;
+        public bool hasHair = true;
         public List<string> hairTags;
-        public int GetsGreyAt = 40;
+        public int getsGreyAt = 40;
     }
 
     public sealed class PawnKindSettings
@@ -200,6 +211,10 @@ namespace AlienRace
         public bool onlyEatRaceRestrictedFood = false;
         public List<string> foodList;
         public List<string> whiteFoodList;
+
+        public bool onlyTameRaceRestrictedPets = false;
+        public List<string> petList;
+        public List<string> whitePetList;
 
         public List<string> conceptList;
 

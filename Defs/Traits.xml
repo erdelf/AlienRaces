@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<TraitDefs>
+<Defs>
     <TraitDef>
         <defName>Xenophobia</defName>
         <commonality>1</commonality>
@@ -18,4 +18,4 @@
             </li>
         </degreeDatas>
     </TraitDef>
-</TraitDefs>
+</Defs>

@@ -14,7 +14,7 @@ namespace AlienRace
         {
             public string path;
             public BodyPartDef bodyPart;
-            public bool UseSkinColor = true;
+            public bool useSkinColor = true;
             public BodyAddonOffsets offsets;
             public bool linkVariantIndexWithPrevious = false;
             public float angle = 0f;
@@ -70,10 +70,10 @@ namespace AlienRace
                                         sharedIndex = Rand.Range(0, variantCount)) == 0 ? "" : tv.ToString()),
                                 ShaderDatabase.Transparent,
                                     new Vector3(1, 0, 1),
-                                        this.UseSkinColor ?
+                                        this.useSkinColor ?
                                             pawn.story.SkinColor :
                                             pawn.story.hairColor,
-                                                this.UseSkinColor ?
+                                                this.useSkinColor ?
                                                     (pawn.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator.SkinColor(pawn, false) :
                                                     pawn.story.hairColor) :
                             null;
