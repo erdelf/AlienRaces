@@ -15,7 +15,8 @@ namespace AlienRace
 
         public List<BodyType> alienbodytypes = new List<BodyType>();
 
-        public bool UseGenderedHeads = true;
+        public bool useGenderedHeads = true;
+        public bool useGenderedBodies = false;
 
         public ColorGenerator alienskincolorgen;
         public ColorGenerator alienskinsecondcolorgen;
@@ -23,8 +24,8 @@ namespace AlienRace
         public ColorGenerator alienhairsecondcolorgen;
         public bool useSkincolorForHair = false;
 
-        public Vector2 CustomDrawSize = Vector2.one;
-        public Vector2 CustomPortraitDrawSize = Vector2.one;
+        public Vector2 customDrawSize = Vector2.one;
+        public Vector2 customPortraitDrawSize = Vector2.one;
 
         public BodyPartDef headBodyPartDef;
 
@@ -46,13 +47,13 @@ namespace AlienRace
 
         static MethodInfo meshInfo = AccessTools.Method(AccessTools.TypeByName("MeshMakerPlanes"), "NewPlaneMesh", new Type[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
 
-        public string RandomAlienHead(string userpath, Pawn pawn) => GetAlienHead(userpath, (this.UseGenderedHeads ? pawn.gender.ToString() : ""), pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[Rand.Range(0, this.aliencrowntypes.Count)]);
+        public string RandomAlienHead(string userpath, Pawn pawn) => GetAlienHead(userpath, (this.useGenderedHeads ? pawn.gender.ToString() : ""), pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[Rand.Range(0, this.aliencrowntypes.Count)]);
 
         public static string GetAlienHead(string userpath, string gender, string crowntype) => userpath.NullOrEmpty() ? "" : userpath + (userpath == GraphicPaths.vanillaHeadPath ? gender + "/" : "") + (!gender.NullOrEmpty() ? gender + "_" : "") + crowntype;
 
-        public static Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath) => GraphicDatabase.Get<Graphic_Multi>(GetNakedPath(bodyType, userpath), shader, Vector2.one, skinColor, skinColorSecond);
+        public Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender) => GraphicDatabase.Get<Graphic_Multi>(GetNakedPath(bodyType, userpath, (this.useGenderedBodies ? gender : "")), shader, Vector2.one, skinColor, skinColorSecond);
 
-        public static string GetNakedPath(BodyType bodyType, string userpath) => userpath + "Naked_" + bodyType.ToString();
+        public static string GetNakedPath(BodyType bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + bodyType.ToString();
 
         public Color SkinColor(Pawn alien, bool first = true)
         {
@@ -65,91 +66,91 @@ namespace AlienRace
             return first ? alienComp.skinColor : alienComp.skinColorSecond;
         }
 
-        public AlienPartGenerator() => LongEventHandler.QueueLongEvent(() =>
-                                         {
+        public void GenerateMeshsAndMeshPools()
+        {
 
-                                             {
-                                                 if (!meshPools.Keys.Any(v => v.Equals(this.CustomDrawSize)))
-                                                 {
-                                                     meshPools.Add(this.CustomDrawSize, new GraphicMeshSet[]
-                                                         {
-                                                            new GraphicMeshSet(1.5f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // bodySet
-                                                            new GraphicMeshSet(1.5f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // headSet
-                                                            new GraphicMeshSet(1.5f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // hairSetAverage
-                                                            new GraphicMeshSet(1.3f * this.CustomDrawSize.x, 1.5f * this.CustomDrawSize.y), // hairSetNarrow
-                                                         });
-                                                 }
+            {
+                if (!meshPools.Keys.Any(v => v.Equals(this.customDrawSize)))
+                {
+                    meshPools.Add(this.customDrawSize, new GraphicMeshSet[]
+                        {
+                                                            new GraphicMeshSet(1.5f * this.customDrawSize.x, 1.5f * this.customDrawSize.y), // bodySet
+                                                            new GraphicMeshSet(1.5f * this.customDrawSize.x, 1.5f * this.customDrawSize.y), // headSet
+                                                            new GraphicMeshSet(1.5f * this.customDrawSize.x, 1.5f * this.customDrawSize.y), // hairSetAverage
+                                                            new GraphicMeshSet(1.3f * this.customDrawSize.x, 1.5f * this.customDrawSize.y), // hairSetNarrow
+                        });
+                }
 
-                                                 GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.CustomDrawSize))];
+                GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.customDrawSize))];
 
-                                                 this.bodySet = meshSet[0];
-                                                 this.headSet = meshSet[1];
-                                                 this.hairSetAverage = meshSet[2];
-                                                 this.hairSetNarrow = meshSet[3];
-                                                 bodyAddons.ForEach(ba =>
-                                                 {
-                                                     ba.addonMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize * 1.5f, false, false, false });
-                                                     ba.addonMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomDrawSize * 1.5f, true, false, false });
-                                                 });
-                                             }
-                                             {
-                                                 if (!meshPools.Keys.Any(v => v.Equals(this.CustomPortraitDrawSize)))
-                                                 {
-                                                     meshPools.Add(this.CustomPortraitDrawSize, new GraphicMeshSet[]
-                                                         {
-                                                            new GraphicMeshSet(1.5f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // bodySet
-                                                            new GraphicMeshSet(1.5f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // headSet
-                                                            new GraphicMeshSet(1.5f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // hairSetAverage
-                                                            new GraphicMeshSet(1.3f * this.CustomPortraitDrawSize.x, 1.5f * this.CustomPortraitDrawSize.y), // hairSetNarrow
-                                                         });
-                                                 }
+                this.bodySet = meshSet[0];
+                this.headSet = meshSet[1];
+                this.hairSetAverage = meshSet[2];
+                this.hairSetNarrow = meshSet[3];
+                this.bodyAddons.ForEach(ba =>
+                {
+                    ba.addonMesh = (Mesh) meshInfo.Invoke(null, new object[] { this.customDrawSize * 1.5f, false, false, false });
+                    ba.addonMeshFlipped = (Mesh) meshInfo.Invoke(null, new object[] { this.customDrawSize * 1.5f, true, false, false });
+                });
+            }
+            {
+                if (!meshPools.Keys.Any(v => v.Equals(this.customPortraitDrawSize)))
+                {
+                    meshPools.Add(this.customPortraitDrawSize, new GraphicMeshSet[]
+                        {
+                                                            new GraphicMeshSet(1.5f * this.customPortraitDrawSize.x, 1.5f * this.customPortraitDrawSize.y), // bodySet
+                                                            new GraphicMeshSet(1.5f * this.customPortraitDrawSize.x, 1.5f * this.customPortraitDrawSize.y), // headSet
+                                                            new GraphicMeshSet(1.5f * this.customPortraitDrawSize.x, 1.5f * this.customPortraitDrawSize.y), // hairSetAverage
+                                                            new GraphicMeshSet(1.3f * this.customPortraitDrawSize.x, 1.5f * this.customPortraitDrawSize.y), // hairSetNarrow
+                        });
+                }
 
-                                                 GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.CustomPortraitDrawSize))];
+                GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.customPortraitDrawSize))];
 
-                                                 this.bodyPortraitSet = meshSet[0];
-                                                 this.headPortraitSet = meshSet[1];
-                                                 this.hairPortraitSetAverage = meshSet[2];
-                                                 this.hairPortraitSetNarrow = meshSet[3];
-                                                 bodyAddons.ForEach(ba =>
-                                                 {
-                                                     ba.addonPortraitMesh = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize * 1.5f, false, false, false });
-                                                     ba.addonPortraitMeshFlipped = (Mesh)meshInfo.Invoke(null, new object[] { this.CustomPortraitDrawSize * 1.5f, true, false, false });
-                                                 });
-                                             }
-                                             {
-                                                 bodyAddons.Do(ba =>
-                                                 {
-                                                     if (ba.variantCount == 0)
-                                                     {
-                                                         while (ContentFinder<Texture2D>.Get(ba.path + (ba.variantCount == 0 ? "" : ba.variantCount.ToString()) + "_back", false) != null)
-                                                             ba.variantCount++;
-                                                         Log.Message("Variants found for " + ba.path + ": " + ba.variantCount.ToString());
-                                                         if (ba.hediffGraphics != null)
-                                                             foreach (BodyAddonHediffGraphic bahg in ba.hediffGraphics)
-                                                             {
-                                                                 if (bahg.variantCount == 0)
-                                                                 {
-                                                                     while (ContentFinder<Texture2D>.Get(bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_back", false) != null)
-                                                                         bahg.variantCount++;
-                                                                     Log.Message("Variants found for " + bahg.path + ": " + bahg.variantCount.ToString());
-                                                                 }
-                                                             }
-                                                         if (ba.backstoryGraphics != null)
-                                                             foreach (BodyAddonBackstoryGraphic babg in ba.backstoryGraphics)
-                                                             {
-                                                                 if (babg.variantCount == 0)
-                                                                 {
-                                                                     while (ContentFinder<Texture2D>.Get(babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_back", false) != null)
-                                                                         babg.variantCount++;
-                                                                     Log.Message("Variants found for " + babg.path + ": " + babg.variantCount.ToString());
-                                                                 }
-                                                             }
+                this.bodyPortraitSet = meshSet[0];
+                this.headPortraitSet = meshSet[1];
+                this.hairPortraitSetAverage = meshSet[2];
+                this.hairPortraitSetNarrow = meshSet[3];
+                this.bodyAddons.ForEach(ba =>
+                {
+                    ba.addonPortraitMesh = (Mesh) meshInfo.Invoke(null, new object[] { this.customPortraitDrawSize * 1.5f, false, false, false });
+                    ba.addonPortraitMeshFlipped = (Mesh) meshInfo.Invoke(null, new object[] { this.customPortraitDrawSize * 1.5f, true, false, false });
+                });
+            }
+            {
+                this.bodyAddons.Do(ba =>
+                {
+                    if (ba.variantCount == 0)
+                    {
+                        while (ContentFinder<Texture2D>.Get(ba.path + (ba.variantCount == 0 ? "" : ba.variantCount.ToString()) + "_back", false) != null)
+                            ba.variantCount++;
+                        Log.Message("Variants found for " + ba.path + ": " + ba.variantCount.ToString());
+                        if (ba.hediffGraphics != null)
+                            foreach (BodyAddonHediffGraphic bahg in ba.hediffGraphics)
+                            {
+                                if (bahg.variantCount == 0)
+                                {
+                                    while (ContentFinder<Texture2D>.Get(bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_back", false) != null)
+                                        bahg.variantCount++;
+                                    Log.Message("Variants found for " + bahg.path + ": " + bahg.variantCount.ToString());
+                                }
+                            }
+                        if (ba.backstoryGraphics != null)
+                            foreach (BodyAddonBackstoryGraphic babg in ba.backstoryGraphics)
+                            {
+                                if (babg.variantCount == 0)
+                                {
+                                    while (ContentFinder<Texture2D>.Get(babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_back", false) != null)
+                                        babg.variantCount++;
+                                    Log.Message("Variants found for " + babg.path + ": " + babg.variantCount.ToString());
+                                }
+                            }
 
 
-                                                     }
-                                                 });
-                                             }
-                                         }, "meshSetAlien", false, null);
+                    }
+                });
+            }
+        }
 
         public class AlienComp : ThingComp
         {
