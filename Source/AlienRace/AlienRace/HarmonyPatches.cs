@@ -125,7 +125,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Property(typeof(Building_Bed), nameof(Building_Bed.AssigningCandidates)).GetGetMethod(), null, new HarmonyMethod(patchType, nameof(AssigningCandidatesPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GenText), nameof(GenText.AdjustedFor)), null, new HarmonyMethod(patchType, nameof(GenTextAdjustedForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(RaceProperties), nameof(RaceProperties.CanEverEat), new Type[] { typeof(ThingDef) }), null, new HarmonyMethod(patchType, nameof(CanEverEat)));
-            harmony.Patch(AccessTools.Method(typeof(Verb_MeleeAttack), "DamageInfosToApply"), null, new HarmonyMethod(patchType, nameof(MeleeVerbDamageInfoPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Verb_MeleeAttack), "DamageInfosToApply"), null, new HarmonyMethod(patchType, nameof(DamageInfosToApplyPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnWeaponGenerator), nameof(PawnWeaponGenerator.TryGenerateWeaponFor)), new HarmonyMethod(patchType, nameof(TryGenerateWeaponForPrefix)), new HarmonyMethod(patchType, nameof(TryGenerateWeaponForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnApparelGenerator), nameof(PawnApparelGenerator.GenerateStartingApparelFor)), new HarmonyMethod(patchType, nameof(GenerateStartingApparelForPrefix)), new HarmonyMethod(patchType, nameof(GenerateStartingApparelForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateInitialHediffs"), null, new HarmonyMethod(patchType, nameof(GenerateInitialHediffsPostfix)));
@@ -249,10 +249,11 @@ namespace AlienRace
             weaponInfo.GetValue<List<ThingStuffPair>>().RemoveAll(tsp => weaponList.Contains(tsp));
         }
 
-        public static void MeleeVerbDamageInfoPostfix(Verb __instance, ref IEnumerable<DamageInfo> __result)
+        public static void DamageInfosToApplyPostfix(Verb __instance, ref IEnumerable<DamageInfo> __result)
         {
             if (__instance.CasterIsPawn && __instance.CasterPawn.def is ThingDef_AlienRace alienProps && __instance.CasterPawn.CurJob.def == JobDefOf.SocialFight)
-                __result.Do(di => di.SetAmount(Math.Min(di.Amount, alienProps.alienRace.generalSettings.maxDamageForSocialfight)));
+                __result = __result.Select(di =>
+                    new DamageInfo(di.Def, Math.Min(di.Amount, alienProps.alienRace.generalSettings.maxDamageForSocialfight), di.Angle, di.Instigator, di.HitPart, di.Weapon, di.Category));
         }
 
         public static void CanEverEat(ref bool __result, RaceProperties __instance, ThingDef t)
@@ -477,7 +478,8 @@ namespace AlienRace
                         current,
                         " is discarded, yet he was yielded by PawnUtility. Discarding a pawn means that he is no longer managed by anything."
                             }));
-                } else
+                }
+                else
                 {
                     allDefsListForReading.ForEach(relationDef =>
                     {
@@ -528,34 +530,41 @@ namespace AlienRace
             {
                 generationChance = ChanceOfBecomingGenderlessChildOf(current, pawn, current.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, p => p != pawn));
                 HarmonyPatches.GenerationChanceChildPostfix(ref generationChance, pawn, current);
-            } else if (relationDef == PawnRelationDefOf.ExLover)
+            }
+            else if (relationDef == PawnRelationDefOf.ExLover)
             {
                 generationChance = 0.5f;
                 HarmonyPatches.GenerationChanceExLoverPostfix(ref generationChance, pawn, current);
-            } else if (relationDef == PawnRelationDefOf.ExSpouse)
+            }
+            else if (relationDef == PawnRelationDefOf.ExSpouse)
             {
                 generationChance = 0.5f;
                 HarmonyPatches.GenerationChanceExSpousePostfix(ref generationChance, pawn, current);
-            } else if (relationDef == PawnRelationDefOf.Fiance)
+            }
+            else if (relationDef == PawnRelationDefOf.Fiance)
             {
                 generationChance =
                 Mathf.Clamp(GenMath.LerpDouble(lifeExpectancy / 1.6f, lifeExpectancy, 1f, 0.01f, pawn.ageTracker.AgeBiologicalYearsFloat), 0.01f, 1f) *
                 Mathf.Clamp(GenMath.LerpDouble(lifeExpectancy / 1.6f, lifeExpectancy, 1f, 0.01f, current.ageTracker.AgeBiologicalYearsFloat), 0.01f, 1f);
                 HarmonyPatches.GenerationChanceFiancePostfix(ref generationChance, pawn, current);
-            } else if (relationDef == PawnRelationDefOf.Lover)
+            }
+            else if (relationDef == PawnRelationDefOf.Lover)
             {
                 generationChance = 0.5f;
                 HarmonyPatches.GenerationChanceLoverPostfix(ref generationChance, pawn, current);
-            } else if (relationDef == PawnRelationDefOf.Parent)
+            }
+            else if (relationDef == PawnRelationDefOf.Parent)
             {
                 generationChance = ChanceOfBecomingGenderlessChildOf(current, pawn, current.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, p => p != pawn));
                 HarmonyPatches.GenerationChanceParentPostfix(ref generationChance, pawn, current);
-            } else if (relationDef == PawnRelationDefOf.Sibling)
+            }
+            else if (relationDef == PawnRelationDefOf.Sibling)
             {
                 generationChance = ChanceOfBecomingGenderlessChildOf(current, pawn, current.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Parent, p => p != pawn));
                 generationChance *= 0.65f;
                 HarmonyPatches.GenerationChanceSiblingPostfix(ref generationChance, pawn, current);
-            } else if (relationDef == PawnRelationDefOf.Spouse)
+            }
+            else if (relationDef == PawnRelationDefOf.Spouse)
             {
                 generationChance = 0.5f;
                 HarmonyPatches.GenerationChanceSpousePostfix(ref generationChance, pawn, current);
@@ -988,10 +997,10 @@ namespace AlienRace
         }
 
         public static void PrepForMapGenPrefix(GameInitData __instance) => Find.Scenario.AllParts.OfType<ScenPart_StartingHumanlikes>().Select(sp => sp.GetPawns()).ToList().ForEach(sp =>
-            {
-                __instance.startingPawns.InsertRange(__instance.startingPawnCount, sp);
-                __instance.startingPawnCount += sp.Count();
-            });
+        {
+            __instance.startingPawns.InsertRange(__instance.startingPawnCount, sp);
+            __instance.startingPawnCount += sp.Count();
+        });
 
         public static bool TryGainMemoryThoughtPrefix(ref Thought_Memory newThought, MemoryThoughtHandler __instance)
         {
@@ -1010,7 +1019,7 @@ namespace AlienRace
                     ThoughtDef replacerThoughtDef = DefDatabase<ThoughtDef>.GetNamedSilentFail(replacer.replacer);
                     if (replacerThoughtDef != null)
                     {
-                        Thought_Memory replaceThought = (Thought_Memory)ThoughtMaker.MakeThought(replacerThoughtDef);
+                        Thought_Memory replaceThought = (Thought_Memory) ThoughtMaker.MakeThought(replacerThoughtDef);
                         /*
                         foreach (string infoName in AccessTools.GetFieldNames(newThought.GetType()))
                         {
@@ -1062,27 +1071,27 @@ namespace AlienRace
 
         static HashSet<ThingDef> colonistRaces;
         static int colonistRacesTick;
-        const int colonistRacesTickTimer = GenDate.TicksPerHour*2;
+        const int colonistRacesTickTimer = GenDate.TicksPerHour * 2;
 
         public static void DesignatorAllowedPostfix(Designator d, ref bool __result)
         {
             if (__result && d is Designator_Build)
             {
                 if (Find.TickManager.TicksAbs > colonistRacesTick + colonistRacesTickTimer || Find.TickManager.TicksAbs < colonistRacesTick)
-                    if((colonistRaces = new HashSet<ThingDef>(PawnsFinder.AllMaps_FreeColonistsSpawned.Select(p => p.def))).Count > 0)
+                    if ((colonistRaces = new HashSet<ThingDef>(PawnsFinder.AllMaps_FreeColonistsSpawned.Select(p => p.def))).Count > 0)
                         colonistRacesTick = Find.TickManager.TicksAbs;
 
                 Def toBuild = (d as Designator_Build).PlacingDef;
-                IEnumerable<ThingDef_AlienRace> races = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => 
-                    (ar.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false) || 
+                IEnumerable<ThingDef_AlienRace> races = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar =>
+                    (ar.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false) ||
                     (ar.alienRace.raceRestriction.whiteBuildingList?.Contains(toBuild.defName) ?? false));
                 if (races.Count() > 0)
                     __result = races.Any(ar => colonistRaces.Contains(ar));
 
                 if (__result)
-                    if (colonistRaces.ToList().TrueForAll(p => 
-                        ((p as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) && 
-                        !((p as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false) && 
+                    if (colonistRaces.ToList().TrueForAll(p =>
+                        ((p as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) &&
+                        !((p as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(toBuild.defName) ?? false) &&
                         !((p as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteBuildingList?.Contains(toBuild.defName) ?? false)))
                         __result = false;
             }
@@ -1131,7 +1140,8 @@ namespace AlienRace
                     IEnumerable<string> apparel = pawn.apparel.WornApparel.Select(twc => twc.def.defName);
                     if (!rprest.apparelList?.TrueForAll(ap => apparel.Contains(ap)) ?? false)
                         __result = true;
-                } else
+                }
+                else
                     __result = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => pawn.def != d && (d.alienRace.raceRestriction.researchList?.Any(rpr => rpr.projects.Contains(project.defName)) ?? false));
             }
         }
@@ -1174,7 +1184,7 @@ namespace AlienRace
             if (ingester.story.traits.HasTrait(AlienDefOf.Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1)
                 if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatDirect) && foodSource.def.ingestible.sourceDef != ingester.def)
                     __result.Remove(ThoughtDefOf.AteHumanlikeMeatDirect);
-                else if(__result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredient) && (foodSource.TryGetComp<CompIngredients>()?.ingredients.Any(td => FoodUtility.IsHumanlikeMeat(td) && td.ingestible.sourceDef != ingester.def) ?? false))
+                else if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredient) && (foodSource.TryGetComp<CompIngredients>()?.ingredients.Any(td => FoodUtility.IsHumanlikeMeat(td) && td.ingestible.sourceDef != ingester.def) ?? false))
                     __result.Remove(ThoughtDefOf.AteHumanlikeMeatAsIngredient);
 
         }
@@ -1436,7 +1446,7 @@ namespace AlienRace
             }
             if (pawn.equipment != null)
             {
-                ThingWithComps equipment = (ThingWithComps)c.GetThingList(pawn.Map).FirstOrDefault(t => t.TryGetComp<CompEquippable>() != null && t.def.IsWeapon);
+                ThingWithComps equipment = (ThingWithComps) c.GetThingList(pawn.Map).FirstOrDefault(t => t.TryGetComp<CompEquippable>() != null && t.def.IsWeapon);
                 if (equipment != null)
                 {
                     List<FloatMenuOption> options = opts.Where(fmo => !fmo.Disabled && fmo.Label.Contains("Equip".Translate(new object[] { equipment.LabelShort }))).ToList();
@@ -1536,7 +1546,8 @@ namespace AlienRace
                 if (alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && (alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(def.defName) ?? false))
                 {
                     __result = false;
-                } else if (!alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.NullOrEmpty() && alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.Contains(def.defName))
+                }
+                else if (!alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.NullOrEmpty() && alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.Contains(def.defName))
                 {
                     __result = false;
                 }
@@ -1595,7 +1606,8 @@ namespace AlienRace
                 if (!request.FixedGender.HasValue)
                 {
                     pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.maleGenderProbability ? Gender.Female : Gender.Male;
-                } else if (alienProps.alienRace.generalSettings.maleGenderProbability == 0f || alienProps.alienRace.generalSettings.maleGenderProbability == 100f)
+                }
+                else if (alienProps.alienRace.generalSettings.maleGenderProbability == 0f || alienProps.alienRace.generalSettings.maleGenderProbability == 100f)
                 {
                     pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = true;
                 }
@@ -1646,12 +1658,13 @@ namespace AlienRace
                 return true;
             }
 
-            PawnGenerationRequest request = new PawnGenerationRequest(kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, forceGenerateNewPawn:true, colonistRelationChanceFactor:26f);
+            PawnGenerationRequest request = new PawnGenerationRequest(kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, forceGenerateNewPawn: true, colonistRelationChanceFactor: 26f);
             Pawn pawn = null;
             try
             {
                 pawn = PawnGenerator.GeneratePawn(request);
-            } catch (Exception arg)
+            }
+            catch (Exception arg)
             {
                 Log.Error("There was an exception thrown by the PawnGenerator during generating a starting pawn. Trying one more time...\nException: " + arg);
                 pawn = PawnGenerator.GeneratePawn(request);
@@ -1719,7 +1732,8 @@ re
             {
                 __result = bio;
                 bioReference = DefDatabase<PawnBioDef>.AllDefs.FirstOrDefault(pbd => bio.name.ConfusinglySimilarTo(pbd.name));
-            } else
+            }
+            else
             {
                 __result = null;
             }
@@ -1830,7 +1844,8 @@ re
                 if (!alienProps.alienRace.hairSettings.hasHair)
                 {
                     factionType = noHairFaction;
-                } else if (!alienProps.alienRace.hairSettings.hairTags.NullOrEmpty())
+                }
+                else if (!alienProps.alienRace.hairSettings.hairTags.NullOrEmpty())
                 {
                     hairFaction.hairTags = alienProps.alienRace.hairSettings.hairTags;
                     factionType = hairFaction;
@@ -1860,7 +1875,8 @@ re
                             kindDef = pkd;
                         }
                     }
-                } else if (request.KindDef == PawnKindDefOf.Slave)
+                }
+                else if (request.KindDef == PawnKindDefOf.Slave)
                 {
                     if (comps.Where(r => !r.alienRace.pawnKindSettings.alienslavekinds.NullOrEmpty()).Select(r => r.alienRace.pawnKindSettings.alienslavekinds.RandomElement()).TryRandomElementByWeight((PawnKindEntry pke) => pke.chance, out pk))
                     {
@@ -1870,7 +1886,8 @@ re
                             kindDef = pkd;
                         }
                     }
-                } else if (request.KindDef == PawnKindDefOf.Villager)
+                }
+                else if (request.KindDef == PawnKindDefOf.Villager)
                 {
                     DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(tdar => !tdar.alienRace.pawnKindSettings.alienwandererkinds.NullOrEmpty()).
                         SelectMany(tdar => tdar.alienRace.pawnKindSettings.alienwandererkinds).Where(sce => sce.factionDefs.Contains(Faction.OfPlayer.def.defName)).SelectMany(sce => sce.pawnKindEntries).InRandomOrder().ToList().ForEach(pke =>
@@ -1889,7 +1906,7 @@ re
 
             request = new PawnGenerationRequest(kindDef, request.Faction, request.Context, request.Tile, request.ForceGenerateNewPawn, request.Newborn,
             request.AllowDead, request.AllowDead, request.CanGeneratePawnRelations, request.MustBeCapableOfViolence, request.ColonistRelationChanceFactor,
-            request.ForceAddFreeWarmLayerIfNeeded, request.AllowGay, request.AllowFood, request.Inhabitant, request.CertainlyBeenInCryptosleep, 
+            request.ForceAddFreeWarmLayerIfNeeded, request.AllowGay, request.AllowFood, request.Inhabitant, request.CertainlyBeenInCryptosleep,
             request.ForceRedressWorldPawnIfFormerColonist, request.WorldPawnFactionDoesntMatter, request.Validator, request.MinChanceToRedressWorldPawn, request.FixedBiologicalAge,
             request.FixedChronologicalAge, request.FixedGender, request.FixedMelanin, request.FixedLastName);
         }
@@ -1915,7 +1932,8 @@ re
                     yield return new CodeInstruction(OpCodes.Ldarg_S, 4); // bodyfacing
                     yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                     instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnMesh)));
-                } else if (instruction.operand == humanlikeHeadInfo)
+                }
+                else if (instruction.operand == humanlikeHeadInfo)
                 {
                     instructionList.RemoveRange(i, 2);
                     yield return new CodeInstruction(OpCodes.Ldarg_S, 7); // portrait
@@ -1924,7 +1942,8 @@ re
                     yield return new CodeInstruction(OpCodes.Ldarg_S, 5); //headfacing
                     yield return new CodeInstruction(OpCodes.Ldc_I4_0);
                     instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnMesh)));
-                } else if (i + 4 < instructionList.Count && instructionList[i + 2].operand == hairInfo)
+                }
+                else if (i + 4 < instructionList.Count && instructionList[i + 2].operand == hairInfo)
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_S, 7) { labels = instruction.labels }; // portrait
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
@@ -1934,7 +1953,8 @@ re
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), nameof(PawnRenderer.graphics)));
                     instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnHairMesh)));
                     instructionList.RemoveRange(i, 4);
-                } else if (i + 5 < instructionList.Count && instructionList[i + 5].operand == isAnimalInfo)
+                }
+                else if (i + 5 < instructionList.Count && instructionList[i + 5].operand == isAnimalInfo)
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_S, 7); // portrait
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
