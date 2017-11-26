@@ -74,7 +74,7 @@ namespace AlienRace
 
     public sealed class AlienTraitEntry
     {
-        public string defname;
+        public string defName;
         public int degree = 0;
         public float chance = 100;
 
