@@ -767,7 +767,7 @@ namespace AlienRace
                 if (alienProps.alienRace.generalSettings.disallowedTraits?.Contains(trait.def.defName) ?? false)
                     return false;
 
-                AlienTraitEntry ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(at => at.defname.EqualsIgnoreCase(trait.def.defName));
+                AlienTraitEntry ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(at => at.defName.EqualsIgnoreCase(trait.def.defName));
                 if (ate == null)
                 {
                     return true;
@@ -1807,9 +1807,9 @@ re
                 {
                     if (pawn.story.traits.allTraits.Count < 4 && (pawn.gender == Gender.Male && (ate.commonalityMale == -1f || Rand.Range(0, 100) < ate.commonalityMale)) || (pawn.gender == Gender.Female && (ate.commonalityFemale == -1f || Rand.Range(0, 100) < ate.commonalityFemale)) || pawn.gender == Gender.None)
                     {
-                        if (!pawn.story.traits.allTraits.Any(tr => tr.def.defName.EqualsIgnoreCase(ate.defname)))
+                        if (!pawn.story.traits.allTraits.Any(tr => tr.def.defName.EqualsIgnoreCase(ate.defName)))
                         {
-                            pawn.story.traits.GainTrait(new Trait(TraitDef.Named(ate.defname), ate.degree, true));
+                            pawn.story.traits.GainTrait(new Trait(TraitDef.Named(ate.defName), ate.degree, true));
                         }
                     }
                 });
