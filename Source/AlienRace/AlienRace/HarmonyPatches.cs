@@ -145,7 +145,11 @@ namespace AlienRace
 
         }
 
-        public static void CheckForStateChange(Pawn_HealthTracker __instance) => Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().Drawer.renderer.graphics.ResolveAllGraphics();
+        public static void CheckForStateChange(Pawn_HealthTracker __instance)
+        {
+            if(Current.ProgramState == ProgramState.Playing)
+                Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().Drawer.renderer.graphics.ResolveAllGraphics();
+        }
 
         //Does nothing or everything... go figure
         public static void BaseHeadOffsetAtPostfix(PawnRenderer __instance, ref Vector3 __result)
