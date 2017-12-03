@@ -136,11 +136,23 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.FactionTick)), null, null, new HarmonyMethod(patchType, nameof(FactionTickTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Designator_Build), nameof(Designator_Build.CanDesignateThing)), null, new HarmonyMethod(patchType, nameof(CanDesignateThingTamePostfix)));
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_InteractAnimal), "CanInteractWithAnimal"), null, new HarmonyMethod(patchType, nameof(CanInteractWithAnimalPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), nameof(PawnRenderer.BaseHeadOffsetAt)), null, new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), "CheckForStateChange"), null, new HarmonyMethod(patchType, nameof(CheckForStateChange)));
 
             //Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
 
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
 
+        }
+
+        public static void CheckForStateChange(Pawn_HealthTracker __instance) => Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().Drawer.renderer.graphics.ResolveAllGraphics();
+
+        //Does nothing or everything... go figure
+        public static void BaseHeadOffsetAtPostfix(PawnRenderer __instance, ref Vector3 __result)
+        {
+            Vector2 customDrawSize = (Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.customDrawSize ?? Vector2.zero;
+            //__result.x *= customDrawSize.x;
+            //__result.y = (customDrawSize.y < 1f ? 1 : -1) * customDrawSize.y / 2;
         }
 
         public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) =>
@@ -1148,6 +1160,11 @@ namespace AlienRace
 
         public static void ThoughtsFromIngestingPostfix(Pawn ingester, Thing foodSource, ref List<ThoughtDef> __result)
         {
+            if (ingester.story.traits.HasTrait(AlienDefOf.Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1)
+                if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatDirect) && foodSource.def.ingestible.sourceDef != ingester.def)
+                    __result.Remove(ThoughtDefOf.AteHumanlikeMeatDirect);
+                else if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredient) && (foodSource.TryGetComp<CompIngredients>()?.ingredients.Any(td => FoodUtility.IsHumanlikeMeat(td) && td.ingestible.sourceDef != ingester.def) ?? false))
+                    __result.Remove(ThoughtDefOf.AteHumanlikeMeatAsIngredient);
             if (ingester.def is ThingDef_AlienRace alienProps)
             {
                 if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatDirect) || __result.Contains(ThoughtDefOf.AteHumanlikeMeatDirectCannibal))
@@ -1181,12 +1198,6 @@ namespace AlienRace
                     }
                 }
             }
-            if (ingester.story.traits.HasTrait(AlienDefOf.Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1)
-                if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatDirect) && foodSource.def.ingestible.sourceDef != ingester.def)
-                    __result.Remove(ThoughtDefOf.AteHumanlikeMeatDirect);
-                else if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredient) && (foodSource.TryGetComp<CompIngredients>()?.ingredients.Any(td => FoodUtility.IsHumanlikeMeat(td) && td.ingestible.sourceDef != ingester.def) ?? false))
-                    __result.Remove(ThoughtDefOf.AteHumanlikeMeatAsIngredient);
-
         }
 
         public static void GenerationChanceSpousePostfix(ref float __result, Pawn generated, Pawn other)
@@ -1989,7 +2000,7 @@ re
                             alienProps.alienRace.generalSettings.alienPartGenerator.hairPortraitSetAverage :
                             alienProps.alienRace.generalSettings.alienPartGenerator.hairSetAverage)).MeshAt(headFacing) :
                     graphics.HairMeshSet.MeshAt(headFacing);
-
+        
         public static void DrawAddons(bool portrait, Pawn pawn, Vector3 vector)
         {
 
