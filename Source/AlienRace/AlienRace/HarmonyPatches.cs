@@ -137,7 +137,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Designator_Build), nameof(Designator_Build.CanDesignateThing)), null, new HarmonyMethod(patchType, nameof(CanDesignateThingTamePostfix)));
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_InteractAnimal), "CanInteractWithAnimal"), null, new HarmonyMethod(patchType, nameof(CanInteractWithAnimalPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer), nameof(PawnRenderer.BaseHeadOffsetAt)), null, new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), "CheckForStateChange"), null, new HarmonyMethod(patchType, nameof(CheckForStateChange)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), "CheckForStateChange"), null, new HarmonyMethod(patchType, nameof(CheckForStateChangePostfix)));
 
             //Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
 
@@ -145,10 +145,11 @@ namespace AlienRace
 
         }
 
-        public static void CheckForStateChange(Pawn_HealthTracker __instance)
+        public static void CheckForStateChangePostfix(Pawn_HealthTracker __instance)
         {
-            if(Current.ProgramState == ProgramState.Playing)
-                Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().Drawer.renderer.graphics.ResolveAllGraphics();
+            Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+            if (Current.ProgramState == ProgramState.Playing && pawn.Spawned && pawn.def is ThingDef_AlienRace)
+                pawn.Drawer.renderer.graphics.ResolveAllGraphics();
         }
 
         //Does nothing or everything... go figure
