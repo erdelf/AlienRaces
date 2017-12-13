@@ -151,13 +151,12 @@ namespace AlienRace
             if (Current.ProgramState == ProgramState.Playing && pawn.Spawned && pawn.def is ThingDef_AlienRace)
                 pawn.Drawer.renderer.graphics.ResolveAllGraphics();
         }
-
-        //Does nothing or everything... go figure
+        
         public static void BaseHeadOffsetAtPostfix(PawnRenderer __instance, ref Vector3 __result)
         {
-            Vector2 customDrawSize = (Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.customDrawSize ?? Vector2.zero;
-            //__result.x *= customDrawSize.x;
-            //__result.y = (customDrawSize.y < 1f ? 1 : -1) * customDrawSize.y / 2;
+            Vector2 offset = (Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.headOffset ?? Vector2.zero;
+            __result.x += offset.x;
+            __result.y += offset.y;
         }
 
         public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) =>
@@ -412,10 +411,6 @@ namespace AlienRace
 
         public static IEnumerable<CodeInstruction> GetTraderCaravanRoleTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
-            FieldInfo pawnDefInfo = AccessTools.Field(typeof(Pawn), nameof(Pawn.def));
-            FieldInfo alienRaceInfo = AccessTools.Field(typeof(ThingDef_AlienRace), nameof(ThingDef_AlienRace.alienRace));
-            FieldInfo pawnKindInfo = AccessTools.Field(typeof(ThingDef_AlienRace.AlienSettings), nameof(ThingDef_AlienRace.AlienSettings.pawnKindSettings));
-            FieldInfo slaveKindInfo = AccessTools.Field(typeof(PawnKindSettings), nameof(PawnKindSettings.alienslavekinds));
             MethodInfo traderRoleInfo = AccessTools.Method(patchType, nameof(GetTraderCaravanRoleInfix));
 
             List<CodeInstruction> instructionList = instructions.ToList();
