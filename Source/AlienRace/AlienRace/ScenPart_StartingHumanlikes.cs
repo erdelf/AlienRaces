@@ -79,7 +79,7 @@ namespace AlienRace
 
         public IEnumerable<Pawn> GetPawns()
         {
-            Predicate<Pawn> pawnCheck = p => p != null && DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(wtd => wtd.requireCapableColonist).ToList().TrueForAll(w => !p.story.WorkTypeIsDisabled(w));
+            bool pawnCheck(Pawn p) => p != null && DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(wtd => wtd.requireCapableColonist).ToList().TrueForAll(w => !p.story.WorkTypeIsDisabled(w));
 
 
             for (int i = 0; i < this.pawnCount; i++)
