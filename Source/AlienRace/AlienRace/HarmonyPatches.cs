@@ -156,7 +156,7 @@ namespace AlienRace
         {
             Vector2 offset = (Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.headOffset ?? Vector2.zero;
             __result.x += offset.x;
-            __result.y += offset.y;
+            __result.z += offset.y;
         }
 
         public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) =>
