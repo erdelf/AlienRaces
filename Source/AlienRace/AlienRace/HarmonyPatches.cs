@@ -1527,7 +1527,7 @@ namespace AlienRace
                     bool restrictionsOff = (alienProps?.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false) ? true :
                     (alienProps?.alienRace.raceRestriction.whiteApparelList?.Contains(apparel.def.defName) ?? true) ? true : false;
 
-                    if (!options.NullOrEmpty() && (!restrictionsOff || DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
+                    if (!options.NullOrEmpty() && (!restrictionsOff && DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d =>
                     pawn.def != d && (d.alienRace.raceRestriction.apparelList?.Contains(apparel.def.defName) ?? false))))
                     {
                         foreach (FloatMenuOption fmo in options)
