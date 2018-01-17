@@ -56,6 +56,10 @@ namespace AlienRace
 
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(ar =>
             {
+                ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(ar.race.corpseDef);
+                ar.race.corpseDef.thingCategories = new List<ThingCategoryDef>() { AlienDefOf.alienCorpseCategory };
+                AlienDefOf.alienCorpseCategory.childThingDefs.Add(ar.race.corpseDef);
+
                 if (ar.alienRace.generalSettings.humanRecipeImport)
                 {
                     ar.recipes.AddRange(ThingDefOf.Human.recipes.Where(rd => !rd.targetsBodyPart || (rd.appliedOnFixedBodyParts?.Any(bpd => ar.race.body.AllParts.Any(bpr => bpr.def == bpd)) ?? false)));
@@ -140,9 +144,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), "CheckForStateChange"), null, new HarmonyMethod(patchType, nameof(CheckForStateChangePostfix)));
             harmony.Patch(AccessTools.Method(typeof(ApparelProperties), nameof(ApparelProperties.GetInterferingBodyPartGroups)), null, null, new HarmonyMethod(patchType, nameof(GetInterferingBodyPartGroupsTranspiler)));
             //Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
-
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
-
         }
 
         //Zorba.....
