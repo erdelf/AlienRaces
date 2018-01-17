@@ -10,6 +10,7 @@ namespace AlienRace
     {
         public static TraitDef Xenophobia;
         public static ThoughtDef XenophobiaVsAlien;
+        public static ThingCategoryDef alienCorpseCategory;
     }
 
     public class ThinkNode_ConditionalIsMemberOfRace : ThinkNode_Conditional
