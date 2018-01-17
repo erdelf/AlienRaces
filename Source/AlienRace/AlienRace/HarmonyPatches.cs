@@ -62,15 +62,15 @@ namespace AlienRace
 
                 if (ar.alienRace.generalSettings.humanRecipeImport)
                 {
-                    ar.recipes.AddRange(ThingDefOf.Human.recipes.Where(rd => !rd.targetsBodyPart || (rd.appliedOnFixedBodyParts?.Any(bpd => ar.race.body.AllParts.Any(bpr => bpr.def == bpd)) ?? false)));
+                    (ar.recipes ?? (ar.recipes = new List<RecipeDef>())).AddRange(ThingDefOf.Human.recipes.Where(rd => !rd.targetsBodyPart || (rd.appliedOnFixedBodyParts?.Any(bpd => ar.race.body.AllParts.Any(bpr => bpr.def == bpd)) ?? false)));
 
                     DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(rd =>
                     {
                         if (rd.recipeUsers?.Contains(ThingDefOf.Human) ?? false)
                             rd.recipeUsers.Add(ar);
                     });
+                    ar.recipes.RemoveDuplicates();
                 }
-                ar.recipes.RemoveDuplicates();
 
                 ar.alienRace.raceRestriction?.workGiverList?.ForEach(wgd =>
                 {
