@@ -171,7 +171,8 @@ namespace AlienRace
         
         public static void BaseHeadOffsetAtPostfix(PawnRenderer __instance, ref Vector3 __result)
         {
-            Vector2 offset = (Traverse.Create(__instance).Field("pawn").GetValue<Pawn>().def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.headOffset ?? Vector2.zero;
+            Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+            Vector2 offset = (pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).headOffset ?? Vector2.zero;
             __result.x += offset.x;
             __result.z += offset.y;
         }
