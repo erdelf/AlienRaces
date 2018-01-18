@@ -25,12 +25,6 @@ namespace AlienRace
             public List<BodyAddonHediffGraphic> hediffGraphics;
             public List<BodyAddonBackstoryGraphic> backstoryGraphics;
 
-            public Mesh addonMesh;
-            public Mesh addonMeshFlipped;
-
-            public Mesh addonPortraitMesh;
-            public Mesh addonPortraitMeshFlipped;
-
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
             public List<string> hiddenUnderApparelTag = new List<string>();
 

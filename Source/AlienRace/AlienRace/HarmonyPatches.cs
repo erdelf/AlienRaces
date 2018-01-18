@@ -21,8 +21,6 @@ namespace AlienRace
         {
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.erdelf.alien_race.main");
 
-
-
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.GenerationChance)), null, new HarmonyMethod(patchType, nameof(GenerationChanceChildPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), nameof(PawnRelationWorker_ExLover.GenerationChance)), null, new HarmonyMethod(patchType, nameof(GenerationChanceExLoverPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExSpouse), nameof(PawnRelationWorker_ExSpouse.GenerationChance)), null, new HarmonyMethod(patchType, nameof(GenerationChanceExSpousePostfix)));
@@ -59,6 +57,8 @@ namespace AlienRace
                 ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(ar.race.corpseDef);
                 ar.race.corpseDef.thingCategories = new List<ThingCategoryDef>() { AlienDefOf.alienCorpseCategory };
                 AlienDefOf.alienCorpseCategory.childThingDefs.Add(ar.race.corpseDef);
+
+                ar.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
 
                 if (ar.alienRace.generalSettings.humanRecipeImport)
                 {
@@ -1790,9 +1790,10 @@ re
                 }
                 GraphicPaths graphicPaths = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage);
 
-                alienProps.alienRace.generalSettings.alienPartGenerator.customDrawSize = graphicPaths.customDrawSize;
-                alienProps.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize = graphicPaths.customPortraitDrawSize;
-                alienProps.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
+                alienComp.customDrawSize = graphicPaths.customDrawSize;
+                alienComp.customPortraitDrawSize = graphicPaths.customPortraitDrawSize;
+
+                alienComp.AssignProperMeshs();
 
                 Traverse.Create(alien.story).Field("headGraphicPath").SetValue(alienComp.crownType.NullOrEmpty() ? alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(graphicPaths.head, alien) : AlienPartGenerator.GetAlienHead(graphicPaths.head, (alienProps.alienRace.generalSettings.alienPartGenerator.useGenderedHeads ? alien.gender.ToString() : ""), alienComp.crownType));
 
@@ -1995,27 +1996,27 @@ re
         }
 
         public static Mesh GetPawnMesh(bool portrait, Pawn pawn, Rot4 facing, bool wantsBody) =>
-            pawn.def is ThingDef_AlienRace alienProps ?
+            pawn.GetComp<AlienPartGenerator.AlienComp>() is AlienPartGenerator.AlienComp alienComp ?
                 portrait ?
                     wantsBody ?
-                        alienProps.alienRace.generalSettings.alienPartGenerator.bodyPortraitSet.MeshAt(facing) :
-                        alienProps.alienRace.generalSettings.alienPartGenerator.headPortraitSet.MeshAt(facing) :
+                        alienComp.alienPortraitGraphics.bodySet.MeshAt(facing) :
+                        alienComp.alienPortraitGraphics.headSet.MeshAt(facing) :
                     wantsBody ?
-                        alienProps.alienRace.generalSettings.alienPartGenerator.bodySet.MeshAt(facing) :
-                        alienProps.alienRace.generalSettings.alienPartGenerator.headSet.MeshAt(facing) :
+                        alienComp.alienGraphics.bodySet.MeshAt(facing) :
+                        alienComp.alienGraphics.headSet.MeshAt(facing) :
                 wantsBody ?
                     MeshPool.humanlikeBodySet.MeshAt(facing) :
                     MeshPool.humanlikeHeadSet.MeshAt(facing);
 
         public static Mesh GetPawnHairMesh(bool portrait, Pawn pawn, Rot4 headFacing, PawnGraphicSet graphics) =>
-            pawn.def is ThingDef_AlienRace alienProps ?
+            pawn.GetComp<AlienPartGenerator.AlienComp>() is AlienPartGenerator.AlienComp alienComp ?
                     (pawn.story.crownType == CrownType.Narrow ?
                         (portrait ?
-                            alienProps.alienRace.generalSettings.alienPartGenerator.hairPortraitSetNarrow :
-                            alienProps.alienRace.generalSettings.alienPartGenerator.hairSetNarrow) :
+                            alienComp.alienPortraitGraphics.hairSetNarrow :
+                            alienComp.alienGraphics.hairSetNarrow) :
                         (portrait ?
-                            alienProps.alienRace.generalSettings.alienPartGenerator.hairPortraitSetAverage :
-                            alienProps.alienRace.generalSettings.alienPartGenerator.hairSetAverage)).MeshAt(headFacing) :
+                            alienComp.alienPortraitGraphics.hairSetAverage :
+                            alienComp.alienGraphics.hairSetAverage)).MeshAt(headFacing) :
                     graphics.HairMeshSet.MeshAt(headFacing);
         
         public static void DrawAddons(bool portrait, Pawn pawn, Vector3 vector)
@@ -2034,7 +2035,7 @@ re
                     if (ba.CanDrawAddon(pawn))
                     {
 
-                        Mesh mesh = portrait ? ba.addonPortraitMeshFlipped : ba.addonMesh;
+                        Mesh mesh = portrait ? alienComp.alienPortraitGraphics.addonMeshFlipped : alienComp.alienGraphics.addonMesh;
 
                         Rot4 rotation = pawn.Rotation;
                         if (portrait)
@@ -2068,17 +2069,17 @@ re
                         {
                             MoffsetX = -MoffsetX;
                             num = -num; //Angle
-                            mesh = ba.addonMeshFlipped;
+                            mesh = alienComp.alienGraphics.addonMeshFlipped;
                         }
 
                         Vector3 scaleVector = new Vector3(MoffsetX, MoffsetY, MoffsetZ);
                         scaleVector.x *= 1f + (1f - (portrait ?
-                                                        alienProps.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize :
-                                                        alienProps.alienRace.generalSettings.alienPartGenerator.customDrawSize)
+                                                        alienComp.customPortraitDrawSize :
+                                                        alienComp.customDrawSize)
                                                     .x);
                         scaleVector.z *= 1f + (1f - (portrait ?
-                                                        alienProps.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize :
-                                                        alienProps.alienRace.generalSettings.alienPartGenerator.customDrawSize)
+                                                        alienComp.customPortraitDrawSize :
+                                                        alienComp.customDrawSize)
                                                     .y);
 
                         GenDraw.DrawMeshNowOrLater(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), alienComp.addonGraphics[i].MatAt(rotation), portrait);

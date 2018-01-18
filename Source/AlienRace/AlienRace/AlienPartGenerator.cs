@@ -24,24 +24,14 @@ namespace AlienRace
         public ColorGenerator alienhairsecondcolorgen;
         public bool useSkincolorForHair = false;
 
+        public Vector2 headOffset = Vector2.zero;
+
         public Vector2 customDrawSize = Vector2.one;
         public Vector2 customPortraitDrawSize = Vector2.one;
 
-        public Vector2 headOffset = Vector2.zero;
-
         public BodyPartDef headBodyPartDef;
 
-        static Dictionary<Vector2, GraphicMeshSet[]> meshPools = new Dictionary<Vector2, GraphicMeshSet[]>();
-
-        public GraphicMeshSet bodySet;
-        public GraphicMeshSet headSet;
-        public GraphicMeshSet hairSetAverage;
-        public GraphicMeshSet hairSetNarrow;
-
-        public GraphicMeshSet bodyPortraitSet;
-        public GraphicMeshSet headPortraitSet;
-        public GraphicMeshSet hairPortraitSetAverage;
-        public GraphicMeshSet hairPortraitSetNarrow;
+        static Dictionary<Vector2, AlienGraphicMeshSet> meshPools = new Dictionary<Vector2, AlienGraphicMeshSet>();
 
         public List<BodyAddon> bodyAddons = new List<BodyAddon>();
 
@@ -70,89 +60,54 @@ namespace AlienRace
 
         public void GenerateMeshsAndMeshPools()
         {
-
+            foreach (Vector2 customDrawSize in this.alienProps.alienRace.graphicPaths.Select(gp => gp.customDrawSize).
+                Concat(this.alienProps.alienRace.graphicPaths.Select(gp => gp.customPortraitDrawSize)).Add(this.customDrawSize).Add(this.customPortraitDrawSize))
             {
-                if (!meshPools.Keys.Any(v => v.Equals(this.customDrawSize)))
+                if (!meshPools.Keys.Any(v => v.Equals(customDrawSize)))
                 {
-                    meshPools.Add(this.customDrawSize, new GraphicMeshSet[]
-                        {
-                                                            new GraphicMeshSet(1.5f * this.customDrawSize.x, 1.5f * this.customDrawSize.y), // bodySet
-                                                            new GraphicMeshSet(1.5f * this.customDrawSize.x, 1.5f * this.customDrawSize.y), // headSet
-                                                            new GraphicMeshSet(1.5f * this.customDrawSize.x, 1.5f * this.customDrawSize.y), // hairSetAverage
-                                                            new GraphicMeshSet(1.3f * this.customDrawSize.x, 1.5f * this.customDrawSize.y), // hairSetNarrow
-                        });
-                }
-
-                GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.customDrawSize))];
-
-                this.bodySet = meshSet[0];
-                this.headSet = meshSet[1];
-                this.hairSetAverage = meshSet[2];
-                this.hairSetNarrow = meshSet[3];
-                this.bodyAddons.ForEach(ba =>
-                {
-                    ba.addonMesh = (Mesh) meshInfo.Invoke(null, new object[] { this.customDrawSize * 1.5f, false, false, false });
-                    ba.addonMeshFlipped = (Mesh) meshInfo.Invoke(null, new object[] { this.customDrawSize * 1.5f, true, false, false });
-                });
-            }
-            {
-                if (!meshPools.Keys.Any(v => v.Equals(this.customPortraitDrawSize)))
-                {
-                    meshPools.Add(this.customPortraitDrawSize, new GraphicMeshSet[]
-                        {
-                                                            new GraphicMeshSet(1.5f * this.customPortraitDrawSize.x, 1.5f * this.customPortraitDrawSize.y), // bodySet
-                                                            new GraphicMeshSet(1.5f * this.customPortraitDrawSize.x, 1.5f * this.customPortraitDrawSize.y), // headSet
-                                                            new GraphicMeshSet(1.5f * this.customPortraitDrawSize.x, 1.5f * this.customPortraitDrawSize.y), // hairSetAverage
-                                                            new GraphicMeshSet(1.3f * this.customPortraitDrawSize.x, 1.5f * this.customPortraitDrawSize.y), // hairSetNarrow
-                        });
-                }
-
-                GraphicMeshSet[] meshSet = meshPools[meshPools.Keys.First(v => v.Equals(this.customPortraitDrawSize))];
-
-                this.bodyPortraitSet = meshSet[0];
-                this.headPortraitSet = meshSet[1];
-                this.hairPortraitSetAverage = meshSet[2];
-                this.hairPortraitSetNarrow = meshSet[3];
-                this.bodyAddons.ForEach(ba =>
-                {
-                    ba.addonPortraitMesh = (Mesh) meshInfo.Invoke(null, new object[] { this.customPortraitDrawSize * 1.5f, false, false, false });
-                    ba.addonPortraitMeshFlipped = (Mesh) meshInfo.Invoke(null, new object[] { this.customPortraitDrawSize * 1.5f, true, false, false });
-                });
-            }
-            {
-                this.bodyAddons.Do(ba =>
-                {
-                    if (ba.variantCount == 0)
+                    meshPools.Add(customDrawSize, new AlienGraphicMeshSet()
                     {
-                        while (ContentFinder<Texture2D>.Get(ba.path + (ba.variantCount == 0 ? "" : ba.variantCount.ToString()) + "_back", false) != null)
-                            ba.variantCount++;
-                        Log.Message("Variants found for " + ba.path + ": " + ba.variantCount.ToString());
-                        if (ba.hediffGraphics != null)
-                            foreach (BodyAddonHediffGraphic bahg in ba.hediffGraphics)
-                            {
-                                if (bahg.variantCount == 0)
-                                {
-                                    while (ContentFinder<Texture2D>.Get(bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_back", false) != null)
-                                        bahg.variantCount++;
-                                    Log.Message("Variants found for " + bahg.path + ": " + bahg.variantCount.ToString());
-                                }
-                            }
-                        if (ba.backstoryGraphics != null)
-                            foreach (BodyAddonBackstoryGraphic babg in ba.backstoryGraphics)
-                            {
-                                if (babg.variantCount == 0)
-                                {
-                                    while (ContentFinder<Texture2D>.Get(babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_back", false) != null)
-                                        babg.variantCount++;
-                                    Log.Message("Variants found for " + babg.path + ": " + babg.variantCount.ToString());
-                                }
-                            }
-
-
-                    }
-                });
+                        bodySet = new GraphicMeshSet(1.5f * customDrawSize.x, 1.5f * customDrawSize.y), // bodySet
+                        headSet = new GraphicMeshSet(1.5f * customDrawSize.x, 1.5f * customDrawSize.y), // headSet
+                        hairSetAverage = new GraphicMeshSet(1.5f * customDrawSize.x, 1.5f * customDrawSize.y), // hairSetAverage
+                        hairSetNarrow = new GraphicMeshSet(1.3f * customDrawSize.x, 1.5f * customDrawSize.y), // hairSetNarrow
+                        addonMesh = (Mesh) meshInfo.Invoke(null, new object[] { customDrawSize * 1.5f, false, false, false }),
+                        addonMeshFlipped = (Mesh) meshInfo.Invoke(null, new object[] { customDrawSize * 1.5f, true, false, false })
+                    });
+                }
             }
+
+            this.bodyAddons.Do(ba =>
+            {
+                if (ba.variantCount == 0)
+                {
+                    while (ContentFinder<Texture2D>.Get(ba.path + (ba.variantCount == 0 ? "" : ba.variantCount.ToString()) + "_back", false) != null)
+                        ba.variantCount++;
+                    Log.Message("Variants found for " + ba.path + ": " + ba.variantCount.ToString());
+                    if (ba.hediffGraphics != null)
+                        foreach (BodyAddonHediffGraphic bahg in ba.hediffGraphics)
+                        {
+                            if (bahg.variantCount == 0)
+                            {
+                                while (ContentFinder<Texture2D>.Get(bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_back", false) != null)
+                                    bahg.variantCount++;
+                                Log.Message("Variants found for " + bahg.path + ": " + bahg.variantCount.ToString());
+                            }
+                        }
+                    if (ba.backstoryGraphics != null)
+                        foreach (BodyAddonBackstoryGraphic babg in ba.backstoryGraphics)
+                        {
+                            if (babg.variantCount == 0)
+                            {
+                                while (ContentFinder<Texture2D>.Get(babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_back", false) != null)
+                                    babg.variantCount++;
+                                Log.Message("Variants found for " + babg.path + ": " + babg.variantCount.ToString());
+                            }
+                        }
+                }
+            });
         }
+
 
         public class AlienComp : ThingComp
         {
@@ -161,8 +116,19 @@ namespace AlienRace
             public Color skinColorSecond;
             public Color hairColorSecond;
             public string crownType;
-
+            public Vector2 customDrawSize = Vector2.one;
+            public Vector2 customPortraitDrawSize = Vector2.one;
+            public AlienGraphicMeshSet alienGraphics;
+            public AlienGraphicMeshSet alienPortraitGraphics;
             public List<Graphic> addonGraphics;
+
+            public override void PostSpawnSetup(bool respawningAfterLoad)
+            {
+                base.PostSpawnSetup(respawningAfterLoad);
+                AlienPartGenerator apg = (this.parent.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator;
+                this.customDrawSize = apg.customDrawSize;
+                this.customPortraitDrawSize = apg.customPortraitDrawSize;
+            }
 
             public override void PostExposeData()
             {
@@ -173,6 +139,22 @@ namespace AlienRace
                 Scribe_Values.Look(ref this.hairColorSecond, "hairColorSecondAlien");
                 Scribe_Values.Look(ref this.crownType, "crownType");
             }
+
+            internal void AssignProperMeshs()
+            {
+                this.alienGraphics = AlienPartGenerator.meshPools[this.customDrawSize];
+                this.alienPortraitGraphics = AlienPartGenerator.meshPools[this.customPortraitDrawSize];
+            }
+        }
+
+        public class AlienGraphicMeshSet
+        {
+            public GraphicMeshSet bodySet;
+            public GraphicMeshSet headSet;
+            public GraphicMeshSet hairSetAverage;
+            public GraphicMeshSet hairSetNarrow;
+            public Mesh addonMesh;
+            public Mesh addonMeshFlipped;
         }
     }
 }
