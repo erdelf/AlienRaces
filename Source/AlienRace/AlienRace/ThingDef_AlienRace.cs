@@ -238,5 +238,6 @@ namespace AlienRace
     public class Info : DefModExtension
     {
         public bool usePawnKindBackstories = false;
+        public bool allowHumanBios = true;
     }
 }
