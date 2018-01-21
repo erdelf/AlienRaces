@@ -1753,7 +1753,7 @@ re
 
         public static void TryGetRandomUnusedSolidBioForPostfix(string backstoryCategory, ref PawnBio __result, PawnKindDef kind, Gender gender, string requiredLastName)
         {
-            if (SolidBioDatabase.allBios.Where(pb => (((kind.race as ThingDef_AlienRace)?.alienRace.generalSettings.allowHumanBios ?? true) ||
+            if (SolidBioDatabase.allBios.Where(pb => ((((kind.race as ThingDef_AlienRace)?.alienRace.generalSettings.allowHumanBios ?? true) && (kind.GetModExtension<Info>()?.allowHumanBios ?? true)) ||
                 (DefDatabase<PawnBioDef>.AllDefs.FirstOrDefault(pbd => pb.name.ConfusinglySimilarTo(pbd.name))?.validRaces.Contains(kind.race) ?? false)) &&
                 (pb.gender == GenderPossibility.Either || (pb.gender == GenderPossibility.Male && gender == Gender.Male)) &&
                 (requiredLastName.NullOrEmpty() || !(pb.name.Last != requiredLastName)) && (!kind.factionLeader || pb.pirateKing) &&
