@@ -5,7 +5,7 @@ using Verse;
 
 namespace AlienRace
 {
-    public sealed class PawnBioDef : Def
+    public class PawnBioDef : Def
     {
         public string childhoodDef;
         public string adulthoodDef;

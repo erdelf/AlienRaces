@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 namespace AlienRace
 {
     [StaticConstructorOnStartup]
-    static class HarmonyPatches
+    public static class HarmonyPatches
     {
         static readonly Type patchType = typeof(HarmonyPatches);
 

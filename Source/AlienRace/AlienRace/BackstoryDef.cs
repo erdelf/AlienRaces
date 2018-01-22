@@ -6,7 +6,7 @@ using Verse;
 
 namespace AlienRace
 {
-    public sealed class BackstoryDef : Def
+    public class BackstoryDef : Def
     {
         public string baseDescription;
         public BodyType bodyTypeGlobal = BodyType.Undefined;

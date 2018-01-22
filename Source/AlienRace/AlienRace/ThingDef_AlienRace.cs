@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AlienRace
 {
-    public sealed class ThingDef_AlienRace : ThingDef
+    public class ThingDef_AlienRace : ThingDef
     {
         public AlienSettings alienRace;
 
@@ -28,7 +28,7 @@ namespace AlienRace
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
         }
 
-        public sealed class AlienSettings
+        public class AlienSettings
         {
             public GeneralSettings generalSettings = new GeneralSettings();
             public List<GraphicPaths> graphicPaths = new List<GraphicPaths>();
@@ -40,7 +40,7 @@ namespace AlienRace
         }
     }
 
-    public sealed class GeneralSettings
+    public class GeneralSettings
     {
         public float maleGenderProbability = 0.5f;
         public bool pawnsSpecificBackstories = false;
@@ -61,20 +61,20 @@ namespace AlienRace
         public bool humanRecipeImport = false;
     }
 
-    public sealed class FactionRelationSettings
+    public class FactionRelationSettings
     {
         public List<string> factions;
         public FloatRange goodwill;
     }
 
-    public sealed class ChemicalSettings
+    public class ChemicalSettings
     {
         public string chemical;
         public bool ingestible = true;
         public List<IngestionOutcomeDoer> reactions;
     }
 
-    public sealed class AlienTraitEntry
+    public class AlienTraitEntry
     {
         public string defName;
         public int degree = 0;
@@ -84,7 +84,7 @@ namespace AlienRace
         public float commonalityFemale = -1f;
     }
 
-    public sealed class GraphicPaths
+    public class GraphicPaths
     {
         public List<LifeStageDef> lifeStageDefs;
         public Vector2 customDrawSize = Vector2.one;
@@ -100,14 +100,14 @@ namespace AlienRace
         public string stump = "Things/Pawn/Humanlike/Heads/None_Average_Stump";
     }
 
-    public sealed class HairSettings
+    public class HairSettings
     {
         public bool hasHair = true;
         public List<string> hairTags;
         public int getsGreyAt = 40;
     }
 
-    public sealed class PawnKindSettings
+    public class PawnKindSettings
     {
         public List<PawnKindEntry> alienslavekinds;
         public List<PawnKindEntry> alienrefugeekinds;
@@ -115,19 +115,19 @@ namespace AlienRace
         public List<FactionPawnKindEntry> alienwandererkinds;
     }
 
-    public sealed class PawnKindEntry
+    public class PawnKindEntry
     {
         public List<string> kindDefs;
         public float chance;
     }
 
-    public sealed class FactionPawnKindEntry
+    public class FactionPawnKindEntry
     {
         public List<PawnKindEntry> pawnKindEntries;
         public List<string> factionDefs;
     }
 
-    public sealed class ThoughtSettings
+    public class ThoughtSettings
     {
         public List<string> cannotReceiveThoughts;
         public bool cannotReceiveThoughtsAtAll = false;
@@ -142,27 +142,27 @@ namespace AlienRace
         public List<ThoughtReplacer> replacerList;
     }
 
-    public sealed class ButcherThought
+    public class ButcherThought
     {
         public List<string> raceList;
         public string thought = "ButcheredHumanlikeCorpse";
         public string knowThought = "KnowButcheredHumanlikeCorpse";
     }
 
-    public sealed class AteThought
+    public class AteThought
     {
         public List<string> raceList;
         public string thought = "AteHumanlikeMeatDirect";
         public string ingredientThought = "AteHumanlikeMeatAsIngredient";
     }
 
-    public sealed class ThoughtReplacer
+    public class ThoughtReplacer
     {
         public string original;
         public string replacer;
     }
 
-    public sealed class RelationSettings
+    public class RelationSettings
     {
         public float relationChanceModifierChild = 1f;
         public float relationChanceModifierExLover = 1f;
@@ -176,14 +176,14 @@ namespace AlienRace
         public List<RelationRenamer> renamer;
     }
 
-    public sealed class RelationRenamer
+    public class RelationRenamer
     {
         public string relation;
         public string label;
         public string femaleLabel;
     }
 
-    public sealed class RaceRestrictionSettings
+    public class RaceRestrictionSettings
     {
         public bool onlyUseRaceRestrictedApparel = false;
         public List<string> apparelList;
@@ -224,7 +224,7 @@ namespace AlienRace
         public List<string> workGiverList;
     }
 
-    public sealed class ResearchProjectRestrictions
+    public class ResearchProjectRestrictions
     {
         public List<string> projects;
         public List<string> apparelList;
