@@ -9,7 +9,7 @@ using Verse;
 
 namespace AlienRace
 {
-    public sealed partial class AlienPartGenerator
+    public partial class AlienPartGenerator
     {
         public List<string> aliencrowntypes = new List<string>() { "Average_Normal" };
 

@@ -8,7 +8,7 @@ using Verse;
 namespace AlienRace
 {
     [StaticConstructorOnStartup]
-    sealed class ScenPart_StartingHumanlikes : ScenPart
+    public class ScenPart_StartingHumanlikes : ScenPart
     {
         
         static ScenPart_StartingHumanlikes()
@@ -27,10 +27,9 @@ namespace AlienRace
             DefDatabase<ScenPartDef>.Add(scenPart);
         }
 
-        PawnKindDef kindDef = PawnKindDefOf.Villager;
-        int pawnCount = 0;
-
-        string buffer;
+        private PawnKindDef kindDef = PawnKindDefOf.Villager;
+        private int pawnCount = 0;
+        private string buffer;
 
         public override void DoEditInterface(Listing_ScenEdit listing)
         {
