@@ -12,6 +12,10 @@ using System.Runtime.CompilerServices;
 
 namespace AlienRace
 {
+    /// <summary>
+    /// "More useful than the Harmony wiki" ~ Mehni
+    /// </summary>
+
     [StaticConstructorOnStartup]
     public static class HarmonyPatches
     {
