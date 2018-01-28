@@ -1630,15 +1630,17 @@ namespace AlienRace
 
         public static void GenerateRandomAgePrefix(Pawn pawn, PawnGenerationRequest request)
         {
-            if (pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.maleGenderProbability != 0.5f)
+            if (!request.FixedGender.HasValue)
             {
-                if (!request.FixedGender.HasValue)
+                float maleGenderProbability = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.maleGenderProbability ?? pawn.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? 0.5f;
+                if (maleGenderProbability != 0.5f)
                 {
-                    pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.maleGenderProbability ? Gender.Female : Gender.Male;
-                }
-                else if (alienProps.alienRace.generalSettings.maleGenderProbability == 0f || alienProps.alienRace.generalSettings.maleGenderProbability == 100f)
-                {
-                    pawn.GetComp<AlienPartGenerator.AlienComp>().fixGenderPostSpawn = true;
+                    pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
+                    AlienPartGenerator.AlienComp alienComp = pawn.TryGetComp<AlienPartGenerator.AlienComp>();
+                    if (alienComp != null && maleGenderProbability == 0f || maleGenderProbability == 100f)
+                    {
+                        alienComp.fixGenderPostSpawn = true;
+                    }
                 }
             }
         }
