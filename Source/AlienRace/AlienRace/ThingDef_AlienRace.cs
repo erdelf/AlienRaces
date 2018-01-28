@@ -239,5 +239,6 @@ namespace AlienRace
     {
         public bool usePawnKindBackstories = false;
         public bool allowHumanBios = true;
+        public float maleGenderProbability = 0.5f;
     }
 }
