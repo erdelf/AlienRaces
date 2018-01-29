@@ -172,7 +172,7 @@ namespace AlienRace
             if (Current.ProgramState == ProgramState.Playing && pawn.Spawned && pawn.def is ThingDef_AlienRace)
                 pawn.Drawer.renderer.graphics.ResolveAllGraphics();
         }
-        
+
         public static void BaseHeadOffsetAtPostfix(PawnRenderer __instance, ref Vector3 __result)
         {
             Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
@@ -237,7 +237,12 @@ namespace AlienRace
 
         public static void GenerateInitialHediffsPostfix(Pawn pawn) =>
             pawn.story?.AllBackstories?.Select(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)).OfType<BackstoryDef>().SelectMany(bd => bd.forcedHediffs).Concat(bioReference?.forcedHediffs ?? new List<string>(0)).Select(s =>
-                DefDatabase<HediffDef>.GetNamedSilentFail(s)).ToList().ForEach(hd => pawn.health.AddHediff(hd, null));
+                DefDatabase<HediffDef>.GetNamedSilentFail(s)).ToList().ForEach(hd =>
+                {
+                    BodyPartRecord bodyPartRecord = null;
+                    DefDatabase<RecipeDef>.AllDefs.FirstOrDefault(rd => rd.addsHediff == hd)?.appliedOnFixedBodyParts.Select(bpd => pawn.health.hediffSet.GetNotMissingParts().FirstOrDefault(bpr => bpr.def == bpd)).TryRandomElement(out bodyPartRecord);
+                    pawn.health.AddHediff(hd, bodyPartRecord);
+                });
 
         public static void GenerateStartingApparelForPostfix() => Traverse.Create(typeof(PawnApparelGenerator)).Field("allApparelPairs").GetValue<List<ThingStuffPair>>().AddRange(apparelList);
 
