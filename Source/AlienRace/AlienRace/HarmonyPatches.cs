@@ -2049,8 +2049,8 @@ re
                             rotation = Rot4.South;
                         AlienPartGenerator.RotationOffset offset = rotation == Rot4.South ? ba.offsets.front : rotation == Rot4.North ? ba.offsets.back : ba.offsets.side;
                         //Log.Message("front: " + (offset == ba.offsets.front).ToString() + "\nback: " + (offset == ba.offsets.back).ToString() + "\nside :" + (offset == ba.offsets.side).ToString());
-                        Vector2 bodyOffset = offset?.bodyTypes?.FirstOrDefault(to => to.bodyType == pawn.story.bodyType)?.offset ?? Vector2.zero;
-                        Vector2 crownOffset = offset?.crownTypes?.FirstOrDefault(to => to.crownType == alienComp.crownType)?.offset ?? Vector2.zero;
+                        Vector2 bodyOffset = (portrait ? offset?.portraitBodyTypes ?? offset.bodyTypes : offset?.bodyTypes)?.FirstOrDefault(to => to.bodyType == pawn.story.bodyType)?.offset ?? Vector2.zero;
+                        Vector2 crownOffset = (portrait ? offset?.portraitCrownTypes ?? offset.crownTypes : offset?.crownTypes)?.FirstOrDefault(to => to.crownType == alienComp.crownType)?.offset ?? Vector2.zero;
 
                         //front 0.42f, -0.3f, -0.22f
                         //back     0f,  0.3f, -0.55f
