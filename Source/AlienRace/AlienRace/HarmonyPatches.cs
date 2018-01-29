@@ -240,7 +240,7 @@ namespace AlienRace
                 DefDatabase<HediffDef>.GetNamedSilentFail(s)).ToList().ForEach(hd =>
                 {
                     BodyPartRecord bodyPartRecord = null;
-                    DefDatabase<RecipeDef>.AllDefs.FirstOrDefault(rd => rd.addsHediff == hd)?.appliedOnFixedBodyParts.Select(bpd => pawn.health.hediffSet.GetNotMissingParts().FirstOrDefault(bpr => bpr.def == bpd)).TryRandomElement(out bodyPartRecord);
+                    DefDatabase<RecipeDef>.AllDefs.FirstOrDefault(rd => rd.addsHediff == hd)?.appliedOnFixedBodyParts.SelectMany(bpd => pawn.health.hediffSet.GetNotMissingParts().Where(bpr => bpr.def == bpd && !pawn.health.hediffSet.hediffs.Any(h => h.def == hd && h.Part == bpr))).TryRandomElement(out bodyPartRecord);
                     pawn.health.AddHediff(hd, bodyPartRecord);
                 });
 
