@@ -22,7 +22,7 @@ namespace AlienRace
                     gp.customDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
                 if (gp.customPortraitDrawSize == Vector2.one)
                     gp.customPortraitDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
-                if (gp.headOffset == Vector2.one)
+                if (gp.headOffset == Vector2.zero)
                     gp.headOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
             });
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
