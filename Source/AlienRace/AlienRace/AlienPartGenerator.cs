@@ -28,6 +28,8 @@ namespace AlienRace
 
         public Vector2 customDrawSize = Vector2.one;
         public Vector2 customPortraitDrawSize = Vector2.one;
+        public Vector2 customHeadDrawSize = Vector2.zero;
+        public Vector2 customPortraitHeadDrawSize = Vector2.zero;
 
         public BodyPartDef headBodyPartDef;
 
@@ -60,21 +62,33 @@ namespace AlienRace
 
         public void GenerateMeshsAndMeshPools()
         {
-            foreach (Vector2 customDrawSize in this.alienProps.alienRace.graphicPaths.Select(gp => gp.customDrawSize).
-                Concat(this.alienProps.alienRace.graphicPaths.Select(gp => gp.customPortraitDrawSize)).Add(this.customDrawSize).Add(this.customPortraitDrawSize))
+            if (this.customHeadDrawSize == Vector2.zero)
+                this.customHeadDrawSize = this.customDrawSize;
+            if (this.customPortraitHeadDrawSize == Vector2.zero)
+                this.customPortraitHeadDrawSize = this.customPortraitDrawSize;
+
+            void AddMeshSet(Vector2 drawSize, Vector2 headDrawSize)
             {
-                if (!meshPools.Keys.Any(v => v.Equals(customDrawSize)))
+                if (!meshPools.Keys.Any(v => v.Equals(drawSize)))
                 {
-                    meshPools.Add(customDrawSize, new AlienGraphicMeshSet()
+                    meshPools.Add(drawSize, new AlienGraphicMeshSet()
                     {
-                        bodySet = new GraphicMeshSet(1.5f * customDrawSize.x, 1.5f * customDrawSize.y), // bodySet
-                        headSet = new GraphicMeshSet(1.5f * customDrawSize.x, 1.5f * customDrawSize.y), // headSet
-                        hairSetAverage = new GraphicMeshSet(1.5f * customDrawSize.x, 1.5f * customDrawSize.y), // hairSetAverage
-                        hairSetNarrow = new GraphicMeshSet(1.3f * customDrawSize.x, 1.5f * customDrawSize.y), // hairSetNarrow
-                        addonMesh = (Mesh) meshInfo.Invoke(null, new object[] { customDrawSize * 1.5f, false, false, false }),
-                        addonMeshFlipped = (Mesh) meshInfo.Invoke(null, new object[] { customDrawSize * 1.5f, true, false, false })
+                        bodySet = new GraphicMeshSet(1.5f * drawSize.x, 1.5f * drawSize.y), // bodySet
+                        headSet = new GraphicMeshSet(1.5f * headDrawSize.x, 1.5f * headDrawSize.y), // headSet
+                        hairSetAverage = new GraphicMeshSet(1.5f * headDrawSize.x, 1.5f * headDrawSize.y), // hairSetAverage
+                        hairSetNarrow = new GraphicMeshSet(1.3f * headDrawSize.x, 1.5f * headDrawSize.y), // hairSetNarrow
+                        addonMesh = (Mesh) meshInfo.Invoke(null, new object[] { drawSize * 1.5f, false, false, false }),
+                        addonMeshFlipped = (Mesh) meshInfo.Invoke(null, new object[] { drawSize * 1.5f, true, false, false })
                     });
                 }
+            }
+
+            foreach (GraphicPaths graphicsPath in this.alienProps.alienRace.graphicPaths.Concat(new GraphicPaths() { customDrawSize = this.customDrawSize, customHeadDrawSize = this.customHeadDrawSize, customPortraitDrawSize = this.customPortraitDrawSize, customPortraitHeadDrawSize = this.customPortraitHeadDrawSize }))
+                /*.Select(gp => gp.customDrawSize).
+                Concat(this.alienProps.alienRace.graphicPaths.Select(gp => gp.customPortraitDrawSize)).Add(this.customDrawSize).Add(this.customPortraitDrawSize))*/
+            {
+                AddMeshSet(graphicsPath.customDrawSize, graphicsPath.customHeadDrawSize);
+                AddMeshSet(graphicsPath.customPortraitDrawSize, graphicsPath.customPortraitHeadDrawSize);
             }
 
             this.bodyAddons.Do(ba =>
