@@ -58,10 +58,10 @@ namespace AlienRace
                 }
                 int tv;
                 return !path.NullOrEmpty() ?
-                            GraphicDatabase.Get<Graphic_Multi>(path + (savedIndex.HasValue ? (tv = savedIndex.Value).ToString() :
-                                    ((tv = this.linkVariantIndexWithPrevious ?
+                            GraphicDatabase.Get<Graphic_Multi>(path + ((savedIndex.HasValue ? (tv = savedIndex.Value) :
+                                    (tv = this.linkVariantIndexWithPrevious ?
                                         sharedIndex % variantCount :
-                                        (sharedIndex = Rand.Range(0, variantCount))) == 0 ? "" : tv.ToString())),
+                                        (sharedIndex = Rand.Range(0, variantCount)))) == 0 ? "" : tv.ToString()),
                                 ContentFinder<Texture2D>.Get(path + tv + "_backm", false) == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
                                     new Vector3(1, 0, 1),
                                         this.useSkinColor ?
