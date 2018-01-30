@@ -19,6 +19,7 @@ namespace AlienRace
             public bool linkVariantIndexWithPrevious = false;
             public float angle = 0f;
             public bool inFrontOfBody = false;
+            public float layerOffset = 0;
 
             public int variantCount = 0;
 

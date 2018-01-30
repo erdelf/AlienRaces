@@ -2065,13 +2065,13 @@ re
 
                         float MoffsetX = 0.42f;
                         float MoffsetZ = -0.22f;
-                        float MoffsetY = ba.inFrontOfBody ? 0.3f : -0.3f;
+                        float MoffsetY = ba.inFrontOfBody ? 0.3f + ba.layerOffset : -0.3f - ba.layerOffset;
                         float num = ba.angle;
 
                         if (rotation == Rot4.North)
                         {
                             MoffsetX = 0f;
-                            MoffsetY = !ba.inFrontOfBody ? 0.3f : -0.3f;
+                            MoffsetY = !ba.inFrontOfBody ? -0.3f - ba.layerOffset : 0.3f+- ba.layerOffset;
                             MoffsetZ = -0.55f;
                             num = 0;
                         }
