@@ -16,6 +16,12 @@ namespace AlienRace
             base.ResolveReferences();
             if (this.alienRace.graphicPaths.NullOrEmpty())
                 this.alienRace.graphicPaths.Add(new GraphicPaths());
+
+            if (this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize == Vector2.zero)
+                this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
+            if (this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize == Vector2.zero)
+                this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
+
             this.alienRace.graphicPaths.ForEach(gp =>
             {
                 if(gp.customDrawSize == Vector2.one)
@@ -23,9 +29,9 @@ namespace AlienRace
                 if (gp.customPortraitDrawSize == Vector2.one)
                     gp.customPortraitDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
                 if (gp.customHeadDrawSize == Vector2.zero)
-                    gp.customHeadDrawSize = gp.customDrawSize;
+                    gp.customHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize;
                 if (gp.customPortraitHeadDrawSize == Vector2.zero)
-                    gp.customPortraitHeadDrawSize = gp.customPortraitDrawSize;
+                    gp.customPortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize;
                 if (gp.headOffset == Vector2.zero)
                     gp.headOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
             });

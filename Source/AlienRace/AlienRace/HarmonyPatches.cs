@@ -61,7 +61,6 @@ namespace AlienRace
                 ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(ar.race.corpseDef);
                 ar.race.corpseDef.thingCategories = new List<ThingCategoryDef>() { AlienDefOf.alienCorpseCategory };
                 AlienDefOf.alienCorpseCategory.childThingDefs.Add(ar.race.corpseDef);
-
                 ar.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
 
                 if (ar.alienRace.generalSettings.humanRecipeImport)

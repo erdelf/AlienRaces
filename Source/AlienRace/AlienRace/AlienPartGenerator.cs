@@ -62,15 +62,11 @@ namespace AlienRace
 
         public void GenerateMeshsAndMeshPools()
         {
-            if (this.customHeadDrawSize == Vector2.zero)
-                this.customHeadDrawSize = this.customDrawSize;
-            if (this.customPortraitHeadDrawSize == Vector2.zero)
-                this.customPortraitHeadDrawSize = this.customPortraitDrawSize;
-
             void AddMeshSet(Vector2 drawSize, Vector2 headDrawSize)
             {
                 if (!meshPools.Keys.Any(v => v.Equals(drawSize)))
                 {
+                    Log.Message(headDrawSize.ToString());
                     meshPools.Add(drawSize, new AlienGraphicMeshSet()
                     {
                         bodySet = new GraphicMeshSet(1.5f * drawSize.x, 1.5f * drawSize.y), // bodySet
