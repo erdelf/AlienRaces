@@ -22,6 +22,10 @@ namespace AlienRace
                     gp.customDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
                 if (gp.customPortraitDrawSize == Vector2.one)
                     gp.customPortraitDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
+                if (gp.customHeadDrawSize == Vector2.zero)
+                    gp.customHeadDrawSize = gp.customDrawSize;
+                if (gp.customPortraitHeadDrawSize == Vector2.zero)
+                    gp.customPortraitHeadDrawSize = gp.customPortraitDrawSize;
                 if (gp.headOffset == Vector2.zero)
                     gp.headOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
             });
@@ -87,8 +91,12 @@ namespace AlienRace
     public class GraphicPaths
     {
         public List<LifeStageDef> lifeStageDefs;
+
         public Vector2 customDrawSize = Vector2.one;
         public Vector2 customPortraitDrawSize = Vector2.one;
+        public Vector2 customHeadDrawSize = Vector2.zero;
+        public Vector2 customPortraitHeadDrawSize = Vector2.zero;
+
         public Vector2 headOffset = Vector2.zero;
 
         public const string vanillaHeadPath = "Things/Pawn/Humanlike/Heads/";
