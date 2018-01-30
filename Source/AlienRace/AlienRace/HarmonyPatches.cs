@@ -1820,9 +1820,11 @@ re
 
                 AlienPartGenerator apg = alienProps.alienRace.generalSettings.alienPartGenerator;
                 alienComp.addonGraphics = new List<Graphic>();
+                if(alienComp.addonVariants == null)
+                    alienComp.addonVariants = new List<int>();
                 int sharedIndex = 0;
-                apg.bodyAddons.ForEach(ba =>
-                    alienComp.addonGraphics.Add(ba.GetPath(alien, ref sharedIndex)));
+                for(int i = 0; i < apg.bodyAddons.Count; i++)
+                    alienComp.addonGraphics.Add(apg.bodyAddons[i].GetPath(alien, ref sharedIndex, alienComp.addonVariants.Count >= i ? (int?) i : null));
 
                 __instance.ResolveApparelGraphics();
 
