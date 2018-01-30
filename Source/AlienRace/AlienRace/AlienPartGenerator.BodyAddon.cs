@@ -38,7 +38,7 @@ namespace AlienRace
                     RestUtility.CurrentBed(pawn) == null && !pawn.Downed && pawn.GetPosture() == PawnPosture.Standing && !pawn.Dead && 
                     (this.bodyPart == null || pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == this.bodyPart));
 
-            public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex)
+            public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
                 string path = "";
                 int variantCount = 0;
@@ -58,10 +58,10 @@ namespace AlienRace
                 }
                 int tv;
                 return !path.NullOrEmpty() ?
-                            GraphicDatabase.Get<Graphic_Multi>(path +
+                            GraphicDatabase.Get<Graphic_Multi>(path + (savedIndex.HasValue ? (tv = savedIndex.Value).ToString() :
                                     ((tv = this.linkVariantIndexWithPrevious ?
                                         sharedIndex % variantCount :
-                                        sharedIndex = Rand.Range(0, variantCount)) == 0 ? "" : tv.ToString()),
+                                        (sharedIndex = Rand.Range(0, variantCount))) == 0 ? "" : tv.ToString())),
                                 ContentFinder<Texture2D>.Get(path + tv + "_backm", false) == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
                                     new Vector3(1, 0, 1),
                                         this.useSkinColor ?

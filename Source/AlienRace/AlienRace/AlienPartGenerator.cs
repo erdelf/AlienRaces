@@ -135,6 +135,7 @@ namespace AlienRace
             public AlienGraphicMeshSet alienGraphics;
             public AlienGraphicMeshSet alienPortraitGraphics;
             public List<Graphic> addonGraphics;
+            public List<int> addonVariants;
 
             public override void PostSpawnSetup(bool respawningAfterLoad)
             {
@@ -152,6 +153,7 @@ namespace AlienRace
                 Scribe_Values.Look(ref this.skinColorSecond, "skinColorSecondAlien");
                 Scribe_Values.Look(ref this.hairColorSecond, "hairColorSecondAlien");
                 Scribe_Values.Look(ref this.crownType, "crownType");
+                Scribe_Collections.Look(ref this.addonVariants, "addonVariants");
             }
 
             internal void AssignProperMeshs()
