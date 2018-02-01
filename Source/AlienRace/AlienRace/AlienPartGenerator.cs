@@ -66,7 +66,6 @@ namespace AlienRace
             {
                 if (!meshPools.Keys.Any(v => v.Equals(drawSize)))
                 {
-                    Log.Message(headDrawSize.ToString());
                     meshPools.Add(drawSize, new AlienGraphicMeshSet()
                     {
                         bodySet = new GraphicMeshSet(1.5f * drawSize.x, 1.5f * drawSize.y), // bodySet
