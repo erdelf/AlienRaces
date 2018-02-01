@@ -59,7 +59,7 @@ namespace AlienRace
                 }
                 int tv;
                 return !path.NullOrEmpty() ?
-                            GraphicDatabase.Get<Graphic_Multi>(path + ((savedIndex.HasValue ? (tv = savedIndex.Value) :
+                            GraphicDatabase.Get<Graphic_Multi>(path + ((savedIndex.HasValue ? (sharedIndex = tv = savedIndex.Value) :
                                     (tv = this.linkVariantIndexWithPrevious ?
                                         sharedIndex % variantCount :
                                         (sharedIndex = Rand.Range(0, variantCount)))) == 0 ? "" : tv.ToString()),
