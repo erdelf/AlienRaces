@@ -1823,7 +1823,7 @@ re
                     alienComp.addonVariants = new List<int>();
                 int sharedIndex = 0;
                 for(int i = 0; i < apg.bodyAddons.Count; i++)
-                    alienComp.addonGraphics.Add(apg.bodyAddons[i].GetPath(alien, ref sharedIndex, alienComp.addonVariants.Count >= i ? (int?) i : null));
+                    alienComp.addonGraphics.Add(apg.bodyAddons[i].GetPath(alien, ref sharedIndex, alienComp.addonVariants.Count < i ? (int?) alienComp.addonVariants[i] : null));
 
                 __instance.ResolveApparelGraphics();
 
