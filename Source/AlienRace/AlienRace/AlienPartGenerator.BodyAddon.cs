@@ -57,13 +57,14 @@ namespace AlienRace
                     path = this.path;
                     variantCount = this.variantCount;
                 }
+
                 int tv;
                 return !path.NullOrEmpty() ?
-                            GraphicDatabase.Get<Graphic_Multi>(path + ((savedIndex.HasValue ? (sharedIndex = tv = savedIndex.Value) :
-                                    (tv = this.linkVariantIndexWithPrevious ?
+                            GraphicDatabase.Get<Graphic_Multi>(path = (path + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value) :
+                                    (this.linkVariantIndexWithPrevious ?
                                         sharedIndex % variantCount :
-                                        (sharedIndex = Rand.Range(0, variantCount)))) == 0 ? "" : tv.ToString()),
-                                ContentFinder<Texture2D>.Get(path + tv + "_backm", false) == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
+                                        (sharedIndex = Rand.Range(0, variantCount))))) == 0 ? "" : tv.ToString())),
+                                ContentFinder<Texture2D>.Get(path + "_backm", false) == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
                                     new Vector3(1, 0, 1),
                                         this.useSkinColor ?
                                             pawn.story.SkinColor :
