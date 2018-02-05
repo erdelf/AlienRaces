@@ -2002,11 +2002,15 @@ re
                 }
                 else if (i + 5 < instructionList.Count && instructionList[i + 5].operand == isAnimalInfo)
                 {
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, 7); // portrait
+                    yield return instruction; // portrait
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), "pawn"));
                     yield return new CodeInstruction(OpCodes.Ldloc_S, 6); //vector
+                    yield return new CodeInstruction(OpCodes.Ldarg_2); // quat
+                    yield return new CodeInstruction(OpCodes.Ldarg_S, 4); // bodyfacing
                     yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(DrawAddons)));
+
+                    instruction = new CodeInstruction(OpCodes.Ldarg_S, 7);
                 }
                 yield return instruction;
             }
@@ -2036,12 +2040,10 @@ re
                             alienComp.alienGraphics.hairSetAverage)).MeshAt(headFacing) :
                     graphics.HairMeshSet.MeshAt(headFacing);
         
-        public static void DrawAddons(bool portrait, Pawn pawn, Vector3 vector)
+        public static void DrawAddons(bool portrait, Pawn pawn, Vector3 vector, Quaternion quat, Rot4 rotation)
         {
-
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
-
                 List<AlienPartGenerator.BodyAddon> addons = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
                 AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
                 for (int i = 0; i < addons.Count; i++)
@@ -2051,17 +2053,12 @@ re
 
                     if (ba.CanDrawAddon(pawn))
                     {
-
-                        Mesh mesh = portrait ? alienComp.alienPortraitGraphics.addonMeshFlipped : alienComp.alienGraphics.addonMesh;
-
-                        Rot4 rotation = pawn.Rotation;
-                        if (portrait)
-                            rotation = Rot4.South;
                         AlienPartGenerator.RotationOffset offset = rotation == Rot4.South ? ba.offsets.front : rotation == Rot4.North ? ba.offsets.back : ba.offsets.side;
-                        //Log.Message("front: " + (offset == ba.offsets.front).ToString() + "\nback: " + (offset == ba.offsets.back).ToString() + "\nside :" + (offset == ba.offsets.side).ToString());
+                        
                         Vector2 bodyOffset = (portrait ? offset?.portraitBodyTypes ?? offset.bodyTypes : offset?.bodyTypes)?.FirstOrDefault(to => to.bodyType == pawn.story.bodyType)?.offset ?? Vector2.zero;
                         Vector2 crownOffset = (portrait ? offset?.portraitCrownTypes ?? offset.crownTypes : offset?.crownTypes)?.FirstOrDefault(to => to.crownType == alienComp.crownType)?.offset ?? Vector2.zero;
 
+                        //Defaults for tails 
                         //front 0.42f, -0.3f, -0.22f
                         //back     0f,  0.3f, -0.55f
                         //side -0.42f, -0.3f, -0.22f   
@@ -2071,10 +2068,12 @@ re
                         float MoffsetY = ba.inFrontOfBody ? 0.3f + ba.layerOffset : -0.3f - ba.layerOffset;
                         float num = ba.angle;
 
+                        Mesh mesh = portrait ? alienComp.alienPortraitGraphics.addonMeshFlipped : alienComp.alienGraphics.addonMesh;
+
                         if (rotation == Rot4.North)
                         {
                             MoffsetX = 0f;
-                            MoffsetY = !ba.inFrontOfBody ? -0.3f - ba.layerOffset : 0.3f+- ba.layerOffset;
+                            MoffsetY = !ba.inFrontOfBody ? -0.3f - ba.layerOffset : 0.3f + ba.layerOffset;
                             MoffsetZ = -0.55f;
                             num = 0;
                         }
@@ -2088,18 +2087,9 @@ re
                             num = -num; //Angle
                             mesh = alienComp.alienGraphics.addonMeshFlipped;
                         }
-
-                        Vector3 scaleVector = new Vector3(MoffsetX, MoffsetY, MoffsetZ);
-                        scaleVector.x *= 1f + (1f - (portrait ?
-                                                        alienComp.customPortraitDrawSize :
-                                                        alienComp.customDrawSize)
-                                                    .x);
-                        scaleVector.z *= 1f + (1f - (portrait ?
-                                                        alienComp.customPortraitDrawSize :
-                                                        alienComp.customDrawSize)
-                                                    .y);
-
-                        GenDraw.DrawMeshNowOrLater(mesh, vector + scaleVector, Quaternion.AngleAxis(num, Vector3.up), alienComp.addonGraphics[i].MatAt(rotation), portrait);
+                        Vector3 offsetVector = new Vector3(MoffsetX, MoffsetY, MoffsetZ);
+                        //                                                                                Angle calculation to not pick the shortest, taken from Quaternion.Angle
+                        GenDraw.DrawMeshNowOrLater(mesh, vector + Vector3Utility.RotatedBy(offsetVector, (Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f)), Quaternion.AngleAxis(num, Vector3.up) * quat, alienComp.addonGraphics[i].MatAt(rotation), portrait);
                     }
                 }
             }
