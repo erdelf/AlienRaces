@@ -30,7 +30,7 @@ namespace AlienRace
         public List<string> forcedHediffs = new List<string>();
         public IntRange bioAgeRange;
         public IntRange chronoAgeRange;
-        public List<string> forcedItems;
+        public List<string> forcedItems = new List<string>();
 
         public bool CommonalityApproved(Gender g) => Rand.Range(0, 100) < (g == Gender.Female ? this.femaleCommonality : this.maleCommonality);
 
