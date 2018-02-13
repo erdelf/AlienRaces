@@ -153,9 +153,8 @@ namespace AlienRace
         }
 
         public static void GenerateGearForPostfix(Pawn pawn) => 
-            pawn.inventory.GetDirectlyHeldThings().TryAddRangeOrTransfer(
                 pawn.story?.AllBackstories?.Select(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)).OfType<BackstoryDef>().SelectMany(bd => bd.forcedItems).Concat(bioReference?.forcedItems ?? new List<string>(0)).Select(s =>
-                    DefDatabase<ThingDef>.GetNamedSilentFail(s)).Select(td => ThingMaker.MakeThing(td, GenStuff.RandomStuffFor(td))));
+                    DefDatabase<ThingDef>.GetNamedSilentFail(s)).OfType<ThingDef>().Select(td => ThingMaker.MakeThing(td, GenStuff.RandomStuffFor(td))).OfType<Thing>().ToList().ForEach(th => pawn.inventory.TryAddItemNotForSale(th));
 
         //Zorba.....
         public static IEnumerable<CodeInstruction> GetInterferingBodyPartGroupsTranspiler(IEnumerable<CodeInstruction> instructions)
