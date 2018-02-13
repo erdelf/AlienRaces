@@ -146,9 +146,16 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer), nameof(PawnRenderer.BaseHeadOffsetAt)), null, new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), "CheckForStateChange"), null, new HarmonyMethod(patchType, nameof(CheckForStateChangePostfix)));
             harmony.Patch(AccessTools.Method(typeof(ApparelProperties), nameof(ApparelProperties.GetInterferingBodyPartGroups)), null, null, new HarmonyMethod(patchType, nameof(GetInterferingBodyPartGroupsTranspiler)));
-            //Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateGearFor"), null, new HarmonyMethod(patchType, nameof(GenerateGearForPostfix)));
+
+            Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
+
+        public static void GenerateGearForPostfix(Pawn pawn) => 
+            pawn.inventory.GetDirectlyHeldThings().TryAddRangeOrTransfer(
+                pawn.story?.AllBackstories?.Select(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)).OfType<BackstoryDef>().SelectMany(bd => bd.forcedItems).Concat(bioReference?.forcedItems ?? new List<string>(0)).Select(s =>
+                    DefDatabase<ThingDef>.GetNamedSilentFail(s)).Select(td => ThingMaker.MakeThing(td, GenStuff.RandomStuffFor(td))));
 
         //Zorba.....
         public static IEnumerable<CodeInstruction> GetInterferingBodyPartGroupsTranspiler(IEnumerable<CodeInstruction> instructions)
