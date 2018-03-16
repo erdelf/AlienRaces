@@ -20,6 +20,7 @@ namespace AlienRace
             public float angle = 0f;
             public bool inFrontOfBody = false;
             public float layerOffset = 0;
+            public bool drawnOnGround = false;
             public bool drawnInBed = true;
 
             public int variantCount = 0;
@@ -35,7 +36,7 @@ namespace AlienRace
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
                 !pawn.apparel.WornApparel.Any(ap => ap.def.apparel.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
-                ap.def.apparel.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)))) && (!pawn.InBed() || this.drawnInBed) &&
+                ap.def.apparel.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && (!pawn.InBed() || this.drawnInBed) &&
                     (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(b=> b.identifier == this.backstoryRequirement)) &&   
                     (this.bodyPart == null || pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == this.bodyPart));
 
