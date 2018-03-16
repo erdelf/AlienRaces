@@ -77,6 +77,20 @@ namespace AlienRace
                         addonMeshsFlipped = this.bodyAddons.Select(ba => ba.drawSize).Distinct().ToDictionary(dS => dS, dS => (Mesh) meshInfo.Invoke(null, new object[] { Vector2.Scale(drawSize * 1.5f, dS), true, false, false }))
                     });
                 }
+                else
+                {
+                    Dictionary<Vector2, Mesh> addonMeshs = meshPools[drawSize].addonMeshs;
+                    foreach (Vector2 dS in this.bodyAddons.Select(ba => ba.drawSize).Distinct().Where(dS => !addonMeshs.ContainsKey(dS)))
+                        addonMeshs.Add(dS, (Mesh) meshInfo.Invoke(null, new object[] { Vector2.Scale(drawSize * 1.5f, dS), false, false, false }));
+                    meshPools[drawSize].addonMeshs = addonMeshs;
+
+                    addonMeshs = meshPools[drawSize].addonMeshsFlipped;
+                    foreach (Vector2 dS in this.bodyAddons.Select(ba => ba.drawSize).Distinct().Where(dS => !addonMeshs.ContainsKey(dS)))
+                        addonMeshs.Add(dS, (Mesh) meshInfo.Invoke(null, new object[] { Vector2.Scale(drawSize * 1.5f, dS), true, false, false }));
+                    meshPools[drawSize].addonMeshsFlipped = addonMeshs;
+
+                    //(this.bodyAddons.Select(ba => ba.drawSize).Distinct().ToDictionary(dS => dS, dS => (Mesh) meshInfo.Invoke(null, new object[] { Vector2.Scale(drawSize * 1.5f, dS), false, false, false })));
+                }
             }
 
             foreach (GraphicPaths graphicsPath in this.alienProps.alienRace.graphicPaths.Concat(
