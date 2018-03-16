@@ -2074,7 +2074,7 @@ re
                         float MoffsetY = ba.inFrontOfBody ? 0.3f + ba.layerOffset : -0.3f - ba.layerOffset;
                         float num = ba.angle;
 
-                        Mesh mesh = portrait ? alienComp.alienPortraitGraphics.addonMeshFlipped : alienComp.alienGraphics.addonMesh;
+                        Mesh mesh = portrait ? alienComp.alienPortraitGraphics.addonMeshsFlipped[ba.drawSize] : alienComp.alienGraphics.addonMeshs[ba.drawSize];
 
                         if (rotation == Rot4.North)
                         {
@@ -2091,7 +2091,7 @@ re
                         {
                             MoffsetX = -MoffsetX;
                             num = -num; //Angle
-                            mesh = alienComp.alienGraphics.addonMeshFlipped;
+                            mesh = alienComp.alienGraphics.addonMeshsFlipped[ba.drawSize];
                         }
                         Vector3 offsetVector = new Vector3(MoffsetX, MoffsetY, MoffsetZ);
                         //                                                                                Angle calculation to not pick the shortest, taken from Quaternion.Angle
