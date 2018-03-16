@@ -22,6 +22,8 @@ namespace AlienRace
             public float layerOffset = 0;
             public bool drawnOnGround = false;
             public bool drawnInBed = true;
+            
+            public Vector2 drawSize = Vector2.one;
 
             public int variantCount = 0;
 
