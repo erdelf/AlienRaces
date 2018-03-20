@@ -318,7 +318,7 @@ namespace AlienRace
             }
         }
 
-        public static void GenTextAdjustedForPostfix(ref string __result, Pawn p) => __result.Replace("ALIENRACE", p.def.LabelCap);
+        public static void GenTextAdjustedForPostfix(ref string __result, Pawn p) => __result = __result.Replace("ALIENRACE", p.def.LabelCap);
 
         public static IEnumerable<CodeInstruction> GenerateTraitsTranspiler(IEnumerable<CodeInstruction> instructions)
         {
