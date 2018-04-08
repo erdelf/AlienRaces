@@ -19,6 +19,7 @@ namespace AlienRace
         public bool addToDatabase = true;
         public List<WorkTags> workAllows = new List<WorkTags>();
         public List<WorkTags> workDisables = new List<WorkTags>();
+        public List<WorkTags> requiredWorkTags = new List<WorkTags>();
         public List<BackstoryDefSkillListItem> skillGains = new List<BackstoryDefSkillListItem>();
         public List<string> spawnCategories = new List<string>();
         public List<AlienTraitEntry> forcedTraits = new List<AlienTraitEntry>();
@@ -59,20 +60,26 @@ namespace AlienRace
                 shuffleable = this.shuffleable,
                 spawnCategories = this.spawnCategories,
                 skillGains = this.skillGains.ToDictionary(i => i.defName, i => i.amount),
-                forcedTraits = this.forcedTraits.NullOrEmpty() ? null : this.forcedTraits.Where(trait => Rand.Range(0,100) < trait.chance).ToList().ConvertAll(trait => new TraitEntry(TraitDef.Named(trait.defName), trait.degree)),
-                disallowedTraits = this.disallowedTraits.NullOrEmpty() ? null : this.disallowedTraits.Where(trait => Rand.Range(0,100) < trait.chance).ToList().ConvertAll(trait => new TraitEntry(TraitDef.Named(trait.defName), trait.degree)),
-                workDisables = this.workAllows.NullOrEmpty() ? this.workDisables.NullOrEmpty() ? WorkTags.None : ((Func<WorkTags>)delegate
+                forcedTraits = this.forcedTraits.NullOrEmpty() ? null : this.forcedTraits.Where(trait => Rand.Range(0, 100) < trait.chance).ToList().ConvertAll(trait => new TraitEntry(TraitDef.Named(trait.defName), trait.degree)),
+                disallowedTraits = this.disallowedTraits.NullOrEmpty() ? null : this.disallowedTraits.Where(trait => Rand.Range(0, 100) < trait.chance).ToList().ConvertAll(trait => new TraitEntry(TraitDef.Named(trait.defName), trait.degree)),
+                workDisables = this.workAllows.NullOrEmpty() ? this.workDisables.NullOrEmpty() ? WorkTags.None : ((Func<WorkTags>) delegate
+                 {
+                     WorkTags wt = WorkTags.None;
+                     this.workDisables.ForEach(tag => wt |= tag);
+                     return wt;
+                 })() : ((Func<WorkTags>) delegate
+                 {
+                     WorkTags wt = WorkTags.None;
+                     Enum.GetValues(typeof(WorkTags)).Cast<WorkTags>().Where(tag => !this.workAllows.Contains(tag)).ToList().ForEach(tag => wt |= tag);
+                     return wt;
+                 })(),
+                identifier = this.defName,
+                requiredWorkTags = ((Func<WorkTags>) delegate
                 {
                     WorkTags wt = WorkTags.None;
-                    this.workDisables.ForEach(tag => wt |= tag);
+                    this.requiredWorkTags.ForEach(tag => wt |= tag);
                     return wt;
-                })() : ((Func<WorkTags>)delegate
-                {
-                    WorkTags wt = WorkTags.None;
-                    Enum.GetValues(typeof(WorkTags)).Cast<WorkTags>().ToList().ForEach(tag => { if (this.workAllows.Contains(tag)) { wt |= tag; } });
-                    return wt;
-                })(),
-                identifier = this.defName
+                })()
             };
 
             b.SetTitle(this.title);
@@ -96,7 +103,7 @@ namespace AlienRace
                 BackstoryDatabase.AddBackstory(b);
             } else
             {
-                Log.Error(this.defName + " has errors: " + string.Join("\n", errors.ToArray()));
+                Log.Error(this.defName + " has errors:\n" + string.Join("\n", errors.ToArray()));
             }
         }
 
