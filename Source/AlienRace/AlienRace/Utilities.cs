@@ -8,9 +8,11 @@ namespace AlienRace
     [DefOf]
     public static class AlienDefOf
     {
+#pragma warning disable IDE1006 // Benennungsstile
         public static TraitDef Xenophobia;
         public static ThoughtDef XenophobiaVsAlien;
         public static ThingCategoryDef alienCorpseCategory;
+#pragma warning restore IDE1006 // Benennungsstile
     }
 
     public class ThinkNode_ConditionalIsMemberOfRace : ThinkNode_Conditional
