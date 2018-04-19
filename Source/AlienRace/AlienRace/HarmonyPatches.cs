@@ -1145,7 +1145,8 @@ namespace AlienRace
         {
             if (__result)
             {
-                __result = ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(t.def.defName) ?? false) ? true : ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteBuildingList?.Contains(t.def.defName) ?? false) ? true :
+                string defName = t.def.entityDefToBuild?.defName ?? t.def.defName; // t.def.defName.Replace(ThingDefGenerator_Buildings.BlueprintDefNameSuffix, string.Empty).Replace(ThingDefGenerator_Buildings.BuildingFrameDefNameSuffix, string.Empty).Replace(ThingDefGenerator_Buildings.InstallBlueprintDefNameSuffix, string.Empty);
+                __result = ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.buildingList?.Contains(defName) ?? false) ? true : ((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.whiteBuildingList?.Contains(defName) ?? false) ? true :
                     (((p.def as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) ? false :
                     !(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(d => p.def != d && (d.alienRace.raceRestriction.buildingList?.Contains(t.def.entityDefToBuild.defName) ?? false))));
             }
