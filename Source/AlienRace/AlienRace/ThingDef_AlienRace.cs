@@ -255,4 +255,9 @@ namespace AlienRace
         public bool allowHumanBios = true;
         public float maleGenderProbability = 0.5f;
     }
+
+    public class LifeStageAgeAlien : LifeStageAge
+    {
+        public BodyDef body;
+    }
 }

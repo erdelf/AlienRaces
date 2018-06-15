@@ -9,6 +9,7 @@ using Verse;
 using Verse.AI;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using Harmony.ILCopying;
 
 namespace AlienRace
 {
@@ -107,7 +108,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Property(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.SkinColor)).GetGetMethod(), null,  new HarmonyMethod(patchType, nameof(SkinColorPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnHairChooser), nameof(PawnHairChooser.RandomHairDefFor)), new HarmonyMethod(patchType, nameof(RandomHairDefForPrefix)), null);
-            //harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(patchClass, nameof(BirthdayBiologicalPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), "BirthdayBiological"), new HarmonyMethod(patchType, nameof(BirthdayBiologicalPrefix)), null);
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), nameof(PawnGenerator.GeneratePawn), new Type[] { typeof(PawnGenerationRequest) }), new HarmonyMethod(patchType, nameof(GeneratePawnPrefix)), null);
 
             harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), nameof(PawnGraphicSet.ResolveAllGraphics)), new HarmonyMethod(patchType, nameof(ResolveAllGraphicsPrefix)), null);
@@ -147,10 +148,136 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), "CheckForStateChange"), null,  new HarmonyMethod(patchType, nameof(CheckForStateChangePostfix)));
             harmony.Patch(AccessTools.Method(typeof(ApparelProperties), nameof(ApparelProperties.GetInterferingBodyPartGroups)), null, null, new HarmonyMethod(patchType, nameof(GetInterferingBodyPartGroupsTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateGearFor"), null,  new HarmonyMethod(patchType, nameof(GenerateGearForPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn), nameof(Pawn.ChangeKind)), new HarmonyMethod(patchType, nameof(ChangeKindPrefix)), null);
 
-            //Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
+
+
+            {
+                //DateTime time = DateTime.Now;
+
+                FieldInfo bodyInfo = AccessTools.Field(typeof(RaceProperties), nameof(RaceProperties.body));
+
+                OpCode[] one_byte_opcodes = new OpCode[225];
+                OpCode[] two_bytes_opcodes = new OpCode[31];
+                FieldInfo[] fields = typeof(OpCodes).GetFields(BindingFlags.Static | BindingFlags.Public);
+                for (int i = 0; i < fields.Length; i++)
+                {
+                    OpCode opCode = (OpCode) fields[i].GetValue(null);
+                    if (opCode.OpCodeType != OpCodeType.Nternal)
+                        if (opCode.Size == 1)
+                            one_byte_opcodes[(int) opCode.Value] = opCode;
+                        else
+                            two_bytes_opcodes[(int) (opCode.Value & 255)] = opCode;
+                }
+
+                bool CheckMethodInfo(MethodInfo mi)
+                {
+                    ByteBuffer buffer = new ByteBuffer(mi.GetMethodBody().GetILAsByteArray());
+                    while (buffer.position < buffer.buffer.Length)
+                    {
+                        OpCode op;
+                        byte b = buffer.ReadByte();
+                        if (b != 0xfe)
+                            op = one_byte_opcodes[(int) b];
+                        else
+                            op = two_bytes_opcodes[(int) buffer.ReadByte()];
+
+                        switch (op.OperandType)
+                        {
+                            case OperandType.InlineField:
+                                if (mi.Module.ResolveField(buffer.ReadInt32()) == bodyInfo)
+                                    return true;
+                                break;
+                            case OperandType.InlineBrTarget:
+                            case OperandType.InlineI:
+                            case OperandType.InlineMethod:
+                            case OperandType.InlineSig:
+                            case OperandType.InlineString:
+                            case OperandType.InlineTok:
+                            case OperandType.InlineType:
+                                buffer.ReadInt32();
+                                break;
+                            case OperandType.InlineI8:
+                                buffer.ReadInt64();
+                                break;
+                            case OperandType.InlineR:
+                                buffer.ReadDouble();
+                                break;
+                            case OperandType.InlineSwitch:
+                                int count = buffer.ReadInt32();
+                                for (int i = 0; i < count; i++)
+                                    buffer.ReadInt32();
+                                break;
+                            case OperandType.InlineVar:
+                                buffer.ReadInt16();
+                                break;
+                            case OperandType.ShortInlineI:
+                            case OperandType.ShortInlineBrTarget:
+                            case OperandType.ShortInlineVar:
+                                buffer.ReadByte();
+                                break;
+                            case OperandType.ShortInlineR:
+                                buffer.ReadSingle();
+                                break;
+                        }
+                    }
+                    return false;
+                }
+
+                IEnumerable<Type> types = LoadedModManager.RunningMods.Where(mcp => mcp.LoadedAnyAssembly).
+                        SelectMany(mcp => mcp.assemblies.loadedAssemblies.Where(ase => ase.GetType("HarmonyInstance", false) != null)).
+                        Concat(typeof(LogEntry).Assembly).SelectMany(ase => ase.GetTypes());
+
+
+                
+                foreach (MethodInfo mi in LoadedModManager.RunningMods.Where(mcp => mcp.LoadedAnyAssembly).
+                        SelectMany(mcp => mcp.assemblies.loadedAssemblies.Where(ase => ase.GetType("HarmonyInstance", false) != null)).
+                        Concat(typeof(LogEntry).Assembly).SelectMany(ase => ase.GetTypes()).
+                        //SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
+                        Where(t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(t)  && !t.IsGenericType).
+                        SelectMany(t => t.GetMethods(AccessTools.all).Concat(t.GetProperties(AccessTools.all).
+                        SelectMany(pi => new List<MethodInfo>() { pi.GetGetMethod(true), pi.GetGetMethod(false), pi.GetSetMethod(true), pi.GetSetMethod(false) })).
+                        Where(mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod)))//.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
+                {
+                    if (CheckMethodInfo(mi))
+                        harmony.Patch(mi, null, null, new HarmonyMethod(patchType, nameof(BodyReferenceTranspiler)));
+                }
+                
+            }
+            Log.Message("Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
             DefDatabase<HairDef>.GetNamed("Shaved").hairTags.Add("alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
+
+        public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo bodyInfo = AccessTools.Field(typeof(RaceProperties), nameof(RaceProperties.body));
+            FieldInfo propsInfo = AccessTools.Field(typeof(ThingDef), nameof(ThingDef.race));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                if (i < instructionList.Count - 2 && instructionList[i + 2].operand == bodyInfo && instructionList[i + 1].operand == propsInfo)
+                {
+                    instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(ReplacedBody)));
+                    i += 2;
+                }
+
+                if (i < instructionList.Count - 1 && instructionList[i + 1].operand == bodyInfo)
+                {
+                    instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(ReplacedBody)));
+                    i++;
+                }
+                yield return instruction;
+            }
+        }
+
+        public static BodyDef ReplacedBody(Pawn pawn) => 
+            pawn.def is ThingDef_AlienRace ? (pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien)?.body ?? pawn.RaceProps.body : pawn.RaceProps.body;
+
+        public static bool ChangeKindPrefix(Pawn __instance, PawnKindDef newKindDef) => 
+            __instance.kindDef == PawnKindDefOf.WildMan || newKindDef == PawnKindDefOf.WildMan;
 
         public static void GenerateGearForPostfix(Pawn pawn) => 
                 pawn.story?.AllBackstories?.Select(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier)).OfType<BackstoryDef>().SelectMany(bd => bd.forcedItems).Concat(bioReference?.forcedItems ?? new List<string>(0)).Select(s =>
@@ -1425,8 +1552,15 @@ namespace AlienRace
                 string path = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStageRace.def).head;
                 if (path != null)
                 {
-                    Traverse.Create(pawn.story).Field("headGraphicPath").SetValue((pawn.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator.RandomAlienHead(path, pawn));
+                    Traverse.Create(pawn.story).Field("headGraphicPath").SetValue(alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(path, pawn));
                 }
+
+                LifeStageAge lsac = pawn.ageTracker.CurLifeStageRace;
+                LifeStageAge lsap = pawn.def.race.lifeStageAges[pawn.ageTracker.CurLifeStageIndex - 1];
+
+                if (lsac is LifeStageAgeAlien lsaac && lsaac.body != null && ((lsap as LifeStageAgeAlien)?.body ?? pawn.RaceProps.body) != lsaac.body ||
+                    lsap is LifeStageAgeAlien lsaap && lsaap.body != null && ((lsac as LifeStageAgeAlien)?.body ?? pawn.RaceProps.body) != lsaap.body)
+                    pawn.health.hediffSet = new HediffSet(pawn);
             }
         }
 
@@ -1761,7 +1895,7 @@ re
                     backstory = backstoryPair.Value;
                     return false;
                 }
-                Log.Message("FAILED: " + pawn.def.defName);
+                Log.Message($"FAILED: {pawn.def.defName} {pawn.kindDef.defName} {pawn.kindDef.backstoryCategory} {BackstoryDatabase.allBackstories.Values.Count(bs => bs.spawnCategories.Contains(pawn.kindDef.backstoryCategory))}");
             }
             return true;
         }
