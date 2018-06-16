@@ -33,9 +33,9 @@ namespace AlienRace
         public IntRange chronoAgeRange;
         public List<string> forcedItems = new List<string>();
 
-        public bool CommonalityApproved(Gender g) => Rand.Range(0, 100) < (g == Gender.Female ? this.femaleCommonality : this.maleCommonality);
+        public bool CommonalityApproved(Gender g) => Rand.Range(min: 0, max: 100) < (g == Gender.Female ? this.femaleCommonality : this.maleCommonality);
 
-        public bool Approved(Pawn p) => CommonalityApproved(p.gender) && 
+        public bool Approved(Pawn p) => this.CommonalityApproved(g: p.gender) && 
             (this.bioAgeRange == default(IntRange) || (this.bioAgeRange.min < p.ageTracker.AgeBiologicalYears && p.ageTracker.AgeBiologicalYears < this.bioAgeRange.max)) &&
             (this.chronoAgeRange == default(IntRange) || (this.chronoAgeRange.min < p.ageTracker.AgeBiologicalYears && p.ageTracker.AgeBiologicalYears < this.chronoAgeRange.max));
 
@@ -45,7 +45,7 @@ namespace AlienRace
             base.ResolveReferences();
 
             
-            if (!this.addToDatabase || BackstoryDatabase.allBackstories.ContainsKey(this.defName) || this.title.NullOrEmpty() || this.spawnCategories.NullOrEmpty())
+            if (!this.addToDatabase || BackstoryDatabase.allBackstories.ContainsKey(key: this.defName) || this.title.NullOrEmpty() || this.spawnCategories.NullOrEmpty())
             {
                 return;
             }
@@ -59,38 +59,31 @@ namespace AlienRace
                 slot = this.slot,
                 shuffleable = this.shuffleable,
                 spawnCategories = this.spawnCategories,
-                skillGains = this.skillGains.ToDictionary(i => i.defName, i => i.amount),
-                forcedTraits = this.forcedTraits.NullOrEmpty() ? null : this.forcedTraits.Where(trait => Rand.Range(0, 100) < trait.chance).ToList().ConvertAll(trait => new TraitEntry(TraitDef.Named(trait.defName), trait.degree)),
-                disallowedTraits = this.disallowedTraits.NullOrEmpty() ? null : this.disallowedTraits.Where(trait => Rand.Range(0, 100) < trait.chance).ToList().ConvertAll(trait => new TraitEntry(TraitDef.Named(trait.defName), trait.degree)),
+                skillGains = this.skillGains.ToDictionary(keySelector: i => i.defName, elementSelector: i => i.amount),
+                forcedTraits = this.forcedTraits.NullOrEmpty() ? null : this.forcedTraits.Where(predicate: trait => Rand.Range(min: 0, max: 100) < trait.chance).ToList().ConvertAll(converter: trait => new TraitEntry(def: TraitDef.Named(defName: trait.defName), degree: trait.degree)),
+                disallowedTraits = this.disallowedTraits.NullOrEmpty() ? null : this.disallowedTraits.Where(predicate: trait => Rand.Range(min: 0, max: 100) < trait.chance).ToList().ConvertAll(converter: trait => new TraitEntry(def: TraitDef.Named(defName: trait.defName), degree: trait.degree)),
                 workDisables = this.workAllows.NullOrEmpty() ? this.workDisables.NullOrEmpty() ? WorkTags.None : ((Func<WorkTags>) delegate
                  {
                      WorkTags wt = WorkTags.None;
-                     this.workDisables.ForEach(tag => wt |= tag);
+                     this.workDisables.ForEach(action: tag => wt |= tag);
                      return wt;
                  })() : ((Func<WorkTags>) delegate
                  {
                      WorkTags wt = WorkTags.None;
-                     Enum.GetValues(typeof(WorkTags)).Cast<WorkTags>().Where(tag => !this.workAllows.Contains(tag)).ToList().ForEach(tag => wt |= tag);
+                     Enum.GetValues(enumType: typeof(WorkTags)).Cast<WorkTags>().Where(predicate: tag => !this.workAllows.Contains(item: tag)).ToList().ForEach(action: tag => wt |= tag);
                      return wt;
                  })(),
                 identifier = this.defName,
                 requiredWorkTags = ((Func<WorkTags>) delegate
                 {
                     WorkTags wt = WorkTags.None;
-                    this.requiredWorkTags.ForEach(tag => wt |= tag);
+                    this.requiredWorkTags.ForEach(action: tag => wt |= tag);
                     return wt;
                 })()
             };
 
-            b.SetTitle(this.title);
-            if (!this.titleShort.NullOrEmpty())
-            {
-                b.SetTitleShort(this.titleShort);
-            }
-            else
-            {
-                b.SetTitleShort(b.Title);
-            }
+            b.SetTitle(newTitle: this.title);
+            b.SetTitleShort(newTitleShort: this.titleShort.NullOrEmpty() ? b.Title : this.titleShort);
 
             b.ResolveReferences();
             b.PostLoad();
@@ -98,12 +91,12 @@ namespace AlienRace
             b.identifier = this.defName;
 
             IEnumerable<string> errors;
-            if (!(errors = b.ConfigErrors(false)).Any())
+            if (!(errors = b.ConfigErrors(ignoreNoSpawnCategories: false)).Any())
             {
-                BackstoryDatabase.AddBackstory(b);
+                BackstoryDatabase.AddBackstory(bs: b);
             } else
             {
-                Log.Error(this.defName + " has errors:\n" + string.Join("\n", errors.ToArray()));
+                Log.Error(text: this.defName + " has errors:\n" + string.Join(separator: "\n", value: errors.ToArray()));
             }
         }
 
