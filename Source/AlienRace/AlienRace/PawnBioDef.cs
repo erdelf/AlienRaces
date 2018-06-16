@@ -20,10 +20,10 @@ namespace AlienRace
 
         public override void ResolveReferences()
         {
-            if (!BackstoryDatabase.TryGetWithIdentifier(this.childhoodDef, out this.resolvedChildhood))
-                Log.Error("Error in " + this.defName + ": Childhood backstory not found");
-            if (!BackstoryDatabase.TryGetWithIdentifier(this.adulthoodDef, out this.resolvedAdulthood))
-                Log.Error("Error in " + this.defName + ": Adulthood backstory not found");
+            if (!BackstoryDatabase.TryGetWithIdentifier(identifier: this.childhoodDef, bs: out this.resolvedChildhood))
+                Log.Error(text: "Error in " + this.defName + ": Childhood backstory not found");
+            if (!BackstoryDatabase.TryGetWithIdentifier(identifier: this.adulthoodDef, bs: out this.resolvedAdulthood))
+                Log.Error(text: "Error in " + this.defName + ": Adulthood backstory not found");
 
             base.ResolveReferences();
 
@@ -39,13 +39,13 @@ namespace AlienRace
                 pirateKing = this.factionLeader
             };
 
-            if (this.resolvedAdulthood.spawnCategories.Count == 1 && this.resolvedAdulthood.spawnCategories[0] == "Trader")
-                this.resolvedAdulthood.spawnCategories.Add("Civil");
+            if (this.resolvedAdulthood.spawnCategories.Count == 1 && this.resolvedAdulthood.spawnCategories[index: 0] == "Trader")
+                this.resolvedAdulthood.spawnCategories.Add(item: "Civil");
 
             if(!bio.ConfigErrors().Any())
-                SolidBioDatabase.allBios.Add(bio);
+                SolidBioDatabase.allBios.Add(item: bio);
             else
-                Log.Error(this.defName + " has errors");
+                Log.Error(text: this.defName + " has errors");
         }
     }
 }

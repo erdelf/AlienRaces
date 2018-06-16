@@ -1,6 +1,5 @@
 ﻿using Harmony;
 using RimWorld;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -11,7 +10,7 @@ namespace AlienRace
 {
     public partial class AlienPartGenerator
     {
-        public List<string> aliencrowntypes = new List<string>() { "Average_Normal" };
+        public List<string> aliencrowntypes = new List<string> { "Average_Normal" };
 
         public List<BodyType> alienbodytypes = new List<BodyType>();
 
@@ -33,30 +32,30 @@ namespace AlienRace
 
         public BodyPartDef headBodyPartDef;
 
-        static Dictionary<Vector2, AlienGraphicMeshSet> meshPools = new Dictionary<Vector2, AlienGraphicMeshSet>();
+        private static readonly Dictionary<Vector2, AlienGraphicMeshSet> meshPools = new Dictionary<Vector2, AlienGraphicMeshSet>();
 
         public List<BodyAddon> bodyAddons = new List<BodyAddon>();
 
         public ThingDef_AlienRace alienProps;
 
-        static MethodInfo meshInfo = AccessTools.Method(AccessTools.TypeByName("MeshMakerPlanes"), "NewPlaneMesh", new Type[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
+        private static readonly MethodInfo meshInfo = AccessTools.Method(type: AccessTools.TypeByName(name: "MeshMakerPlanes"), name: "NewPlaneMesh", parameters: new[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
 
-        public string RandomAlienHead(string userpath, Pawn pawn) => GetAlienHead(userpath, (this.useGenderedHeads ? pawn.gender.ToString() : ""), pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[Rand.Range(0, this.aliencrowntypes.Count)]);
+        public string RandomAlienHead(string userpath, Pawn pawn) => GetAlienHead(userpath: userpath, gender: (this.useGenderedHeads ? pawn.gender.ToString() : ""), crowntype: pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[index: Rand.Range(min: 0, max: this.aliencrowntypes.Count)]);
 
-        public static string GetAlienHead(string userpath, string gender, string crowntype) => userpath.NullOrEmpty() ? "" : userpath + (userpath == GraphicPaths.vanillaHeadPath ? gender + "/" : "") + (!gender.NullOrEmpty() ? gender + "_" : "") + crowntype;
+        public static string GetAlienHead(string userpath, string gender, string crowntype) => userpath.NullOrEmpty() ? "" : userpath + (userpath == GraphicPaths.VANILLA_HEAD_PATH ? gender + "/" : "") + (!gender.NullOrEmpty() ? gender + "_" : "") + crowntype;
 
-        public Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender) => GraphicDatabase.Get<Graphic_Multi>(GetNakedPath(bodyType, userpath, (this.useGenderedBodies ? gender : "")), shader, Vector2.one, skinColor, skinColorSecond);
+        public Graphic GetNakedGraphic(BodyType bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender) => GraphicDatabase.Get<Graphic_Multi>(path: GetNakedPath(bodyType: bodyType, userpath: userpath, gender: this.useGenderedBodies ? gender : ""), shader: shader, drawSize: Vector2.one, color: skinColor, colorTwo: skinColorSecond);
 
-        public static string GetNakedPath(BodyType bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + bodyType.ToString();
+        public static string GetNakedPath(BodyType bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + bodyType;
 
         public Color SkinColor(Pawn alien, bool first = true)
         {
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
-            if (alienComp.skinColor == Color.clear)
-            {
-                alienComp.skinColor = (this.alienskincolorgen != null ? this.alienskincolorgen.NewRandomizedColor() : PawnSkinColors.GetSkinColor(alien.story.melanin));
-                alienComp.skinColorSecond = (this.alienskinsecondcolorgen != null ? this.alienskinsecondcolorgen.NewRandomizedColor() : alienComp.skinColor);
-            }
+            if (alienComp.skinColor != Color.clear)
+                return first ? alienComp.skinColor : alienComp.skinColorSecond;
+
+            alienComp.skinColor       = this.alienskincolorgen?.NewRandomizedColor() ?? PawnSkinColors.GetSkinColor(melanin: alien.story.melanin);
+            alienComp.skinColorSecond = this.alienskinsecondcolorgen?.NewRandomizedColor() ?? alienComp.skinColor;
             return first ? alienComp.skinColor : alienComp.skinColorSecond;
         }
 
@@ -64,57 +63,58 @@ namespace AlienRace
         {
             void AddMeshSet(Vector2 drawSize, Vector2 headDrawSize)
             {
-                if (!meshPools.Keys.Any(v => v.Equals(drawSize)))
+                if (!meshPools.Keys.Any(predicate: v => v.Equals(other: drawSize)))
                 {
-                    meshPools.Add(drawSize, new AlienGraphicMeshSet()
+                    meshPools.Add(key: drawSize, value: new AlienGraphicMeshSet()
                     {
-                        bodySet = new GraphicMeshSet(1.5f * drawSize.x, 1.5f * drawSize.y), // bodySet
-                        headSet = new GraphicMeshSet(1.5f * headDrawSize.x, 1.5f * headDrawSize.y), // headSet
-                        hairSetAverage = new GraphicMeshSet(1.5f * headDrawSize.x, 1.5f * headDrawSize.y), // hairSetAverage
-                        hairSetNarrow = new GraphicMeshSet(1.3f * headDrawSize.x, 1.5f * headDrawSize.y), // hairSetNarrow
+                        bodySet = new GraphicMeshSet(width: 1.5f * drawSize.x, height: 1.5f * drawSize.y), // bodySet
+                        headSet = new GraphicMeshSet(width: 1.5f * headDrawSize.x, height: 1.5f * headDrawSize.y), // headSet
+                        hairSetAverage = new GraphicMeshSet(width: 1.5f * headDrawSize.x, height: 1.5f * headDrawSize.y), // hairSetAverage
+                        hairSetNarrow = new GraphicMeshSet(width: 1.3f * headDrawSize.x, height: 1.5f * headDrawSize.y), // hairSetNarrow
 
-                        addonMeshs = this.bodyAddons.Select(ba => ba.drawSize).Distinct().ToDictionary(dS => dS, dS => (Mesh) meshInfo.Invoke(null, new object[] { Vector2.Scale(drawSize * 1.5f, dS), false, false, false })),
-                        addonMeshsFlipped = this.bodyAddons.Select(ba => ba.drawSize).Distinct().ToDictionary(dS => dS, dS => (Mesh) meshInfo.Invoke(null, new object[] { Vector2.Scale(drawSize * 1.5f, dS), true, false, false }))
+                        addonMeshs = this.bodyAddons.Select(selector: ba => ba.drawSize).Distinct().ToDictionary(keySelector: dS => dS, elementSelector: dS => (Mesh) meshInfo.Invoke(obj: null, parameters: new object[] { Vector2.Scale(a: drawSize * 1.5f, b: dS), false, false, false })),
+                        addonMeshsFlipped = this.bodyAddons.Select(selector: ba => ba.drawSize).Distinct().ToDictionary(keySelector: dS => dS, elementSelector: dS => (Mesh) meshInfo.Invoke(obj: null, parameters: new object[] { Vector2.Scale(a: drawSize * 1.5f, b: dS), true, false, false }))
                     });
                 }
                 else
                 {
-                    Dictionary<Vector2, Mesh> addonMeshs = meshPools[drawSize].addonMeshs;
-                    foreach (Vector2 dS in this.bodyAddons.Select(ba => ba.drawSize).Distinct().Where(dS => !addonMeshs.ContainsKey(dS)))
-                        addonMeshs.Add(dS, (Mesh) meshInfo.Invoke(null, new object[] { Vector2.Scale(drawSize * 1.5f, dS), false, false, false }));
-                    meshPools[drawSize].addonMeshs = addonMeshs;
+                    Dictionary<Vector2, Mesh> addonMeshs = meshPools[key: drawSize].addonMeshs;
+                    Dictionary<Vector2, Mesh> meshs = addonMeshs;
+                    foreach (Vector2 dS in this.bodyAddons.Select(selector: ba => ba.drawSize).Distinct().Where(predicate: dS => !meshs.ContainsKey(key: dS)))
+                        addonMeshs.Add(key: dS, value: (Mesh) meshInfo.Invoke(obj: null, parameters: new object[] { Vector2.Scale(a: drawSize * 1.5f, b: dS), false, false, false }));
+                    meshPools[key: drawSize].addonMeshs = addonMeshs;
 
-                    addonMeshs = meshPools[drawSize].addonMeshsFlipped;
-                    foreach (Vector2 dS in this.bodyAddons.Select(ba => ba.drawSize).Distinct().Where(dS => !addonMeshs.ContainsKey(dS)))
-                        addonMeshs.Add(dS, (Mesh) meshInfo.Invoke(null, new object[] { Vector2.Scale(drawSize * 1.5f, dS), true, false, false }));
-                    meshPools[drawSize].addonMeshsFlipped = addonMeshs;
+                    addonMeshs = meshPools[key: drawSize].addonMeshsFlipped;
+                    foreach (Vector2 dS in this.bodyAddons.Select(selector: ba => ba.drawSize).Distinct().Where(predicate: dS => !addonMeshs.ContainsKey(key: dS)))
+                        addonMeshs.Add(key: dS, value: (Mesh) meshInfo.Invoke(obj: null, parameters: new object[] { Vector2.Scale(a: drawSize * 1.5f, b: dS), true, false, false }));
+                    meshPools[key: drawSize].addonMeshsFlipped = addonMeshs;
 
                     //(this.bodyAddons.Select(ba => ba.drawSize).Distinct().ToDictionary(dS => dS, dS => (Mesh) meshInfo.Invoke(null, new object[] { Vector2.Scale(drawSize * 1.5f, dS), false, false, false })));
                 }
             }
 
             foreach (GraphicPaths graphicsPath in this.alienProps.alienRace.graphicPaths.Concat(
-                    new GraphicPaths() { customDrawSize = this.customDrawSize, customHeadDrawSize = this.customHeadDrawSize, customPortraitDrawSize = this.customPortraitDrawSize, customPortraitHeadDrawSize = this.customPortraitHeadDrawSize }))
+                    rhs: new GraphicPaths() { customDrawSize = this.customDrawSize, customHeadDrawSize = this.customHeadDrawSize, customPortraitDrawSize = this.customPortraitDrawSize, customPortraitHeadDrawSize = this.customPortraitHeadDrawSize }))
             {
-                AddMeshSet(graphicsPath.customDrawSize, graphicsPath.customHeadDrawSize);
-                AddMeshSet(graphicsPath.customPortraitDrawSize, graphicsPath.customPortraitHeadDrawSize);
+                AddMeshSet(drawSize: graphicsPath.customDrawSize, headDrawSize: graphicsPath.customHeadDrawSize);
+                AddMeshSet(drawSize: graphicsPath.customPortraitDrawSize, headDrawSize: graphicsPath.customPortraitHeadDrawSize);
             }
 
-            this.bodyAddons.Do(ba =>
+            this.bodyAddons.Do(action: ba =>
             {
                 if (ba.variantCount == 0)
                 {
-                    while (ContentFinder<Texture2D>.Get(ba.path + (ba.variantCount == 0 ? "" : ba.variantCount.ToString()) + "_back", false) != null)
+                    while (ContentFinder<Texture2D>.Get(itemPath: ba.path + (ba.variantCount == 0 ? "" : ba.variantCount.ToString()) + "_back", reportFailure: false) != null)
                         ba.variantCount++;
-                    Log.Message("Variants found for " + ba.path + ": " + ba.variantCount.ToString());
+                    Log.Message(text: "Variants found for " + ba.path + ": " + ba.variantCount.ToString());
                     if (ba.hediffGraphics != null)
                         foreach (BodyAddonHediffGraphic bahg in ba.hediffGraphics)
                         {
                             if (bahg.variantCount == 0)
                             {
-                                while (ContentFinder<Texture2D>.Get(bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_back", false) != null)
+                                while (ContentFinder<Texture2D>.Get(itemPath: bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_back", reportFailure: false) != null)
                                     bahg.variantCount++;
-                                Log.Message("Variants found for " + bahg.path + ": " + bahg.variantCount.ToString());
+                                Log.Message(text: "Variants found for " + bahg.path + ": " + bahg.variantCount.ToString());
                             }
                         }
                     if (ba.backstoryGraphics != null)
@@ -122,9 +122,9 @@ namespace AlienRace
                         {
                             if (babg.variantCount == 0)
                             {
-                                while (ContentFinder<Texture2D>.Get(babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_back", false) != null)
+                                while (ContentFinder<Texture2D>.Get(itemPath: babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_back", reportFailure: false) != null)
                                     babg.variantCount++;
-                                Log.Message("Variants found for " + babg.path + ": " + babg.variantCount.ToString());
+                                Log.Message(text: "Variants found for " + babg.path + ": " + babg.variantCount.ToString());
                             }
                         }
                 }
@@ -148,8 +148,8 @@ namespace AlienRace
 
             public override void PostSpawnSetup(bool respawningAfterLoad)
             {
-                base.PostSpawnSetup(respawningAfterLoad);
-                AlienPartGenerator apg = (this.parent.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator;
+                base.PostSpawnSetup(respawningAfterLoad: respawningAfterLoad);
+                AlienPartGenerator apg = ((ThingDef_AlienRace) this.parent.def).alienRace.generalSettings.alienPartGenerator;
                 this.customDrawSize = apg.customDrawSize;
                 this.customPortraitDrawSize = apg.customPortraitDrawSize;
             }
@@ -157,18 +157,18 @@ namespace AlienRace
             public override void PostExposeData()
             {
                 base.PostExposeData();
-                Scribe_Values.Look(ref this.fixGenderPostSpawn, "fixAlienGenderPostSpawn", false);
-                Scribe_Values.Look(ref this.skinColor, "skinColorAlien");
-                Scribe_Values.Look(ref this.skinColorSecond, "skinColorSecondAlien");
-                Scribe_Values.Look(ref this.hairColorSecond, "hairColorSecondAlien");
-                Scribe_Values.Look(ref this.crownType, "crownType");
-                Scribe_Collections.Look(ref this.addonVariants, "addonVariants");
+                Scribe_Values.Look(value: ref this.fixGenderPostSpawn, label: "fixAlienGenderPostSpawn");
+                Scribe_Values.Look(value: ref this.skinColor, label: "skinColorAlien");
+                Scribe_Values.Look(value: ref this.skinColorSecond, label: "skinColorSecondAlien");
+                Scribe_Values.Look(value: ref this.hairColorSecond, label: "hairColorSecondAlien");
+                Scribe_Values.Look(value: ref this.crownType, label: "crownType");
+                Scribe_Collections.Look(list: ref this.addonVariants, label: "addonVariants");
             }
 
             internal void AssignProperMeshs()
             {
-                this.alienGraphics = AlienPartGenerator.meshPools[this.customDrawSize];
-                this.alienPortraitGraphics = AlienPartGenerator.meshPools[this.customPortraitDrawSize];
+                this.alienGraphics = meshPools[key: this.customDrawSize];
+                this.alienPortraitGraphics = meshPools[key: this.customPortraitDrawSize];
             }
         }
 

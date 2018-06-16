@@ -23,50 +23,44 @@ namespace AlienRace
             };
             scenPart.ResolveReferences();
             scenPart.PostLoad();
-            DefDatabase<ScenPartDef>.Add(scenPart);
+            DefDatabase<ScenPartDef>.Add(def: scenPart);
         }
 
         private PawnKindDef kindDef = PawnKindDefOf.Villager;
-        private int pawnCount = 0;
+        private int pawnCount;
         private string buffer;
 
         public override void DoEditInterface(Listing_ScenEdit listing)
         {
-            Rect scenPartRect = listing.GetScenPartRect(this, RowHeight * 3f);
-            if (Widgets.ButtonText(scenPartRect.TopPart(0.45f), this.kindDef.label.CapitalizeFirst(), true, false, true))
+            Rect scenPartRect = listing.GetScenPartRect(part: this, height: RowHeight * 3f);
+            if (Widgets.ButtonText(rect: scenPartRect.TopPart(pct: 0.45f), label: this.kindDef.label.CapitalizeFirst()))
             {
                 List<FloatMenuOption> list = new List<FloatMenuOption>();
-                list.AddRange(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(ar => ar.alienRace.pawnKindSettings.startingColonists != null).SelectMany(ar => ar.alienRace.pawnKindSettings.startingColonists.SelectMany(ste => ste.pawnKindEntries.SelectMany(pke => pke.kindDefs))).Where(s => DefDatabase<PawnKindDef>.GetNamedSilentFail(s) != null).Select(pkd => DefDatabase<PawnKindDef>.GetNamedSilentFail(pkd)).Select(pkd => new FloatMenuOption(pkd.label.CapitalizeFirst(), () => this.kindDef = pkd)));
-                list.Add(new FloatMenuOption("Villager", () => this.kindDef = PawnKindDefOf.Villager));
-                list.Add(new FloatMenuOption("Slave", () => this.kindDef = PawnKindDefOf.Slave));
-                Find.WindowStack.Add(new FloatMenu(list));
+                list.AddRange(collection: DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(predicate: ar => ar.alienRace.pawnKindSettings.startingColonists != null).SelectMany(selector: ar => ar.alienRace.pawnKindSettings.startingColonists.SelectMany(selector: ste => ste.pawnKindEntries.SelectMany(selector: pke => pke.kindDefs))).Where(predicate: s => DefDatabase<PawnKindDef>.GetNamedSilentFail(defName: s) != null).Select(selector: pkd => DefDatabase<PawnKindDef>.GetNamedSilentFail(defName: pkd)).Select(selector: pkd => new FloatMenuOption(label: pkd.label.CapitalizeFirst(), action: () => this.kindDef = pkd)));
+                list.Add(item: new FloatMenuOption(label: "Villager", action: () => this.kindDef = PawnKindDefOf.Villager));
+                list.Add(item: new FloatMenuOption(label: "Slave", action: () => this.kindDef = PawnKindDefOf.Slave));
+                Find.WindowStack.Add(window: new FloatMenu(options: list));
             }
-            Widgets.TextFieldNumeric(scenPartRect.BottomPart(0.45f), ref this.pawnCount, ref this.buffer, 0);
+            Widgets.TextFieldNumeric(rect: scenPartRect.BottomPart(pct: 0.45f), val: ref this.pawnCount, buffer: ref this.buffer);
         }
 
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look(ref this.pawnCount, "alienRaceScenPawnCount", 0);
-            Scribe_Defs.Look(ref this.kindDef, "PawnKindDefAlienRaceScen");
+            Scribe_Values.Look(value: ref this.pawnCount, label: "alienRaceScenPawnCount");
+            Scribe_Defs.Look(value: ref this.kindDef, label: "PawnKindDefAlienRaceScen");
         }
 
-        public override string Summary(Scenario scen) => ScenSummaryList.SummaryWithList(scen, "PlayerStartsWith", ScenPart_StartingThing_Defined.PlayerStartWithIntro);
+        public override string Summary(Scenario scen) => ScenSummaryList.SummaryWithList(scen: scen, tag: "PlayerStartsWith", intro: ScenPart_StartingThing_Defined.PlayerStartWithIntro);
 
         public override IEnumerable<string> GetSummaryListEntries(string tag)
         {
-            if (tag == "PlayerStartsWith")
-            {
-                yield return this.kindDef.LabelCap + " x" + this.pawnCount;
-            }
-
-            yield break;
+            if (tag == "PlayerStartsWith") yield return this.kindDef.LabelCap + " x" + this.pawnCount;
         }
 
         public override bool TryMerge(ScenPart other)
         {
-            ScenPart_StartingHumanlikes others = other as ScenPart_StartingHumanlikes;
-            if (others == null || others.kindDef != this.kindDef)
+            if (!(other is ScenPart_StartingHumanlikes others) || others.kindDef != this.kindDef)
             {
                 return false;
             }
@@ -77,7 +71,7 @@ namespace AlienRace
 
         public IEnumerable<Pawn> GetPawns()
         {
-            bool pawnCheck(Pawn p) => p != null && DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(wtd => wtd.requireCapableColonist).ToList().TrueForAll(w => !p.story.WorkTypeIsDisabled(w));
+            bool PawnCheck(Pawn p) => p != null && DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(predicate: wtd => wtd.requireCapableColonist).ToList().TrueForAll(match: w => !p.story.WorkTypeIsDisabled(w: w));
 
 
             for (int i = 0; i < this.pawnCount; i++)
@@ -85,15 +79,14 @@ namespace AlienRace
                 Pawn newPawn = null;
                 for (int x = 0; x < 200; x++)
                 {
-                    newPawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(this.kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, -1, true, false, false, false, true, false, 26f, true));
-                    if (pawnCheck(newPawn))
+                    newPawn = PawnGenerator.GeneratePawn(request: new PawnGenerationRequest(kind: this.kindDef, faction: Faction.OfPlayer, context: PawnGenerationContext.PlayerStarter, tile: -1, forceGenerateNewPawn: true, newborn: false, allowDead: false, allowDowned: false, canGeneratePawnRelations: true, mustBeCapableOfViolence: false, colonistRelationChanceFactor: 26f, forceAddFreeWarmLayerIfNeeded: true));
+                    if (PawnCheck(p: newPawn))
                     {
                         x = 200;
                     }
                 }
                 yield return newPawn;
             }
-            yield break;
         }
     }
 }

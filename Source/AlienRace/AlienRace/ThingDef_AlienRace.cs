@@ -12,17 +12,17 @@ namespace AlienRace
 
         public override void ResolveReferences()
         {
-            this.comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
+            this.comps.Add(item: new CompProperties(compClass: typeof(AlienPartGenerator.AlienComp)));
             base.ResolveReferences();
             if (this.alienRace.graphicPaths.NullOrEmpty())
-                this.alienRace.graphicPaths.Add(new GraphicPaths());
+                this.alienRace.graphicPaths.Add(item: new GraphicPaths());
 
             if (this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize == Vector2.zero)
                 this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
             if (this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize == Vector2.zero)
                 this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
 
-            this.alienRace.graphicPaths.ForEach(gp =>
+            this.alienRace.graphicPaths.ForEach(action: gp =>
             {
                 if(gp.customDrawSize == Vector2.one)
                     gp.customDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
@@ -105,7 +105,7 @@ namespace AlienRace
 
         public Vector2 headOffset = Vector2.zero;
 
-        public const string vanillaHeadPath = "Things/Pawn/Humanlike/Heads/";
+        public const string VANILLA_HEAD_PATH = "Things/Pawn/Humanlike/Heads/";
 
         public string body = "Things/Pawn/Humanlike/Bodies/";
         public string head = "Things/Pawn/Humanlike/Heads/";
@@ -246,7 +246,7 @@ namespace AlienRace
     
     static class GraphicPathsExtension
     {
-        public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef) => list.FirstOrDefault(gp => gp.lifeStageDefs?.Contains(lifeStageDef) ?? false) ?? list.First();
+        public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef) => list.FirstOrDefault(predicate: gp => gp.lifeStageDefs?.Contains(item: lifeStageDef) ?? false) ?? list.First();
     }
 
     public class Info : DefModExtension

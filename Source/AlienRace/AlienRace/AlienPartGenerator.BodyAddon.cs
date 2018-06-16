@@ -8,6 +8,8 @@ using System;
 
 namespace AlienRace
 {
+    using JetBrains.Annotations;
+
     public partial class AlienPartGenerator
     {
         public class BodyAddon
@@ -37,43 +39,43 @@ namespace AlienRace
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
-                !pawn.apparel.WornApparel.Any(ap => ap.def.apparel.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
-                ap.def.apparel.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && (!pawn.InBed() || this.drawnInBed) &&
-                    (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(b=> b.identifier == this.backstoryRequirement)) &&   
-                    (this.bodyPart == null || pawn.health.hediffSet.GetNotMissingParts().Any(bpr => bpr.def == this.bodyPart));
+                !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(item: bpgd)) || 
+                ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(item: s)))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && (!pawn.InBed() || this.drawnInBed) &&
+                    (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
+                    (this.bodyPart == null || pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.def == this.bodyPart));
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
-                string path = "";
-                int variantCount = 0;
+                string returnPath;
+                int variantCounting;
 
-                if (this.backstoryGraphics?.FirstOrDefault(babgs => pawn.story.AllBackstories.Any(bs => bs.identifier == babgs.backstory)) is BodyAddonBackstoryGraphic babg)
+                if (this.backstoryGraphics?.FirstOrDefault(predicate: babgs => pawn.story.AllBackstories.Any(predicate: bs => bs.identifier == babgs.backstory)) is BodyAddonBackstoryGraphic babg)
                 {
-                    path = babg.path;
-                    variantCount = babg.variantCount;
-                }else if(this.hediffGraphics?.FirstOrDefault(bahgs => pawn.health.hediffSet.hediffs.Any(h => h.def.defName == bahgs.hediff)) is BodyAddonHediffGraphic bahg)
+                    returnPath = babg.path;
+                    variantCounting = babg.variantCount;
+                }else if(this.hediffGraphics?.FirstOrDefault(predicate: bahgs => pawn.health.hediffSet.hediffs.Any(predicate: h => h.def.defName == bahgs.hediff)) is BodyAddonHediffGraphic bahg)
                 {
-                    path = bahg.path;
-                    variantCount = bahg.variantCount;
+                    returnPath = bahg.path;
+                    variantCounting = bahg.variantCount;
                 } else
                 {
-                    path = this.path;
-                    variantCount = this.variantCount;
+                    returnPath = this.path;
+                    variantCounting = this.variantCount;
                 }
 
                 int tv;
-                return !path.NullOrEmpty() ?
-                            GraphicDatabase.Get<Graphic_Multi>(path = (path + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value) :
+                return !returnPath.NullOrEmpty() ?
+                            GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value) :
                                     (this.linkVariantIndexWithPrevious ?
-                                        sharedIndex % variantCount :
-                                        (sharedIndex = Rand.Range(0, variantCount))))) == 0 ? "" : tv.ToString())),
-                                ContentFinder<Texture2D>.Get(path + "_backm", false) == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
-                                    new Vector3(1, 0, 1),
-                                        this.useSkinColor ?
+                                        sharedIndex % variantCounting :
+                                        (sharedIndex = Rand.Range(min: 0, max: variantCounting))))) == 0 ? "" : tv.ToString())),
+                                shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_backm", reportFailure: false) == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
+                                    drawSize: new Vector3(x: 1, y: 0, z: 1),
+                                        color: this.useSkinColor ?
                                             pawn.story.SkinColor :
                                             pawn.story.hairColor,
-                                                this.useSkinColor ?
-                                                    (pawn.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator.SkinColor(pawn, false) :
+                                                colorTwo: this.useSkinColor ?
+                                                    ((ThingDef_AlienRace) pawn.def).alienRace.generalSettings.alienPartGenerator.SkinColor(alien: pawn, first: false) :
                                                     pawn.story.hairColor) :
                             null;
             }
@@ -86,6 +88,7 @@ namespace AlienRace
             public string path;
             public int variantCount = 0;
 
+            [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.hediff = xmlRoot.Name;
@@ -99,6 +102,7 @@ namespace AlienRace
             public string path;
             public int variantCount = 0;
 
+            [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.backstory = xmlRoot.Name;
@@ -126,10 +130,11 @@ namespace AlienRace
             public BodyType bodyType;
             public Vector2 offset = Vector2.zero;
 
+            [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
-                this.bodyType = (BodyType) Enum.Parse(typeof(BodyType), xmlRoot.Name);
-                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
+                this.bodyType = (BodyType) Enum.Parse(enumType: typeof(BodyType), value: xmlRoot.Name);
+                this.offset = (Vector2) ParseHelper.FromString(str: xmlRoot.FirstChild.Value, itemType: typeof(Vector2));
             }
         }
 
@@ -138,10 +143,11 @@ namespace AlienRace
             public string crownType;
             public Vector2 offset = Vector2.zero;
 
+            [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.crownType = xmlRoot.Name;
-                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
+                this.offset = (Vector2) ParseHelper.FromString(str: xmlRoot.FirstChild.Value, itemType: typeof(Vector2));
             }
         }
     }
