@@ -256,9 +256,9 @@ namespace AlienRace
                         harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(BodyReferenceTranspiler)));
                 }
             }
-            Log.Message(text: "Alien race successfully completed "                                                                                                             +
-                              harmony.GetPatchedMethods().Select(selector: mb => harmony.GetPatchInfo(method: mb)).SelectMany(p => p.Prefixes.Concat(p.Postfixes).Concat(p.Transpilers)).Count(predicate: p => p.owner == harmony.Id) +
-                              " patches with harmony.");
+            Log.Message(
+                text:
+                $"Alien race successfully completed {harmony.GetPatchedMethods().Select(selector: mb => harmony.GetPatchInfo(method: mb)).SelectMany(selector: p => p.Prefixes.Concat(second: p.Postfixes).Concat(second: p.Transpilers)).Count(predicate: p => p.owner == harmony.Id)} patches with harmony.");
             DefDatabase<HairDef>.GetNamed(defName: "Shaved").hairTags.Add(item: "alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
@@ -1473,8 +1473,7 @@ namespace AlienRace
                         int index = opts.IndexOf(item: fmo);
                         opts.Remove(item: fmo);
 
-                        opts.Insert(index: index, item: new FloatMenuOption(label: "CannotEquip".Translate(args: new object[]
-                                                                                       {drugs.LabelShort}) + " (" + pawn.def.LabelCap + " can't consume this)", action: null));
+                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotEquip".Translate(args: new object[] {drugs.LabelShort})} {pawn.def.LabelCap} can't consume this)", action: null));
                     }
                 }
             }
@@ -1495,8 +1494,7 @@ namespace AlienRace
                             int index = opts.IndexOf(item: fmo);
                             opts.Remove(item: fmo);
 
-                            opts.Insert(index: index, item: new FloatMenuOption(label: "CannotEquip".Translate(args: new object[]
-                                                                                           {equipment.LabelShort}) + " (" + pawn.def.LabelCap + " can't equip this" + ")", action: null));
+                            opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotEquip".Translate(args: new object[] {equipment.LabelShort})} {pawn.def.LabelCap} can't equip this)", action: null));
                         }
 
                     if (alienProps != null && alienProps.alienRace.raceRestriction.onlyUseRaceRestrictedWeapons)
@@ -1510,8 +1508,7 @@ namespace AlienRace
                                 int index = opts.IndexOf(item: fmo);
                                 opts.Remove(item: fmo);
 
-                                opts.Insert(index: index, item: new FloatMenuOption(label: "CannotEquip".Translate(args: new object[]
-                                                                                               {equipment.LabelShort}) + " (" + pawn.def.LabelCap + " can't use other races' weapons" + ")",
+                                opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotEquip".Translate(args: new object[]{equipment.LabelShort})} ({pawn.def.LabelCap} can't use other races' weapons)",
                                     action: null));
                             }
                     }
@@ -1534,8 +1531,7 @@ namespace AlienRace
                         int index = opts.IndexOf(item: fmo);
                         opts.Remove(item: fmo);
 
-                        opts.Insert(index: index, item: new FloatMenuOption(label: "CannotWear".Translate(args: new object[]
-                                                                                       {apparel.LabelShort}) + " (" + pawn.def.LabelCap + " can't wear this" + ")", action: null));
+                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotWear".Translate(args: new object[]{apparel.LabelShort})} ({pawn.def.LabelCap} can't wear this)", action: null));
                     }
 
                 if (alienProps == null || !alienProps.alienRace.raceRestriction.onlyUseRaceRestrictedApparel) return;
@@ -1549,8 +1545,7 @@ namespace AlienRace
                             int index = opts.IndexOf(item: fmo);
                             opts.Remove(item: fmo);
 
-                            opts.Insert(index: index, item: new FloatMenuOption(label: "CannotWear".Translate(args: new object[]
-                                                                                           {apparel.LabelShort}) + " (" + pawn.def.LabelCap + " can't use other races' apparel" + ")", action: null));
+                            opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotWear".Translate(args: new object[] { apparel.LabelShort })} ({pawn.def.LabelCap} can't use other races' apparel)", action: null));
                         }
                     }
                 }
@@ -1660,7 +1655,7 @@ namespace AlienRace
             }
             catch (Exception arg)
             {
-                Log.Error(text: "There was an exception thrown by the PawnGenerator during generating a starting pawn. Trying one more time...\nException: " + arg);
+                Log.Error(text: $"There was an exception thrown by the PawnGenerator during generating a starting pawn. Trying one more time...\nException: {arg}");
                 pawn = PawnGenerator.GeneratePawn(request: request);
             }
 
