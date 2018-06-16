@@ -9,10 +9,11 @@ using Verse;
 using Verse.AI;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
-using Harmony.ILCopying;
 
 namespace AlienRace
 {
+    using Harmony.ILCopying;
+
     /// <summary>
     /// "More useful than the Harmony wiki" ~ Mehni
     /// </summary>
@@ -237,73 +238,8 @@ namespace AlienRace
             {
                 //DateTime time = DateTime.Now;
 
-                FieldInfo bodyInfo = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
-
-                OpCode[]    oneByteOpcodes  = new OpCode[225];
-                OpCode[]    twoBytesOpcodes = new OpCode[31];
-                FieldInfo[] fields          = typeof(OpCodes).GetFields(bindingAttr: BindingFlags.Static | BindingFlags.Public);
-                foreach (FieldInfo t in fields)
-                {
-                    OpCode opCode = (OpCode) t.GetValue(obj: null);
-                    if (opCode.OpCodeType == OpCodeType.Nternal) continue;
-                    if (opCode.Size == 1)
-                        oneByteOpcodes[opCode.Value] = opCode;
-                    else
-                        twoBytesOpcodes[opCode.Value & 255] = opCode;
-                }
-
-                bool CheckMethodInfo(MethodInfo mi)
-                {
-                    ByteBuffer buffer = new ByteBuffer(buffer: mi.GetMethodBody()?.GetILAsByteArray());
-                    while (buffer.position < buffer.buffer.Length)
-                    {
-                        byte   b  = buffer.ReadByte();
-                        OpCode op = b != 0xfe ? oneByteOpcodes[b] : twoBytesOpcodes[buffer.ReadByte()];
-
-                        // ReSharper disable once SwitchStatementMissingSomeCases
-                        switch (op.OperandType)
-                        {
-                            case OperandType.InlineField:
-                                if (mi.Module.ResolveField(metadataToken: buffer.ReadInt32()) == bodyInfo)
-                                    return true;
-                                break;
-                            case OperandType.InlineBrTarget:
-                            case OperandType.InlineI:
-                            case OperandType.InlineMethod:
-                            case OperandType.InlineSig:
-                            case OperandType.InlineString:
-                            case OperandType.InlineTok:
-                            case OperandType.InlineType:
-                                buffer.ReadInt32();
-                                break;
-                            case OperandType.InlineI8:
-                                buffer.ReadInt64();
-                                break;
-                            case OperandType.InlineR:
-                                buffer.ReadDouble();
-                                break;
-                            case OperandType.InlineSwitch:
-                                int count = buffer.ReadInt32();
-                                for (int i = 0; i < count; i++)
-                                    buffer.ReadInt32();
-                                break;
-                            case OperandType.InlineVar:
-                                buffer.ReadInt16();
-                                break;
-                            case OperandType.ShortInlineI:
-                            case OperandType.ShortInlineBrTarget:
-                            case OperandType.ShortInlineVar:
-                                buffer.ReadByte();
-                                break;
-                            case OperandType.ShortInlineR:
-                                buffer.ReadSingle();
-                                break;
-                        }
-                    }
-
-                    return false;
-                }
-
+                FieldInfo   bodyInfo = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
+                ILGenerator ilg      = new DynamicMethod(name: "ScanMethod", returnType: typeof(int), parameterTypes: Type.EmptyTypes).GetILGenerator();
                 foreach (MethodInfo mi in LoadedModManager.RunningMods.Where(predicate: mcp => mcp.LoadedAnyAssembly)
                    .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies.Where(predicate: ase => ase.GetType(name: "HarmonyInstance", throwOnError: false) != null))
                    .Concat(rhs: typeof(LogEntry).Assembly).SelectMany(selector: ase => ase.GetTypes()).
@@ -314,15 +250,19 @@ namespace AlienRace
                                 new List<MethodInfo> {pi.GetGetMethod(nonPublic: true), pi.GetGetMethod(nonPublic: false), pi.GetSetMethod(nonPublic: true), pi.GetSetMethod(nonPublic: false)}))
                            .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod))
                 ) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
-                    if (CheckMethodInfo(mi: mi))
+                {
+                    List<ILInstruction> instructions = PatchFunctions.GetInstructions(generator: ilg, method: mi);
+                    if (instructions.Any(predicate: il => il.operand == bodyInfo))
                         harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(BodyReferenceTranspiler)));
+                }
             }
-            Log.Message(text: "Alien race successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
+            Log.Message(text: "Alien race successfully completed "                                                                                                             +
+                              harmony.GetPatchedMethods().Select(selector: mb => harmony.GetPatchInfo(method: mb)).SelectMany(p => p.Prefixes.Concat(p.Postfixes).Concat(p.Transpilers)).Count(predicate: p => p.owner == harmony.Id) +
+                              " patches with harmony.");
             DefDatabase<HairDef>.GetNamed(defName: "Shaved").hairTags.Add(item: "alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
         }
 
-        public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions)
-        {
+        public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions)        {
             FieldInfo bodyInfo  = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
             FieldInfo propsInfo = AccessTools.Field(type: typeof(ThingDef),       name: nameof(ThingDef.race));
 
@@ -1485,13 +1425,12 @@ namespace AlienRace
             // ReSharper disable once ArgumentsStyleAnonymousFunction
             __result = new Func<IEnumerable<Thing>>(() =>
             {
-                ThingDef_AlienRace alienPropsButcher = butcher.def as ThingDef_AlienRace;
 
-                Pawn               corpse = __instance.InnerPawn;
+                Pawn corpse = __instance.InnerPawn;
                 IEnumerable<Thing> things = corpse.ButcherProducts(butcher: butcher, efficiency: efficiency);
                 if (corpse.RaceProps.BloodDef != null) FilthMaker.MakeFilth(c: butcher.Position, map: butcher.Map, filthDef: corpse.RaceProps.BloodDef, source: corpse.LabelIndefinite());
                 if (!corpse.RaceProps.Humanlike) return things;
-                ThoughtDef thought = alienPropsButcher == null ?
+                ThoughtDef thought = !(butcher.def is ThingDef_AlienRace alienPropsButcher) ?
                                          ThoughtDefOf.ButcheredHumanlikeCorpse :
                                          DefDatabase<ThoughtDef>.GetNamedSilentFail(
                                              defName: alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific
@@ -1813,7 +1752,7 @@ re
                 AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
                 if (alienComp.fixGenderPostSpawn)
                 {
-                    if (Math.Abs(alienProps.alienRace.generalSettings.maleGenderProbability - 0.5f) > 0.001f)
+                    if (Math.Abs(value: alienProps.alienRace.generalSettings.maleGenderProbability - 0.5f) > 0.001f)
                     {
                         __instance.pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.maleGenderProbability ? Gender.Female : Gender.Male;
                         __instance.pawn.Name   = PawnBioAndNameGenerator.GeneratePawnName(pawn: __instance.pawn);
@@ -1923,7 +1862,7 @@ re
                 {
                     if ((pawn.story.traits.allTraits.Count >= 4 || pawn.gender != Gender.Male ||
                          !(Math.Abs(value: ate.commonalityMale - -1f) < 0.001f) && !(Rand.Range(min: 0, max: 100) < ate.commonalityMale))                           &&
-                        (pawn.gender != Gender.Female || Math.Abs(ate.commonalityFemale - -1f) > 0.001f && !(Rand.Range(min: 0, max: 100) < ate.commonalityFemale)) &&
+                        (pawn.gender != Gender.Female || Math.Abs(value: ate.commonalityFemale - -1f) > 0.001f && !(Rand.Range(min: 0, max: 100) < ate.commonalityFemale)) &&
                         pawn.gender != Gender.None) return;
                     if (!pawn.story.traits.allTraits.Any(predicate: tr => tr.def.defName.EqualsIgnoreCase(B: ate.defName)))
                         pawn.story.traits.GainTrait(trait: new Trait(def: TraitDef.Named(defName: ate.defName), degree: ate.degree, forced: true));
