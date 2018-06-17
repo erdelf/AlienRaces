@@ -236,8 +236,6 @@ namespace AlienRace
 
 
             {
-                //DateTime time = DateTime.Now;
-
                 FieldInfo   bodyInfo = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
                 ILGenerator ilg      = new DynamicMethod(name: "ScanMethod", returnType: typeof(int), parameterTypes: Type.EmptyTypes).GetILGenerator();
                 foreach (MethodInfo mi in LoadedModManager.RunningMods.Where(predicate: mcp => mcp.LoadedAnyAssembly)
@@ -256,13 +254,19 @@ namespace AlienRace
                         harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(BodyReferenceTranspiler)));
                 }
             }
-            Log.Message(
-                text:
+            
+            Log.Message(text:
                 $"Alien race successfully completed {harmony.GetPatchedMethods().Select(selector: mb => harmony.GetPatchInfo(method: mb)).SelectMany(selector: p => p.Prefixes.Concat(second: p.Postfixes).Concat(second: p.Transpilers)).Count(predicate: p => p.owner == harmony.Id)} patches with harmony.");
             DefDatabase<HairDef>.GetNamed(defName: "Shaved").hairTags.Add(item: "alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
+
+            foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs)
+            {
+                BackstoryDef.UpdateTranslateableFields(bs: bd);
+            }
         }
 
-        public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions)        {
+        public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
             FieldInfo bodyInfo  = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
             FieldInfo propsInfo = AccessTools.Field(type: typeof(ThingDef),       name: nameof(ThingDef.race));
 

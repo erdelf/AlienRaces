@@ -32,6 +32,7 @@ namespace AlienRace
         public IntRange bioAgeRange;
         public IntRange chronoAgeRange;
         public List<string> forcedItems = new List<string>();
+        public Backstory backstory;
 
         public bool CommonalityApproved(Gender g) => Rand.Range(min: 0, max: 100) < (g == Gender.Female ? this.femaleCommonality : this.maleCommonality);
 
@@ -45,14 +46,10 @@ namespace AlienRace
             base.ResolveReferences();
 
             
-            if (!this.addToDatabase || BackstoryDatabase.allBackstories.ContainsKey(key: this.defName) || this.title.NullOrEmpty() || this.spawnCategories.NullOrEmpty())
-            {
-                return;
-            }
+            if (!this.addToDatabase || BackstoryDatabase.allBackstories.ContainsKey(key: this.defName) || this.title.NullOrEmpty() || this.spawnCategories.NullOrEmpty()) return;
 
-            Backstory b = new Backstory()
+            this.backstory = new Backstory
             {
-                baseDesc = this.baseDescription.NullOrEmpty() ? "Empty." : this.baseDescription,
                 bodyTypeGlobal = this.bodyTypeGlobal,
                 bodyTypeFemale = this.bodyTypeFemale,
                 bodyTypeMale = this.bodyTypeMale,
@@ -82,23 +79,28 @@ namespace AlienRace
                 })()
             };
 
-            b.SetTitle(newTitle: this.title);
-            b.SetTitleShort(newTitleShort: this.titleShort.NullOrEmpty() ? b.Title : this.titleShort);
+            UpdateTranslateableFields(bs: this);
+            
+            this.backstory.ResolveReferences();
+            this.backstory.PostLoad();
 
-            b.ResolveReferences();
-            b.PostLoad();
-
-            b.identifier = this.defName;
+            this.backstory.identifier = this.defName;
 
             IEnumerable<string> errors;
-            if (!(errors = b.ConfigErrors(ignoreNoSpawnCategories: false)).Any())
-            {
-                BackstoryDatabase.AddBackstory(bs: b);
-            } else
-            {
+            if (!(errors = this.backstory.ConfigErrors(ignoreNoSpawnCategories: false)).Any())
+                BackstoryDatabase.AddBackstory(bs: this.backstory);
+            else
                 Log.Error(text: this.defName + " has errors:\n" + string.Join(separator: "\n", value: errors.ToArray()));
-            }
         }
+
+        internal static void UpdateTranslateableFields(BackstoryDef bs)
+        {
+            bs.backstory.baseDesc = bs.baseDescription.NullOrEmpty() ? "Empty." : bs.baseDescription;
+            bs.backstory.SetTitle(newTitle: bs.title);
+            bs.backstory.SetTitleShort(newTitleShort: bs.titleShort.NullOrEmpty() ? bs.backstory.Title : bs.titleShort);
+        }
+
+
 
         public struct BackstoryDefSkillListItem
         {
