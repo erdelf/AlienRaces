@@ -19,11 +19,13 @@
     <stages>
       <li>
         <label>xenophile loves aliens</label>
+        <description>xenophile loves aliens</description>
         <baseOpinionOffset>20</baseOpinionOffset>
         <baseMoodEffect>2</baseMoodEffect>
       </li>
       <li>
         <label>xenophobe hates aliens</label>
+        <description>xenophobe hates aliens</description>
         <baseOpinionOffset>-20</baseOpinionOffset>
         <baseMoodEffect>-2</baseMoodEffect>
       </li>

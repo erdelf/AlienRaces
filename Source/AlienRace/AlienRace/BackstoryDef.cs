@@ -6,14 +6,18 @@ using Verse;
 
 namespace AlienRace
 {
+    using Harmony;
+
     public class BackstoryDef : Def
     {
         public string baseDescription;
-        public BodyType bodyTypeGlobal = BodyType.Undefined;
-        public BodyType bodyTypeMale = BodyType.Male;
-        public BodyType bodyTypeFemale = BodyType.Female;
+        public BodyTypeDef bodyTypeGlobal;
+        public BodyTypeDef bodyTypeMale = BodyTypeDefOf.Male;
+        public BodyTypeDef bodyTypeFemale = BodyTypeDefOf.Female;
         public string title;
+        public string titleFemale;
         public string titleShort;
+        public string titleShortFemale;
         public BackstorySlot slot = BackstorySlot.Adulthood;
         public bool shuffleable = true;
         public bool addToDatabase = true;
@@ -50,13 +54,9 @@ namespace AlienRace
 
             this.backstory = new Backstory
             {
-                bodyTypeGlobal = this.bodyTypeGlobal,
-                bodyTypeFemale = this.bodyTypeFemale,
-                bodyTypeMale = this.bodyTypeMale,
                 slot = this.slot,
                 shuffleable = this.shuffleable,
                 spawnCategories = this.spawnCategories,
-                skillGains = this.skillGains.ToDictionary(keySelector: i => i.defName, elementSelector: i => i.amount),
                 forcedTraits = this.forcedTraits.NullOrEmpty() ? null : this.forcedTraits.Where(predicate: trait => Rand.Range(min: 0, max: 100) < trait.chance).ToList().ConvertAll(converter: trait => new TraitEntry(def: TraitDef.Named(defName: trait.defName), degree: trait.degree)),
                 disallowedTraits = this.disallowedTraits.NullOrEmpty() ? null : this.disallowedTraits.Where(predicate: trait => Rand.Range(min: 0, max: 100) < trait.chance).ToList().ConvertAll(converter: trait => new TraitEntry(def: TraitDef.Named(defName: trait.defName), degree: trait.degree)),
                 workDisables = this.workAllows.NullOrEmpty() ? this.workDisables.NullOrEmpty() ? WorkTags.None : ((Func<WorkTags>) delegate
@@ -79,6 +79,11 @@ namespace AlienRace
                 })()
             };
 
+            Traverse.Create(root: this.backstory).Field(name: nameof(this.bodyTypeGlobal)).SetValue(value: this.bodyTypeGlobal);
+            Traverse.Create(root: this.backstory).Field(name: nameof(this.bodyTypeFemale)).SetValue(value: this.bodyTypeFemale);
+            Traverse.Create(root: this.backstory).Field(name: nameof(this.bodyTypeMale)).SetValue(value: this.bodyTypeMale);
+            Traverse.Create(root: this.backstory).Field(name: nameof(this.skillGains)).SetValue(value: this.skillGains.ToDictionary(keySelector: i => i.defName, elementSelector: i => i.amount));
+
             UpdateTranslateableFields(bs: this);
             
             this.backstory.ResolveReferences();
@@ -96,8 +101,8 @@ namespace AlienRace
         internal static void UpdateTranslateableFields(BackstoryDef bs)
         {
             bs.backstory.baseDesc = bs.baseDescription.NullOrEmpty() ? "Empty." : bs.baseDescription;
-            bs.backstory.SetTitle(newTitle: bs.title);
-            bs.backstory.SetTitleShort(newTitleShort: bs.titleShort.NullOrEmpty() ? bs.backstory.Title : bs.titleShort);
+            bs.backstory.SetTitle(newTitle: bs.title, newTitleFemale: bs.titleFemale);
+            bs.backstory.SetTitleShort(newTitleShort: bs.titleShort.NullOrEmpty() ? bs.backstory.title : bs.titleShort, newTitleShortFemale: bs.titleShortFemale.NullOrEmpty() ? bs.backstory.titleFemale : bs.titleShortFemale);
         }
 
 
