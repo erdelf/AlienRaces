@@ -12,9 +12,11 @@ namespace AlienRace
     {
 #pragma warning disable IDE1006 // Benennungsstile
         // ReSharper disable InconsistentNaming
+        // ReSharper disable UnusedMember.Global
         public static TraitDef Xenophobia;
         public static ThoughtDef XenophobiaVsAlien;
         public static ThingCategoryDef alienCorpseCategory;
+        // ReSharper restore UnusedMember.Global
         // ReSharper restore InconsistentNaming
 #pragma warning restore IDE1006 // Benennungsstile
     }

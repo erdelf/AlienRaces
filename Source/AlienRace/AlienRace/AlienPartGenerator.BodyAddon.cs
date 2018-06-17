@@ -127,13 +127,13 @@ namespace AlienRace
 
         public class BodyTypeOffset
         {
-            public BodyType bodyType;
+            public BodyTypeDef bodyType;
             public Vector2 offset = Vector2.zero;
 
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
-                this.bodyType = (BodyType) Enum.Parse(enumType: typeof(BodyType), value: xmlRoot.Name);
+                this.bodyType = (BodyTypeDef) Enum.Parse(enumType: typeof(BodyTypeDef), value: xmlRoot.Name);
                 this.offset = (Vector2) ParseHelper.FromString(str: xmlRoot.FirstChild.Value, itemType: typeof(Vector2));
             }
         }

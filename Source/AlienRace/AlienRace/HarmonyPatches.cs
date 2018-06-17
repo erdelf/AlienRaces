@@ -26,7 +26,7 @@ namespace AlienRace
         static HarmonyPatches()
         {
             HarmonyInstance harmony = HarmonyInstance.Create(id: "rimworld.erdelf.alien_race.main");
-
+            
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_Child), name: nameof(PawnRelationWorker_Child.GenerationChance)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(GenerationChanceChildPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_ExLover), name: nameof(PawnRelationWorker_ExLover.GenerationChance)), prefix: null,
@@ -55,7 +55,7 @@ namespace AlienRace
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "FillBackstorySlotShuffled"),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(FillBackstoryInSlotShuffledPrefix)), postfix: null);
 
-
+            
 
             harmony.Patch(original: AccessTools.Method(type: typeof(WorkGiver_Researcher), name: nameof(WorkGiver_Researcher.ShouldSkip)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(ShouldSkipResearchPostfix)));
@@ -80,7 +80,7 @@ namespace AlienRace
                 postfix: new HarmonyMethod(type: patchType, name: nameof(SetFactionDirectPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_OptimizeApparel), name: nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(ApparelScoreGainPostFix)));
-
+            
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
             {
                 ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(item: ar.race.corpseDef);
@@ -128,10 +128,10 @@ namespace AlienRace
             harmony.Patch(
                 original: AccessTools.Method(type: AccessTools.TypeByName(name: "AgeInjuryUtility"), name: "RandomHediffsToGainOnBirthday", parameters: new[] {typeof(ThingDef), typeof(int)}),
                 prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(RandomHediffsToGainOnBirthdayPostfix)));
-            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver), name: nameof(JobDriver.Posture)).GetGetMethod(nonPublic: false), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
-            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver_Skygaze), name: nameof(JobDriver_Skygaze.Posture)).GetGetMethod(nonPublic: false), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
+//            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver), name: nameof(JobDriver.Posture)).GetGetMethod(nonPublic: false), prefix: null,
+//                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
+//            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver_Skygaze), name: nameof(JobDriver_Skygaze.Posture)).GetGetMethod(nonPublic: false), prefix: null,
+//                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateRandomAge"), prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateRandomAgePrefix)),
                 postfix: null);
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateTraits"), prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateTraitsPrefix)),
@@ -170,14 +170,12 @@ namespace AlienRace
                 prefix: new HarmonyMethod(type: patchType, name: nameof(GeneratePawnNamePrefix)), postfix: null);
             harmony.Patch(original: AccessTools.Method(type: typeof(Page_ConfigureStartingPawns), name: "CanDoNext"), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanDoNextStartPawnPostfix)));
-
             harmony.Patch(original: AccessTools.Method(type: typeof(GameInitData), name: nameof(GameInitData.PrepForMapGen)),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(PrepForMapGenPrefix)), postfix: null);
-
-
+            
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_RelationsTracker), name: nameof(Pawn_RelationsTracker.SecondaryLovinChanceFactor)), prefix: null, postfix: null,
                 transpiler: new HarmonyMethod(type: patchType, name: nameof(SecondaryLovinChanceFactorTranspiler)));
-
+            
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_RelationsTracker), name: nameof(Pawn_RelationsTracker.CompatibilityWith)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CompatibilityWithPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Faction), name: nameof(Faction.TryMakeInitialRelationsWith)), prefix: null,
@@ -186,8 +184,6 @@ namespace AlienRace
                 postfix: null);
             harmony.Patch(original: AccessTools.Method(type: typeof(TraderCaravanUtility), name: nameof(TraderCaravanUtility.GetTraderCaravanRole)), prefix: null, postfix: null,
                 transpiler: new HarmonyMethod(type: patchType, name: nameof(GetTraderCaravanRoleTranspiler)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(ITab_Pawn_Gear), name: "TryDrawAverageArmor"), prefix: null, postfix: null,
-                transpiler: new HarmonyMethod(type: patchType, name: nameof(TryDrawAverageArmorTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(RestUtility), name: nameof(RestUtility.CanUseBedEver)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanUseBedEverPostfix)));
             harmony.Patch(original: AccessTools.Property(type: typeof(Building_Bed), name: nameof(Building_Bed.AssigningCandidates)).GetGetMethod(), prefix: null,
@@ -196,7 +192,7 @@ namespace AlienRace
                 postfix: new HarmonyMethod(type: patchType, name: nameof(GenTextAdjustedForPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(RaceProperties), name: nameof(RaceProperties.CanEverEat), parameters: new[] {typeof(ThingDef)}), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanEverEat)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(Verb_MeleeAttack), name: "DamageInfosToApply"), prefix: null,
+            harmony.Patch(original: AccessTools.Method(type: typeof(Verb_MeleeAttackDamage), name: "DamageInfosToApply"), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(DamageInfosToApplyPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnWeaponGenerator), name: nameof(PawnWeaponGenerator.TryGenerateWeaponFor)),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(TryGenerateWeaponForPrefix)), postfix: new HarmonyMethod(type: patchType, name: nameof(TryGenerateWeaponForPostfix)));
@@ -233,10 +229,11 @@ namespace AlienRace
                 postfix: new HarmonyMethod(type: patchType, name: nameof(GenerateGearForPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.ChangeKind)), prefix: new HarmonyMethod(type: patchType, name: nameof(ChangeKindPrefix)), postfix: null);
 
-
-
             {
-                FieldInfo   bodyInfo = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
+                FieldInfo bodyInfo = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
+                FieldInfo postureInfo = AccessTools.Field(type: typeof(Pawn_JobTracker), name: nameof(Pawn_JobTracker.posture));
+
+
                 ILGenerator ilg      = new DynamicMethod(name: "ScanMethod", returnType: typeof(int), parameterTypes: Type.EmptyTypes).GetILGenerator();
                 foreach (MethodInfo mi in LoadedModManager.RunningMods.Where(predicate: mcp => mcp.LoadedAnyAssembly)
                    .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies.Where(predicate: ase => ase.GetType(name: "HarmonyInstance", throwOnError: false) != null))
@@ -252,6 +249,8 @@ namespace AlienRace
                     List<ILInstruction> instructions = PatchFunctions.GetInstructions(generator: ilg, method: mi);
                     if (instructions.Any(predicate: il => il.operand == bodyInfo))
                         harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(BodyReferenceTranspiler)));
+                    if (instructions.Any(predicate: il => il.opcode == OpCodes.Stfld && il.operand == postureInfo))
+                        harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PostureTranspiler)));
                 }
             }
             
@@ -259,35 +258,56 @@ namespace AlienRace
                 $"Alien race successfully completed {harmony.GetPatchedMethods().Select(selector: mb => harmony.GetPatchInfo(method: mb)).SelectMany(selector: p => p.Prefixes.Concat(second: p.Postfixes).Concat(second: p.Transpilers)).Count(predicate: p => p.owner == harmony.Id)} patches with harmony.");
             DefDatabase<HairDef>.GetNamed(defName: "Shaved").hairTags.Add(item: "alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
 
-            foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs)
-            {
-                BackstoryDef.UpdateTranslateableFields(bs: bd);
-            }
+            foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs) BackstoryDef.UpdateTranslateableFields(bs: bd);
         }
 
-        public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> PostureTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo postureInfo = AccessTools.Field(type: typeof(Pawn_JobTracker), name: nameof(Pawn_JobTracker.posture));
+
+            CodeInstruction[] codeInstructions = instructions as CodeInstruction[] ?? instructions.ToArray();
+            foreach (CodeInstruction instruction in codeInstructions)
+                if (instruction.opcode == OpCodes.Stfld && instruction.operand == postureInfo)
+                    yield return new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(PostureTweak)));
+                else
+                    yield return instruction;
+        }
+
+        public static void PostureTweak(Pawn_JobTracker jobs, PawnPosture posture)
+        {
+            Pawn pawn = Traverse.Create(root: jobs).Field(name: "pawn").GetValue<Pawn>();
+
+            if (posture != PawnPosture.Standing && pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.canLayDown &&
+                !(pawn.CurrentBed()?.def.defName.EqualsIgnoreCase(B: "ET_Bed") ?? false))
+                posture = PawnPosture.Standing;
+            jobs.posture = posture;
+        }
+
+        public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions, MethodBase mb)
         {
             FieldInfo bodyInfo  = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
             FieldInfo propsInfo = AccessTools.Field(type: typeof(ThingDef),       name: nameof(ThingDef.race));
-
-            List<CodeInstruction> instructionList = instructions.ToList();
-            for (int i = 0; i < instructionList.Count; i++)
+            FieldInfo defInfo = AccessTools.Field(type: typeof(Thing), name: nameof(Thing.def));
             {
-                CodeInstruction instruction = instructionList[index: i];
-
-                if (i < instructionList.Count - 2 && instructionList[index: i + 2].operand == bodyInfo && instructionList[index: i + 1].operand == propsInfo)
+                List<CodeInstruction> instructionList = instructions.ToList();
+                for (int i = 0; i < instructionList.Count; i++)
                 {
-                    instruction =  new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(ReplacedBody)));
-                    i           += 2;
-                }
+                    CodeInstruction instruction = instructionList[index: i];
 
-                if (i < instructionList.Count - 1 && instructionList[index: i + 1].operand == bodyInfo)
-                {
-                    instruction = new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(ReplacedBody)));
-                    i++;
-                }
+                    if (i < instructionList.Count - 2 && instructionList[index: i + 2].operand == bodyInfo && instructionList[index: i + 1].operand == propsInfo && instruction.operand == defInfo)
+                    {
+                        instruction =  new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(ReplacedBody)));
+                        i           += 2;
+                    }
 
-                yield return instruction;
+                    if (i < instructionList.Count - 1 && instructionList[index: i + 1].operand == bodyInfo && instruction.operand == defInfo)
+                    {
+                        instruction = new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(ReplacedBody)));
+                        i++;
+                    }
+
+                    yield return instruction;
+                }
             }
         }
 
@@ -512,7 +532,7 @@ namespace AlienRace
                 !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(predicate: d => p.def != d && (d.alienRace.raceRestriction.traitList?.Contains(item: tr.defName) ?? false)));
 
             Pawn pawn = p;
-            return defs.RandomElementByWeight(weightSelector: tr => tr.GetGenderSpecificCommonality(pawn: pawn));
+            return defs.RandomElementByWeight(weightSelector: tr => tr.GetGenderSpecificCommonality(gender: pawn.gender));
         }
 
         public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, Building_Bed __instance) =>
@@ -523,31 +543,6 @@ namespace AlienRace
             if (__result)
                 __result = p.def is ThingDef_AlienRace alienProps && (alienProps.alienRace.generalSettings.validBeds?.Contains(item: bedDef.defName) ?? false) ||
                            !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(predicate: td => td.alienRace.generalSettings.validBeds?.Contains(item: bedDef.defName) ?? false);
-        }
-
-        public static IEnumerable<CodeInstruction> TryDrawAverageArmorTranspiler(IEnumerable<CodeInstruction> instructions)
-        {
-            FieldInfo  bodyInfo      = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
-            MethodInfo humanlikeInfo = AccessTools.Property(type: typeof(RaceProperties), name: nameof(RaceProperties.Humanlike)).GetGetMethod();
-
-            List<CodeInstruction> instructionList = instructions.ToList();
-            for (int i = 0; i < instructionList.Count; i++)
-            {
-                CodeInstruction instruction = instructionList[index: i];
-
-                if (instruction.operand == bodyInfo)
-                {
-                    instructionList.RemoveAt(index: i + 1);
-                    object lab = instructionList[index: i + 1].operand;
-                    instructionList.RemoveAt(index: i + 1);
-
-                    yield return new CodeInstruction(opcode: OpCodes.Callvirt, operand: humanlikeInfo);
-                    instruction.opcode  = OpCodes.Brtrue_S;
-                    instruction.operand = lab;
-                }
-
-                yield return instruction;
-            }
         }
 
 //        public static void CanWearTogetherPostfix(ThingDef A, ThingDef b, bool __result)
@@ -907,10 +902,8 @@ namespace AlienRace
                 alienProps.alienRace.generalSettings.factionRelations?.ForEach(action: frs =>
                 {
                     if (!frs.factions.Contains(item: __instance.def.defName)) return;
-                    FactionRelation fr;
-                    float           offset = frs.goodwill.RandomInRange;
-                    (fr = other.RelationWith(other: __instance)).goodwill = offset;
-                    fr.hostile                                            = fr.goodwill < 0;
+                    int           offset = frs.goodwill.RandomInRange;
+                    other.RelationWith(other: __instance).goodwill = offset;
                     __instance.RelationWith(other: other).goodwill        = offset;
                 });
 
@@ -918,10 +911,8 @@ namespace AlienRace
             alienProps?.alienRace.generalSettings.factionRelations?.ForEach(action: frs =>
             {
                 if (!frs.factions.Contains(item: other.def.defName)) return;
-                FactionRelation fr;
-                float           offset = frs.goodwill.RandomInRange;
-                (fr = other.RelationWith(other: __instance)).goodwill = offset;
-                fr.hostile                                            = fr.goodwill < 0;
+                int           offset = frs.goodwill.RandomInRange;
+                other.RelationWith(other: __instance).goodwill = offset;
                 __instance.RelationWith(other: other).goodwill        = offset;
             });
         }
@@ -1067,19 +1058,11 @@ namespace AlienRace
                 __result = -50f;
         }
 
-        public static void PosturePostfix(JobDriver __instance, ref PawnPosture __result)
-        {
-            if (__result == PawnPosture.Standing) return;
-            if (!(__instance.pawn.def is ThingDef_AlienRace alienProps)) return;
-            if (!alienProps.alienRace.generalSettings.canLayDown && !(__instance.pawn.CurrentBed()?.def.defName.EqualsIgnoreCase(B: "ET_Bed") ?? false))
-                __result = PawnPosture.Standing;
-        }
-
         public static void PrepForMapGenPrefix(GameInitData __instance) => Find.Scenario.AllParts.OfType<ScenPart_StartingHumanlikes>().Select(selector: sp => sp.GetPawns()).ToList().ForEach(
             action: sp =>
             {
                 IEnumerable<Pawn> spa = sp as Pawn[] ?? sp.ToArray();
-                __instance.startingPawns.InsertRange(index: __instance.startingPawnCount, collection: spa);
+                __instance.startingAndOptionalPawns.InsertRange(index: __instance.startingPawnCount, collection: spa);
                 __instance.startingPawnCount += spa.Count();
             });
 
@@ -1570,7 +1553,7 @@ namespace AlienRace
             if (__result) return;
 
             bool result = true;
-            Find.GameInitData.startingPawns.ForEach(action: current =>
+            Find.GameInitData.startingAndOptionalPawns.ForEach(action: current =>
             {
                 if (!current.Name.IsValid && current.def.race.GetNameGenerator(gender: current.gender) == null) result = false;
             });
@@ -1787,7 +1770,7 @@ re
                                                   shader: ContentFinder<Texture2D>.Get(
                                                               itemPath: AlienPartGenerator.GetNakedPath(bodyType: alien.story.bodyType, userpath: graphicPaths.body,
                                                                             gender: alienProps.alienRace.generalSettings.alienPartGenerator.useGenderedBodies ? alien.gender.ToString() : "") +
-                                                                        "_backm", reportFailure: false) == null ?
+                                                                        "_northm", reportFailure: false) == null ?
                                                               ShaderDatabase.Cutout :
                                                               ShaderDatabase.CutoutComplex, skinColor: __instance.pawn.story.SkinColor,
                                                   skinColorSecond: alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien: alien, first: false), userpath: graphicPaths.body,
@@ -1801,7 +1784,7 @@ re
                 __instance.dessicatedGraphic = !graphicPaths.skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(path: graphicPaths.skeleton, shader: ShaderDatabase.Cutout) : null;
                 __instance.headGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
                                              GraphicDatabase.Get<Graphic_Multi>(path: alien.story.HeadGraphicPath,
-                                                 shader: ContentFinder<Texture2D>.Get(itemPath: alien.story.HeadGraphicPath + "_backm", reportFailure: false) == null ?
+                                                 shader: ContentFinder<Texture2D>.Get(itemPath: alien.story.HeadGraphicPath + "_northm", reportFailure: false) == null ?
                                                              ShaderDatabase.Cutout :
                                                              ShaderDatabase.CutoutComplex, drawSize: Vector2.one, color: alien.story.SkinColor,
                                                  colorTwo: alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien: alien, first: false)) :
@@ -1814,7 +1797,7 @@ re
                                               GraphicDatabase.Get<Graphic_Multi>(path: graphicPaths.skull, shader: ShaderDatabase.Cutout, drawSize: Vector2.one, color: Color.white) :
                                               null;
                 __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(path: __instance.pawn.story.hairDef.texPath,
-                    shader: ContentFinder<Texture2D>.Get(itemPath: __instance.pawn.story.hairDef.texPath + "_backm", reportFailure: false) == null ?
+                    shader: ContentFinder<Texture2D>.Get(itemPath: __instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
                                 ShaderDatabase.Cutout :
                                 ShaderDatabase.CutoutComplex, drawSize: Vector2.one, color: alien.story.hairColor, colorTwo: alienComp.hairColorSecond);
                 __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
@@ -1947,8 +1930,9 @@ re
                 colonistRelationChanceFactor: request.ColonistRelationChanceFactor,
                 forceAddFreeWarmLayerIfNeeded: request.ForceAddFreeWarmLayerIfNeeded, allowGay: request.AllowGay, allowFood: request.AllowFood, inhabitant: request.Inhabitant,
                 certainlyBeenInCryptosleep: request.CertainlyBeenInCryptosleep,
-                forceRedressWorldPawnIfFormerColonist: request.ForceRedressWorldPawnIfFormerColonist, worldPawnFactionDoesntMatter: request.WorldPawnFactionDoesntMatter, validator: request.Validator,
-                minChanceToRedressWorldPawn: request.MinChanceToRedressWorldPawn, fixedBiologicalAge: request.FixedBiologicalAge,
+                forceRedressWorldPawnIfFormerColonist: request.ForceRedressWorldPawnIfFormerColonist, worldPawnFactionDoesntMatter: request.WorldPawnFactionDoesntMatter,
+                validatorPreGear: request.ValidatorPreGear,
+                validatorPostGear: request.ValidatorPostGear, minChanceToRedressWorldPawn: request.MinChanceToRedressWorldPawn, fixedBiologicalAge: request.FixedBiologicalAge,
                 fixedChronologicalAge: request.FixedChronologicalAge, fixedGender: request.FixedGender, fixedMelanin: request.FixedMelanin, fixedLastName: request.FixedLastName);
         }
 
