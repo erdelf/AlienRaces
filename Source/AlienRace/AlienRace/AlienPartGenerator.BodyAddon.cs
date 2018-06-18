@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEngine;
 using Verse;
 using System.Xml;
-using System;
 
 namespace AlienRace
 {
@@ -133,7 +132,7 @@ namespace AlienRace
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
-                this.bodyType = (BodyTypeDef) Enum.Parse(enumType: typeof(BodyTypeDef), value: xmlRoot.Name);
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(wanter: this, fieldName: nameof(this.bodyType), targetDefName: xmlRoot.Name);
                 this.offset = (Vector2) ParseHelper.FromString(str: xmlRoot.FirstChild.Value, itemType: typeof(Vector2));
             }
         }
