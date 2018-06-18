@@ -230,6 +230,10 @@ namespace AlienRace
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.ChangeKind)), prefix: new HarmonyMethod(type: patchType, name: nameof(ChangeKindPrefix)), postfix: null);
 
             {
+                harmony.Patch(original: AccessTools.Method(type: typeof(ILInstruction), name: nameof(ILInstruction.GetSize)), prefix: null, postfix: null,
+                    transpiler: new HarmonyMethod(type: patchType, name: nameof(HarmonySizeBugFix)));
+
+
                 FieldInfo bodyInfo = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
                 FieldInfo postureInfo = AccessTools.Field(type: typeof(Pawn_JobTracker), name: nameof(Pawn_JobTracker.posture));
 
@@ -259,6 +263,16 @@ namespace AlienRace
             DefDatabase<HairDef>.GetNamed(defName: "Shaved").hairTags.Add(item: "alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
 
             foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs) BackstoryDef.UpdateTranslateableFields(bs: bd);
+        }
+
+        public static IEnumerable<CodeInstruction> HarmonySizeBugFix(IEnumerable<CodeInstruction> instructions)
+        {
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.opcode == OpCodes.Castclass)
+                    instruction.operand = typeof(IEnumerable<object>);
+                yield return instruction;
+            }
         }
 
         public static IEnumerable<CodeInstruction> PostureTranspiler(IEnumerable<CodeInstruction> instructions)
