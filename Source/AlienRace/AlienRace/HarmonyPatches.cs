@@ -1412,6 +1412,7 @@ namespace AlienRace
             if (path != null)
                 Traverse.Create(root: pawn.story).Field(name: "headGraphicPath").SetValue(value: alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(userpath: path, pawn: pawn));
 
+            if (!pawn.def.race.lifeStageAges.Skip(count: 1).Any()) return;
             LifeStageAge lsac = pawn.ageTracker.CurLifeStageRace;
             LifeStageAge lsap = pawn.def.race.lifeStageAges[index: pawn.ageTracker.CurLifeStageIndex - 1];
 
