@@ -16,7 +16,7 @@ namespace AlienRace
         public List<ThingDef> validRaces;
         public bool factionLeader;
         public List<string> forcedHediffs = new List<string>();
-        public List<string> forcedItems = new List<string>();
+        public List<ThingDefCountRangeClass> forcedItems = new List<ThingDefCountRangeClass>();
 
         public override void ResolveReferences()
         {
