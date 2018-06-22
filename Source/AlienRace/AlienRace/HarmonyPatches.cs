@@ -1,18 +1,18 @@
-﻿using Harmony;
-using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using UnityEngine;
-using Verse;
-using Verse.AI;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-
-namespace AlienRace
+﻿namespace AlienRace
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using System.Reflection.Emit;
+    using System.Runtime.CompilerServices;
+    using Harmony;
     using Harmony.ILCopying;
+    using RimWorld;
+    using UnityEngine;
+    using Verse;
+    using Verse.AI;
+    using Verse.Grammar;
 
     /// <summary>
     /// "More useful than the Harmony wiki" ~ Mehni
@@ -188,8 +188,8 @@ namespace AlienRace
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanUseBedEverPostfix)));
             harmony.Patch(original: AccessTools.Property(type: typeof(Building_Bed), name: nameof(Building_Bed.AssigningCandidates)).GetGetMethod(), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(AssigningCandidatesPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(GenText), name: nameof(GenText.AdjustedFor)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenTextAdjustedForPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(GrammarUtility), name: nameof(GrammarUtility.RulesForPawn), parameters: new []{typeof(string), typeof(Pawn), typeof(Dictionary<string,string>)}), prefix: null,
+                postfix: new HarmonyMethod(type: patchType, name: nameof(RulesForPawnPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(RaceProperties), name: nameof(RaceProperties.CanEverEat), parameters: new[] {typeof(ThingDef)}), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanEverEat)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Verb_MeleeAttackDamage), name: "DamageInfosToApply"), prefix: null,
@@ -510,7 +510,7 @@ namespace AlienRace
                     && __result;
         }
 
-        public static void GenTextAdjustedForPostfix(ref string __result, Pawn p) => __result = __result.Replace(oldValue: "ALIENRACE", newValue: p.def.LabelCap);
+        public static void RulesForPawnPostfix(ref IEnumerable<Rule> __result, Pawn pawn, string pawnSymbol) => __result.Add(item: new Rule_String(keyword: pawnSymbol + "_alienRace", output: pawn.def.LabelCap));
 
         public static IEnumerable<CodeInstruction> GenerateTraitsTranspiler(IEnumerable<CodeInstruction> instructions)
         {
