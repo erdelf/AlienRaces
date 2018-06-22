@@ -333,9 +333,12 @@
 
         public static void GenerateGearForPostfix(Pawn pawn) =>
             pawn.story?.AllBackstories?.Select(selector: bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)).Where(predicate: bs => bs != null)
-               .SelectMany(selector: bd => bd.forcedItems).Concat(second: bioReference?.forcedItems ?? new List<string>(capacity: 0)).Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail)
-               .Where(predicate: td => td != null).Select(selector: td => ThingMaker.MakeThing(def: td, stuff: GenStuff.RandomStuffFor(td: td))).Where(predicate: t => t != null).ToList()
-               .ForEach(action: th => pawn.inventory?.TryAddItemNotForSale(item: th));
+               .SelectMany(selector: bd => bd.forcedItems).Concat(second: bioReference?.forcedItems ?? new List<ThingDefCountRangeClass>(capacity: 0)).Do(action: tdcrc =>
+               {
+                    for(int i = 0; i < tdcrc.countRange.RandomInRange; i++)
+                        pawn.inventory?.TryAddItemNotForSale(item: ThingMaker.MakeThing(def: tdcrc.thingDef, stuff: GenStuff.RandomStuffFor(td: tdcrc.thingDef)));
+               });
+               
 
         //Zorba.....
         public static IEnumerable<CodeInstruction> GetInterferingBodyPartGroupsTranspiler(IEnumerable<CodeInstruction> instructions)
