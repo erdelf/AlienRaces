@@ -14,7 +14,7 @@ namespace AlienRace
         public class BodyAddon
         {
             public string path;
-            public BodyPartDef bodyPart;
+            public string bodyPart;
             public bool useSkinColor = true;
             public BodyAddonOffsets offsets;
             public bool linkVariantIndexWithPrevious = false;
@@ -41,7 +41,7 @@ namespace AlienRace
                 !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(item: bpgd)) || 
                 ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(item: s)))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && (!pawn.InBed() || this.drawnInBed) &&
                     (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
-                    (this.bodyPart == null || pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.def == this.bodyPart));
+                    (this.bodyPart == null || pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart));
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
