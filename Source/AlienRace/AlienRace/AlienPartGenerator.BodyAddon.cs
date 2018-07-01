@@ -68,7 +68,7 @@ namespace AlienRace
                                     (this.linkVariantIndexWithPrevious ?
                                         sharedIndex % variantCounting :
                                         (sharedIndex = Rand.Range(min: 0, max: variantCounting))))) == 0 ? "" : tv.ToString())),
-                                shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_backm", reportFailure: false) == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
+                                shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
                                     drawSize: new Vector3(x: 1, y: 0, z: 1),
                                         color: this.useSkinColor ?
                                             pawn.story.SkinColor :

@@ -104,7 +104,7 @@ namespace AlienRace
             {
                 if (ba.variantCount == 0)
                 {
-                    while (ContentFinder<Texture2D>.Get(itemPath: ba.path + (ba.variantCount == 0 ? "" : ba.variantCount.ToString()) + "_back", reportFailure: false) != null)
+                    while (ContentFinder<Texture2D>.Get(itemPath: ba.path + (ba.variantCount == 0 ? "" : ba.variantCount.ToString()) + "_north", reportFailure: false) != null)
                         ba.variantCount++;
                     Log.Message(text: "Variants found for " + ba.path + ": " + ba.variantCount.ToString());
                     if (ba.hediffGraphics != null)
@@ -112,7 +112,7 @@ namespace AlienRace
                         {
                             if (bahg.variantCount == 0)
                             {
-                                while (ContentFinder<Texture2D>.Get(itemPath: bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_back", reportFailure: false) != null)
+                                while (ContentFinder<Texture2D>.Get(itemPath: bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_north", reportFailure: false) != null)
                                     bahg.variantCount++;
                                 Log.Message(text: "Variants found for " + bahg.path + ": " + bahg.variantCount.ToString());
                             }
@@ -122,7 +122,7 @@ namespace AlienRace
                         {
                             if (babg.variantCount == 0)
                             {
-                                while (ContentFinder<Texture2D>.Get(itemPath: babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_back", reportFailure: false) != null)
+                                while (ContentFinder<Texture2D>.Get(itemPath: babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_north", reportFailure: false) != null)
                                     babg.variantCount++;
                                 Log.Message(text: "Variants found for " + babg.path + ": " + babg.variantCount.ToString());
                             }
