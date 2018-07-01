@@ -1823,6 +1823,11 @@ re
                                                       shader: alienComp.skinColor == alienComp.skinColorSecond ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, drawSize: Vector2.one,
                                                       color: alien.story.SkinColor, colorTwo: alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien: alien, first: false)) :
                                                   null;
+                __instance.desiccatedHeadStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
+                                                            GraphicDatabase.Get<Graphic_Multi>(path: graphicPaths.stump,
+                                                                shader: ShaderDatabase.Cutout, drawSize: Vector2.one,
+                                                                color: PawnGraphicSet.RottingColor) :
+                                                            null;
 
                 AlienPartGenerator apg = alienProps.alienRace.generalSettings.alienPartGenerator;
                 alienComp.addonGraphics = new List<Graphic>();
