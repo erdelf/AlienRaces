@@ -1585,12 +1585,12 @@
             NameTriple nameTriple = NameTriple.FromString(rawName: NameGenerator.GenerateName(rootPack: alienProps.race.GetNameGenerator(gender: pawn.gender)));
 
             string first = nameTriple.First, nick = nameTriple.Nick, last = nameTriple.Last;
-
+            
             if (nick == null) nick = nameTriple.First;
 
             if (last != null && forcedLastName != null) last = forcedLastName;
 
-            __result = new NameTriple(first: first, nick: nick, last: last);
+            __result = new NameTriple(first: first ?? string.Empty, nick: nick ?? string.Empty, last: last ?? string.Empty);
 
             return false;
         }
