@@ -109,7 +109,7 @@ namespace AlienRace
         public Vector2 headOffset = Vector2.zero;
 
         public const string VANILLA_HEAD_PATH = "Things/Pawn/Humanlike/Heads/";
-        public const string VANILLA_SKELETON_PATH = "Things/Pawn/Humanlike/Heads/";
+        public const string VANILLA_SKELETON_PATH = "Things/Pawn/Humanlike/HumanoidDessicated";
 
         public string body = "Things/Pawn/Humanlike/Bodies/";
         public string head = "Things/Pawn/Humanlike/Heads/";
