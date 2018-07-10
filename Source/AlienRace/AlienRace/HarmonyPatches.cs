@@ -1838,7 +1838,6 @@ re
                 {
                     Graphic g = apg.bodyAddons[index: i].GetPath(pawn: alien, sharedIndex: ref sharedIndex,
                         savedIndex: alienComp.addonVariants.Count > i ? (int?) alienComp.addonVariants[index: i] : null);
-                    g.drawSize = apg.bodyAddons[index: i].drawSize * 1.5f;
                     alienComp.addonGraphics.Add(item: g);
                     if (alienComp.addonVariants.Count <= i)
                         alienComp.addonVariants.Add(item: sharedIndex);
@@ -2047,61 +2046,75 @@ re
 
         public static void DrawAddons(bool portrait, Pawn pawn, Vector3 vector, Quaternion quat, Rot4 rotation)
         {
-            if (pawn.def is ThingDef_AlienRace alienProps)
+            if (!(pawn.def is ThingDef_AlienRace alienProps)) return;
+
+            List<AlienPartGenerator.BodyAddon> addons    = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
+            AlienPartGenerator.AlienComp       alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
+            for (int i = 0; i < addons.Count; i++)
             {
-                List<AlienPartGenerator.BodyAddon> addons    = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
-                AlienPartGenerator.AlienComp       alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
-                for (int i = 0; i < addons.Count; i++)
+                AlienPartGenerator.BodyAddon ba = addons[index: i];
+
+
+                if (!ba.CanDrawAddon(pawn: pawn)) continue;
+
+                AlienPartGenerator.RotationOffset offset = rotation == Rot4.South ?
+                                                               ba.offsets.front :
+                                                               rotation == Rot4.North ?
+                                                                   ba.offsets.back :
+                                                                   ba.offsets.side;
+
+                Vector2 bodyOffset = (portrait ? offset?.portraitBodyTypes ?? offset?.bodyTypes : offset?.bodyTypes)?.FirstOrDefault(predicate: to => to.bodyType == pawn.story.bodyType)
+                                   ?.offset ?? Vector2.zero;
+                Vector2 crownOffset = (portrait ? offset?.portraitCrownTypes ?? offset?.crownTypes : offset?.crownTypes)?.FirstOrDefault(predicate: to => to.crownType == alienComp.crownType)
+                                    ?.offset ?? Vector2.zero;
+
+                //Defaults for tails 
+                //front 0.42f, -0.3f, -0.22f
+                //back     0f,  0.3f, -0.55f
+                //side -0.42f, -0.3f, -0.22f   
+
+                float moffsetX = 0.42f;
+                float moffsetZ = -0.22f;
+                float moffsetY = ba.inFrontOfBody ? 0.3f + ba.layerOffset : -0.3f - ba.layerOffset;
+                float num      = ba.angle;
+
+                if (rotation == Rot4.North)
                 {
-                    AlienPartGenerator.BodyAddon ba = addons[index: i];
-
-
-                    if (ba.CanDrawAddon(pawn: pawn))
-                    {
-                        AlienPartGenerator.RotationOffset offset = rotation == Rot4.South ?
-                                                                       ba.offsets.front :
-                                                                       rotation == Rot4.North ?
-                                                                           ba.offsets.back :
-                                                                           ba.offsets.side;
-
-                        Vector2 bodyOffset = (portrait ? offset?.portraitBodyTypes ?? offset?.bodyTypes : offset?.bodyTypes)?.FirstOrDefault(predicate: to => to.bodyType == pawn.story.bodyType)
-                                           ?.offset ?? Vector2.zero;
-                        Vector2 crownOffset = (portrait ? offset?.portraitCrownTypes ?? offset?.crownTypes : offset?.crownTypes)?.FirstOrDefault(predicate: to => to.crownType == alienComp.crownType)
-                                            ?.offset ?? Vector2.zero;
-
-                        //Defaults for tails 
-                        //front 0.42f, -0.3f, -0.22f
-                        //back     0f,  0.3f, -0.55f
-                        //side -0.42f, -0.3f, -0.22f   
-
-                        float moffsetX = 0.42f;
-                        float moffsetZ = -0.22f;
-                        float moffsetY = ba.inFrontOfBody ? 0.3f + ba.layerOffset : -0.3f - ba.layerOffset;
-                        float num      = ba.angle;
-
-                        if (rotation == Rot4.North)
-                        {
-                            moffsetX = 0f;
-                            moffsetY = !ba.inFrontOfBody ? -0.3f - ba.layerOffset : 0.3f + ba.layerOffset;
-                            moffsetZ = -0.55f;
-                            num      = 0;
-                        }
-
-                        moffsetX += bodyOffset.x + crownOffset.x;
-                        moffsetZ += bodyOffset.y + crownOffset.y;
-
-                        if (rotation == Rot4.East)
-                        {
-                            moffsetX = -moffsetX;
-                            num      = -num; //Angle
-                        }
-
-                        Vector3 offsetVector = new Vector3(x: moffsetX, y: moffsetY, z: moffsetZ);
-                        //                                                                                        Angle calculation to not pick the shortest, taken from Quaternion.Angle
-                        GenDraw.DrawMeshNowOrLater(mesh: alienComp.addonGraphics[index: i].MeshAt(rot: rotation), loc: vector + offsetVector.RotatedBy(angle: Mathf.Acos(f: Quaternion.Dot(a: Quaternion.identity, b: quat)) * 2f * 57.29578f),
-                            quat: Quaternion.AngleAxis(angle: num, axis: Vector3.up) * quat, mat: alienComp.addonGraphics[index: i].MatAt(rot: rotation), drawNow: portrait);
-                    }
+                    moffsetX = 0f;
+                    moffsetY = !ba.inFrontOfBody ? -0.3f - ba.layerOffset : 0.3f + ba.layerOffset;
+                    moffsetZ = -0.55f;
+                    num      = 0;
                 }
+
+                moffsetX += bodyOffset.x + crownOffset.x;
+                moffsetZ += bodyOffset.y + crownOffset.y;
+
+                if (rotation == Rot4.East)
+                {
+                    moffsetX = -moffsetX;
+                    num      = -num; //Angle
+                }
+
+                if (rotation == Rot4.West && pawn.GetPosture() != PawnPosture.Standing)
+                {
+                    moffsetZ = -moffsetZ;
+                    moffsetX = -moffsetX;
+                }
+
+                Vector3 offsetVector = new Vector3(x: moffsetX, y: moffsetY, z: moffsetZ);
+
+                //Vector3 calcVec = vector + offsetVector.RotatedBy(angle: Mathf.Acos(f: Quaternion.Dot(a: Quaternion.identity, b: quat)) * 2f * 57.29578f);
+
+                //if (pawn.GetPosture() != PawnPosture.Standing)
+                    //Log.ErrorOnce(text: $"{pawn.Name.ToStringShort}: {rotation}\n{vector} + {offsetVector} = {calcVec}", key: pawn.GetHashCode() * rotation.AsInt);
+
+
+                //GenDraw.DrawMeshNowOrLater(mesh: alienComp.addonGraphics[index: i].MeshAt(rot: rotation), loc: vector,
+                //    quat: Quaternion.AngleAxis(angle: num, axis: Vector3.up) * quat, mat: alienComp.addonGraphics[index: i].GetColoredVersion(ShaderDatabase.Cutout, Color.red, Color.black).MatAt(rot: rotation), drawNow: portrait);
+
+                //                                                                                        Angle calculation to not pick the shortest, taken from Quaternion.Angle
+                GenDraw.DrawMeshNowOrLater(mesh: alienComp.addonGraphics[index: i].MeshAt(rot: rotation), loc: vector + offsetVector.RotatedBy(angle: Mathf.Acos(f: Quaternion.Dot(a: Quaternion.identity, b: quat)) * 2f * 57.29578f),
+                    quat: Quaternion.AngleAxis(angle: num, axis: Vector3.up) * quat, mat: alienComp.addonGraphics[index: i].MatAt(rot: rotation), drawNow: portrait);
             }
         }
     }
