@@ -1838,7 +1838,7 @@ re
                 {
                     Graphic g = apg.bodyAddons[index: i].GetPath(pawn: alien, sharedIndex: ref sharedIndex,
                         savedIndex: alienComp.addonVariants.Count > i ? (int?) alienComp.addonVariants[index: i] : null);
-                    g.drawSize = apg.bodyAddons[index: i].drawSize;
+                    g.drawSize = apg.bodyAddons[index: i].drawSize * 1.5f;
                     alienComp.addonGraphics.Add(item: g);
                     if (alienComp.addonVariants.Count <= i)
                         alienComp.addonVariants.Add(item: sharedIndex);
