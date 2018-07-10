@@ -1799,7 +1799,7 @@ re
                                                     skinColor: PawnGraphicSet.RottingColor, skinColorSecond: PawnGraphicSet.RottingColor, userpath: graphicPaths.body,
                                                     gender: alien.gender.ToString()) :
                                                 null;
-                __instance.dessicatedGraphic = !graphicPaths.skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(path: graphicPaths.skeleton, shader: ShaderDatabase.Cutout) : null;
+                __instance.dessicatedGraphic = !graphicPaths.skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(path:(graphicPaths.skeleton == GraphicPaths.VANILLA_SKELETON_PATH ? alien.story.bodyType.bodyDessicatedGraphicPath : graphicPaths.skeleton), shader: ShaderDatabase.Cutout) : null;
                 __instance.headGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
                                              GraphicDatabase.Get<Graphic_Multi>(path: alien.story.HeadGraphicPath,
                                                  shader: ContentFinder<Texture2D>.Get(itemPath: alien.story.HeadGraphicPath + "_northm", reportFailure: false) == null ?
