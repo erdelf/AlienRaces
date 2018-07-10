@@ -111,9 +111,10 @@ namespace AlienRace
 
         public class BodyAddonOffsets
         {
-            public RotationOffset front;
-            public RotationOffset back;
-            public RotationOffset side;
+            public RotationOffset south;
+            public RotationOffset north;
+            public RotationOffset east;
+            public RotationOffset west;
         }
 
         public class RotationOffset

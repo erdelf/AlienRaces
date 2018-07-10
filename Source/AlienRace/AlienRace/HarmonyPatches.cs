@@ -2058,10 +2058,12 @@ re
                 if (!ba.CanDrawAddon(pawn: pawn)) continue;
 
                 AlienPartGenerator.RotationOffset offset = rotation == Rot4.South ?
-                                                               ba.offsets.front :
+                                                               ba.offsets.south :
                                                                rotation == Rot4.North ?
-                                                                   ba.offsets.back :
-                                                                   ba.offsets.side;
+                                                                   ba.offsets.north :
+                                                                   rotation == Rot4.East ?
+                                                                    ba.offsets.east : 
+                                                                    ba.offsets.west;
 
                 Vector2 bodyOffset = (portrait ? offset?.portraitBodyTypes ?? offset?.bodyTypes : offset?.bodyTypes)?.FirstOrDefault(predicate: to => to.bodyType == pawn.story.bodyType)
                                    ?.offset ?? Vector2.zero;
@@ -2069,9 +2071,9 @@ re
                                     ?.offset ?? Vector2.zero;
 
                 //Defaults for tails 
-                //front 0.42f, -0.3f, -0.22f
-                //back     0f,  0.3f, -0.55f
-                //side -0.42f, -0.3f, -0.22f   
+                //south 0.42f, -0.3f, -0.22f
+                //north     0f,  0.3f, -0.55f
+                //east -0.42f, -0.3f, -0.22f   
 
                 float moffsetX = 0.42f;
                 float moffsetZ = -0.22f;
