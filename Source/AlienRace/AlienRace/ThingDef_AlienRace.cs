@@ -36,6 +36,9 @@ namespace AlienRace
                     gp.headOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
             });
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
+            foreach (AlienPartGenerator.BodyAddon bodyAddon in this.alienRace.generalSettings.alienPartGenerator.bodyAddons)
+                if (bodyAddon.offsets.west == null)
+                    bodyAddon.offsets.west = bodyAddon.offsets.east;
         }
 
         public class AlienSettings
