@@ -71,25 +71,7 @@ namespace AlienRace
                         headSet = new GraphicMeshSet(width: 1.5f * headDrawSize.x, height: 1.5f * headDrawSize.y), // headSet
                         hairSetAverage = new GraphicMeshSet(width: 1.5f * headDrawSize.x, height: 1.5f * headDrawSize.y), // hairSetAverage
                         hairSetNarrow = new GraphicMeshSet(width: 1.3f * headDrawSize.x, height: 1.5f * headDrawSize.y), // hairSetNarrow
-
-                        addonMeshs = this.bodyAddons.Select(selector: ba => ba.drawSize).Distinct().ToDictionary(keySelector: dS => dS, elementSelector: dS => (Mesh) meshInfo.Invoke(obj: null, parameters: new object[] { Vector2.Scale(a: drawSize * 1.5f, b: dS), false, false, false })),
-                        addonMeshsFlipped = this.bodyAddons.Select(selector: ba => ba.drawSize).Distinct().ToDictionary(keySelector: dS => dS, elementSelector: dS => (Mesh) meshInfo.Invoke(obj: null, parameters: new object[] { Vector2.Scale(a: drawSize * 1.5f, b: dS), true, false, false }))
                     });
-                }
-                else
-                {
-                    Dictionary<Vector2, Mesh> addonMeshs = meshPools[key: drawSize].addonMeshs;
-                    Dictionary<Vector2, Mesh> meshs = addonMeshs;
-                    foreach (Vector2 dS in this.bodyAddons.Select(selector: ba => ba.drawSize).Distinct().Where(predicate: dS => !meshs.ContainsKey(key: dS)))
-                        addonMeshs.Add(key: dS, value: (Mesh) meshInfo.Invoke(obj: null, parameters: new object[] { Vector2.Scale(a: drawSize * 1.5f, b: dS), false, false, false }));
-                    meshPools[key: drawSize].addonMeshs = addonMeshs;
-
-                    addonMeshs = meshPools[key: drawSize].addonMeshsFlipped;
-                    foreach (Vector2 dS in this.bodyAddons.Select(selector: ba => ba.drawSize).Distinct().Where(predicate: dS => !addonMeshs.ContainsKey(key: dS)))
-                        addonMeshs.Add(key: dS, value: (Mesh) meshInfo.Invoke(obj: null, parameters: new object[] { Vector2.Scale(a: drawSize * 1.5f, b: dS), true, false, false }));
-                    meshPools[key: drawSize].addonMeshsFlipped = addonMeshs;
-
-                    //(this.bodyAddons.Select(ba => ba.drawSize).Distinct().ToDictionary(dS => dS, dS => (Mesh) meshInfo.Invoke(null, new object[] { Vector2.Scale(drawSize * 1.5f, dS), false, false, false })));
                 }
             }
 
@@ -178,8 +160,6 @@ namespace AlienRace
             public GraphicMeshSet headSet;
             public GraphicMeshSet hairSetAverage;
             public GraphicMeshSet hairSetNarrow;
-            public Dictionary<Vector2, Mesh> addonMeshs;
-            public Dictionary<Vector2, Mesh> addonMeshsFlipped;
         }
     }
 }

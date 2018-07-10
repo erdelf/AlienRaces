@@ -1836,8 +1836,10 @@ re
                 int sharedIndex = 0;
                 for (int i = 0; i < apg.bodyAddons.Count; i++)
                 {
-                    alienComp.addonGraphics.Add(item: apg.bodyAddons[index: i].GetPath(pawn: alien, sharedIndex: ref sharedIndex,
-                        savedIndex: alienComp.addonVariants.Count > i ? (int?) alienComp.addonVariants[index: i] : null));
+                    Graphic g = apg.bodyAddons[index: i].GetPath(pawn: alien, sharedIndex: ref sharedIndex,
+                        savedIndex: alienComp.addonVariants.Count > i ? (int?) alienComp.addonVariants[index: i] : null);
+                    g.drawSize = apg.bodyAddons[index: i].drawSize;
+                    alienComp.addonGraphics.Add(item: g);
                     if (alienComp.addonVariants.Count <= i)
                         alienComp.addonVariants.Add(item: sharedIndex);
                 }
@@ -2077,8 +2079,6 @@ re
                         float moffsetY = ba.inFrontOfBody ? 0.3f + ba.layerOffset : -0.3f - ba.layerOffset;
                         float num      = ba.angle;
 
-                        Mesh mesh = portrait ? alienComp.alienPortraitGraphics.addonMeshsFlipped[key: ba.drawSize] : alienComp.alienGraphics.addonMeshs[key: ba.drawSize];
-
                         if (rotation == Rot4.North)
                         {
                             moffsetX = 0f;
@@ -2094,12 +2094,11 @@ re
                         {
                             moffsetX = -moffsetX;
                             num      = -num; //Angle
-                            mesh     = alienComp.alienGraphics.addonMeshsFlipped[key: ba.drawSize];
                         }
 
                         Vector3 offsetVector = new Vector3(x: moffsetX, y: moffsetY, z: moffsetZ);
-                        //                                                                                Angle calculation to not pick the shortest, taken from Quaternion.Angle
-                        GenDraw.DrawMeshNowOrLater(mesh: mesh, loc: vector + offsetVector.RotatedBy(angle: Mathf.Acos(f: Quaternion.Dot(a: Quaternion.identity, b: quat)) * 2f * 57.29578f),
+                        //                                                                                        Angle calculation to not pick the shortest, taken from Quaternion.Angle
+                        GenDraw.DrawMeshNowOrLater(mesh: alienComp.addonGraphics[index: i].MeshAt(rot: rotation), loc: vector + offsetVector.RotatedBy(angle: Mathf.Acos(f: Quaternion.Dot(a: Quaternion.identity, b: quat)) * 2f * 57.29578f),
                             quat: Quaternion.AngleAxis(angle: num, axis: Vector3.up) * quat, mat: alienComp.addonGraphics[index: i].MatAt(rot: rotation), drawNow: portrait);
                     }
                 }
