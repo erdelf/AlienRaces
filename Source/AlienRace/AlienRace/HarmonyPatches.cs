@@ -2097,24 +2097,22 @@ re
                     num      = -num; //Angle
                 }
 
-                if (rotation == Rot4.West && pawn.GetPosture() == PawnPosture.LayingOnGroundNormal && !(pawn.Downed || pawn.Dead))
+                if ((rotation == Rot4.West && pawn.GetPosture() == PawnPosture.LayingOnGroundNormal && !(pawn.Downed || pawn.Dead)) || pawn.CurrentBed()?.Rotation == Rot4.East)
                 {
                     moffsetZ = -moffsetZ;
                     moffsetX = -moffsetX;
                 }
 
+
                 Vector3 offsetVector = new Vector3(x: moffsetX, y: moffsetY, z: moffsetZ);
-
+                /*
                 Vector3 calcVec = vector + offsetVector.RotatedBy(angle: Mathf.Acos(f: Quaternion.Dot(a: Quaternion.identity, b: quat)) * 2f * 57.29578f);
-
                 if (!portrait && pawn.GetPosture() != PawnPosture.Standing)
-                    Log.ErrorOnce(text: $"{pawn.Name.ToStringShort}: {rotation} {pawn.GetPosture()}\n{vector} + {offsetVector} = {calcVec}", key: pawn.GetHashCode() * rotation.AsInt * (int) pawn.GetPosture());
-
-
+                    Log.ErrorOnce(text: $"{pawn.Name.ToStringShort}: {rotation} {pawn.GetPosture()} {pawn.CurrentBed()?.Rotation}\n{vector} + {offsetVector} = {calcVec}", key: pawn.GetHashCode() * rotation.AsInt * (int) pawn.GetPosture());
                 GenDraw.DrawMeshNowOrLater(mesh: alienComp.addonGraphics[index: i].MeshAt(rot: rotation), loc: vector,
                     quat: Quaternion.AngleAxis(angle: num, axis: Vector3.up) * quat, mat: alienComp.addonGraphics[index: i].GetColoredVersion(newShader: ShaderDatabase.Cutout, newColor: Color.red, newColorTwo: Color.black).MatAt(rot: rotation), drawNow: portrait);
-                
-                //                                                                                        Angle calculation to not pick the shortest, taken from Quaternion.Angle
+                */
+                //                                                                                        Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
                 GenDraw.DrawMeshNowOrLater(mesh: alienComp.addonGraphics[index: i].MeshAt(rot: rotation), loc: vector + offsetVector.RotatedBy(angle: Mathf.Acos(f: Quaternion.Dot(a: Quaternion.identity, b: quat)) * 2f * 57.29578f),
                     quat: Quaternion.AngleAxis(angle: num, axis: Vector3.up) * quat, mat: alienComp.addonGraphics[index: i].MatAt(rot: rotation), drawNow: portrait);
             }
