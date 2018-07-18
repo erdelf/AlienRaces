@@ -100,9 +100,12 @@ namespace AlienRace
 
         internal static void UpdateTranslateableFields(BackstoryDef bs)
         {
+            if (bs.backstory == null) return;
+
             bs.backstory.baseDesc = bs.baseDescription.NullOrEmpty() ? "Empty." : bs.baseDescription;
             bs.backstory.SetTitle(newTitle: bs.title, newTitleFemale: bs.titleFemale);
-            bs.backstory.SetTitleShort(newTitleShort: bs.titleShort.NullOrEmpty() ? bs.backstory.title : bs.titleShort, newTitleShortFemale: bs.titleShortFemale.NullOrEmpty() ? bs.backstory.titleFemale : bs.titleShortFemale);
+            bs.backstory.SetTitleShort(newTitleShort: bs.titleShort.NullOrEmpty() ? bs.backstory.title : bs.titleShort,
+                newTitleShortFemale: bs.titleShortFemale.NullOrEmpty() ? bs.backstory.titleFemale : bs.titleShortFemale);
         }
 
 
