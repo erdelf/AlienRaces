@@ -2,7 +2,6 @@
 using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 using Verse;
 
@@ -37,8 +36,6 @@ namespace AlienRace
         public List<BodyAddon> bodyAddons = new List<BodyAddon>();
 
         public ThingDef_AlienRace alienProps;
-
-        private static readonly MethodInfo meshInfo = AccessTools.Method(type: AccessTools.TypeByName(name: "MeshMakerPlanes"), name: "NewPlaneMesh", parameters: new[] { typeof(Vector2), typeof(bool), typeof(bool), typeof(bool) });
 
         public string RandomAlienHead(string userpath, Pawn pawn) => GetAlienHead(userpath: userpath, gender: (this.useGenderedHeads ? pawn.gender.ToString() : ""), crowntype: pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[index: Rand.Range(min: 0, max: this.aliencrowntypes.Count)]);
 
