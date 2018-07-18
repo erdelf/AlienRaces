@@ -634,12 +634,9 @@
             }
         }
 
-        private static bool GetTraderCaravanRoleInfix(Pawn p)
-        {
-            //Log.Message(p.Name?.ToStringFull ?? p.ToString());
-            if (!(p.def is ThingDef_AlienRace race)) return false;
-            return race.alienRace.pawnKindSettings.alienslavekinds?.Any(predicate: pke => pke.kindDefs?.Contains(item: p.kindDef.defName) ?? false) ?? false;
-        }
+        private static bool GetTraderCaravanRoleInfix(Pawn p) => 
+            p.def is ThingDef_AlienRace && 
+                DefDatabase<RaceSettings>.AllDefs.Any(predicate: rs => rs.pawnKindSettings.alienslavekinds.Any(predicate: pke => pke.kindDefs.Contains(item: p.kindDef.defName)));
 
         public static bool GetGenderSpecificLabelPrefix(Pawn pawn, ref string __result, PawnRelationDef __instance)
         {
@@ -1638,15 +1635,13 @@
         {
             PawnKindDef kindDef = Faction.OfPlayer.def.basicMemberKind;
 
-            DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(predicate: tdar => !tdar.alienRace.pawnKindSettings.startingColonists.NullOrEmpty())
-               .SelectMany(selector: tdar => tdar.alienRace.pawnKindSettings.startingColonists).Where(predicate: sce => sce.factionDefs.Contains(item: Faction.OfPlayer.def.defName))
+            DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.startingColonists.NullOrEmpty())
+               .SelectMany(selector: tdar => tdar.pawnKindSettings.startingColonists).Where(predicate: sce => sce.factionDefs.Contains(item: Faction.OfPlayer.def.defName))
                .SelectMany(selector: sce => sce.pawnKindEntries).InRandomOrder().ToList().ForEach(action: pke =>
                 {
-                    if (Rand.Range(min: 0f, max: 100f) < pke.chance)
-                    {
-                        PawnKindDef pk          = DefDatabase<PawnKindDef>.GetNamedSilentFail(defName: pke.kindDefs.RandomElement());
-                        if (pk != null) kindDef = pk;
-                    }
+                    if (!(Rand.Range(min: 0f, max: 100f) < pke.chance)) return;
+                    PawnKindDef pk          = DefDatabase<PawnKindDef>.GetNamedSilentFail(defName: pke.kindDefs.RandomElement());
+                    if (pk != null) kindDef = pk;
                 });
 
             if (kindDef == Faction.OfPlayer.def.basicMemberKind) return true;
@@ -1913,11 +1908,11 @@ re
 
             if (Rand.Value <= 0.4f)
             {
-                IEnumerable<ThingDef_AlienRace> comps = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading;
+                IEnumerable<RaceSettings> settings = DefDatabase<RaceSettings>.AllDefsListForReading;
                 PawnKindEntry                   pk;
                 if (request.KindDef == PawnKindDefOf.SpaceRefugee)
                 {
-                    if (comps.Where(predicate: r => !r.alienRace.pawnKindSettings.alienrefugeekinds.NullOrEmpty()).Select(selector: r => r.alienRace.pawnKindSettings.alienrefugeekinds.RandomElement())
+                    if (settings.Where(predicate: r => !r.pawnKindSettings.alienrefugeekinds.NullOrEmpty()).Select(selector: r => r.pawnKindSettings.alienrefugeekinds.RandomElement())
                        .TryRandomElementByWeight(weightSelector: pke => pke.chance, result: out pk))
                     {
                         PawnKindDef pkd          = DefDatabase<PawnKindDef>.GetNamedSilentFail(defName: pk.kindDefs.RandomElement());
@@ -1926,7 +1921,7 @@ re
                 }
                 else if (request.KindDef == PawnKindDefOf.Slave)
                 {
-                    if (comps.Where(predicate: r => !r.alienRace.pawnKindSettings.alienslavekinds.NullOrEmpty()).Select(selector: r => r.alienRace.pawnKindSettings.alienslavekinds.RandomElement())
+                    if (settings.Where(predicate: r => !r.pawnKindSettings.alienslavekinds.NullOrEmpty()).Select(selector: r => r.pawnKindSettings.alienslavekinds.RandomElement())
                        .TryRandomElementByWeight(weightSelector: pke => pke.chance, result: out pk))
                     {
                         PawnKindDef pkd          = DefDatabase<PawnKindDef>.GetNamedSilentFail(defName: pk.kindDefs.RandomElement());
@@ -1935,15 +1930,13 @@ re
                 }
                 else if (request.KindDef == PawnKindDefOf.Villager)
                 {
-                    DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(predicate: tdar => !tdar.alienRace.pawnKindSettings.alienwandererkinds.NullOrEmpty())
-                       .SelectMany(selector: tdar => tdar.alienRace.pawnKindSettings.alienwandererkinds).Where(predicate: sce => sce.factionDefs.Contains(item: Faction.OfPlayer.def.defName))
+                    DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.alienwandererkinds.NullOrEmpty())
+                       .SelectMany(selector: tdar => tdar.pawnKindSettings.alienwandererkinds).Where(predicate: sce => sce.factionDefs.Contains(item: Faction.OfPlayer.def.defName))
                        .SelectMany(selector: sce => sce.pawnKindEntries).InRandomOrder().ToList().ForEach(action: pke =>
                         {
-                            if (Rand.Range(min: 0f, max: 100f) < pke.chance)
-                            {
-                                PawnKindDef fpk          = DefDatabase<PawnKindDef>.GetNamedSilentFail(defName: pke.kindDefs.RandomElement());
-                                if (fpk != null) kindDef = fpk;
-                            }
+                            if (!(Rand.Range(min: 0f, max: 100f) < pke.chance)) return;
+                            PawnKindDef fpk          = DefDatabase<PawnKindDef>.GetNamedSilentFail(defName: pke.kindDefs.RandomElement());
+                            if (fpk != null) kindDef = fpk;
                         });
                 }
             }

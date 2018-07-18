@@ -36,11 +36,15 @@ namespace AlienRace
             if (Widgets.ButtonText(rect: scenPartRect.TopPart(pct: 0.45f), label: this.kindDef.label.CapitalizeFirst()))
             {
                 List<FloatMenuOption> list = new List<FloatMenuOption>();
-                list.AddRange(collection: DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(predicate: ar => ar.alienRace.pawnKindSettings.startingColonists != null).SelectMany(selector: ar => ar.alienRace.pawnKindSettings.startingColonists.SelectMany(selector: ste => ste.pawnKindEntries.SelectMany(selector: pke => pke.kindDefs))).Where(predicate: s => DefDatabase<PawnKindDef>.GetNamedSilentFail(defName: s) != null).Select(selector: DefDatabase<PawnKindDef>.GetNamedSilentFail).Select(selector: pkd => new FloatMenuOption(label: pkd.label.CapitalizeFirst(), action: () => this.kindDef = pkd)));
+                list.AddRange(collection: DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: ar => ar.pawnKindSettings.startingColonists != null)
+                   .SelectMany(selector: ar => ar.pawnKindSettings.startingColonists.SelectMany(selector: ste => ste.pawnKindEntries.SelectMany(selector: pke => pke.kindDefs)))
+                   .Where(predicate: s => DefDatabase<PawnKindDef>.GetNamedSilentFail(defName: s) != null).Select(selector: DefDatabase<PawnKindDef>.GetNamedSilentFail)
+                   .Select(selector: pkd => new FloatMenuOption(label: pkd.label.CapitalizeFirst(), action: () => this.kindDef = pkd)));
                 list.Add(item: new FloatMenuOption(label: "Villager", action: () => this.kindDef = PawnKindDefOf.Villager));
-                list.Add(item: new FloatMenuOption(label: "Slave", action: () => this.kindDef = PawnKindDefOf.Slave));
+                list.Add(item: new FloatMenuOption(label: "Slave",    action: () => this.kindDef = PawnKindDefOf.Slave));
                 Find.WindowStack.Add(window: new FloatMenu(options: list));
             }
+
             Widgets.TextFieldNumeric(rect: scenPartRect.BottomPart(pct: 0.45f), val: ref this.pawnCount, buffer: ref this.buffer);
         }
 
