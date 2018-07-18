@@ -46,7 +46,6 @@ namespace AlienRace
             public GeneralSettings generalSettings = new GeneralSettings();
             public List<GraphicPaths> graphicPaths = new List<GraphicPaths>();
             public HairSettings hairSettings = new HairSettings();
-            public PawnKindSettings pawnKindSettings = new PawnKindSettings();
             public ThoughtSettings thoughtSettings = new ThoughtSettings();
             public RelationSettings relationSettings = new RelationSettings();
             public RaceRestrictionSettings raceRestriction = new RaceRestrictionSettings();
@@ -123,26 +122,6 @@ namespace AlienRace
         public bool hasHair = true;
         public List<string> hairTags;
         public int getsGreyAt = 40;
-    }
-
-    public class PawnKindSettings
-    {
-        public List<PawnKindEntry> alienslavekinds;
-        public List<PawnKindEntry> alienrefugeekinds;
-        public List<FactionPawnKindEntry> startingColonists;
-        public List<FactionPawnKindEntry> alienwandererkinds;
-    }
-
-    public class PawnKindEntry
-    {
-        public List<string> kindDefs;
-        public float chance;
-    }
-
-    public class FactionPawnKindEntry
-    {
-        public List<PawnKindEntry> pawnKindEntries;
-        public List<string> factionDefs;
     }
 
     public class ThoughtSettings
