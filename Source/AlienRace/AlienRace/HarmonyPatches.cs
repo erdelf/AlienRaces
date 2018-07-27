@@ -55,8 +55,6 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "FillBackstorySlotShuffled"),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(FillBackstoryInSlotShuffledPrefix)), postfix: null);
 
-            
-
             harmony.Patch(original: AccessTools.Method(type: typeof(WorkGiver_Researcher), name: nameof(WorkGiver_Researcher.ShouldSkip)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(ShouldSkipResearchPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(MainTabWindow_Research), name: "ViewSize"), prefix: null, postfix: null,
@@ -80,7 +78,7 @@
                 postfix: new HarmonyMethod(type: patchType, name: nameof(SetFactionDirectPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_OptimizeApparel), name: nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(ApparelScoreGainPostFix)));
-            
+
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
             {
                 ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(item: ar.race.corpseDef);
@@ -112,6 +110,7 @@
                         harmony.Patch(original: hasJobOnThingInfo, prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(GenericHasJobOnThingPostfix)));
                 });
             });
+
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtUtility), name: nameof(ThoughtUtility.CanGetThought)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanGetThoughtPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Corpse), name: nameof(Corpse.ButcherProducts)), prefix: new HarmonyMethod(type: patchType, name: nameof(ButcherProductsPrefix)),
@@ -128,21 +127,23 @@
             harmony.Patch(
                 original: AccessTools.Method(type: AccessTools.TypeByName(name: "AgeInjuryUtility"), name: "RandomHediffsToGainOnBirthday", parameters: new[] {typeof(ThingDef), typeof(int)}),
                 prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(RandomHediffsToGainOnBirthdayPostfix)));
-//            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver), name: nameof(JobDriver.Posture)).GetGetMethod(nonPublic: false), prefix: null,
-//                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
-//            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver_Skygaze), name: nameof(JobDriver_Skygaze.Posture)).GetGetMethod(nonPublic: false), prefix: null,
-//                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
+            //            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver), name: nameof(JobDriver.Posture)).GetGetMethod(nonPublic: false), prefix: null,
+            //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
+            //            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver_Skygaze), name: nameof(JobDriver_Skygaze.Posture)).GetGetMethod(nonPublic: false), prefix: null,
+            //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
+            
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateRandomAge"), prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateRandomAgePrefix)),
                 postfix: null);
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateTraits"), prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateTraitsPrefix)),
                 postfix: null, transpiler: new HarmonyMethod(type: patchType,                                                                           name: nameof(GenerateTraitsTranspiler)));
+            
             harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_SatisfyChemicalNeed), name: "DrugValidator"), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(DrugValidatorPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(CompDrug), name: nameof(CompDrug.PostIngested)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(PostIngestedPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(AddictionUtility), name: nameof(AddictionUtility.CanBingeOnNow)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanBingeNowPostfix)));
-
+            
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateBodyType"), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(GenerateBodyTypePostfix)));
             harmony.Patch(original: AccessTools.Property(type: typeof(Pawn_StoryTracker), name: nameof(Pawn_StoryTracker.SkinColor)).GetGetMethod(), prefix: null,
@@ -154,13 +155,14 @@
                 postfix: null);
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: nameof(PawnGenerator.GeneratePawn), parameters: new[] {typeof(PawnGenerationRequest)}),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(GeneratePawnPrefix)), postfix: null);
-
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGraphicSet), name: nameof(PawnGraphicSet.ResolveAllGraphics)),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(ResolveAllGraphicsPrefix)), postfix: null);
+            
             harmony.Patch(
                 original: AccessTools.Method(type: typeof(PawnRenderer), name: "RenderPawnInternal",
-                    parameters: new[] {typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool), typeof(bool)}), prefix: null, postfix: null,
+                    parameters: new[] {typeof(Vector3), typeof(float), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool), typeof(bool)}), prefix: null, postfix: null,
                 transpiler: new HarmonyMethod(type: patchType, name: nameof(RenderPawnInternalTranspiler)));
+            
             harmony.Patch(original: AccessTools.Method(type: typeof(StartingPawnUtility), name: nameof(StartingPawnUtility.NewGeneratedStartingPawn)),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(NewGeneratedStartingPawnPrefix)), postfix: null);
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: nameof(PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo)), prefix: null,
@@ -172,7 +174,6 @@
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanDoNextStartPawnPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(GameInitData), name: nameof(GameInitData.PrepForMapGen)),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(PrepForMapGenPrefix)), postfix: null);
-            
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_RelationsTracker), name: nameof(Pawn_RelationsTracker.SecondaryLovinChanceFactor)), prefix: null, postfix: null,
                 transpiler: new HarmonyMethod(type: patchType, name: nameof(SecondaryLovinChanceFactorTranspiler)));
             
@@ -217,6 +218,7 @@
                 transpiler: new HarmonyMethod(type: patchType, name: nameof(FactionTickTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Designator_Build), name: nameof(Designator_Build.CanDesignateThing)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanDesignateThingTamePostfix)));
+
             harmony.Patch(original: AccessTools.Method(type: typeof(WorkGiver_InteractAnimal), name: "CanInteractWithAnimal"), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanInteractWithAnimalPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRenderer), name: nameof(PawnRenderer.BaseHeadOffsetAt)), prefix: null,
@@ -2002,7 +2004,7 @@ re
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
                     yield return new CodeInstruction(opcode: OpCodes.Ldfld,   operand: AccessTools.Field(type: typeof(PawnRenderer), name: "pawn"));
                     yield return new CodeInstruction(opcode: OpCodes.Ldloc_S, operand: 6); //vector
-                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_2);             // quat
+                    yield return new CodeInstruction(opcode: OpCodes.Ldloc_0);             // quat
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_S, operand: 4); // bodyfacing
                     yield return new CodeInstruction(opcode: OpCodes.Call,    operand: AccessTools.Method(type: patchType, name: nameof(DrawAddons)));
 
