@@ -40,9 +40,9 @@
     <AssemblyOriginatorKeyFile>AlienRace.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="0Harmony, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\..\..\Users\erdelfion\Documents\modfiles\rimworld\HarmonyRepos\Harmony\Harmony\build\Release\net35\0Harmony.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\Users\erdelfion\Documents\modfiles\rimworld\HarmonyRepos\Harmony\Harmony\bin\Release\net35\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\RimWorldWin_Data\Managed\Assembly-CSharp.dll</HintPath>
