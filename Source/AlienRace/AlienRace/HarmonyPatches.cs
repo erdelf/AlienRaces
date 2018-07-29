@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
@@ -45,15 +47,15 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_Spouse), name: nameof(PawnRelationWorker_Spouse.GenerationChance)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(GenerationChanceSpousePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GeneratePawnRelations"),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(GeneratePawnRelationsPrefix)), postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(GeneratePawnRelationsPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationDef), name: nameof(PawnRelationDef.GetGenderSpecificLabel)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(GetGenderSpecificLabelPrefix)), postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(GetGenderSpecificLabelPrefix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "TryGetRandomUnusedSolidBioFor"), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(TryGetRandomUnusedSolidBioForPostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "FillBackstorySlotShuffled"),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(FillBackstoryInSlotShuffledPrefix)), postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(FillBackstoryInSlotShuffledPrefix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(WorkGiver_Researcher), name: nameof(WorkGiver_Researcher.ShouldSkip)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(ShouldSkipResearchPostfix)));
@@ -78,52 +80,18 @@
                 postfix: new HarmonyMethod(type: patchType, name: nameof(SetFactionDirectPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_OptimizeApparel), name: nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(ApparelScoreGainPostFix)));
-
-            DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
-            {
-                ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(item: ar.race.corpseDef);
-                ar.race.corpseDef.thingCategories = new List<ThingCategoryDef> {AlienDefOf.alienCorpseCategory};
-                AlienDefOf.alienCorpseCategory.childThingDefs.Add(item: ar.race.corpseDef);
-                ar.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
-
-                if (ar.alienRace.generalSettings.humanRecipeImport)
-                {
-                    (ar.recipes ?? (ar.recipes = new List<RecipeDef>())).AddRange(collection: ThingDefOf.Human.recipes.Where(predicate: rd =>
-                        !rd.targetsBodyPart || (rd.appliedOnFixedBodyParts?.Any(predicate: bpd => ar.race.body.AllParts.Any(predicate: bpr => bpr.def == bpd)) ?? false)));
-
-                    DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(action: rd =>
-                    {
-                        if (rd.recipeUsers?.Contains(item: ThingDefOf.Human) ?? false)
-                            rd.recipeUsers.Add(item: ar);
-                    });
-                    ar.recipes.RemoveDuplicates();
-                }
-
-                ar.alienRace.raceRestriction?.workGiverList?.ForEach(action: wgd =>
-                {
-                    WorkGiverDef wg = DefDatabase<WorkGiverDef>.GetNamedSilentFail(defName: wgd);
-                    if (wg == null) return;
-                    harmony.Patch(original: AccessTools.Method(type: wg.giverClass, name: "JobOnThing"), prefix: null,
-                        postfix: new HarmonyMethod(type: patchType, name: nameof(GenericJobOnThingPostfix)));
-                    MethodInfo hasJobOnThingInfo = AccessTools.Method(type: wg.giverClass, name: "HasJobOnThing");
-                    if (hasJobOnThingInfo != null)
-                        harmony.Patch(original: hasJobOnThingInfo, prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(GenericHasJobOnThingPostfix)));
-                });
-            });
-
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtUtility), name: nameof(ThoughtUtility.CanGetThought)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanGetThoughtPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(Corpse), name: nameof(Corpse.ButcherProducts)), prefix: new HarmonyMethod(type: patchType, name: nameof(ButcherProductsPrefix)),
-                postfix: null);
+            harmony.Patch(original: AccessTools.Method(type: typeof(Corpse), name: nameof(Corpse.ButcherProducts)), prefix: new HarmonyMethod(type: patchType, name: nameof(ButcherProductsPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(FoodUtility), name: nameof(FoodUtility.ThoughtsFromIngesting)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtsFromIngestingPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(MemoryThoughtHandler), name: nameof(MemoryThoughtHandler.TryGainMemory), parameters: new[] {typeof(Thought_Memory), typeof(Pawn)}),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(TryGainMemoryThoughtPrefix)), postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(TryGainMemoryThoughtPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(SituationalThoughtHandler), name: "TryCreateThought"),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(TryCreateSituationalThoughtPrefix)), postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(TryCreateSituationalThoughtPrefix)));
 
             harmony.Patch(original: AccessTools.Method(type: AccessTools.TypeByName(name: "AgeInjuryUtility"), name: "GenerateRandomOldAgeInjuries"),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateRandomOldAgeInjuriesPrefix)), postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateRandomOldAgeInjuriesPrefix)));
             harmony.Patch(
                 original: AccessTools.Method(type: AccessTools.TypeByName(name: "AgeInjuryUtility"), name: "RandomHediffsToGainOnBirthday", parameters: new[] {typeof(ThingDef), typeof(int)}),
                 prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(RandomHediffsToGainOnBirthdayPostfix)));
@@ -132,8 +100,7 @@
             //            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver_Skygaze), name: nameof(JobDriver_Skygaze.Posture)).GetGetMethod(nonPublic: false), prefix: null,
             //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
             
-            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateRandomAge"), prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateRandomAgePrefix)),
-                postfix: null);
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateRandomAge"), prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateRandomAgePrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateTraits"), prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateTraitsPrefix)),
                 postfix: null, transpiler: new HarmonyMethod(type: patchType,                                                                           name: nameof(GenerateTraitsTranspiler)));
             
@@ -150,13 +117,12 @@
                 postfix: new HarmonyMethod(type: patchType, name: nameof(SkinColorPostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnHairChooser), name: nameof(PawnHairChooser.RandomHairDefFor)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(RandomHairDefForPrefix)), postfix: null);
-            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_AgeTracker), name: "BirthdayBiological"), prefix: new HarmonyMethod(type: patchType, name: nameof(BirthdayBiologicalPrefix)),
-                postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(RandomHairDefForPrefix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_AgeTracker), name: "BirthdayBiological"), prefix: new HarmonyMethod(type: patchType, name: nameof(BirthdayBiologicalPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: nameof(PawnGenerator.GeneratePawn), parameters: new[] {typeof(PawnGenerationRequest)}),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(GeneratePawnPrefix)), postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(GeneratePawnPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGraphicSet), name: nameof(PawnGraphicSet.ResolveAllGraphics)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(ResolveAllGraphicsPrefix)), postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(ResolveAllGraphicsPrefix)));
             
             harmony.Patch(
                 original: AccessTools.Method(type: typeof(PawnRenderer), name: "RenderPawnInternal",
@@ -164,16 +130,16 @@
                 transpiler: new HarmonyMethod(type: patchType, name: nameof(RenderPawnInternalTranspiler)));
             
             harmony.Patch(original: AccessTools.Method(type: typeof(StartingPawnUtility), name: nameof(StartingPawnUtility.NewGeneratedStartingPawn)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(NewGeneratedStartingPawnPrefix)), postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(NewGeneratedStartingPawnPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: nameof(PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(GiveAppropriateBioAndNameToPostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: nameof(PawnBioAndNameGenerator.GeneratePawnName)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(GeneratePawnNamePrefix)), postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(GeneratePawnNamePrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Page_ConfigureStartingPawns), name: "CanDoNext"), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanDoNextStartPawnPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(GameInitData), name: nameof(GameInitData.PrepForMapGen)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(PrepForMapGenPrefix)), postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(PrepForMapGenPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_RelationsTracker), name: nameof(Pawn_RelationsTracker.SecondaryLovinChanceFactor)), prefix: null, postfix: null,
                 transpiler: new HarmonyMethod(type: patchType, name: nameof(SecondaryLovinChanceFactorTranspiler)));
             
@@ -181,8 +147,7 @@
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CompatibilityWithPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Faction), name: nameof(Faction.TryMakeInitialRelationsWith)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(TryMakeInitialRelationsWithPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(TraitSet), name: nameof(TraitSet.GainTrait)), prefix: new HarmonyMethod(type: patchType, name: nameof(GainTraitPrefix)),
-                postfix: null);
+            harmony.Patch(original: AccessTools.Method(type: typeof(TraitSet), name: nameof(TraitSet.GainTrait)), prefix: new HarmonyMethod(type: patchType, name: nameof(GainTraitPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(TraderCaravanUtility), name: nameof(TraderCaravanUtility.GetTraderCaravanRole)), prefix: null, postfix: null,
                 transpiler: new HarmonyMethod(type: patchType, name: nameof(GetTraderCaravanRoleTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(RestUtility), name: nameof(RestUtility.CanUseBedEver)), prefix: null,
@@ -207,7 +172,7 @@
                     mi.HasAttribute<CompilerGeneratedAttribute>() && mi.ReturnType == typeof(bool) && mi.GetParameters().First().ParameterType == typeof(BodyPartRecord)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(HasHeadPostfix)));
             harmony.Patch(original: AccessTools.Property(type: typeof(HediffSet), name: nameof(HediffSet.HasHead)).GetGetMethod(),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(HasHeadPrefix)), postfix: null);
+                prefix: new HarmonyMethod(type: patchType, name: nameof(HasHeadPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_AgeTracker), name: "RecalculateLifeStageIndex"), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(RecalculateLifeStageIndexPostfix)));
             harmony.Patch(
@@ -229,7 +194,43 @@
                 transpiler: new HarmonyMethod(type: patchType, name: nameof(GetInterferingBodyPartGroupsTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateGearFor"), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(GenerateGearForPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.ChangeKind)), prefix: new HarmonyMethod(type: patchType, name: nameof(ChangeKindPrefix)), postfix: null);
+            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.ChangeKind)), prefix: new HarmonyMethod(type: patchType, name: nameof(ChangeKindPrefix)));
+
+            harmony.Patch(original: AccessTools.Method(type: typeof(EditWindow_TweakValues), name: nameof(EditWindow_TweakValues.DoWindowContents)), transpiler: new HarmonyMethod(type: patchType, name: nameof(TweakValuesTranspiler)));
+
+            DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
+            {
+                ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(item: ar.race.corpseDef);
+                ar.race.corpseDef.thingCategories = new List<ThingCategoryDef> { AlienDefOf.alienCorpseCategory };
+                AlienDefOf.alienCorpseCategory.childThingDefs.Add(item: ar.race.corpseDef);
+                ar.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
+
+                if (ar.alienRace.generalSettings.humanRecipeImport)
+                {
+                    (ar.recipes ?? (ar.recipes = new List<RecipeDef>())).AddRange(collection: ThingDefOf.Human.recipes.Where(predicate: rd =>
+                        !rd.targetsBodyPart || (rd.appliedOnFixedBodyParts?.Any(predicate: bpd => ar.race.body.AllParts.Any(predicate: bpr => bpr.def == bpd)) ?? false)));
+
+                    DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(action: rd =>
+                    {
+                        if (rd.recipeUsers?.Contains(item: ThingDefOf.Human) ?? false)
+                            rd.recipeUsers.Add(item: ar);
+                    });
+                    ar.recipes.RemoveDuplicates();
+                }
+
+                ar.alienRace.raceRestriction?.workGiverList?.ForEach(action: wgd =>
+                {
+                    WorkGiverDef wg = DefDatabase<WorkGiverDef>.GetNamedSilentFail(defName: wgd);
+                    if (wg == null)
+                        return;
+                    harmony.Patch(original: AccessTools.Method(type: wg.giverClass, name: "JobOnThing"), prefix: null,
+                        postfix: new HarmonyMethod(type: patchType, name: nameof(GenericJobOnThingPostfix)));
+                    MethodInfo hasJobOnThingInfo = AccessTools.Method(type: wg.giverClass, name: "HasJobOnThing");
+                    if (hasJobOnThingInfo != null)
+                        harmony.Patch(original: hasJobOnThingInfo, prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(GenericHasJobOnThingPostfix)));
+                });
+            });
+
 
             {
                 harmony.Patch(original: AccessTools.Method(type: typeof(ILInstruction), name: nameof(ILInstruction.GetSize)), prefix: null, postfix: null,
@@ -265,6 +266,133 @@
             DefDatabase<HairDef>.GetNamed(defName: "Shaved").hairTags.Add(item: "alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
 
             foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs) BackstoryDef.UpdateTranslateableFields(bs: bd);
+        }
+
+        public static IEnumerable<CodeInstruction> TweakValuesTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo endScrollInfo = AccessTools.Method(type: typeof(Widgets), name: nameof(Widgets.EndScrollView));
+
+            MethodInfo countInfo = AccessTools.Property(
+                type: AccessTools.Field(type: typeof(EditWindow_TweakValues), name: "tweakValueFields").FieldType, 
+                name: nameof(List<Graphic_Random>.Count)).GetGetMethod();
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.operand == endScrollInfo)
+                {
+                    yield return new CodeInstruction(opcode: OpCodes.Ldloc_2) { labels = instruction.labels.ListFullCopy() };
+                    instruction.labels.Clear();
+                    yield return new CodeInstruction(opcode: OpCodes.Ldloc_3);
+                    yield return new CodeInstruction(opcode: OpCodes.Ldloc_S, operand: 4);
+                    yield return new CodeInstruction(opcode: OpCodes.Ldloc_S, operand: 5);
+                    yield return new CodeInstruction(opcode: OpCodes.Call, 
+                        operand: AccessTools.Method(type: patchType, name: nameof(TweakValuesInstanceBased)));
+                }
+
+                yield return instruction;
+
+                if (instruction.operand == countInfo)
+                {
+                    yield return new CodeInstruction(opcode: OpCodes.Ldc_I4, operand:
+                        DefDatabase<ThingDef_AlienRace>.AllDefs.SelectMany(selector: ar =>
+                            ar.alienRace.generalSettings.alienPartGenerator.bodyAddons).SelectMany(selector: ba =>
+                            new List<AlienPartGenerator.RotationOffset>
+                            {
+                                ba.offsets.east,
+                                ba.offsets.west,
+                                ba.offsets.north,
+                                ba.offsets.south
+                            }).Sum(selector: ro => (ro.bodyTypes?.Count ?? 0) * 2 + (ro.portraitBodyTypes?.Count ?? 0) * 2 + 
+                                                   (ro.crownTypes?.Count ?? 0) * 2 + (ro.portraitCrownTypes?.Count ?? 0) * 2) + 1);
+                    yield return new CodeInstruction(opcode: OpCodes.Add);
+                }
+            }
+        }
+        
+        public static void TweakValuesInstanceBased(Rect rect2, Rect rect3, Rect rect4, Rect rect5)
+        {
+            void NextLine()
+            {
+                rect2.y += rect2.height;
+                rect3.y += rect2.height;
+                rect4.y += rect2.height;
+                rect5.y += rect2.height;
+            }
+            NextLine();
+
+            foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefs)
+            {
+                string label2 = ar.LabelCap;
+                foreach (AlienPartGenerator.BodyAddon ba in ar.alienRace.generalSettings.alienPartGenerator.bodyAddons)
+                {
+                    string label3Addons = $"{Path.GetFileName(path: ba.path)}.";
+
+                    List<AlienPartGenerator.RotationOffset> rotationOffsets = new List<AlienPartGenerator.RotationOffset>
+                    {
+                        ba.offsets.north,
+                        ba.offsets.south,
+                        ba.offsets.west,
+                        ba.offsets.east                        
+                    };
+                    for (int i = 0; i < rotationOffsets.Count; i++)
+                    {
+                        string label3Rotation;
+                        AlienPartGenerator.RotationOffset ro = rotationOffsets[index: i];
+                        switch (i)
+                        {
+                            case 0:
+                                label3Rotation = "north.";
+                                break;
+                            case 1:
+                                label3Rotation = "south.";
+                                break;
+                            case 2:
+                                label3Rotation = "west.";
+                                break;
+                            default:
+                                label3Rotation = "east.";
+                                break;
+                        }
+
+                        foreach (AlienPartGenerator.BodyTypeOffset bodyTypeOffset in ro.bodyTypes)
+                        {
+                            string label3Type = bodyTypeOffset.bodyType.defName + ".";
+                            Vector2 offset = bodyTypeOffset.offset;
+                            float offsetX = offset.x;
+                            float offsetY = offset.y;
+
+
+                            float WriteLine(float value, bool x)
+                            {
+                                Widgets.Label(rect: rect2, label: label2);
+                                Widgets.Label(rect: rect3, label: label3Addons + label3Rotation + label3Type + (x ? "x" : "y"));
+
+
+                                float num = Widgets.HorizontalSlider(rect: rect5, value: value, leftValue: -1, rightValue: 1);
+
+                                if (Math.Abs(value: num - value) > 0.0001)
+                                {
+                                    GUI.color = Color.red;
+                                    Widgets.Label(rect: rect4, label: $"{value} -> {num}");
+                                    GUI.color = Color.white;
+                                    if (Widgets.ButtonInvisible(butRect: rect5))
+                                        bodyTypeOffset.offset.x = num;
+                                }
+                                else
+                                {
+                                    Widgets.Label(rect: rect4, label: value.ToString(provider: CultureInfo.InvariantCulture));
+                                }
+                                return num;
+                            }
+
+                            bodyTypeOffset.offset.x = WriteLine(value: offsetX, x: true);
+                            NextLine();
+                            bodyTypeOffset.offset.y = WriteLine(value: offsetY, x: false);
+                            NextLine();
+                        }
+                    }
+                }
+            }
         }
 
         public static IEnumerable<CodeInstruction> HarmonySizeBugFix(IEnumerable<CodeInstruction> instructions)
@@ -1426,6 +1554,7 @@
         // ReSharper disable once RedundantAssignment
         public static bool ButcherProductsPrefix(Pawn butcher, float efficiency, ref IEnumerable<Thing> __result, Corpse __instance)
         {
+            
             // ReSharper disable once ArgumentsStyleAnonymousFunction
             __result = new Func<IEnumerable<Thing>>(() =>
             {
