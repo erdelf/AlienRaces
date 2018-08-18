@@ -1844,7 +1844,7 @@
         private static PawnBioDef bioReference;
 
         // ReSharper disable once RedundantAssignment
-        public static void TryGetRandomUnusedSolidBioForPostfix(string backstoryCategory, ref PawnBio __result, PawnKindDef kind, Gender gender, string requiredLastName)
+        public static void TryGetRandomUnusedSolidBioForPostfix(List<string> backstoryCategories, ref PawnBio __result, PawnKindDef kind, Gender gender, string requiredLastName)
         {
             if (SolidBioDatabase.allBios.Where(predicate: pb =>
                 (((kind.race as ThingDef_AlienRace)?.alienRace.generalSettings.allowHumanBios ?? true) && (kind.GetModExtension<Info>()?.allowHumanBios ?? true) ||
@@ -1852,7 +1852,7 @@
                 (pb.gender == GenderPossibility.Either || pb.gender == GenderPossibility.Male && gender == Gender.Male)                                                            &&
                 (requiredLastName.NullOrEmpty()        || pb.name.Last == requiredLastName)                                                                                        &&
                 (!kind.factionLeader                   || pb.pirateKing)                                                                                                           &&
-                pb.adulthood.spawnCategories.Contains(item: backstoryCategory)                                                                                                     &&
+                pb.adulthood.spawnCategories.Any(predicate: backstoryCategories.Contains)                                                                                                     &&
                 !pb.name.UsedThisGame).TryRandomElement(result: out PawnBio bio))
             {
                 __result     = bio;
