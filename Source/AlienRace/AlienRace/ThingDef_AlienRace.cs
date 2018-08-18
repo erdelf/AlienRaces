@@ -55,7 +55,6 @@ namespace AlienRace
     public class GeneralSettings
     {
         public float maleGenderProbability = 0.5f;
-        public bool pawnsSpecificBackstories = false;
         public bool immuneToAge = false;
         public bool canLayDown = true;
 
