@@ -1809,24 +1809,17 @@
             return true;
         }
 
+        
         public static bool FillBackstoryInSlotShuffledPrefix(Pawn pawn, BackstorySlot slot, ref Backstory backstory)
         {
             bioReference = null;
             if (slot == BackstorySlot.Adulthood && DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: pawn.story.childhood.identifier)?.linkedBackstory is string id &&
                 BackstoryDatabase.TryGetWithIdentifier(identifier: id, bs: out backstory))
                 return false;
-
+            /*
             if ((pawn.def is ThingDef_AlienRace alienProps && alienProps.alienRace.generalSettings.pawnsSpecificBackstories ||
-                 (pawn.kindDef.GetModExtension<Info>()?.usePawnKindBackstories ?? false)) && !pawn.kindDef.backstoryCategory.NullOrEmpty())
+                 (pawn.kindDef.GetModExtension<Info>()?.usePawnKindBackstories ?? false)) && !pawn.kindDef.backstoryCategories.NullOrEmpty())
             {
-                /*
-                Log.Message(pawn.def.defName);
-re
-                Log.Message(string.Join("\n", BackstoryDatabase.allBackstories.Where(kvp => kvp.Value.shuffleable && kvp.Value.spawnCategories.Contains(pawn.kindDef.backstoryCategory) &&
-                    kvp.Value.slot == slot && (slot == BackstorySlot.Childhood ||
-                    !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(pawn.story.childhood?.workDisables ?? WorkTags.None)) &&
-                    (DefDatabase<BackstoryDef>.GetNamedSilentFail(kvp.Value.identifier)?.commonalityApproved(pawn.gender) ?? true)).Select(kvp => kvp.Value.identifier).ToArray()));
-                    */
                 if (BackstoryDatabase.allBackstories.Where(predicate: kvp => kvp.Value.shuffleable  && kvp.Value.spawnCategories.Contains(item: pawn.kindDef.backstoryCategory) &&
                                                                              kvp.Value.slot == slot && (slot == BackstorySlot.Childhood ||
                                                                                                         !kvp.Value.requiredWorkTags.OverlapsWithOnAnyWorkType(
@@ -1841,12 +1834,13 @@ re
 
                 Log.Message(
                     text:
-                    $"FAILED: {pawn.def.defName} {pawn.kindDef.defName} {pawn.kindDef.backstoryCategory} {BackstoryDatabase.allBackstories.Values.Count(predicate: bs => bs.spawnCategories.Contains(item: pawn.kindDef.backstoryCategory))}");
+                    $"FAILED: {pawn.def.defName} {pawn.kindDef.defName} {pawn.kindDef.backstoryCategories} {BackstoryDatabase.allBackstories.Values.Count(predicate: bs => bs.spawnCategories.Contains(item: pawn.kindDef.backstoryCategory))}");
             }
 
+            */
             return true;
         }
-
+        
         private static PawnBioDef bioReference;
 
         // ReSharper disable once RedundantAssignment
