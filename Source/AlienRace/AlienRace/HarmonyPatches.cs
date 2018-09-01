@@ -197,6 +197,7 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.ChangeKind)), prefix: new HarmonyMethod(type: patchType, name: nameof(ChangeKindPrefix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(EditWindow_TweakValues), name: nameof(EditWindow_TweakValues.DoWindowContents)), transpiler: new HarmonyMethod(type: patchType, name: nameof(TweakValuesTranspiler)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "GetBackstoryCategoriesFor"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(GetBackstoryCategoriesForTranspiler)));
 
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
             {
@@ -266,6 +267,39 @@
             DefDatabase<HairDef>.GetNamed(defName: "Shaved").hairTags.Add(item: "alienNoHair"); // needed because..... the original idea doesn't work and I spend enough time finding a good solution
 
             foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs) BackstoryDef.UpdateTranslateableFields(bs: bd);
+        }
+
+        public static IEnumerable<CodeInstruction> GetBackstoryCategoriesForTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int index = 0; index < instructionList.Count; index++)
+            {
+                CodeInstruction instruction = instructionList[index: index];
+
+                if (instruction.opcode == OpCodes.Ldc_I4_0)
+                {
+                    Label label = ilg.DefineLabel();
+
+                    object breakLabel = instructionList[index: index - 1].operand;
+
+                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Pawn), name: nameof(Pawn.def)));
+                    yield return new CodeInstruction(opcode: OpCodes.Isinst, operand: typeof(ThingDef_AlienRace));
+                    yield return new CodeInstruction(opcode: OpCodes.Brfalse, operand: label);
+                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Pawn), name: nameof(Pawn.def)));
+                    yield return new CodeInstruction(opcode: OpCodes.Castclass, operand: typeof(ThingDef_AlienRace));
+                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(ThingDef_AlienRace), name: nameof(ThingDef_AlienRace.alienRace)));
+                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(ThingDef_AlienRace.AlienSettings), name: nameof(ThingDef_AlienRace.AlienSettings.generalSettings)));
+                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(GeneralSettings), name: nameof(GeneralSettings.useOnlyPawnkindBackstories)));
+                    yield return new CodeInstruction(opcode: OpCodes.Brtrue, operand: breakLabel);
+
+                    instruction.labels.Add(item: label);
+                }
+
+                yield return instruction;
+            }
         }
 
         public static IEnumerable<CodeInstruction> TweakValuesTranspiler(IEnumerable<CodeInstruction> instructions)

@@ -64,6 +64,8 @@ namespace AlienRace
         public List<string> disallowedTraits;
         public AlienPartGenerator alienPartGenerator = new AlienPartGenerator();
 
+        public bool useOnlyPawnkindBackstories = false;
+
         public List<FactionRelationSettings> factionRelations;
         public int maxDamageForSocialfight = int.MaxValue;
         public bool allowHumanBios = false;
