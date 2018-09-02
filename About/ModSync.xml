@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModSyncNinjaData>
+  <ID>9544fc7c-e724-4169-baf1-4e79e339b8c0</ID>
+  <ModName>Humanoid Alien Races 2.0</ModName>
+  <Version>0.19.0.1</Version>
+  <SaveBreaking>False</SaveBreaking>
+  <Host name="Github">
+    <Owner>RimWorld-CCL-Reborn</Owner>
+    <Project>AlienRaces</Project>
+    <AboutDir>About</AboutDir>
+    <DownloadFrom>ModSyncMainPage</DownloadFrom>
+    <Branch>master</Branch>
+  </Host>
+</ModSyncNinjaData>
