@@ -197,8 +197,8 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.ChangeKind)), prefix: new HarmonyMethod(type: patchType, name: nameof(ChangeKindPrefix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(EditWindow_TweakValues), name: nameof(EditWindow_TweakValues.DoWindowContents)), transpiler: new HarmonyMethod(type: patchType, name: nameof(TweakValuesTranspiler)));
+            HarmonyInstance.DEBUG = true;
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "GetBackstoryCategoriesFor"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(GetBackstoryCategoriesForTranspiler)));
-
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
             {
                 ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(item: ar.race.corpseDef);
@@ -307,6 +307,15 @@
                     yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(ThingDef_AlienRace), name: nameof(ThingDef_AlienRace.alienRace)));
                     yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(ThingDef_AlienRace.AlienSettings), name: nameof(ThingDef_AlienRace.AlienSettings.generalSettings)));
                     yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(GeneralSettings), name: nameof(GeneralSettings.useOnlyPawnkindBackstories)));
+                    yield return new CodeInstruction(opcode: OpCodes.Brtrue, operand: breakLabel);
+                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Pawn), name: nameof(Pawn.kindDef)));
+                    yield return new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: typeof(PawnKindDef), name: nameof(PawnKindDef.GetModExtension)).MakeGenericMethod(typeof(Info)));
+                    yield return new CodeInstruction(opcode: OpCodes.Brfalse, operand: label);
+                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Pawn), name: nameof(Pawn.kindDef)));
+                    yield return new CodeInstruction(opcode: OpCodes.Call,  operand: AccessTools.Method(type: typeof(PawnKindDef), name: nameof(PawnKindDef.GetModExtension)).MakeGenericMethod(typeof(Info)));
+                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Info), name: nameof(Info.useOnlyPawnkindBackstories)));
                     yield return new CodeInstruction(opcode: OpCodes.Brtrue, operand: breakLabel);
 
                     instruction.labels.Add(item: label);
