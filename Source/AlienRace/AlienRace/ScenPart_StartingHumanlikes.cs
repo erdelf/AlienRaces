@@ -26,7 +26,10 @@ namespace AlienRace
             DefDatabase<ScenPartDef>.Add(def: scenPart);
         }
 
-        private PawnKindDef kindDef = PawnKindDefOf.Villager;
+        public ScenPart_StartingHumanlikes() => 
+            this.kindDef = PawnKindDefOf.Villager;
+
+        private PawnKindDef kindDef;
         private int pawnCount;
         private string buffer;
 
