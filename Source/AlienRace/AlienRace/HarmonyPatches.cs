@@ -239,10 +239,11 @@
 
 
                 FieldInfo bodyInfo = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
-                FieldInfo postureInfo = AccessTools.Field(type: typeof(Pawn_JobTracker), name: nameof(Pawn_JobTracker.posture));
 
 
                 ILGenerator ilg      = new DynamicMethod(name: "ScanMethod", returnType: typeof(int), parameterTypes: Type.EmptyTypes).GetILGenerator();
+
+                //Full assemblies scan
                 foreach (MethodInfo mi in LoadedModManager.RunningMods.Where(predicate: mcp => mcp.LoadedAnyAssembly)
                    .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies.Where(predicate: ase => ase.GetType(name: "HarmonyInstance", throwOnError: false) != null))
                    .Concat(rhs: typeof(LogEntry).Assembly).SelectMany(selector: ase => ase.GetTypes()).
@@ -257,7 +258,20 @@
                     List<ILInstruction> instructions = PatchFunctions.GetInstructions(generator: ilg, method: mi);
                     if (instructions.Any(predicate: il => il.operand == bodyInfo))
                         harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(BodyReferenceTranspiler)));
-                    if (instructions.Any(predicate: il => il.opcode == OpCodes.Stfld && il.operand == postureInfo))
+                }
+
+
+                //PawnRenderer Posture scan
+                MethodInfo postureInfo = AccessTools.Method(type: typeof(PawnUtility), name: nameof(PawnUtility.GetPosture));
+
+                foreach (MethodInfo mi in typeof(PawnRenderer).GetMethods(bindingAttr: AccessTools.all).Concat(second: typeof(PawnRenderer).GetProperties(bindingAttr: AccessTools.all)
+                       .SelectMany(selector: pi =>
+                            new List<MethodInfo> {pi.GetGetMethod(nonPublic: true), pi.GetGetMethod(nonPublic: false), pi.GetSetMethod(nonPublic: true), pi.GetSetMethod(nonPublic: false)}))
+                   .Where(predicate: mi => mi != null && mi.DeclaringType == typeof(PawnRenderer) && !mi.IsGenericMethod))
+                {
+                    List<ILInstruction> instructions = PatchFunctions.GetInstructions(generator: ilg, method: mi);
+
+                    if (instructions.Any(predicate: il => il.operand == postureInfo))
                         harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PostureTranspiler)));
                 }
             }
@@ -441,24 +455,24 @@
 
         public static IEnumerable<CodeInstruction> PostureTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            FieldInfo postureInfo = AccessTools.Field(type: typeof(Pawn_JobTracker), name: nameof(Pawn_JobTracker.posture));
+            MethodInfo postureInfo = AccessTools.Method(type: typeof(PawnUtility), name: nameof(PawnUtility.GetPosture));
 
             CodeInstruction[] codeInstructions = instructions as CodeInstruction[] ?? instructions.ToArray();
             foreach (CodeInstruction instruction in codeInstructions)
-                if (instruction.opcode == OpCodes.Stfld && instruction.operand == postureInfo)
+                if (instruction.opcode == OpCodes.Call && instruction.operand == postureInfo)
                     yield return new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(PostureTweak)));
                 else
                     yield return instruction;
         }
 
-        public static void PostureTweak(Pawn_JobTracker jobs, PawnPosture posture)
+        public static PawnPosture PostureTweak(Pawn pawn)
         {
-            Pawn pawn = Traverse.Create(root: jobs).Field(name: "pawn").GetValue<Pawn>();
+            PawnPosture posture = pawn.GetPosture();
 
             if (posture != PawnPosture.Standing && pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.canLayDown &&
                 !(pawn.CurrentBed()?.def.defName.EqualsIgnoreCase(B: "ET_Bed") ?? false))
-                posture = PawnPosture.Standing;
-            jobs.posture = posture;
+                return PawnPosture.Standing;
+            return posture;
         }
 
         public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions, MethodBase mb)
