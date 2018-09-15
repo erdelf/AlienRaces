@@ -700,7 +700,8 @@
                     && __result;
         }
 
-        public static void RulesForPawnPostfix(ref IEnumerable<Rule> __result, Pawn pawn, string pawnSymbol) => __result.Add(item: new Rule_String(keyword: pawnSymbol + "_alienRace", output: pawn.def.LabelCap));
+        public static IEnumerable<Rule> RulesForPawnPostfix(IEnumerable<Rule> __result, Pawn pawn, string pawnSymbol) =>
+            __result.Add(item: new Rule_String(keyword: pawnSymbol + "_alienRace", output: pawn.def.LabelCap));
 
         public static IEnumerable<CodeInstruction> GenerateTraitsTranspiler(IEnumerable<CodeInstruction> instructions)
         {
