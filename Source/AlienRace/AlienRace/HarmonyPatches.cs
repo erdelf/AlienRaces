@@ -699,7 +699,7 @@
                                                                                                   (d.alienRace.raceRestriction.foodList?.Contains(item: t.defName) ?? false))
                     && __result;
         }
-
+        
         public static IEnumerable<Rule> RulesForPawnPostfix(IEnumerable<Rule> __result, Pawn pawn, string pawnSymbol) =>
             __result.Add(item: new Rule_String(keyword: pawnSymbol + "_alienRace", output: pawn.def.LabelCap));
 
@@ -2273,7 +2273,7 @@
                     num      = -num; //Angle
                 }
 
-                if ((rotation == Rot4.West && pawn.GetPosture() == PawnPosture.LayingOnGroundNormal && !(pawn.Downed || pawn.Dead)) || pawn.CurrentBed()?.Rotation == Rot4.East)
+                if ((rotation == Rot4.West && pawn.GetPosture() == PawnPosture.LayingOnGroundNormal && !(pawn.Downed || pawn.Dead)))// || pawn.CurrentBed()?.Rotation == Rot4.East)
                 {
                     moffsetZ = -moffsetZ;
                     moffsetX = -moffsetX;
