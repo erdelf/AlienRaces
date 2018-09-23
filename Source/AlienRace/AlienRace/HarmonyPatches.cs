@@ -2273,9 +2273,6 @@
                     num      = -num; //Angle
                 }
                 
-                if(pawn.GetPosture() == PawnPosture.LayingOnGroundNormal)
-                    Log.ErrorOnce(pawn.Name.ToStringShort + ": " + rotation.ToStringHuman(), pawn.Name.ToStringShort.GetHashCode());
-
                 Vector3 offsetVector = new Vector3(x: moffsetX, y: moffsetY, z: moffsetZ);
                 /*
                 Vector3 calcVec = vector + offsetVector.RotatedBy(angle: Mathf.Acos(f: Quaternion.Dot(a: Quaternion.identity, b: quat)) * 2f * 57.29578f);
