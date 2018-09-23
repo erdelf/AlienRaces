@@ -2272,13 +2272,9 @@
                     moffsetX = -moffsetX;
                     num      = -num; //Angle
                 }
-
-                if ((rotation == Rot4.West && pawn.GetPosture() == PawnPosture.LayingOnGroundNormal && !(pawn.Downed || pawn.Dead)))// || pawn.CurrentBed()?.Rotation == Rot4.East)
-                {
-                    moffsetZ = -moffsetZ;
-                    moffsetX = -moffsetX;
-                }
-
+                
+                if(pawn.GetPosture() == PawnPosture.LayingOnGroundNormal)
+                    Log.ErrorOnce(pawn.Name.ToStringShort + ": " + rotation.ToStringHuman(), pawn.Name.ToStringShort.GetHashCode());
 
                 Vector3 offsetVector = new Vector3(x: moffsetX, y: moffsetY, z: moffsetZ);
                 /*
