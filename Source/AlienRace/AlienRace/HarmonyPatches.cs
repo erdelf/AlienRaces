@@ -123,12 +123,12 @@
                 prefix: new HarmonyMethod(type: patchType, name: nameof(GeneratePawnPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGraphicSet), name: nameof(PawnGraphicSet.ResolveAllGraphics)),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(ResolveAllGraphicsPrefix)));
-            
+            //HarmonyInstance.DEBUG = true;
             harmony.Patch(
                 original: AccessTools.Method(type: typeof(PawnRenderer), name: "RenderPawnInternal",
                     parameters: new[] {typeof(Vector3), typeof(float), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool), typeof(bool)}), prefix: null, postfix: null,
                 transpiler: new HarmonyMethod(type: patchType, name: nameof(RenderPawnInternalTranspiler)));
-            
+            //HarmonyInstance.DEBUG = false;
             harmony.Patch(original: AccessTools.Method(type: typeof(StartingPawnUtility), name: nameof(StartingPawnUtility.NewGeneratedStartingPawn)),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(NewGeneratedStartingPawnPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: nameof(PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo)), prefix: null,
@@ -197,8 +197,9 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.ChangeKind)), prefix: new HarmonyMethod(type: patchType, name: nameof(ChangeKindPrefix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(EditWindow_TweakValues), name: nameof(EditWindow_TweakValues.DoWindowContents)), transpiler: new HarmonyMethod(type: patchType, name: nameof(TweakValuesTranspiler)));
-            HarmonyInstance.DEBUG = true;
+            
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "GetBackstoryCategoriesFor"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(GetBackstoryCategoriesForTranspiler)));
+
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
             {
                 ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(item: ar.race.corpseDef);
@@ -215,6 +216,8 @@
                     {
                         if (rd.recipeUsers?.Contains(item: ThingDefOf.Human) ?? false)
                             rd.recipeUsers.Add(item: ar);
+                        if (!rd.defaultIngredientFilter?.Allows(ThingDefOf.Meat_Human) ?? false)
+                            rd.defaultIngredientFilter.SetAllow(ar.race.meatDef, false);
                     });
                     ar.recipes.RemoveDuplicates();
                 }
@@ -2179,7 +2182,7 @@
                     instruction = new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(GetPawnHairMesh)));
                     instructionList.RemoveRange(index: i, count: 4);
                 }
-                else if (i + 5 < instructionList.Count && instructionList[index: i + 5].operand == isAnimalInfo)
+                else if (i > 1 && instructionList[index: i -1].operand == AccessTools.Method(typeof(Graphics), nameof(Graphics.DrawMesh), new []{typeof(Mesh), typeof(Vector3), typeof(Quaternion), typeof(Material), typeof(Int32)}) && (i+1) < instructionList.Count && instructionList[i + 1].opcode == OpCodes.Brtrue)
                 {
                     yield return instruction; // portrait
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
