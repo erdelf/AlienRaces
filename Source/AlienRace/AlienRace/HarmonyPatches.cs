@@ -216,8 +216,8 @@
                     {
                         if (rd.recipeUsers?.Contains(item: ThingDefOf.Human) ?? false)
                             rd.recipeUsers.Add(item: ar);
-                        if (!rd.defaultIngredientFilter?.Allows(ThingDefOf.Meat_Human) ?? false)
-                            rd.defaultIngredientFilter.SetAllow(ar.race.meatDef, false);
+                        if (!rd.defaultIngredientFilter?.Allows(def: ThingDefOf.Meat_Human) ?? false)
+                            rd.defaultIngredientFilter.SetAllow(thingDef: ar.race.meatDef, allow: false);
                     });
                     ar.recipes.RemoveDuplicates();
                 }
@@ -2144,7 +2144,6 @@
             FieldInfo  humanlikeBodyInfo = AccessTools.Field(type: typeof(MeshPool), name: nameof(MeshPool.humanlikeBodySet));
             FieldInfo  humanlikeHeadInfo = AccessTools.Field(type: typeof(MeshPool), name: nameof(MeshPool.humanlikeHeadSet));
             MethodInfo hairInfo          = AccessTools.Property(type: typeof(PawnGraphicSet), name: nameof(PawnGraphicSet.HairMeshSet)).GetGetMethod();
-            MethodInfo isAnimalInfo      = AccessTools.Property(type: typeof(RaceProperties), name: nameof(RaceProperties.Animal)).GetGetMethod();
 
             List<CodeInstruction> instructionList = instructions.ToList();
 
@@ -2182,7 +2181,7 @@
                     instruction = new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(GetPawnHairMesh)));
                     instructionList.RemoveRange(index: i, count: 4);
                 }
-                else if (i > 1 && instructionList[index: i -1].operand == AccessTools.Method(typeof(Graphics), nameof(Graphics.DrawMesh), new []{typeof(Mesh), typeof(Vector3), typeof(Quaternion), typeof(Material), typeof(Int32)}) && (i+1) < instructionList.Count && instructionList[i + 1].opcode == OpCodes.Brtrue)
+                else if (i > 1 && instructionList[index: i -1].operand == AccessTools.Method(type: typeof(Graphics), name: nameof(Graphics.DrawMesh), parameters: new []{typeof(Mesh), typeof(Vector3), typeof(Quaternion), typeof(Material), typeof(Int32)}) && (i+1) < instructionList.Count && instructionList[index: i + 1].opcode == OpCodes.Brtrue)
                 {
                     yield return instruction; // portrait
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
