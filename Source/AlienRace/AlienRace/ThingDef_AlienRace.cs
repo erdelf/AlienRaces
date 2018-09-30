@@ -183,43 +183,102 @@ namespace AlienRace
 
     public class RaceRestrictionSettings
     {
+
         public bool onlyUseRaceRestrictedApparel = false;
-        public List<string> apparelList;
-        public List<string> whiteApparelList;
+        public List<string> apparelList = new List<string>();
+        public List<string> whiteApparelList = new List<string>();
+
+        public static Dictionary<ThingDef, List<ThingDef_AlienRace>> apparelRestrictionDict = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
+
+        public static bool CanWear(ThingDef apparel, ThingDef race) =>
+            !apparelRestrictionDict.TryGetValue(key: apparel, value: out List<ThingDef_AlienRace> races) && 
+            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel ?? false) || 
+            (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
         public List<ResearchProjectRestrictions> researchList;
 
+
         public bool onlyUseRaceRestrictedWeapons = false;
-        public List<string> weaponList;
-        public List<string> whiteWeaponList;
+        public List<string> weaponList = new List<string>();
+        public List<string> whiteWeaponList = new List<string>();
+
+        public static Dictionary<ThingDef, List<ThingDef_AlienRace>> weaponRestrictionDict = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
+
+        public static bool CanEquip(ThingDef weapon, ThingDef race) =>
+            !weaponRestrictionDict.TryGetValue(key: weapon, value: out List<ThingDef_AlienRace> races) &&
+            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyUseRaceRestrictedWeapons ?? false) ||
+            (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
         public bool onlyBuildRaceRestrictedBuildings = false;
-        public List<string> buildingList;
-        public List<string> whiteBuildingList;
+        public List<string> buildingList = new List<string>();
+        public List<string> whiteBuildingList = new List<string>();
+
+        public static Dictionary<BuildableDef, List<ThingDef_AlienRace>> buildingRestrictionDict = new Dictionary<BuildableDef, List<ThingDef_AlienRace>>();
+
+        public static bool CanBuild(BuildableDef building, ThingDef race) =>
+            !buildingRestrictionDict.TryGetValue(key: building, value: out List<ThingDef_AlienRace> races) &&
+            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) ||
+            (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
         public bool onlyDoRaceRestrictedRecipes = false;
-        public List<string> recipeList;
-        public List<string> whiteRecipeList;
+        public List<string> recipeList = new List<string>();
+        public List<string> whiteRecipeList = new List<string>();
+
+        public static Dictionary<RecipeDef, List<ThingDef_AlienRace>> recipeRestrictionDict = new Dictionary<RecipeDef, List<ThingDef_AlienRace>>();
+
+        public static bool CanDoRecipe(RecipeDef recipe, ThingDef race) =>
+            !recipeRestrictionDict.TryGetValue(key: recipe, value: out List<ThingDef_AlienRace> races) &&
+            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRestrictedRecipes ?? false) ||
+            (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
+
 
         public bool onlyDoRaceRastrictedPlants = false;
-        public List<string> plantList;
-        public List<string> whitePlantList;
+        public List<string> plantList = new List<string>();
+        public List<string> whitePlantList = new List<string>();
+
+        public static Dictionary<ThingDef, List<ThingDef_AlienRace>> plantRestrictionDict = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
+
+        public static bool CanPlant(ThingDef plant, ThingDef race) =>
+            !plantRestrictionDict.TryGetValue(key: plant, value: out List<ThingDef_AlienRace> races) &&
+            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRastrictedPlants ?? false) ||
+            (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
         public bool onlyGetRaceRestrictedTraits = false;
-        public List<string> traitList;
-        public List<string> whiteTraitList;
+        public List<string> traitList = new List<string>();
+        public List<string> whiteTraitList = new List<string>();
+
+        public static Dictionary<TraitDef, List<ThingDef_AlienRace>> traitRestrictionDict = new Dictionary<TraitDef, List<ThingDef_AlienRace>>();
+
+        public static bool CanGetTrait(TraitDef trait, ThingDef race) =>
+            !traitRestrictionDict.TryGetValue(key: trait, value: out List<ThingDef_AlienRace> races) &&
+            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyGetRaceRestrictedTraits ?? false) ||
+            (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
         public bool onlyEatRaceRestrictedFood = false;
-        public List<string> foodList;
-        public List<string> whiteFoodList;
+        public List<string> foodList = new List<string>();
+        public List<string> whiteFoodList = new List<string>();
+
+        public static Dictionary<ThingDef, List<ThingDef_AlienRace>> foodRestrictionDict = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
+
+        public static bool CanEat(ThingDef food, ThingDef race) =>
+            !foodRestrictionDict.TryGetValue(key: food, value: out List<ThingDef_AlienRace> races) &&
+            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyEatRaceRestrictedFood ?? false) ||
+            (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
         public bool onlyTameRaceRestrictedPets = false;
-        public List<string> petList;
-        public List<string> whitePetList;
+        public List<string> petList = new List<string>();
+        public List<string> whitePetList = new List<string>();
 
-        public List<string> conceptList;
+        public static Dictionary<ThingDef, List<ThingDef_AlienRace>> tameRestrictionDict = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
 
-        public List<string> workGiverList;
+        public static bool CanTame(ThingDef pet, ThingDef race) =>
+            !tameRestrictionDict.TryGetValue(key: pet, value: out List<ThingDef_AlienRace> races) &&
+            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyTameRaceRestrictedPets ?? false) ||
+            (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
+
+        public List<string> conceptList = new List<string>();
+
+        public List<string> workGiverList = new List<string>();
     }
 
     public class ResearchProjectRestrictions
