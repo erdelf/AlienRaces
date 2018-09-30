@@ -26,25 +26,28 @@ namespace AlienRace
             DefDatabase<ScenPartDef>.Add(def: scenPart);
         }
 
-        public ScenPart_StartingHumanlikes() => 
-            this.kindDef = PawnKindDefOf.Villager;
-
         private PawnKindDef kindDef;
         private int pawnCount;
         private string buffer;
 
+        public PawnKindDef KindDef
+        {
+            get => this.kindDef ?? (this.kindDef = this.kindDef = PawnKindDefOf.Villager);
+            set => this.kindDef = value;
+        }
+
         public override void DoEditInterface(Listing_ScenEdit listing)
         {
             Rect scenPartRect = listing.GetScenPartRect(part: this, height: RowHeight * 3f);
-            if (Widgets.ButtonText(rect: scenPartRect.TopPart(pct: 0.45f), label: this.kindDef.label.CapitalizeFirst()))
+            if (Widgets.ButtonText(rect: scenPartRect.TopPart(pct: 0.45f), label: this.KindDef.label.CapitalizeFirst()))
             {
                 List<FloatMenuOption> list = new List<FloatMenuOption>();
                 list.AddRange(collection: DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: ar => ar.pawnKindSettings.startingColonists != null)
                    .SelectMany(selector: ar => ar.pawnKindSettings.startingColonists.SelectMany(selector: ste => ste.pawnKindEntries.SelectMany(selector: pke => pke.kindDefs)))
                    .Where(predicate: s => DefDatabase<PawnKindDef>.GetNamedSilentFail(defName: s) != null).Select(selector: DefDatabase<PawnKindDef>.GetNamedSilentFail)
-                   .Select(selector: pkd => new FloatMenuOption(label: pkd.label.CapitalizeFirst(), action: () => this.kindDef = pkd)));
-                list.Add(item: new FloatMenuOption(label: "Villager", action: () => this.kindDef = PawnKindDefOf.Villager));
-                list.Add(item: new FloatMenuOption(label: "Slave",    action: () => this.kindDef = PawnKindDefOf.Slave));
+                   .Select(selector: pkd => new FloatMenuOption(label: pkd.label.CapitalizeFirst(), action: () => this.KindDef = pkd)));
+                list.Add(item: new FloatMenuOption(label: "Villager", action: () => this.KindDef = PawnKindDefOf.Villager));
+                list.Add(item: new FloatMenuOption(label: "Slave",    action: () => this.KindDef = PawnKindDefOf.Slave));
                 Find.WindowStack.Add(window: new FloatMenu(options: list));
             }
 
@@ -62,12 +65,12 @@ namespace AlienRace
 
         public override IEnumerable<string> GetSummaryListEntries(string tag)
         {
-            if (tag == "PlayerStartsWith") yield return this.kindDef.LabelCap + " x" + this.pawnCount;
+            if (tag == "PlayerStartsWith") yield return this.KindDef.LabelCap + " x" + this.pawnCount;
         }
 
         public override bool TryMerge(ScenPart other)
         {
-            if (!(other is ScenPart_StartingHumanlikes others) || others.kindDef != this.kindDef)
+            if (!(other is ScenPart_StartingHumanlikes others) || others.KindDef != this.KindDef)
             {
                 return false;
             }
@@ -86,7 +89,7 @@ namespace AlienRace
                 Pawn newPawn = null;
                 for (int x = 0; x < 200; x++)
                 {
-                    newPawn = PawnGenerator.GeneratePawn(request: new PawnGenerationRequest(kind: this.kindDef, faction: Faction.OfPlayer, context: PawnGenerationContext.PlayerStarter, tile: -1, forceGenerateNewPawn: true, newborn: false, allowDead: false, allowDowned: false, canGeneratePawnRelations: true, mustBeCapableOfViolence: false, colonistRelationChanceFactor: 26f, forceAddFreeWarmLayerIfNeeded: true));
+                    newPawn = PawnGenerator.GeneratePawn(request: new PawnGenerationRequest(kind: this.KindDef, faction: Faction.OfPlayer, context: PawnGenerationContext.PlayerStarter, tile: -1, forceGenerateNewPawn: true, newborn: false, allowDead: false, allowDowned: false, canGeneratePawnRelations: true, mustBeCapableOfViolence: false, colonistRelationChanceFactor: 26f, forceAddFreeWarmLayerIfNeeded: true));
                     if (PawnCheck(p: newPawn))
                     {
                         x = 200;
