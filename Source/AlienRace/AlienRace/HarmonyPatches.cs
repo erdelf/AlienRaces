@@ -1175,8 +1175,17 @@
                 {
                     if (!frs.factions.Contains(item: __instance.def.defName)) return;
                     int           offset = frs.goodwill.RandomInRange;
-                    other.RelationWith(other: __instance).goodwill = offset;
-                    __instance.RelationWith(other: other).goodwill        = offset;
+                    FactionRelationKind kind = offset > 75 ?
+                                                   FactionRelationKind.Ally :
+                                                   offset <= -10 ?
+                                                       FactionRelationKind.Hostile :
+                                                       FactionRelationKind.Neutral;
+                    FactionRelation relation = other.RelationWith(other: __instance);
+                    relation.goodwill = offset;
+                    relation.kind = kind;
+                    relation = __instance.RelationWith(other: other);
+                    relation.goodwill = offset;
+                    relation.kind = kind;
                 });
 
             alienProps = __instance.def.basicMemberKind?.race as ThingDef_AlienRace;
@@ -1184,8 +1193,17 @@
             {
                 if (!frs.factions.Contains(item: other.def.defName)) return;
                 int           offset = frs.goodwill.RandomInRange;
-                other.RelationWith(other: __instance).goodwill = offset;
-                __instance.RelationWith(other: other).goodwill        = offset;
+                FactionRelationKind kind = offset > 75 ?
+                                               FactionRelationKind.Ally :
+                                               offset <= -10 ?
+                                                   FactionRelationKind.Hostile :
+                                                   FactionRelationKind.Neutral;
+                FactionRelation relation = other.RelationWith(other: __instance);
+                relation.goodwill = offset;
+                relation.kind     = kind;
+                relation          = __instance.RelationWith(other: other);
+                relation.goodwill = offset;
+                relation.kind     = kind;
             });
         }
 
