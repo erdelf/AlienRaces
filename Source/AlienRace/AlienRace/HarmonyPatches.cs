@@ -211,8 +211,11 @@
                 }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteApparelList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                    if (RaceRestrictionSettings.apparelRestrictionDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.apparelRestrictionDict[key: thingDef].Add(item: ar);
+                {
+                    if (!RaceRestrictionSettings.apparelWhiteDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.apparelWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.apparelWhiteDict[key: thingDef].Add(item: ar);
+                }
 
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.weaponList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
@@ -223,9 +226,11 @@
                 }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteWeaponList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                    if (RaceRestrictionSettings.weaponRestrictionDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.weaponRestrictionDict[key: thingDef].Add(item: ar);
-
+                {
+                    if (!RaceRestrictionSettings.weaponWhiteDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.weaponWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.weaponWhiteDict[key: thingDef].Add(item: ar);
+                }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.buildingList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
                 {
@@ -235,9 +240,11 @@
                 }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteBuildingList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                    if (RaceRestrictionSettings.buildingRestrictionDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.buildingRestrictionDict[key: thingDef].Add(item: ar);
-
+                {
+                    if (!RaceRestrictionSettings.buildingWhiteDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.buildingWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.buildingWhiteDict[key: thingDef].Add(item: ar);
+                }
 
                 foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.recipeList.Select(selector: DefDatabase<RecipeDef>.GetNamedSilentFail).Where(predicate: rp => rp != null))
                 {
@@ -246,9 +253,12 @@
                     RaceRestrictionSettings.recipeRestrictionDict[key: recipeDef].Add(item: ar);
                 }
 
-                foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.whiteRecipeList.Select(selector: DefDatabase<RecipeDef>.GetNamedSilentFail).Where(predicate: rp => rp != null))
-                    if (RaceRestrictionSettings.recipeRestrictionDict.ContainsKey(key: recipeDef))
-                        RaceRestrictionSettings.recipeRestrictionDict[key: recipeDef].Add(item: ar);
+                foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.whiteRecipeList.Select(selector: DefDatabase<RecipeDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                {
+                    if (!RaceRestrictionSettings.recipeWhiteDict.ContainsKey(key: recipeDef))
+                        RaceRestrictionSettings.recipeWhiteDict.Add(key: recipeDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.recipeWhiteDict[key: recipeDef].Add(item: ar);
+                }
 
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.plantList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
@@ -259,8 +269,11 @@
                 }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whitePlantList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                    if (RaceRestrictionSettings.plantRestrictionDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.plantRestrictionDict[key: thingDef].Add(item: ar);
+                {
+                    if (!RaceRestrictionSettings.plantWhiteDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.plantWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.plantWhiteDict[key: thingDef].Add(item: ar);
+                }
 
 
                 foreach (TraitDef traitDef in ar.alienRace.raceRestriction.traitList.Select(selector: DefDatabase<TraitDef>.GetNamedSilentFail).Where(predicate: td => td != null))
@@ -271,8 +284,11 @@
                 }
 
                 foreach (TraitDef traitDef in ar.alienRace.raceRestriction.whiteTraitList.Select(selector: DefDatabase<TraitDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                    if (RaceRestrictionSettings.traitRestrictionDict.ContainsKey(key: traitDef))
-                        RaceRestrictionSettings.traitRestrictionDict[key: traitDef].Add(item: ar);
+                {
+                    if (!RaceRestrictionSettings.traitWhiteDict.ContainsKey(key: traitDef))
+                        RaceRestrictionSettings.traitWhiteDict.Add(key: traitDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.traitWhiteDict[key: traitDef].Add(item: ar);
+                }
 
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.foodList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
@@ -283,8 +299,11 @@
                 }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteFoodList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                    if (RaceRestrictionSettings.foodRestrictionDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.foodRestrictionDict[key: thingDef].Add(item: ar);
+                {
+                    if (!RaceRestrictionSettings.foodWhiteDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.foodWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.foodWhiteDict[key: thingDef].Add(item: ar);
+                }
 
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.petList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
@@ -295,8 +314,11 @@
                 }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whitePetList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                    if (!RaceRestrictionSettings.tameRestrictionDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.tameRestrictionDict[key: thingDef].Add(item: ar);
+                {
+                    if (!RaceRestrictionSettings.tameWhiteDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.tameWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.tameWhiteDict[key: thingDef].Add(item: ar);
+                }
 
 
                 ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(item: ar.race.corpseDef);
