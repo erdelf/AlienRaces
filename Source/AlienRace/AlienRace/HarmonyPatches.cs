@@ -181,7 +181,7 @@
                    .MaxBy(selector: mi => mi.GetMethodBody()?.GetILAsByteArray().Length ?? -1), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(EnsureRequiredEnemiesPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Faction), name: nameof(Faction.FactionTick)), prefix: null, postfix: null,
                 transpiler: new HarmonyMethod(type: patchType, name: nameof(FactionTickTranspiler)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(Designator_Build), name: nameof(Designator_Build.CanDesignateThing)), prefix: null,
+            harmony.Patch(original: AccessTools.Method(type: typeof(Designator), name: nameof(Designator.CanDesignateThing)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(CanDesignateThingTamePostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(WorkGiver_InteractAnimal), name: "CanInteractWithAnimal"), prefix: null,
@@ -685,8 +685,12 @@
         public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) =>
             __result = __result && RaceRestrictionSettings.CanTame(pet: animal.def, race: pawn.def);
 
-        public static void CanDesignateThingTamePostfix(ref bool __result, Thing t) =>
-            __result = __result && colonistRaces.Any(predicate: td => RaceRestrictionSettings.CanTame(pet: t.def, race: td));
+        public static void CanDesignateThingTamePostfix(Designator __instance, ref bool __result, Thing t)
+        {
+            if (!__result || !(__instance is Designator_Build)) return;
+
+            __result = colonistRaces.Any(predicate: td => RaceRestrictionSettings.CanTame(pet: t.def, race: td));
+        }
 
         public static IEnumerable<CodeInstruction> FactionTickTranspiler(IEnumerable<CodeInstruction> instructions)
         {
