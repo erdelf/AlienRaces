@@ -1743,7 +1743,7 @@
                         int index = opts.IndexOf(item: fmo);
                         opts.Remove(item: fmo);
 
-                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotEquip".Translate(args: new object[] {drugs.LabelShort})} {pawn.def.LabelCap} can't consume this)", action: null));
+                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotEquip".Translate(arg1: drugs.LabelShort)} {pawn.def.LabelCap} can't consume this)", action: null));
                     }
                 }
             }
@@ -1752,7 +1752,7 @@
                 ThingWithComps equipment = (ThingWithComps) c.GetThingList(map: pawn.Map).FirstOrDefault(predicate: t => t.TryGetComp<CompEquippable>() != null && t.def.IsWeapon);
                 if (equipment != null)
                 {
-                    List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: "Equip".Translate(args: new object[] {equipment.LabelShort}))).ToList();
+                    List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: "Equip".Translate(arg1: equipment.LabelShort))).ToList();
 
 
                     if (!options.NullOrEmpty() && !RaceRestrictionSettings.CanEquip(weapon: equipment.def, race: pawn.def))
@@ -1762,8 +1762,8 @@
                             opts.Remove(item: fmo);
 
                             opts.Insert(index: index,
-                                item: new FloatMenuOption(label: $"{"CannotEquip".Translate(args: new object[] {equipment.LabelShort})} ({pawn.def.LabelCap} can't equip this)", action: null));
-                        }
+                                item: new FloatMenuOption(label: $"{"CannotEquip".Translate(arg1: equipment.LabelShort)} ({pawn.def.LabelCap} can't equip this)", action: null));
+                        } 
                 }
             }
 
@@ -1771,7 +1771,7 @@
             {
                 Apparel apparel = pawn.Map.thingGrid.ThingAt<Apparel>(c: c);
                 if (apparel == null) return;
-                List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: "ForceWear".Translate(args: new object[] {apparel.LabelShort}))).ToList();
+                List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: "ForceWear".Translate(arg1: apparel.LabelShort))).ToList();
 
                 if (options.NullOrEmpty() || RaceRestrictionSettings.CanWear(apparel: apparel.def, race: pawn.def)) return;
                 {
@@ -1780,7 +1780,7 @@
                         int index = opts.IndexOf(item: fmo);
                         opts.Remove(item: fmo);
 
-                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotWear".Translate(args: new object[]{apparel.LabelShort})} ({pawn.def.LabelCap} can't wear this)", action: null));
+                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotWear".Translate(arg1: apparel.LabelShort)} ({pawn.def.LabelCap} can't wear this)", action: null));
                     }
                 }
             }
