@@ -328,8 +328,9 @@
 
                 if (ar.alienRace.generalSettings.humanRecipeImport)
                 {
-                    (ar.recipes ?? (ar.recipes = new List<RecipeDef>())).AddRange(collection: ThingDefOf.Human.recipes.Where(predicate: rd =>
-                        !rd.targetsBodyPart || (rd.appliedOnFixedBodyParts?.Any(predicate: bpd => ar.race.body.AllParts.Any(predicate: bpr => bpr.def == bpd)) ?? false)));
+                    (ar.recipes ?? (ar.recipes = new List<RecipeDef>())).AddRange(collection: ThingDefOf.Human.recipes.Where(predicate: rd => 
+                        !rd.targetsBodyPart || rd.appliedOnFixedBodyParts.NullOrEmpty() || 
+                        rd.appliedOnFixedBodyParts.Any(predicate: bpd => ar.race.body.AllParts.Any(predicate: bpr => bpr.def == bpd))));
 
                     DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(action: rd =>
                     {
