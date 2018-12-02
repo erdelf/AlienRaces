@@ -67,7 +67,6 @@ namespace AlienRace
                         bodySet = new GraphicMeshSet(width: 1.5f * drawSize.x, height: 1.5f * drawSize.y), // bodySet
                         headSet = new GraphicMeshSet(width: 1.5f * headDrawSize.x, height: 1.5f * headDrawSize.y), // headSet
                         hairSetAverage = new GraphicMeshSet(width: 1.5f * headDrawSize.x, height: 1.5f * headDrawSize.y), // hairSetAverage
-                        hairSetNarrow = new GraphicMeshSet(width: 1.3f * headDrawSize.x, height: 1.5f * headDrawSize.y), // hairSetNarrow
                     });
                 }
             }
@@ -156,7 +155,6 @@ namespace AlienRace
             public GraphicMeshSet bodySet;
             public GraphicMeshSet headSet;
             public GraphicMeshSet hairSetAverage;
-            public GraphicMeshSet hairSetNarrow;
         }
     }
 }

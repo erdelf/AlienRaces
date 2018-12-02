@@ -1861,6 +1861,7 @@
                                "" :
                                alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(
                                    userpath: alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).head, pawn: pawn));
+                pawn.story.crownType = CrownType.Average;
             }
         }
 
@@ -2254,13 +2255,9 @@
 
         public static Mesh GetPawnHairMesh(bool portrait, Pawn pawn, Rot4 headFacing, PawnGraphicSet graphics) =>
             pawn.GetComp<AlienPartGenerator.AlienComp>() is AlienPartGenerator.AlienComp alienComp ?
-                (pawn.story.crownType == CrownType.Narrow ?
-                     (portrait ?
-                          alienComp.alienPortraitGraphics.hairSetNarrow :
-                          alienComp.alienGraphics.hairSetNarrow) :
                      (portrait ?
                           alienComp.alienPortraitGraphics.hairSetAverage :
-                          alienComp.alienGraphics.hairSetAverage)).MeshAt(rot: headFacing) :
+                          alienComp.alienGraphics.hairSetAverage).MeshAt(rot: headFacing) :
                 graphics.HairMeshSet.MeshAt(rot: headFacing);
 
         public static void DrawAddons(bool portrait, Pawn pawn, Vector3 vector, Quaternion quat, Rot4 rotation)
