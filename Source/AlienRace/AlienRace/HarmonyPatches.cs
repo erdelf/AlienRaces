@@ -328,8 +328,9 @@
 
                 if (ar.alienRace.generalSettings.humanRecipeImport)
                 {
-                    (ar.recipes ?? (ar.recipes = new List<RecipeDef>())).AddRange(collection: ThingDefOf.Human.recipes.Where(predicate: rd =>
-                        !rd.targetsBodyPart || (rd.appliedOnFixedBodyParts?.Any(predicate: bpd => ar.race.body.AllParts.Any(predicate: bpr => bpr.def == bpd)) ?? false)));
+                    (ar.recipes ?? (ar.recipes = new List<RecipeDef>())).AddRange(collection: ThingDefOf.Human.recipes.Where(predicate: rd => 
+                        !rd.targetsBodyPart || rd.appliedOnFixedBodyParts.NullOrEmpty() || 
+                        rd.appliedOnFixedBodyParts.Any(predicate: bpd => ar.race.body.AllParts.Any(predicate: bpr => bpr.def == bpd))));
 
                     DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(action: rd =>
                     {
@@ -1743,7 +1744,7 @@
                         int index = opts.IndexOf(item: fmo);
                         opts.Remove(item: fmo);
 
-                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotEquip".Translate(args: new object[] {drugs.LabelShort})} {pawn.def.LabelCap} can't consume this)", action: null));
+                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotEquip".Translate(arg1: drugs.LabelShort)} {pawn.def.LabelCap} can't consume this)", action: null));
                     }
                 }
             }
@@ -1752,7 +1753,7 @@
                 ThingWithComps equipment = (ThingWithComps) c.GetThingList(map: pawn.Map).FirstOrDefault(predicate: t => t.TryGetComp<CompEquippable>() != null && t.def.IsWeapon);
                 if (equipment != null)
                 {
-                    List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: "Equip".Translate(args: new object[] {equipment.LabelShort}))).ToList();
+                    List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: "Equip".Translate(arg1: equipment.LabelShort))).ToList();
 
 
                     if (!options.NullOrEmpty() && !RaceRestrictionSettings.CanEquip(weapon: equipment.def, race: pawn.def))
@@ -1762,8 +1763,8 @@
                             opts.Remove(item: fmo);
 
                             opts.Insert(index: index,
-                                item: new FloatMenuOption(label: $"{"CannotEquip".Translate(args: new object[] {equipment.LabelShort})} ({pawn.def.LabelCap} can't equip this)", action: null));
-                        }
+                                item: new FloatMenuOption(label: $"{"CannotEquip".Translate(arg1: equipment.LabelShort)} ({pawn.def.LabelCap} can't equip this)", action: null));
+                        } 
                 }
             }
 
@@ -1771,7 +1772,7 @@
             {
                 Apparel apparel = pawn.Map.thingGrid.ThingAt<Apparel>(c: c);
                 if (apparel == null) return;
-                List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: "ForceWear".Translate(args: new object[] {apparel.LabelShort}))).ToList();
+                List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: "ForceWear".Translate(arg1: apparel.LabelShort))).ToList();
 
                 if (options.NullOrEmpty() || RaceRestrictionSettings.CanWear(apparel: apparel.def, race: pawn.def)) return;
                 {
@@ -1780,7 +1781,7 @@
                         int index = opts.IndexOf(item: fmo);
                         opts.Remove(item: fmo);
 
-                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotWear".Translate(args: new object[]{apparel.LabelShort})} ({pawn.def.LabelCap} can't wear this)", action: null));
+                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotWear".Translate(arg1: apparel.LabelShort)} ({pawn.def.LabelCap} can't wear this)", action: null));
                     }
                 }
             }
@@ -1828,8 +1829,8 @@
         {
             if (request.FixedGender.HasValue) return;
             float maleGenderProbability = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.maleGenderProbability ?? pawn.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? 0.5f;
-            if (!(Math.Abs(value: maleGenderProbability - 0.5f) > 0.001f)) return;
-            pawn.gender = Rand.Value                            >= maleGenderProbability ? Gender.Female : Gender.Male;
+
+            pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
             AlienPartGenerator.AlienComp alienComp = pawn.TryGetComp<AlienPartGenerator.AlienComp>();
             if ((alienComp == null || !(Math.Abs(value: maleGenderProbability) < 0.001f)) && !(Math.Abs(value: maleGenderProbability - 100f) < 0.001f)) return;
             if (alienComp != null)
@@ -1860,6 +1861,7 @@
                                "" :
                                alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(
                                    userpath: alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).head, pawn: pawn));
+                pawn.story.crownType = CrownType.Average;
             }
         }
 
@@ -1973,11 +1975,8 @@
                 AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
                 if (alienComp.fixGenderPostSpawn)
                 {
-                    if (Math.Abs(value: alienProps.alienRace.generalSettings.maleGenderProbability - 0.5f) > 0.001f)
-                    {
-                        __instance.pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.maleGenderProbability ? Gender.Female : Gender.Male;
-                        __instance.pawn.Name   = PawnBioAndNameGenerator.GeneratePawnName(pawn: __instance.pawn);
-                    }
+                    __instance.pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.maleGenderProbability ? Gender.Female : Gender.Male;
+                    __instance.pawn.Name   = PawnBioAndNameGenerator.GeneratePawnName(pawn: __instance.pawn);
 
 
                     Traverse.Create(root: __instance.pawn.story).Field(name: "headGraphicPath").SetValue(
@@ -2253,13 +2252,9 @@
 
         public static Mesh GetPawnHairMesh(bool portrait, Pawn pawn, Rot4 headFacing, PawnGraphicSet graphics) =>
             pawn.GetComp<AlienPartGenerator.AlienComp>() is AlienPartGenerator.AlienComp alienComp ?
-                (pawn.story.crownType == CrownType.Narrow ?
-                     (portrait ?
-                          alienComp.alienPortraitGraphics.hairSetNarrow :
-                          alienComp.alienGraphics.hairSetNarrow) :
                      (portrait ?
                           alienComp.alienPortraitGraphics.hairSetAverage :
-                          alienComp.alienGraphics.hairSetAverage)).MeshAt(rot: headFacing) :
+                          alienComp.alienGraphics.hairSetAverage).MeshAt(rot: headFacing) :
                 graphics.HairMeshSet.MeshAt(rot: headFacing);
 
         public static void DrawAddons(bool portrait, Pawn pawn, Vector3 vector, Quaternion quat, Rot4 rotation)
