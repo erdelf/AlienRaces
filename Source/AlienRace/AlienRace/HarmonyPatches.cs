@@ -1829,8 +1829,8 @@
         {
             if (request.FixedGender.HasValue) return;
             float maleGenderProbability = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.maleGenderProbability ?? pawn.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? 0.5f;
-            if (!(Math.Abs(value: maleGenderProbability - 0.5f) > 0.001f)) return;
-            pawn.gender = Rand.Value                            >= maleGenderProbability ? Gender.Female : Gender.Male;
+
+            pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
             AlienPartGenerator.AlienComp alienComp = pawn.TryGetComp<AlienPartGenerator.AlienComp>();
             if ((alienComp == null || !(Math.Abs(value: maleGenderProbability) < 0.001f)) && !(Math.Abs(value: maleGenderProbability - 100f) < 0.001f)) return;
             if (alienComp != null)
@@ -1975,11 +1975,8 @@
                 AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
                 if (alienComp.fixGenderPostSpawn)
                 {
-                    if (Math.Abs(value: alienProps.alienRace.generalSettings.maleGenderProbability - 0.5f) > 0.001f)
-                    {
-                        __instance.pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.maleGenderProbability ? Gender.Female : Gender.Male;
-                        __instance.pawn.Name   = PawnBioAndNameGenerator.GeneratePawnName(pawn: __instance.pawn);
-                    }
+                    __instance.pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.maleGenderProbability ? Gender.Female : Gender.Male;
+                    __instance.pawn.Name   = PawnBioAndNameGenerator.GeneratePawnName(pawn: __instance.pawn);
 
 
                     Traverse.Create(root: __instance.pawn.story).Field(name: "headGraphicPath").SetValue(
