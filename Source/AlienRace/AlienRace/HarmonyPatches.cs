@@ -362,25 +362,26 @@
 
 
                 FieldInfo bodyInfo = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
+                MethodInfo bodyCheck = AccessTools.Method(type: patchType, name: nameof(ReplacedBody));
+                HarmonyMethod bodyTranspiler = new HarmonyMethod(type: patchType, name: nameof(BodyReferenceTranspiler));
 
-
-                ILGenerator ilg      = new DynamicMethod(name: "ScanMethod", returnType: typeof(int), parameterTypes: Type.EmptyTypes).GetILGenerator();
+                ILGenerator ilg      = new DynamicMethod(name: "ScanMethod", returnType: typeof(void), parameterTypes: Type.EmptyTypes).GetILGenerator();
 
                 //Full assemblies scan
                 foreach (MethodInfo mi in LoadedModManager.RunningMods.Where(predicate: mcp => mcp.LoadedAnyAssembly)
-                   .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies.Where(predicate: ase => ase.GetType(name: "HarmonyInstance", throwOnError: false) != null))
+                   .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies.Where(predicate: ase => ase.GetType(name: "HarmonyInstance", throwOnError: false) == null))
                    .Concat(rhs: typeof(LogEntry).Assembly).SelectMany(selector: ase => ase.GetTypes()).
                     //SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
                     Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(c: t) && !t.IsGenericType).SelectMany(selector: t =>
                         t.GetMethods(bindingAttr: AccessTools.all)
                            .Concat(second: t.GetProperties(bindingAttr: AccessTools.all).SelectMany(selector: pi =>
                                 new List<MethodInfo> {pi.GetGetMethod(nonPublic: true), pi.GetGetMethod(nonPublic: false), pi.GetSetMethod(nonPublic: true), pi.GetSetMethod(nonPublic: false)}))
-                           .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod))
+                           .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
                 ) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
                 {
                     List<ILInstruction> instructions = PatchFunctions.GetInstructions(generator: ilg, method: mi);
-                    if (instructions.Any(predicate: il => il.operand == bodyInfo))
-                        harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(BodyReferenceTranspiler)));
+                    if (mi != bodyCheck && instructions.Any(predicate: il => il.operand == bodyInfo))
+                        harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: bodyTranspiler);
                 }
 
 
@@ -1827,12 +1828,14 @@
 
         public static void GenerateRandomAgePrefix(Pawn pawn, PawnGenerationRequest request)
         {
-            if (request.FixedGender.HasValue) return;
-            float maleGenderProbability = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.maleGenderProbability ?? pawn.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? 0.5f;
+            if (request.FixedGender.HasValue || !pawn.RaceProps.hasGenders) return;
+            float? maleGenderProbability = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.maleGenderProbability ?? pawn.kindDef.GetModExtension<Info>()?.maleGenderProbability;
+
+            if (!maleGenderProbability.HasValue) return;
 
             pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
             AlienPartGenerator.AlienComp alienComp = pawn.TryGetComp<AlienPartGenerator.AlienComp>();
-            if ((alienComp == null || !(Math.Abs(value: maleGenderProbability) < 0.001f)) && !(Math.Abs(value: maleGenderProbability - 100f) < 0.001f)) return;
+            if ((alienComp == null || !(Math.Abs(value: maleGenderProbability.Value) < 0.001f)) && !(Math.Abs(value: maleGenderProbability.Value - 1f) < 0.001f)) return;
             if (alienComp != null)
                 alienComp.fixGenderPostSpawn = true;
         }
