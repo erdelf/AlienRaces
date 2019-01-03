@@ -27,6 +27,7 @@
 
         static HarmonyPatches()
         {
+
             HarmonyInstance harmony = HarmonyInstance.Create(id: "rimworld.erdelf.alien_race.main");
             
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_Child), name: nameof(PawnRelationWorker_Child.GenerationChance)), prefix: null,
@@ -369,7 +370,7 @@
 
                 //Full assemblies scan
                 foreach (MethodInfo mi in LoadedModManager.RunningMods.Where(predicate: mcp => mcp.LoadedAnyAssembly)
-                   .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies.Where(predicate: ase => ase.GetType(name: "HarmonyInstance", throwOnError: false) == null))
+                   .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies).Except(typeof(Harmony.HarmonyPatch).Assembly).Except(typeof(System.Action).Assembly)
                    .Concat(rhs: typeof(LogEntry).Assembly).SelectMany(selector: ase => ase.GetTypes()).
                     //SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
                     Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(c: t) && !t.IsGenericType).SelectMany(selector: t =>
