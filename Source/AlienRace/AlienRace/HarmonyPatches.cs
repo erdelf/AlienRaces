@@ -383,7 +383,12 @@
                         if (mcp.IsCoreMod)
                             continue;
 
-                        FileInfo[] f = new DirectoryInfo(Path.Combine(mcp.RootDir, "Assemblies")).GetFiles("**.dll");
+                        DirectoryInfo di = new DirectoryInfo(Path.Combine(mcp.RootDir, "Assemblies"));
+
+                        if (!di.Exists)
+                            continue;
+                        
+                        FileInfo[] f = di.GetFiles("**.dll");
 
                         foreach (FileInfo fi in f)
                         {
@@ -411,7 +416,7 @@
                                             string name = (i.Operand as MemberReference)?.DeclaringType?.Scope.Name.Replace(".dll", string.Empty) ?? string.Empty;
                                             if (!name.NullOrEmpty() && !moduleNames.Contains(name))
                                             {
-                                                Log.Message($"{name}: {i.Operand}", true);
+                                                Log.Message($"Scope not found: {name}", true);
                                                 methods.Add(AccessTools.Method(AccessTools.TypeByName(mi.DeclaringType.FullName), mi.Name));
                                             }
                                         }
