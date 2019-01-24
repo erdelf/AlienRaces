@@ -678,9 +678,28 @@
         public static void BaseHeadOffsetAtPostfix(PawnRenderer __instance, ref Vector3 __result)
         {
             Pawn    pawn   = Traverse.Create(root: __instance).Field(name: "pawn").GetValue<Pawn>();
+            Rot4 rotation = pawn.Rotation;
             Vector2 offset = (pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).headOffset ?? Vector2.zero;
-            __result.x += offset.x;
-            __result.z += offset.y;
+            switch (rotation.AsInt)
+			{
+			case 0:
+                __result.z += offset.y;
+                break;
+			case 1:
+                __result.x += offset.x;
+                __result.z += offset.y;
+                break;
+			case 2:
+                __result.z += offset.y;
+                break;
+			case 3:
+                __result.x += -offset.x;
+                __result.z += offset.y;
+                break;
+			default:
+				Log.Error("BaseHeadOffsetAtPostfix error in " + pawn, false);
+                break;
+			}
         }
 
         public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) =>

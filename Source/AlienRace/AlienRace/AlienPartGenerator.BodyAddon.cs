@@ -23,6 +23,8 @@ namespace AlienRace
             public float layerOffset = 0;
             public bool drawnOnGround = true;
             public bool drawnInBed = true;
+            public bool drawForMale = true;
+            public bool drawForFemale = true;
             
             public Vector2 drawSize = Vector2.one;
 
@@ -41,7 +43,8 @@ namespace AlienRace
                 !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(item: bpgd)) || 
                 ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(item: s)))) && (pawn.GetPosture() == PawnPosture.Standing || (pawn.InBed() && this.drawnInBed) || this.drawnOnGround) &&
                     (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
-                    (this.bodyPart.NullOrEmpty() || pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart));
+                    (this.bodyPart.NullOrEmpty() || pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
+               ( drawForFemale && drawForMale ? true : (pawn.gender == Gender.Female) ? drawForFemale : drawForMale );
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
