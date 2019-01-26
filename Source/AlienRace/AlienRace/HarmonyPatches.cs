@@ -679,8 +679,8 @@
         {
             Pawn    pawn   = Traverse.Create(root: __instance).Field(name: "pawn").GetValue<Pawn>();
             Vector2 offset = (pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).headOffset ?? Vector2.zero;
-                __result.x += -offset.x;
-                __result.z += offset.y;
+            __result.x += offset.x;
+            __result.z += offset.y;
         }
 
         public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) =>
