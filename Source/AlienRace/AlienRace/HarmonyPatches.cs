@@ -365,18 +365,13 @@
                 HashSet<MethodInfo> methods = new HashSet<MethodInfo>();
                 {
                     HashSet<string> moduleNames =
-                        new HashSet<string>(LoadedModManager.RunningMods.SelectMany(mcp => mcp.assemblies.loadedAssemblies.Select(ab => ab.GetName().Name)))
+                        new HashSet<string>(AppDomain.CurrentDomain.GetAssemblies().SelectMany(ab => ab.GetTypes().Select(t => t.Namespace).Add(ab.FullName.Split(',')[0]).Add(ab.ManifestModule is ModuleBuilder ? null : Path.GetFileNameWithoutExtension(ab.Location))))
                         {
-                            "mscorlib",
-                            "Assembly-CSharp",
-                            "System",
-                            "System.Core",
-                            "System.Xml",
-                            "System.Xml.Linq",
-                            "UnityEngine"
+                            "mscorlib"
                         };
 
-                    //Log.Message(string.Join("\n", moduleNames.ToArray()));
+
+                    //Log.Message(string.Join("\n", moduleNames.OrderBy(s => s).ToArray()), true);
 
                     foreach (ModContentPack mcp in LoadedModManager.RunningMods)
                     {
@@ -474,7 +469,7 @@
             Log.Message(text:
                 $"Alien race successfully completed {harmony.GetPatchedMethods().Select(selector: mb => harmony.GetPatchInfo(method: mb)).SelectMany(selector: p => p.Prefixes.Concat(second: p.Postfixes).Concat(second: p.Transpilers)).Count(predicate: p => p.owner == harmony.Id)} patches with harmony.");
             DefDatabase<HairDef>.GetNamed(defName: "Shaved").hairTags.Add(item: "alienNoHair");
-
+            
             foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs) BackstoryDef.UpdateTranslateableFields(bs: bd);
 
             
@@ -1864,7 +1859,8 @@
         public static void CanGetThoughtPostfix(ref bool __result, ThoughtDef def, Pawn pawn)
         {
             if (!__result || !(pawn.def is ThingDef_AlienRace alienProps)) return;
-            if (alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && (alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(item: def.defName) ?? false))
+            if (ThoughtSettings.thoughtRestrictionDict.TryGetValue(def, out List<ThingDef_AlienRace> races) && races.Contains(alienProps)) __result = false;
+            else if (alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && (alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(item: def.defName) ?? false))
                 __result = false;
             else if (!alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.NullOrEmpty() &&
                      alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.Contains(item: def.defName)) __result = false;
