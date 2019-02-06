@@ -1746,9 +1746,6 @@
         {
             Pawn pawn = Traverse.Create(root: __instance).Field(name: "pawn").GetValue<Pawn>();
             if (!(pawn.def is ThingDef_AlienRace alienProps)) return;
-            string path = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStageRace.def).head;
-            if (path != null)
-                Traverse.Create(root: pawn.story).Field(name: "headGraphicPath").SetValue(value: alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(userpath: path, pawn: pawn));
 
             if (!pawn.def.race.lifeStageAges.Skip(count: 1).Any()) return;
             LifeStageAge lsac = pawn.ageTracker.CurLifeStageRace;
@@ -1756,7 +1753,12 @@
 
             if (lsac is LifeStageAgeAlien lsaac && lsaac.body != null && ((lsap as LifeStageAgeAlien)?.body ?? pawn.RaceProps.body) != lsaac.body ||
                 lsap is LifeStageAgeAlien lsaap && lsaap.body != null && ((lsac as LifeStageAgeAlien)?.body ?? pawn.RaceProps.body) != lsaap.body)
+            {
                 pawn.health.hediffSet = new HediffSet(newPawn: pawn);
+                string path = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStageRace.def).head;
+                if (!path.NullOrEmpty())
+                    Traverse.Create(root: pawn.story).Field(name: "headGraphicPath").SetValue(value: alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(userpath: path, pawn: pawn));
+            }
         }
 
         // ReSharper disable once RedundantAssignment
