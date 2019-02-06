@@ -131,6 +131,9 @@ namespace AlienRace
         public bool cannotReceiveThoughtsAtAll = false;
         public List<string> canStillReceiveThoughts;
 
+        public static Dictionary<ThoughtDef, List<ThingDef_AlienRace>> thoughtRestrictionDict = new Dictionary<ThoughtDef, List<ThingDef_AlienRace>>();
+        public List<string> restrictedThoughts;
+
         public ButcherThought butcherThoughtGeneral = new ButcherThought();
         public List<ButcherThought> butcherThoughtSpecific = new List<ButcherThought>();
 
