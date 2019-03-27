@@ -27,6 +27,7 @@
     [StaticConstructorOnStartup]
     public static class HarmonyPatches
     {
+        // ReSharper disable once InconsistentNaming
         private static readonly Type patchType = typeof(HarmonyPatches);
 
         static HarmonyPatches()
@@ -436,7 +437,7 @@
 
                 //Full assemblies scan
                 foreach (MethodInfo mi in LoadedModManager.RunningMods.Where(predicate: mcp => mcp.LoadedAnyAssembly)
-                   .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies).Except(typeof(Harmony.HarmonyPatch).Assembly)
+                   .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies).Except(typeof(HarmonyPatch).Assembly)
                    .Concat(rhs: typeof(LogEntry).Assembly).SelectMany(selector: ase => ase.GetTypes()).
                     //SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
                     Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(c: t) && !t.IsGenericType && !t.HasAttribute<CompilerGeneratedAttribute>()).SelectMany(selector: t =>
@@ -2182,8 +2183,10 @@
                 pawn.story.bodyType = alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.RandomElement();
         }
 
+        // ReSharper disable InconsistentNaming
         private static readonly FactionDef noHairFaction = new FactionDef {hairTags = new List<string> {"alienNoHair"}};
         private static readonly FactionDef hairFaction   = new FactionDef();
+        // ReSharper restore InconsistentNaming
 
         public static void RandomHairDefForPrefix(Pawn pawn, ref FactionDef factionType)
         {
@@ -2297,9 +2300,9 @@
                 else if (i > 1 && instructionList[index: i -1].operand == AccessTools.Method(type: typeof(Graphics), name: nameof(Graphics.DrawMesh), parameters: new []{typeof(Mesh), typeof(Vector3), typeof(Quaternion), typeof(Material), typeof(Int32)}) && (i+1) < instructionList.Count && instructionList[index: i + 1].opcode == OpCodes.Brtrue)
                 {
                     yield return instruction; // portrait
+                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_1);
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(opcode: OpCodes.Ldfld,   operand: AccessTools.Field(type: typeof(PawnRenderer), name: "pawn"));
-                    yield return new CodeInstruction(opcode: OpCodes.Ldloc_S, operand: 6); //vector
+                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(PawnRenderer), name: "pawn"));
                     yield return new CodeInstruction(opcode: OpCodes.Ldloc_0);             // quat
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_S, operand: 4); // bodyfacing
                     yield return new CodeInstruction(opcode: OpCodes.Call,    operand: AccessTools.Method(type: patchType, name: nameof(DrawAddons)));
@@ -2331,17 +2334,17 @@
                           alienComp.alienGraphics.hairSetAverage).MeshAt(rot: headFacing) :
                 graphics.HairMeshSet.MeshAt(rot: headFacing);
 
-        public static void DrawAddons(bool portrait, Pawn pawn, Vector3 vector, Quaternion quat, Rot4 rotation)
+        public static void DrawAddons(bool portrait, Vector3 vector, Pawn pawn, Quaternion quat, Rot4 rotation)
         {
             if (!(pawn.def is ThingDef_AlienRace alienProps)) return;
 
             List<AlienPartGenerator.BodyAddon> addons    = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
             AlienPartGenerator.AlienComp       alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
+
             for (int i = 0; i < addons.Count; i++)
             {
                 AlienPartGenerator.BodyAddon ba = addons[index: i];
-
-
+                
                 if (!ba.CanDrawAddon(pawn: pawn)) continue;
 
                 AlienPartGenerator.RotationOffset offset = rotation == Rot4.South ?
@@ -2385,6 +2388,9 @@
                 }
                 
                 Vector3 offsetVector = new Vector3(x: moffsetX, y: moffsetY, z: moffsetZ);
+
+                
+
                 /*
                 Vector3 calcVec = vector + offsetVector.RotatedBy(angle: Mathf.Acos(f: Quaternion.Dot(a: Quaternion.identity, b: quat)) * 2f * 57.29578f);
                 if (!portrait && pawn.GetPosture() != PawnPosture.Standing)
