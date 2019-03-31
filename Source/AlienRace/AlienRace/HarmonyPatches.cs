@@ -1844,7 +1844,7 @@
             {
                 Apparel apparel = pawn.Map.thingGrid.ThingAt<Apparel>(c: c);
                 if (apparel == null) return;
-                List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: "ForceWear".Translate(arg1: apparel.LabelShort))).ToList();
+                List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: "ForceWear".Translate(arg1: apparel.LabelShort, arg2: apparel))).ToList();
 
                 if (options.NullOrEmpty() || RaceRestrictionSettings.CanWear(apparel: apparel.def, race: pawn.def)) return;
                 {
