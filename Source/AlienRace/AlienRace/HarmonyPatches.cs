@@ -409,11 +409,25 @@
                                             continue;
                                         foreach (Instruction i in mi.Body.Instructions)
                                         {
-                                            string name = (i.Operand as MemberReference)?.DeclaringType?.Scope.Name.Replace(".dll", string.Empty) ?? string.Empty;
-                                            if (!name.NullOrEmpty() && !moduleNames.Contains(name))
+                                            if (i.Operand is MemberReference mr)
                                             {
-                                                Log.Message($"Scope not found: {name}", true);
-                                                methods.Add(AccessTools.Method(AccessTools.TypeByName(mi.DeclaringType.FullName), mi.Name));
+                                                string name = mr.DeclaringType?.Scope.Name.Replace(".dll", string.Empty) ?? string.Empty;
+                                                if ((!name.NullOrEmpty() && !moduleNames.Contains(name)))
+                                                {
+                                                    Log.Message($"Scope not found: {name}", true);
+                                                    methods.Add(AccessTools.Method(AccessTools.TypeByName(mi.DeclaringType.FullName), mi.Name));
+                                                } else if ((mr is GenericInstanceMethod gir))
+                                                {
+                                                    foreach (TypeReference gp in gir.GenericArguments)
+                                                    {
+                                                        if (!moduleNames.Contains(gp.Scope.Name.Replace(".dll", string.Empty) ?? string.Empty))
+                                                        {
+                                                            name = gp.Scope.Name.Replace(".dll", string.Empty) ?? string.Empty;
+                                                            Log.Message($"Scope not found (gen): {name}", true);
+                                                            methods.Add(AccessTools.Method(AccessTools.TypeByName(mi.DeclaringType.FullName), mi.Name));
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -434,7 +448,7 @@
                 HarmonyMethod bodyTranspiler = new HarmonyMethod(type: patchType, name: nameof(BodyReferenceTranspiler));
 
                 ILGenerator ilg = new DynamicMethod(name: "ScanMethod", returnType: typeof(void), parameterTypes: Type.EmptyTypes).GetILGenerator();
-
+                
                 //Full assemblies scan
                 foreach (MethodInfo mi in LoadedModManager.RunningMods.Where(predicate: mcp => mcp.LoadedAnyAssembly)
                    .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies).Except(typeof(HarmonyPatch).Assembly)
