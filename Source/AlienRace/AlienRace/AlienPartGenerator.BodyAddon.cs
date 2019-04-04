@@ -126,6 +126,8 @@ namespace AlienRace
             public List<BodyTypeOffset> bodyTypes;
             public List<CrownTypeOffset> portraitCrownTypes;
             public List<CrownTypeOffset> crownTypes;
+            // allows to set the layer offset based on rotation
+            public float layerOffset = 0f;
         }
 
         public class BodyTypeOffset
