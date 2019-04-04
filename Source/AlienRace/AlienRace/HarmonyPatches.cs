@@ -451,7 +451,7 @@
                 
                 //Full assemblies scan
                 foreach (MethodInfo mi in LoadedModManager.RunningMods.Where(predicate: mcp => mcp.LoadedAnyAssembly)
-                   .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies).Except(typeof(HarmonyPatch).Assembly)
+                   .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies).Except(typeof(HarmonyPatch).Assembly).Except(typeof(MonoBehaviour).Assembly)
                    .Concat(rhs: typeof(LogEntry).Assembly).SelectMany(selector: ase => ase.GetTypes()).
                     //SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
                     Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(c: t) && !t.IsGenericType && !t.HasAttribute<CompilerGeneratedAttribute>()).SelectMany(selector: t =>
