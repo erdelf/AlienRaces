@@ -1877,7 +1877,7 @@
         {
             if (!__result || !(pawn.def is ThingDef_AlienRace alienProps)) return;
             if (ThoughtSettings.thoughtRestrictionDict.TryGetValue(def, out List<ThingDef_AlienRace> races) && races.Contains(alienProps)) __result = false;
-            else if (alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && (alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(item: def.defName) ?? false))
+            else if (alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && !(alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(item: def.defName) ?? false))
                 __result = false;
             else if (!alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.NullOrEmpty() &&
                      alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.Contains(item: def.defName)) __result = false;
