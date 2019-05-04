@@ -2387,7 +2387,7 @@
                 if (rotation == Rot4.North)
                 {
                     moffsetX = 0f;
-                    moffsetY = !ba.inFrontOfBody ? -0.3f - ba.layerOffset : 0.3f + ba.layerOffset;
+                    moffsetY = ba.inFrontOfBody ? -0.3f - ba.layerOffset : 0.3f + ba.layerOffset;
                     moffsetZ = -0.55f;
                     num      = 0;
                 }
