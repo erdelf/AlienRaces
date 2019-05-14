@@ -10,9 +10,6 @@
     using System.Runtime.CompilerServices;
     using Harmony;
     using Harmony.ILCopying;
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-    using Mono.Collections.Generic;
     using RimWorld;
     using UnityEngine;
     using Verse;
@@ -363,82 +360,6 @@
             
             
             {
-                HashSet<MethodInfo> methods = new HashSet<MethodInfo>();
-                {
-                    HashSet<string> moduleNames =
-                        new HashSet<string>(AppDomain.CurrentDomain.GetAssemblies().SelectMany(ab => ab.GetTypes().Select(t => t.Namespace).Add(ab.FullName.Split(',')[0]).Add(ab.ManifestModule is ModuleBuilder ? null : Path.GetFileNameWithoutExtension(ab.Location))))
-                        {
-                            "mscorlib"
-                        };
-
-
-                    //Log.Message(string.Join("\n", moduleNames.OrderBy(s => s).ToArray()), true);
-
-                    foreach (ModContentPack mcp in LoadedModManager.RunningMods)
-                    {
-                        if (mcp.IsCoreMod)
-                            continue;
-
-                        DirectoryInfo di = new DirectoryInfo(Path.Combine(mcp.RootDir, "Assemblies"));
-
-                        if (!di.Exists)
-                            continue;
-                        
-                        FileInfo[] f = di.GetFiles("**.dll");
-
-                        foreach (FileInfo fi in f)
-                        {
-                            ModuleDefinition module = ModuleDefinition.ReadModule(fi.FullName);
-                            //foreach (ModuleDefinition module in modules)
-                            {
-                                Collection<TypeDefinition> types = module.Types;
-                                for (int index = 0; index < module.Types.Count; index++)
-                                {
-                                    TypeDefinition t = module.Types[index];
-                                    for (int i = 0; i < t.NestedTypes.Count; i++)
-                                    {
-                                        TypeDefinition nested = t.NestedTypes[i];
-                                        types.Add(nested);
-                                    }
-                                }
-                                foreach (TypeDefinition type in types)
-                                {
-                                    foreach (MethodDefinition mi in type.Methods)
-                                    {
-                                        if (mi.DeclaringType != type || !mi.HasBody)
-                                            continue;
-                                        foreach (Instruction i in mi.Body.Instructions)
-                                        {
-                                            if (i.Operand is MemberReference mr)
-                                            {
-                                                string name = mr.DeclaringType?.Scope.Name.Replace(".dll", string.Empty) ?? string.Empty;
-                                                if ((!name.NullOrEmpty() && !moduleNames.Contains(name)))
-                                                {
-                                                    Log.Message($"Scope not found: {name}", true);
-                                                    methods.Add(AccessTools.Method(AccessTools.TypeByName(mi.DeclaringType.FullName), mi.Name));
-                                                } else if ((mr is GenericInstanceMethod gir))
-                                                {
-                                                    foreach (TypeReference gp in gir.GenericArguments)
-                                                    {
-                                                        if (!moduleNames.Contains(gp.Scope.Name.Replace(".dll", string.Empty) ?? string.Empty))
-                                                        {
-                                                            name = gp.Scope.Name.Replace(".dll", string.Empty) ?? string.Empty;
-                                                            Log.Message($"Scope not found (gen): {name}", true);
-                                                            methods.Add(AccessTools.Method(AccessTools.TypeByName(mi.DeclaringType.FullName), mi.Name));
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                //Log.Message(methods.Count.ToString());
-
-
                 harmony.Patch(original: AccessTools.Method(type: typeof(ILInstruction), name: nameof(ILInstruction.GetSize)), prefix: null, postfix: null,
                     transpiler: new HarmonyMethod(type: patchType, name: nameof(HarmonySizeBugFix)));
 
@@ -450,15 +371,13 @@
                 ILGenerator ilg = new DynamicMethod(name: "ScanMethod", returnType: typeof(void), parameterTypes: Type.EmptyTypes).GetILGenerator();
                 
                 //Full assemblies scan
-                foreach (MethodInfo mi in LoadedModManager.RunningMods.Where(predicate: mcp => mcp.LoadedAnyAssembly)
-                   .SelectMany(selector: mcp => mcp.assemblies.loadedAssemblies).Except(typeof(HarmonyPatch).Assembly).Except(typeof(MonoBehaviour).Assembly)
-                   .Concat(rhs: typeof(LogEntry).Assembly).SelectMany(selector: ase => ase.GetTypes()).
+                foreach (MethodInfo mi in typeof(LogEntry).Assembly.GetTypes().
                     //SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
                     Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(c: t) && !t.IsGenericType && !t.HasAttribute<CompilerGeneratedAttribute>()).SelectMany(selector: t =>
                         t.GetMethods(bindingAttr: AccessTools.all)
                            .Concat(second: t.GetProperties(bindingAttr: AccessTools.all).SelectMany(selector: pi =>
                                 new List<MethodInfo> { pi.GetGetMethod(nonPublic: true), pi.GetGetMethod(nonPublic: false), pi.GetSetMethod(nonPublic: true), pi.GetSetMethod(nonPublic: false) }))
-                           .Where(predicate: mi => mi != null && !methods.Contains(mi) && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<System.Runtime.InteropServices.DllImportAttribute>()))// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
+                           .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<System.Runtime.InteropServices.DllImportAttribute>()))// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
                 ) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
                 {
                     List<ILInstruction> instructions = PatchFunctions.GetInstructions(generator: ilg, method: mi);
@@ -691,7 +610,7 @@
             return posture;
         }
 
-        public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions, MethodBase mb)
+        public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             FieldInfo bodyInfo  = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
             FieldInfo propsInfo = AccessTools.Field(type: typeof(ThingDef),       name: nameof(ThingDef.race));
@@ -1380,7 +1299,7 @@
             __result = num + num2;
         }
 
-        public static IEnumerable<CodeInstruction> SecondaryLovinChanceFactorTranspiler(MethodBase original, IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> SecondaryLovinChanceFactorTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             FieldInfo  defField          = AccessTools.Field(type: typeof(Pawn), name: nameof(Pawn.def));
             MethodInfo racePropsProperty = AccessTools.Property(type: typeof(Pawn), name: nameof(Pawn.RaceProps)).GetGetMethod();
@@ -1483,7 +1402,7 @@
             return true;
         }
 
-        public static void ExtraRequirementsGrowerSowPostfix(Pawn pawn, IPlantToGrowSettable settable, WorkGiver_GrowerSow __instance, ref bool __result)
+        public static void ExtraRequirementsGrowerSowPostfix(Pawn pawn, IPlantToGrowSettable settable, ref bool __result)
         {
             if (!__result) return;
             ThingDef plant = WorkGiver_Grower.CalculateWantedPlantDef(c: (settable as Zone_Growing)?.Cells[index: 0] ?? ((Thing) settable).Position, map: pawn.Map);
