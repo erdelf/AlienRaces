@@ -478,15 +478,15 @@
                 {
                     yield return new CodeInstruction(opcode: OpCodes.Ldc_I4, operand:
                         DefDatabase<ThingDef_AlienRace>.AllDefs.SelectMany(selector: ar =>
-                            ar.alienRace.generalSettings.alienPartGenerator.bodyAddons).SelectMany(selector: ba =>
-                            new List<AlienPartGenerator.RotationOffset>
+                            ar.alienRace.generalSettings.alienPartGenerator.bodyAddons).Sum(ba =>
+                            new List<AlienPartGenerator.RotationOffset>()
                             {
                                 ba.offsets.east,
                                 ba.offsets.west,
                                 ba.offsets.north,
-                                ba.offsets.south
-                            }).Sum(selector: ro => (ro.bodyTypes?.Count ?? 0) * 2 + (ro.portraitBodyTypes?.Count ?? 0) * 2 + 
-                                                   (ro.crownTypes?.Count ?? 0) * 2 + (ro.portraitCrownTypes?.Count ?? 0) * 2) + 1);
+                                ba.offsets.south,
+                            }.Sum(selector: ro => (ro.bodyTypes?.Count ?? 0) * 2/* + (ro.portraitBodyTypes?.Count ?? 0) * 2 + 
+                                                   (ro.crownTypes?.Count ?? 0) * 2 + (ro.portraitCrownTypes?.Count ?? 0) * 2*/) + 1) + 1);
                     yield return new CodeInstruction(opcode: OpCodes.Add);
                 }
             }
@@ -509,6 +509,30 @@
                 foreach (AlienPartGenerator.BodyAddon ba in ar.alienRace.generalSettings.alienPartGenerator.bodyAddons)
                 {
                     string label3Addons = $"{Path.GetFileName(path: ba.path)}.";
+
+                    float WriteLine(float value, string label)
+                    {
+                        Widgets.Label(rect: rect2, label: label2);
+                        Widgets.Label(rect: rect3, label: label3Addons + label);
+
+
+                        float num = Widgets.HorizontalSlider(rect: rect5, value: value, leftValue: -1, rightValue: 1);
+
+                        if (Math.Abs(value: num - value) > 0.0001)
+                        {
+                            GUI.color = Color.red;
+                            Widgets.Label(rect: rect4, label: $"{value} -> {num}");
+                            GUI.color = Color.white;
+                            //if (Widgets.ButtonInvisible(butRect: rect5))
+                            //    bodyTypeOffset.offset.x = num;
+                        }
+                        else
+                        {
+                            Widgets.Label(rect: rect4, label: value.ToString(provider: CultureInfo.InvariantCulture));
+                        }
+                        return num;
+                    }
+
 
                     List<AlienPartGenerator.RotationOffset> rotationOffsets = new List<AlienPartGenerator.RotationOffset>
                     {
@@ -544,36 +568,20 @@
                             float offsetX = offset.x;
                             float offsetY = offset.y;
 
-
-                            float WriteLine(float value, bool x)
-                            {
-                                Widgets.Label(rect: rect2, label: label2);
-                                Widgets.Label(rect: rect3, label: label3Addons + label3Rotation + label3Type + (x ? "x" : "y"));
+                            float WriteAddonLine(float value, bool x) => 
+                                WriteLine(value: value, label: label3Rotation + label3Type + (x ? "x" : "y"));
 
 
-                                float num = Widgets.HorizontalSlider(rect: rect5, value: value, leftValue: -1, rightValue: 1);
-
-                                if (Math.Abs(value: num - value) > 0.0001)
-                                {
-                                    GUI.color = Color.red;
-                                    Widgets.Label(rect: rect4, label: $"{value} -> {num}");
-                                    GUI.color = Color.white;
-                                    if (Widgets.ButtonInvisible(butRect: rect5))
-                                        bodyTypeOffset.offset.x = num;
-                                }
-                                else
-                                {
-                                    Widgets.Label(rect: rect4, label: value.ToString(provider: CultureInfo.InvariantCulture));
-                                }
-                                return num;
-                            }
-
-                            bodyTypeOffset.offset.x = WriteLine(value: offsetX, x: true);
+                            bodyTypeOffset.offset.x = WriteAddonLine(value: offsetX, x: true);
                             NextLine();
-                            bodyTypeOffset.offset.y = WriteLine(value: offsetY, x: false);
+                            bodyTypeOffset.offset.y = WriteAddonLine(value: offsetY, x: false);
                             NextLine();
                         }
+
                     }
+
+                    ba.layerOffset = WriteLine(ba.layerOffset, "layerOffset");
+                    NextLine();
                 }
             }
         }
