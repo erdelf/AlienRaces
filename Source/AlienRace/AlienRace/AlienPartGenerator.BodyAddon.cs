@@ -41,7 +41,7 @@ namespace AlienRace
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
                 !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(item: bpgd)) || 
-                ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(item: s)))) && (pawn.GetPosture() == PawnPosture.Standing || (pawn.InBed() && this.drawnInBed) || this.drawnOnGround) &&
+                ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(item: s)))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && (!pawn.InBed() || this.drawnInBed) &&
                     (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
                     (this.bodyPart.NullOrEmpty() || pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) &&
                (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale );
