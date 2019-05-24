@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace AlienRace
 {
+    using System;
+
     public class ThingDef_AlienRace : ThingDef
     {
         public AlienSettings alienRace;
@@ -133,6 +135,10 @@ namespace AlienRace
 
         public static Dictionary<ThoughtDef, List<ThingDef_AlienRace>> thoughtRestrictionDict = new Dictionary<ThoughtDef, List<ThingDef_AlienRace>>();
         public List<string> restrictedThoughts;
+
+        public ThoughtDef ReplaceIfApplicable(ThoughtDef def) =>
+            (this.replacerList == null || this.replacerList.Select(tr => tr.replacer).Contains(def.defName)) ? def :
+                DefDatabase<ThoughtDef>.GetNamedSilentFail(this.replacerList.FirstOrDefault(tr => tr.original.EqualsIgnoreCase(def.defName))?.replacer ?? String.Empty) ?? def;
 
         public ButcherThought butcherThoughtGeneral = new ButcherThought();
         public List<ButcherThought> butcherThoughtSpecific = new List<ButcherThought>();

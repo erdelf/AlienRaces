@@ -205,6 +205,12 @@
 
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
             {
+                foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts.Select(selector: DefDatabase<ThoughtDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                {
+                    if (!ThoughtSettings.thoughtRestrictionDict.ContainsKey(key: thoughtDef))
+                        ThoughtSettings.thoughtRestrictionDict.Add(key: thoughtDef, value: new List<ThingDef_AlienRace>());
+                    ThoughtSettings.thoughtRestrictionDict[key: thoughtDef].Add(item: ar);
+                }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.apparelList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
                 {
@@ -1248,17 +1254,10 @@
         public static bool TryCreateSituationalThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance)
         {
             Pawn pawn = __instance.pawn;
-            if (DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(predicate: ar => !ar.alienRace.thoughtSettings.replacerList.NullOrEmpty())
-               .SelectMany(selector: ar => ar.alienRace.thoughtSettings.replacerList.Select(selector: tr => tr.replacer)).Contains(value: def.defName)) return false;
 
-            if (!(pawn.def is ThingDef_AlienRace race)) return !Traverse.Create(root: __instance).Field(name: "tmpCachedThoughts").GetValue<HashSet<ThoughtDef>>().Contains(item: def);
-            {
-                string          name     = def.defName;
-                ThoughtReplacer replacer = race.alienRace.thoughtSettings.replacerList?.FirstOrDefault(predicate: tr => name.EqualsIgnoreCase(B: tr.original));
-                if (replacer == null) return !Traverse.Create(root: __instance).Field(name: "tmpCachedThoughts").GetValue<HashSet<ThoughtDef>>().Contains(item: def);
-                ThoughtDef replacerThoughtDef       = DefDatabase<ThoughtDef>.GetNamedSilentFail(defName: replacer.replacer);
-                if (replacerThoughtDef != null) def = replacerThoughtDef;
-            }
+            if (pawn.def is ThingDef_AlienRace race)
+                def = race.alienRace.thoughtSettings.ReplaceIfApplicable(def);
+
             return !Traverse.Create(root: __instance).Field(name: "tmpCachedThoughts").GetValue<HashSet<ThoughtDef>>().Contains(item: def);
         }
 
@@ -1803,11 +1802,12 @@
         public static void CanGetThoughtPostfix(ref bool __result, ThoughtDef def, Pawn pawn)
         {
             if (!__result || !(pawn.def is ThingDef_AlienRace alienProps)) return;
-            if (ThoughtSettings.thoughtRestrictionDict.TryGetValue(def, out List<ThingDef_AlienRace> races) && races.Contains(alienProps)) __result = false;
-            else if (alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && !(alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(item: def.defName) ?? false))
+            def = alienProps.alienRace.thoughtSettings.ReplaceIfApplicable(def);
+
+            if ((alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && !(alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(item: def.defName) ?? false)) || 
+                (ThoughtSettings.thoughtRestrictionDict.TryGetValue(key: def, value: out List<ThingDef_AlienRace> races) && races.Contains(item: alienProps)) ||
+                (alienProps.alienRace.thoughtSettings.cannotReceiveThoughts?.Contains(item: def.defName) ?? false))
                 __result = false;
-            else if (!alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.NullOrEmpty() &&
-                     alienProps.alienRace.thoughtSettings.cannotReceiveThoughts.Contains(item: def.defName)) __result = false;
         }
 
         public static void CanDoNextStartPawnPostfix(ref bool __result)
