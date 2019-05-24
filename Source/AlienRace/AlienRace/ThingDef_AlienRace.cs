@@ -134,7 +134,7 @@ namespace AlienRace
         public List<string> canStillReceiveThoughts;
 
         public static Dictionary<ThoughtDef, List<ThingDef_AlienRace>> thoughtRestrictionDict = new Dictionary<ThoughtDef, List<ThingDef_AlienRace>>();
-        public List<string> restrictedThoughts;
+        public List<string> restrictedThoughts = new List<string>();
 
         public ThoughtDef ReplaceIfApplicable(ThoughtDef def) =>
             (this.replacerList == null || this.replacerList.Select(tr => tr.replacer).Contains(def.defName)) ? def :
