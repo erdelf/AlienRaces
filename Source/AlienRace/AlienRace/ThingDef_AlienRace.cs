@@ -130,21 +130,26 @@ namespace AlienRace
     public class ThoughtSettings
     {
         public List<string> cannotReceiveThoughts;
-        public bool cannotReceiveThoughtsAtAll = false;
+        public bool         cannotReceiveThoughtsAtAll = false;
         public List<string> canStillReceiveThoughts;
 
         public static Dictionary<ThoughtDef, List<ThingDef_AlienRace>> thoughtRestrictionDict = new Dictionary<ThoughtDef, List<ThingDef_AlienRace>>();
-        public List<string> restrictedThoughts = new List<string>();
+        public        List<string>                                     restrictedThoughts     = new List<string>();
 
         public ThoughtDef ReplaceIfApplicable(ThoughtDef def) =>
-            (this.replacerList == null || this.replacerList.Select(tr => tr.replacer).Contains(def.defName)) ? def :
-                DefDatabase<ThoughtDef>.GetNamedSilentFail(this.replacerList.FirstOrDefault(tr => tr.original.EqualsIgnoreCase(def.defName))?.replacer ?? String.Empty) ?? def;
+            (this.replacerList == null || this.replacerList.Select(tr => tr.replacer).Contains(def.defName))
+                ? def
+                : DefDatabase<ThoughtDef>.GetNamedSilentFail(this.replacerList.FirstOrDefault(tr => tr.original.EqualsIgnoreCase(def.defName))?.replacer ?? String.Empty) ?? def;
 
-        public ButcherThought butcherThoughtGeneral = new ButcherThought();
+        public ButcherThought       butcherThoughtGeneral  = new ButcherThought();
         public List<ButcherThought> butcherThoughtSpecific = new List<ButcherThought>();
 
-        public AteThought ateThoughtGeneral = new AteThought();
+        public AteThought       ateThoughtGeneral  = new AteThought();
         public List<AteThought> ateThoughtSpecific = new List<AteThought>();
+
+        public ThoughtDef GetAteThought(ThingDef race, bool cannibal, bool ingredient) =>
+            (this.ateThoughtSpecific?.FirstOrDefault(predicate: at => at.raceList?.Contains(item: race.defName) ?? false) ?? this.ateThoughtGeneral)?.GetThought(cannibal: cannibal,
+                                                                                                                                                                 ingredient: ingredient);
 
         public List<ThoughtReplacer> replacerList;
     }
@@ -160,7 +165,12 @@ namespace AlienRace
     {
         public List<string> raceList;
         public string thought = "AteHumanlikeMeatDirect";
+        public string thoughtCannibal = "AteHumanlikeMeatDirectCannibal";
         public string ingredientThought = "AteHumanlikeMeatAsIngredient";
+        public string ingredientThoughtCannibal = "AteHumanlikeMeatAsIngredientCannibal";
+
+        public ThoughtDef GetThought(bool cannibal, bool ingredient) =>
+            ThoughtDef.Named(cannibal ? ingredient ? this.ingredientThoughtCannibal : this.thoughtCannibal : ingredient ? this.ingredientThought : this.thought);
     }
 
     public class ThoughtReplacer

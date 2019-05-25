@@ -91,7 +91,7 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(MemoryThoughtHandler), name: nameof(MemoryThoughtHandler.TryGainMemory), parameters: new[] { typeof(Thought_Memory), typeof(Pawn) }),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(TryGainMemoryThoughtPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(SituationalThoughtHandler), name: "TryCreateThought"),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(TryCreateSituationalThoughtPrefix)));
+                prefix: new HarmonyMethod(type: patchType, name: nameof(TryCreateThoughtPrefix)));
 
             harmony.Patch(original: AccessTools.Method(type: AccessTools.TypeByName(name: "AgeInjuryUtility"), name: "GenerateRandomOldAgeInjuries"),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateRandomOldAgeInjuriesPrefix)));
@@ -1251,13 +1251,11 @@
             });
         }
 
-        public static bool TryCreateSituationalThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance)
+        public static bool TryCreateThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance)
         {
             Pawn pawn = __instance.pawn;
-
             if (pawn.def is ThingDef_AlienRace race)
                 def = race.alienRace.thoughtSettings.ReplaceIfApplicable(def);
-
             return !Traverse.Create(root: __instance).Field(name: "tmpCachedThoughts").GetValue<HashSet<ThoughtDef>>().Contains(item: def);
         }
 
@@ -1392,20 +1390,13 @@
 
         public static bool TryGainMemoryThoughtPrefix(ref Thought_Memory newThought, MemoryThoughtHandler __instance)
         {
-            string thoughtName = newThought.def.defName;
             Pawn   pawn        = __instance.pawn;
-            if (DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Where(predicate: ar => !ar.alienRace.thoughtSettings.replacerList.NullOrEmpty())
-               .SelectMany(selector: ar => ar.alienRace.thoughtSettings.replacerList.Select(selector: tr => tr.replacer)).Contains(value: thoughtName)) return false;
 
             if (!(pawn.def is ThingDef_AlienRace race)) return true;
-            {
-                ThoughtReplacer replacer = race.alienRace.thoughtSettings.replacerList?.FirstOrDefault(predicate: tr => thoughtName.EqualsIgnoreCase(B: tr.original));
-                if (replacer == null) return true;
-                ThoughtDef replacerThoughtDef = DefDatabase<ThoughtDef>.GetNamedSilentFail(defName: replacer.replacer);
-                if (replacerThoughtDef == null) return true;
-                Thought_Memory replaceThought = (Thought_Memory) ThoughtMaker.MakeThought(def: replacerThoughtDef);
-                newThought = replaceThought;
-            }
+
+            ThoughtDef newThoughtDef = race.alienRace.thoughtSettings.ReplaceIfApplicable(newThought.def);
+            if (newThoughtDef != newThought.def)
+                newThought = (Thought_Memory) ThoughtMaker.MakeThought(def: newThoughtDef);
             return true;
         }
 
@@ -1504,38 +1495,25 @@
                 else if (__result.Contains(item: ThoughtDefOf.AteHumanlikeMeatAsIngredient) &&
                          (foodSource.TryGetComp<CompIngredients>()?.ingredients.Any(predicate: td => FoodUtility.IsHumanlikeMeat(def: td) && td.ingestible.sourceDef != ingester.def) ?? false))
                     __result.Remove(item: ThoughtDefOf.AteHumanlikeMeatAsIngredient);
-            if (!(ingester.def is ThingDef_AlienRace alienProps)) return;
-            if (__result.Contains(item: ThoughtDefOf.AteHumanlikeMeatDirect) || __result.Contains(item: ThoughtDefOf.AteHumanlikeMeatDirectCannibal))
-            {
-                int index = __result.IndexOf(item: ingester.story.traits.HasTrait(tDef: TraitDefOf.Cannibal) ? ThoughtDefOf.AteHumanlikeMeatDirectCannibal : ThoughtDefOf.AteHumanlikeMeatDirect);
-                ThoughtDef thought = DefDatabase<ThoughtDef>.GetNamedSilentFail(
-                    defName: alienProps.alienRace.thoughtSettings.ateThoughtSpecific?.FirstOrDefault(predicate: at => at.raceList?.Contains(item: foodSource.def.ingestible.sourceDef.defName) ?? false)
-                               ?.thought ?? alienProps.alienRace.thoughtSettings.ateThoughtGeneral.thought);
-                if (thought != null)
-                {
-                    __result.RemoveAt(index: index);
-                    __result.Insert(index: index, item: thought);
-                }
-            }
 
-            if (!__result.Contains(item: ThoughtDefOf.AteHumanlikeMeatAsIngredient) && !__result.Contains(item: ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal)) return;
+            if (!(ingester.def is ThingDef_AlienRace alienProps)) return;
+
+            bool cannibal = ingester.story.traits.HasTrait(tDef: TraitDefOf.Cannibal);
+
+            for (int i = 0; i < __result.Count; i++)
             {
-                CompIngredients compIngredients = foodSource.TryGetComp<CompIngredients>();
-                if (compIngredients == null) return;
-                foreach (ThingDef ingredient in compIngredients.ingredients)
-                    if (FoodUtility.IsHumanlikeMeat(def: ingredient))
-                    {
-                        int index = __result.IndexOf(item: ingester.story.traits.HasTrait(tDef: TraitDefOf.Cannibal) ?
-                                                               ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal :
-                                                               ThoughtDefOf.AteHumanlikeMeatAsIngredient);
-                        ThoughtDef thought = DefDatabase<ThoughtDef>.GetNamedSilentFail(
-                            defName: alienProps.alienRace.thoughtSettings.ateThoughtSpecific
-                                       ?.FirstOrDefault(predicate: at => at.raceList?.Contains(item: ingredient.ingestible.sourceDef.defName) ?? false)?.ingredientThought ??
-                                     alienProps.alienRace.thoughtSettings.ateThoughtGeneral.ingredientThought);
-                        if (thought == null) continue;
-                        __result.RemoveAt(index: index);
-                        __result.Insert(index: index, item: thought);
-                    }
+                ThoughtDef thoughtDef = __result[index: i];
+                ThoughtSettings settings = alienProps.alienRace.thoughtSettings;
+
+                thoughtDef = settings.ReplaceIfApplicable(def: thoughtDef);
+
+                if(thoughtDef == ThoughtDefOf.AteHumanlikeMeatDirect || thoughtDef == ThoughtDefOf.AteHumanlikeMeatDirectCannibal)
+                    thoughtDef = settings.GetAteThought(race: foodSource.def.ingestible.sourceDef, cannibal: cannibal, ingredient: false);
+
+                if (thoughtDef == ThoughtDefOf.AteHumanlikeMeatAsIngredient || thoughtDef == ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal)
+                    thoughtDef = settings.GetAteThought(race: foodSource.def.ingestible.sourceDef, cannibal: cannibal, ingredient: true);
+
+                __result[index: i] = thoughtDef;
             }
         }
 
@@ -1802,6 +1780,8 @@
         public static void CanGetThoughtPostfix(ref bool __result, ThoughtDef def, Pawn pawn)
         {
             if (!__result || !(pawn.def is ThingDef_AlienRace alienProps)) return;
+
+
             def = alienProps.alienRace.thoughtSettings.ReplaceIfApplicable(def);
 
             if ((alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && !(alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(item: def.defName) ?? false)) || 
