@@ -89,7 +89,7 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(FoodUtility), name: nameof(FoodUtility.ThoughtsFromIngesting)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtsFromIngestingPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(MemoryThoughtHandler), name: nameof(MemoryThoughtHandler.TryGainMemory), parameters: new[] { typeof(Thought_Memory), typeof(Pawn) }),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(TryGainMemoryThoughtPrefix)));
+                prefix: new HarmonyMethod(type: patchType, name: nameof(TryGainMemoryPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(SituationalThoughtHandler), name: "TryCreateThought"),
                 prefix: new HarmonyMethod(type: patchType, name: nameof(TryCreateThoughtPrefix)));
 
@@ -1256,6 +1256,7 @@
             Pawn pawn = __instance.pawn;
             if (pawn.def is ThingDef_AlienRace race)
                 def = race.alienRace.thoughtSettings.ReplaceIfApplicable(def);
+
             return !Traverse.Create(root: __instance).Field(name: "tmpCachedThoughts").GetValue<HashSet<ThoughtDef>>().Contains(item: def);
         }
 
@@ -1388,7 +1389,7 @@
                 __instance.startingPawnCount += spa.Count();
             });
 
-        public static bool TryGainMemoryThoughtPrefix(ref Thought_Memory newThought, MemoryThoughtHandler __instance)
+        public static bool TryGainMemoryPrefix(ref Thought_Memory newThought, MemoryThoughtHandler __instance)
         {
             Pawn   pawn        = __instance.pawn;
 
@@ -1396,7 +1397,12 @@
 
             ThoughtDef newThoughtDef = race.alienRace.thoughtSettings.ReplaceIfApplicable(newThought.def);
             if (newThoughtDef != newThought.def)
-                newThought = (Thought_Memory) ThoughtMaker.MakeThought(def: newThoughtDef);
+            {
+                Thought_Memory replacedThought = (Thought_Memory)ThoughtMaker.MakeThought(def: newThoughtDef);
+                foreach (FieldInfo field in newThought.GetType().GetFields(AccessTools.all))
+                    field.SetValue(replacedThought, field.GetValue(newThought));
+                newThought = replacedThought;
+            }
             return true;
         }
 
@@ -1779,13 +1785,17 @@
 
         public static void CanGetThoughtPostfix(ref bool __result, ThoughtDef def, Pawn pawn)
         {
-            if (!__result || !(pawn.def is ThingDef_AlienRace alienProps)) return;
+            if (!__result) return;
 
+            __result = !(ThoughtSettings.thoughtRestrictionDict.TryGetValue(key: def, value: out List<ThingDef_AlienRace> races));
+
+            if(!(pawn.def is ThingDef_AlienRace alienProps)) return;
+
+            __result = races?.Contains(item: alienProps) ?? true;
 
             def = alienProps.alienRace.thoughtSettings.ReplaceIfApplicable(def);
 
-            if ((alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && !(alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(item: def.defName) ?? false)) || 
-                (ThoughtSettings.thoughtRestrictionDict.TryGetValue(key: def, value: out List<ThingDef_AlienRace> races) && races.Contains(item: alienProps)) ||
+            if ((alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && !(alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(item: def.defName) ?? false)) ||
                 (alienProps.alienRace.thoughtSettings.cannotReceiveThoughts?.Contains(item: def.defName) ?? false))
                 __result = false;
         }
