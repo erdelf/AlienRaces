@@ -8,6 +8,7 @@
     using System.Reflection;
     using System.Reflection.Emit;
     using System.Runtime.CompilerServices;
+    using System.Text;
     using Harmony;
     using Harmony.ILCopying;
     using RimWorld;
@@ -1396,13 +1397,13 @@
             if (!(pawn.def is ThingDef_AlienRace race)) return true;
 
             ThoughtDef newThoughtDef = race.alienRace.thoughtSettings.ReplaceIfApplicable(newThought.def);
-            if (newThoughtDef != newThought.def)
-            {
-                Thought_Memory replacedThought = (Thought_Memory)ThoughtMaker.MakeThought(def: newThoughtDef);
-                foreach (FieldInfo field in newThought.GetType().GetFields(AccessTools.all))
-                    field.SetValue(replacedThought, field.GetValue(newThought));
-                newThought = replacedThought;
-            }
+
+            if (newThoughtDef == newThought.def) return true;
+
+            Thought_Memory replacedThought = (Thought_Memory)ThoughtMaker.MakeThought(def: newThoughtDef);
+            //foreach (FieldInfo field in newThought.GetType().GetFields(AccessTools.all))
+            //field.SetValue(replacedThought, field.GetValue(newThought));
+            newThought = replacedThought;
             return true;
         }
 
