@@ -8,7 +8,6 @@
     using System.Reflection;
     using System.Reflection.Emit;
     using System.Runtime.CompilerServices;
-    using System.Text;
     using Harmony;
     using Harmony.ILCopying;
     using RimWorld;
@@ -204,6 +203,10 @@
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "GetBackstoryCategoriesFor"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(GetBackstoryCategoriesForTranspiler)));
 
+            HarmonyMethod misandryMisogonyTranspiler = new HarmonyMethod(patchType, nameof(MisandryMisogonyTranspiler));
+            harmony.Patch(AccessTools.Method(typeof(ThoughtWorker_Man), "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
+            harmony.Patch(AccessTools.Method(typeof(ThoughtWorker_Man), "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
+            
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts.Select(selector: DefDatabase<ThoughtDef>.GetNamedSilentFail).Where(predicate: td => td != null))
@@ -413,7 +416,28 @@
             
             foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs) BackstoryDef.UpdateTranslateableFields(bs: bd);
 
+
+        }
+
+        public static IEnumerable<CodeInstruction> MisandryMisogonyTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            FieldInfo defInfo = AccessTools.Field(typeof(Thing), nameof(Thing.def));
+
+            bool yield = true;
             
+            foreach (CodeInstruction instruction in instructionList)
+            {
+                if (yield && instruction.operand == defInfo)
+                    yield = false;
+
+                if (yield)
+                    yield return instruction;
+
+                if (!yield && instruction.opcode == OpCodes.Ldarg_2)
+                    yield = true;
+            }
         }
 
         public static IEnumerable<CodeInstruction> GetBackstoryCategoriesForTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
@@ -2080,15 +2104,12 @@
 
         public static void GenerateTraitsPrefix(Pawn pawn, PawnGenerationRequest request)
         {
-
             if (!request.Newborn && request.CanGeneratePawnRelations &&
                 pawn.story.AllBackstories.Any(predicate: bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)?.relationSettings != null))
             {
                 pawn.relations.ClearAllRelations();
                 AccessTools.Method(type: typeof(PawnGenerator), name: "GeneratePawnRelations").Invoke(obj: null, parameters: new object[] {pawn, request});
             }
-
-
 
             if (pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
                 alienProps.alienRace.generalSettings.forcedRaceTraitEntries.ForEach(action: ate =>
