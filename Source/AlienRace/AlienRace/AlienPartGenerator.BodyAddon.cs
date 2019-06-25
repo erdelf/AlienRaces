@@ -38,7 +38,10 @@ namespace AlienRace
 
             public string backstoryRequirement;
 
-            public ShaderTypeDef shaderType = ShaderTypeDefOf.Cutout;
+            private ShaderTypeDef shaderType;
+
+            public ShaderTypeDef ShaderType => this.shaderType ?? (this.shaderType = ShaderTypeDefOf.Cutout);
+
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
@@ -52,7 +55,6 @@ namespace AlienRace
             {
                 string returnPath;
                 int variantCounting;
-
                 if (this.backstoryGraphics?.FirstOrDefault(predicate: babgs => pawn.story.AllBackstories.Any(predicate: bs => bs.identifier == babgs.backstory)) is BodyAddonBackstoryGraphic babg)
                 {
                     returnPath = babg.path;
@@ -66,14 +68,13 @@ namespace AlienRace
                     returnPath = this.path;
                     variantCounting = this.variantCount;
                 }
-
                 int tv;
                 return !returnPath.NullOrEmpty() ?
                             GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value) :
                                     (this.linkVariantIndexWithPrevious ?
                                         sharedIndex % variantCounting :
                                         (sharedIndex = Rand.Range(min: 0, max: variantCounting))))) == 0 ? "" : tv.ToString())),
-                                shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? this.shaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
+                                shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
                                     drawSize: this.drawSize * 1.5f,
                                         color: this.useSkinColor ?
                                             pawn.story.SkinColor :
