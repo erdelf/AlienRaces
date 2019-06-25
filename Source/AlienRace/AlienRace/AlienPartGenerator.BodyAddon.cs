@@ -38,6 +38,8 @@ namespace AlienRace
 
             public string backstoryRequirement;
 
+            public ShaderTypeDef shaderType = ShaderTypeDefOf.Cutout;
+
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
                 !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(item: bpgd)) || 
@@ -71,7 +73,7 @@ namespace AlienRace
                                     (this.linkVariantIndexWithPrevious ?
                                         sharedIndex % variantCounting :
                                         (sharedIndex = Rand.Range(min: 0, max: variantCounting))))) == 0 ? "" : tv.ToString())),
-                                shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
+                                shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? this.shaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
                                     drawSize: this.drawSize * 1.5f,
                                         color: this.useSkinColor ?
                                             pawn.story.SkinColor :
