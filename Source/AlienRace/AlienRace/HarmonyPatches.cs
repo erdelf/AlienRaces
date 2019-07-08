@@ -451,6 +451,7 @@
                 if (instruction.opcode == OpCodes.Ldc_I4_0)
                 {
                     Label label = ilg.DefineLabel();
+                    Label label2 = ilg.DefineLabel();
 
                     object breakLabel = instructionList[index: index - 1].operand;
 
@@ -465,17 +466,17 @@
                     yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(ThingDef_AlienRace.AlienSettings), name: nameof(ThingDef_AlienRace.AlienSettings.generalSettings)));
                     yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(GeneralSettings), name: nameof(GeneralSettings.useOnlyPawnkindBackstories)));
                     yield return new CodeInstruction(opcode: OpCodes.Brtrue, operand: breakLabel);
-                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_0) { labels = new List<Label> { label }};
                     yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Pawn), name: nameof(Pawn.kindDef)));
                     yield return new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: typeof(PawnKindDef), name: nameof(PawnKindDef.GetModExtension)).MakeGenericMethod(typeof(Info)));
-                    yield return new CodeInstruction(opcode: OpCodes.Brfalse, operand: label);
+                    yield return new CodeInstruction(opcode: OpCodes.Brfalse, operand: label2);
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
                     yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Pawn), name: nameof(Pawn.kindDef)));
                     yield return new CodeInstruction(opcode: OpCodes.Call,  operand: AccessTools.Method(type: typeof(PawnKindDef), name: nameof(PawnKindDef.GetModExtension)).MakeGenericMethod(typeof(Info)));
                     yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Info), name: nameof(Info.useOnlyPawnkindBackstories)));
                     yield return new CodeInstruction(opcode: OpCodes.Brtrue, operand: breakLabel);
 
-                    instruction.labels.Add(item: label);
+                    instruction.labels.Add(item: label2);
                 }
 
                 yield return instruction;
@@ -1857,7 +1858,7 @@
         public static void GenerateRandomAgePrefix(Pawn pawn, PawnGenerationRequest request)
         {
             if (request.FixedGender.HasValue || !pawn.RaceProps.hasGenders) return;
-            float? maleGenderProbability = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.maleGenderProbability ?? pawn.kindDef.GetModExtension<Info>()?.maleGenderProbability;
+            float? maleGenderProbability = pawn.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.maleGenderProbability;
 
             if (!maleGenderProbability.HasValue) return;
 
