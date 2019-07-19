@@ -151,6 +151,7 @@ namespace AlienRace
             (this.ateThoughtSpecific?.FirstOrDefault(predicate: at => at.raceList?.Contains(item: race.defName) ?? false) ?? this.ateThoughtGeneral)?.GetThought(cannibal: cannibal,
                                                                                                                                                                  ingredient: ingredient);
 
+
         public List<ThoughtReplacer> replacerList;
     }
 
