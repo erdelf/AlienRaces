@@ -1543,7 +1543,11 @@
                     thoughtDef = settings.GetAteThought(race: foodSource.def.ingestible.sourceDef, cannibal: cannibal, ingredient: false);
 
                 if (thoughtDef == ThoughtDefOf.AteHumanlikeMeatAsIngredient || thoughtDef == ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal)
-                    thoughtDef = settings.GetAteThought(race: foodSource.def.ingestible.sourceDef, cannibal: cannibal, ingredient: true);
+                {
+                    ThingDef race = foodSource.TryGetComp<CompIngredients>()?.ingredients.FirstOrDefault(td => td.ingestible.sourceDef.race.Humanlike);
+                    if(race != null)
+                        thoughtDef = settings.GetAteThought(race: race, cannibal: cannibal, ingredient: true);
+                }
 
                 __result[index: i] = thoughtDef;
             }
