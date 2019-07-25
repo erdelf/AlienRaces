@@ -1807,7 +1807,7 @@
                         int index = opts.IndexOf(item: fmo);
                         opts.Remove(item: fmo);
 
-                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotWear".Translate(arg1: apparel.LabelShort)} ({pawn.def.LabelCap} can't wear this)", action: null));
+                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotWear".Translate(arg1: apparel.LabelShort, arg2: apparel)} ({pawn.def.LabelCap} can't wear this)", action: null));
                     }
                 }
             }
