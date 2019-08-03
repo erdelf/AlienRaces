@@ -125,6 +125,7 @@ namespace AlienRace
         public bool hasHair = true;
         public List<string> hairTags;
         public int getsGreyAt = 40;
+        public ShaderTypeDef shader;
     }
 
     public class ThoughtSettings

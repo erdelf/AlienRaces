@@ -2059,7 +2059,7 @@
                 __instance.headGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
                                              GraphicDatabase.Get<Graphic_Multi>(path: alien.story.HeadGraphicPath,
                                                  shader: ContentFinder<Texture2D>.Get(itemPath: alien.story.HeadGraphicPath + "_northm", reportFailure: false) == null ?
-                                                             ShaderDatabase.Cutout :
+                                                             (alienProps.alienRace.hairSettings.shader?.Shader ?? ShaderDatabase.Cutout) :
                                                              ShaderDatabase.CutoutComplex, drawSize: Vector2.one, color: alien.story.SkinColor,
                                                  colorTwo: alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien: alien, first: false)) :
                                              null;
