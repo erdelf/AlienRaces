@@ -59,7 +59,7 @@ namespace AlienRace
                 {
                     returnPath = babg.path;
                     variantCounting = babg.variantCount;
-                }else if(this.hediffGraphics?.FirstOrDefault(predicate: bahgs => pawn.health.hediffSet.hediffs.Any(predicate: h => h.def.defName == bahgs.hediff)) is BodyAddonHediffGraphic bahg)
+                }else if(this.hediffGraphics?.FirstOrDefault(predicate: bahgs => pawn.health.hediffSet.hediffs.Any(predicate: h => h.def.defName == bahgs.hediff && (h.Part == null || this.bodyPart.NullOrEmpty() || h.Part.def.defName == this.bodyPart))) is BodyAddonHediffGraphic bahg)
                 {
                     returnPath = bahg.path;
                     variantCounting = bahg.variantCount;
