@@ -44,9 +44,9 @@ namespace AlienRace
 
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
-                ( (pawn.Drawer.renderer.graphics.apparelGraphics != null && this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
+                (pawn.Drawer.renderer.graphics.apparelGraphics == null || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
                 !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(item: bpgd)) || 
-                ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(item: s)))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && ((pawn.CurrentBed()?.def.building.bed_showSleeperBody ?? true) || this.drawnInBed) &&
+                ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(item: s))))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && ((pawn.CurrentBed()?.def.building.bed_showSleeperBody ?? true) || this.drawnInBed) &&
                     (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
                     (this.bodyPart.NullOrEmpty() || pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) &&
                (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale );
@@ -59,7 +59,7 @@ namespace AlienRace
                 {
                     returnPath = babg.path;
                     variantCounting = babg.variantCount;
-                }else if(this.hediffGraphics?.FirstOrDefault(predicate: bahgs => pawn.health.hediffSet.hediffs.Any(predicate: h => h.def.defName == bahgs.hediff && (h.Part == null || this.bodyPart.NullOrEmpty() || h.Part.def.defName == this.bodyPart))) is BodyAddonHediffGraphic bahg)
+                }else if(this.hediffGraphics?.FirstOrDefault(predicate: bahgs => pawn.health.hediffSet.hediffs.Any(predicate: h => h.def.defName == bahgs.hediff && (h.Part == null || this.bodyPart.NullOrEmpty() || h.Part.untranslatedCustomLabel == this.bodyPart))) is BodyAddonHediffGraphic bahg)
                 {
                     returnPath = bahg.path;
                     variantCounting = bahg.variantCount;
