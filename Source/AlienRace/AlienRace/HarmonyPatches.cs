@@ -1735,7 +1735,7 @@
                                                     ?.FirstOrDefault(predicate: bt => bt.raceList?.Contains(item: corpse.def.defName) ?? false)?.thought ??
                                                   alienPropsButcher.alienRace.thoughtSettings.butcherThoughtGeneral.thought);
 
-            butcher.needs.mood.thoughts.memories.TryGainMemory(def: thought ?? ThoughtDefOf.ButcheredHumanlikeCorpse);
+            butcher.needs?.mood?.thoughts?.memories?.TryGainMemory(def: thought ?? ThoughtDefOf.ButcheredHumanlikeCorpse);
 
             butcher.Map.mapPawns.SpawnedPawnsInFaction(faction: butcher.Faction).ForEach(action: p =>
             {
