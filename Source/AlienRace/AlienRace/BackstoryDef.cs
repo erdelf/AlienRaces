@@ -10,6 +10,10 @@ namespace AlienRace
 
     public class BackstoryDef : Def
     {
+        public static HashSet<Backstory> checkBodyType = new HashSet<Backstory>();
+
+
+
         public string baseDescription;
         public BodyTypeDef bodyTypeGlobal;
         public BodyTypeDef bodyTypeMale;
@@ -79,10 +83,17 @@ namespace AlienRace
                 })()
             };
 
+            if(this.bodyTypeGlobal == null && this.bodyTypeFemale == null && this.bodyTypeMale == null)
+            {
+                checkBodyType.Add(this.backstory);
+                this.bodyTypeGlobal = DefDatabase<BodyTypeDef>.GetRandom();
+            }
+
             Traverse.Create(root: this.backstory).Field(name: "bodyTypeGlobalResolved").SetValue(value: this.bodyTypeGlobal);
             Traverse.Create(root: this.backstory).Field(name: "bodyTypeFemaleResolved").SetValue(value: this.bodyTypeFemale);
             Traverse.Create(root: this.backstory).Field(name: "bodyTypeMaleResolved").SetValue(value: this.bodyTypeMale);
-            Traverse.Create(root: this.backstory).Field(name: nameof(this.skillGains)).SetValue(value: this.skillGains.ToDictionary(keySelector: i => i.defName, elementSelector: i => i.amount));
+
+                Traverse.Create(root: this.backstory).Field(name: nameof(this.skillGains)).SetValue(value: this.skillGains.ToDictionary(keySelector: i => i.defName, elementSelector: i => i.amount));
 
             UpdateTranslateableFields(bs: this);
             
