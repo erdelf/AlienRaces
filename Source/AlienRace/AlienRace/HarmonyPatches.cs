@@ -203,7 +203,7 @@
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "GetBackstoryCategoriesFor"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(GetBackstoryCategoriesForTranspiler)));
 
-            HarmonyMethod misandryMisogonyTranspiler = new HarmonyMethod(patchType, nameof(MisandryMisogonyTranspiler));
+            HarmonyMethod misandryMisogonyTranspiler = new HarmonyMethod(patchType, nameof(MisandryMisogynyTranspiler));
             harmony.Patch(AccessTools.Method(typeof(ThoughtWorker_Woman), "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
             harmony.Patch(AccessTools.Method(typeof(ThoughtWorker_Man), "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
             
@@ -419,7 +419,7 @@
 
         }
 
-        public static IEnumerable<CodeInstruction> MisandryMisogonyTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        public static IEnumerable<CodeInstruction> MisandryMisogynyTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
             List<CodeInstruction> instructionList = instructions.ToList();
 
