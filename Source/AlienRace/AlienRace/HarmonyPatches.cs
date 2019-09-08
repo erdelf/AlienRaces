@@ -2136,9 +2136,14 @@
 
         public static void GenerateBodyTypePostfix(ref Pawn pawn)
         {
-            if (pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.NullOrEmpty() &&
-                !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.Contains(item: pawn.story.bodyType))
-                pawn.story.bodyType = alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.RandomElement();
+
+            if (BackstoryDef.checkBodyType.Contains(pawn.story.GetBackstory(BackstorySlot.Adulthood)))
+                pawn.story.bodyType = DefDatabase<BodyTypeDef>.GetRandom();
+
+            if (pawn.def is ThingDef_AlienRace alienProps && 
+                !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.NullOrEmpty() &&
+                    !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.Contains(item: pawn.story.bodyType))
+                    pawn.story.bodyType = alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.RandomElement();
         }
 
         // ReSharper disable InconsistentNaming
