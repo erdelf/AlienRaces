@@ -2336,7 +2336,8 @@
                 if (rotation == Rot4.North)
                 {
                     moffsetX = 0f;
-                    moffsetY = -moffsetY;
+                    if(ba.layerInvert)
+                        moffsetY = -moffsetY;
                     moffsetZ = -0.55f;
                     num      = 0;
                 }
