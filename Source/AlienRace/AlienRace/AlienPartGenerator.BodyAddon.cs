@@ -21,6 +21,7 @@ namespace AlienRace
             public float angle = 0f;
             public bool inFrontOfBody = false;
             public float layerOffset = 0;
+            public bool layerInvert = true;
             public bool drawnOnGround = true;
             public bool drawnInBed = true;
             public bool drawForMale = true;
