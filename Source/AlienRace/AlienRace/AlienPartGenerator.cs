@@ -152,7 +152,7 @@ namespace AlienRace
                 this.alienPortraitGraphics = meshPools[key: this.customPortraitDrawSize];
             }
 
-            public class GeneratedChannel
+            public class GeneratedChannel : IExposable
             {
                 public string channelName;
                 public Color first;
@@ -161,6 +161,13 @@ namespace AlienRace
                 public GeneratedChannel(string name)
                 {
                     channelName = name;
+                }
+                
+                public void ExposeData()
+                {
+                    Scribe_Values.Look(ref channelName, "channelName");
+                    Scribe_Values.Look(ref first, "first");
+                    Scribe_Values.Look(ref second, "second");
                 }
             }
         }
