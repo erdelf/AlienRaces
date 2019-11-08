@@ -39,10 +39,110 @@ namespace AlienRace
 
             public string backstoryRequirement;
 
+            // Added color channel stuff
+            public string useColorChannel;
+            public List<ChannelGenerator> channelGenerators;
+
             private ShaderTypeDef shaderType;
 
             public ShaderTypeDef ShaderType => this.shaderType ?? (this.shaderType = ShaderTypeDefOf.Cutout);
 
+            public Color GetSkinColor(Pawn pawn, bool first = true)
+            {
+                AlienComp alienComp = pawn.TryGetComp<AlienComp>();
+                if (alienComp.skinColor == Color.clear)
+                {
+                    ColorGenerator skinColorGen = ((ThingDef_AlienRace)pawn.def).alienRace.generalSettings.alienPartGenerator.alienskincolorgen;
+                    alienComp.skinColor = skinColorGen?.NewRandomizedColor() ?? PawnSkinColors.GetSkinColor(pawn.story.melanin);
+                    alienComp.skinColorSecond = skinColorGen?.NewRandomizedColor() ?? alienComp.skinColor;
+                }
+                return first ? alienComp.skinColor : alienComp.skinColorSecond;
+            }
+
+            public Color GetHairColor(Pawn pawn, bool first = true)
+            {
+                AlienComp alienComp = pawn.TryGetComp<AlienComp>();
+                if (alienComp.hairColorSecond == Color.clear)
+                {
+                    ColorGenerator hairColorGen = ((ThingDef_AlienRace)pawn.def).alienRace.generalSettings.alienPartGenerator.alienhairsecondcolorgen;
+                    alienComp.hairColorSecond = hairColorGen?.NewRandomizedColor() ?? pawn.story.hairColor;
+                }
+                return first ? pawn.story.hairColor : alienComp.hairColorSecond;
+            }
+
+            public Color GetColorFromChannel(Pawn pawn, bool first = true)
+            {
+                Color returnValue;
+                AlienComp alienComp = pawn.TryGetComp<AlienComp>();
+                AlienComp.GeneratedChannel channel = alienComp.colorChannels?.Find(i => i.channelName == useColorChannel);
+                if (channel == null)
+                {
+                    channel = new AlienComp.GeneratedChannel(useColorChannel);
+                    ChannelGenerator gen = ((ThingDef_AlienRace)pawn.def).alienRace.generalSettings.alienPartGenerator.channelGenerators.Find(i => i.channel == useColorChannel);
+                    if (gen == null)
+                    {
+                        Log.Error($"Config error: no generator named {useColorChannel} found.");
+                        returnValue = Color.magenta;
+                    }
+                    else
+                    {
+                        if (alienComp.colorChannels == null)
+                        {
+                            alienComp.colorChannels = new List<AlienComp.GeneratedChannel>();
+                        }
+                        channel.first = gen.first?.NewRandomizedColor() ?? Color.magenta;
+                        if (gen.first == null)
+                        {
+                            Log.Error("First was null.");
+                        }
+                        channel.second = gen.second?.NewRandomizedColor() ?? channel.first;
+                        if (gen.second == null)
+                        {
+                            Log.Error("Second was null.");
+                        }
+                        alienComp.colorChannels.Add(channel);
+                        returnValue = first ? channel.first : channel.second;
+                    }
+                }
+                else
+                {
+                    returnValue = first ? channel.first : channel.second;
+                }
+                return returnValue;
+            }
+
+            public Color GetColor(Pawn pawn, bool first = true)
+            {
+                Color returnValue;
+                if (useColorChannel == null)
+                {
+                    if (useSkinColor)
+                    {
+                        returnValue = GetSkinColor(pawn, first);
+                    }
+                    else
+                    {
+                        returnValue = GetHairColor(pawn, first);
+                    }
+                }
+                else if (useColorChannel == "skin")
+                {
+                    returnValue = GetSkinColor(pawn, first);
+                }
+                else if (useColorChannel == "hair")
+                {
+                    returnValue = GetHairColor(pawn, first);
+                }
+                else if (useColorChannel == "base")
+                {
+                    returnValue = Color.white;
+                }
+                else
+                {
+                    returnValue = GetColorFromChannel(pawn, first);
+                }
+                return returnValue;
+            }
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 (pawn.Drawer.renderer.graphics.apparelGraphics.NullOrEmpty() || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
@@ -77,12 +177,7 @@ namespace AlienRace
                                         (sharedIndex = Rand.Range(min: 0, max: variantCounting))))) == 0 ? "" : tv.ToString())),
                                 shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
                                     drawSize: this.drawSize * 1.5f,
-                                        color: this.useSkinColor ?
-                                            pawn.story.SkinColor :
-                                            pawn.story.hairColor,
-                                                colorTwo: this.useSkinColor ?
-                                                    ((ThingDef_AlienRace) pawn.def).alienRace.generalSettings.alienPartGenerator.SkinColor(alien: pawn, first: false) :
-                                                    pawn.story.hairColor) :
+                                        color: GetColor(pawn), colorTwo: GetColor(pawn, false)) :
                             null;
             }
         }

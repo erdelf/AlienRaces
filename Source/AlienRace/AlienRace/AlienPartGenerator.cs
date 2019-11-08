@@ -34,6 +34,7 @@ namespace AlienRace
         private static readonly Dictionary<Vector2, AlienGraphicMeshSet> meshPools = new Dictionary<Vector2, AlienGraphicMeshSet>();
 
         public List<BodyAddon> bodyAddons = new List<BodyAddon>();
+        public List<ChannelGenerator> channelGenerators = new List<ChannelGenerator>();
 
         public ThingDef_AlienRace alienProps;
 
@@ -123,6 +124,7 @@ namespace AlienRace
             public AlienGraphicMeshSet alienPortraitGraphics;
             public List<Graphic> addonGraphics;
             public List<int> addonVariants;
+            public List<GeneratedChannel> colorChannels;
 
             public override void PostSpawnSetup(bool respawningAfterLoad)
             {
@@ -141,12 +143,25 @@ namespace AlienRace
                 Scribe_Values.Look(value: ref this.hairColorSecond, label: "hairColorSecondAlien");
                 Scribe_Values.Look(value: ref this.crownType, label: "crownType");
                 Scribe_Collections.Look(list: ref this.addonVariants, label: "addonVariants");
+                Scribe_Collections.Look(ref colorChannels, "colorChannels", LookMode.Deep);
             }
 
             internal void AssignProperMeshs()
             {
                 this.alienGraphics = meshPools[key: this.customDrawSize];
                 this.alienPortraitGraphics = meshPools[key: this.customPortraitDrawSize];
+            }
+
+            public class GeneratedChannel
+            {
+                public string channelName;
+                public Color first;
+                public Color second;
+
+                public GeneratedChannel(string name)
+                {
+                    channelName = name;
+                }
             }
         }
 
@@ -155,6 +170,13 @@ namespace AlienRace
             public GraphicMeshSet bodySet;
             public GraphicMeshSet headSet;
             public GraphicMeshSet hairSetAverage;
+        }
+
+        public class ChannelGenerator
+        {
+            public string channel;
+            public ColorGenerator first;
+            public ColorGenerator second;
         }
     }
 }
