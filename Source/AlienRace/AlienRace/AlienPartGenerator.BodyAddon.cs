@@ -47,6 +47,10 @@ namespace AlienRace
 
             public ShaderTypeDef ShaderType => this.shaderType ?? (this.shaderType = ShaderTypeDefOf.Cutout);
 
+            /// <summary> Helper function to get the skin color of a pawn. If no skin color is found, this function generates it before returning the desired data. </summary>
+            /// <param name="pawn"> The pawn to retrieve skin data from. </param>
+            /// <param name="first"> Flag to return the primary skin color when <c>true</c> or the secondary color when <c>false</c> (Defaults to <c>true</c>). </param>
+            /// <returns> The primary or secondary skin color of the pawn. </returns>
             public Color GetSkinColor(Pawn pawn, bool first = true)
             {
                 AlienComp alienComp = pawn.TryGetComp<AlienComp>();
@@ -54,11 +58,16 @@ namespace AlienRace
                 {
                     ColorGenerator skinColorGen = ((ThingDef_AlienRace)pawn.def).alienRace.generalSettings.alienPartGenerator.alienskincolorgen;
                     alienComp.skinColor = skinColorGen?.NewRandomizedColor() ?? PawnSkinColors.GetSkinColor(pawn.story.melanin);
-                    alienComp.skinColorSecond = skinColorGen?.NewRandomizedColor() ?? alienComp.skinColor;
+                    ColorGenerator skinSecondColorGen = ((ThingDef_AlienRace)pawn.def).alienRace.generalSettings.alienPartGenerator.alienskinsecondcolorgen;
+                    alienComp.skinColorSecond = skinSecondColorGen?.NewRandomizedColor() ?? alienComp.skinColor;
                 }
                 return first ? alienComp.skinColor : alienComp.skinColorSecond;
             }
 
+            /// <summary> Helper function to get the hair color of a pawn. If no hair color is found, this function generates it before returning the desired data. </summary>
+            /// <param name="pawn"> The pawn to retrieve hair data from. </param>
+            /// <param name="first"> Flag to return the primary hair color when <c>true</c> or the secondary color when <c>false</c> (Defaults to <c>true</c>). </param>
+            /// <returns> The primary or secondary hair color of the pawn. </returns>
             public Color GetHairColor(Pawn pawn, bool first = true)
             {
                 AlienComp alienComp = pawn.TryGetComp<AlienComp>();
@@ -70,38 +79,59 @@ namespace AlienRace
                 return first ? pawn.story.hairColor : alienComp.hairColorSecond;
             }
 
+            /// <summary>
+            /// Helper function to get the color from this bodyAddon's desired <c>useColorChannel</c>.<br/>
+            /// If the channel named <c>useColorChannel</c> is not saved on the pawn, this function first generates its color data from the pawn's def.<br/>
+            /// If the channel named <c>useColorChannel</c> is not found in the pawn's def, this function pushes an error message to the log and returns <c>Color.clear</c>.<br/>
+            /// If the channel does not specify a <c>first</c> color generator in def of <c>useColorChannel</c>, this function pushes an error message to the log and returns <c>Color.clear</c>.<br/>
+            /// </summary>
+            /// <param name="pawn"> The pawn to retrieve color data from. </param>
+            /// <param name="first"> Flag to return the primary color when <c>true</c> or the secondary color when <c>false</c> (Defaults to <c>true</c>). </param>
+            /// <returns> The primary or secondary color of the <c>useColorChannel</c>. If this function encounters an error at any time, returns <c>Color.clear</c>. </returns>
             public Color GetColorFromChannel(Pawn pawn, bool first = true)
             {
-                Color returnValue;
+                Color returnValue; // My current CS instructor is rather insistant on only having one 
+                                   // return in the whole function. According to him alot of the errors
+                                   // he encountered in industry were caused by returning at odd times.
                 AlienComp alienComp = pawn.TryGetComp<AlienComp>();
-                AlienComp.GeneratedChannel channel = alienComp.colorChannels?.Find(i => i.channelName == useColorChannel);
-                if (channel == null)
+
+                if (alienComp.colorChannels == null) // Initialize the list if it is null.
+                    alienComp.colorChannels = new List<AlienComp.GeneratedChannel>();
+
+                AlienComp.GeneratedChannel channel = alienComp.colorChannels.Find(i => i.channelName == useColorChannel);
+
+                if (channel == null) // If no channel with a channelName of useColorChannel was found, we need to generate it.
                 {
-                    channel = new AlienComp.GeneratedChannel(useColorChannel);
+                    // Make sure first that there even is supposed to be a channel with this name.
                     ChannelGenerator gen = ((ThingDef_AlienRace)pawn.def).alienRace.generalSettings.alienPartGenerator.channelGenerators.Find(i => i.channel == useColorChannel);
                     if (gen == null)
                     {
-                        Log.Error($"Config error: no generator named {useColorChannel} found.");
-                        returnValue = Color.magenta;
+                        Log.Error($"Config error: no colorGenerator named {useColorChannel} found.");
+                        returnValue = Color.clear;
                     }
                     else
                     {
-                        if (alienComp.colorChannels == null)
-                        {
-                            alienComp.colorChannels = new List<AlienComp.GeneratedChannel>();
-                        }
-                        channel.first = gen.first?.NewRandomizedColor() ?? Color.magenta;
+                        // Make sure we acutally have some color generation data to work with.
+                        // We don't have to repeat this proccess for the second channel as leaving it undefined is allowed behavior.
                         if (gen.first == null)
                         {
-                            Log.Error("First was null.");
+                            Log.Error($"Config error: colorGenerator {gen.channel} does not have a first.");
+                            returnValue = Color.clear;
                         }
-                        channel.second = gen.second?.NewRandomizedColor() ?? channel.first;
-                        if (gen.second == null)
+                        else // If we actually get through all those checks, we can finally set the colors.
                         {
-                            Log.Error("Second was null.");
+                            // Instantiate a new color channel.
+                            channel = new AlienComp.GeneratedChannel(useColorChannel);
+
+                            // Generate some colors for the channel and set them.
+                            channel.first = gen.first.NewRandomizedColor();
+                            channel.second = gen.second?.NewRandomizedColor() ?? channel.first;
+
+                            // Make sure that the new channel gets put somewhere before returning.
+                            alienComp.colorChannels.Add(channel);
+
+                            returnValue = first ? channel.first : channel.second;
                         }
-                        alienComp.colorChannels.Add(channel);
-                        returnValue = first ? channel.first : channel.second;
                     }
                 }
                 else
@@ -111,36 +141,31 @@ namespace AlienRace
                 return returnValue;
             }
 
+            /// <summary>
+            /// Helper function to get the color data from the channel specified by <c>useColorChannel</c>.<br/>
+            /// If <c>useColorChannel</c> is not specified, this function defaults to old functionality (<c>useSkinColor</c> flag).<br/>
+            /// This function also has two special flags to use the pawn's <c>skin</c> or <c>hair</c> color without reverting to the old system.<br/>
+            /// A third special flag returns <c>Color.white</c>, allowing for an apparently non-colorized <c>bodyAddon</c>.
+            /// </summary>
+            /// <param name="pawn"> The pawn to retrieve color data from. </param>
+            /// <param name="first"> Flag to return the <c>useColorChannel</c>'s primary color when <c>true</c> or the secondary color when <c>false</c> (Defaults to <c>true</c>). </param>
+            /// <returns> The primary or secondary color of the <c>useColorChannel</c>. </returns>
             public Color GetColor(Pawn pawn, bool first = true)
             {
                 Color returnValue;
                 if (useColorChannel == null)
-                {
                     if (useSkinColor)
-                    {
                         returnValue = GetSkinColor(pawn, first);
-                    }
                     else
-                    {
                         returnValue = GetHairColor(pawn, first);
-                    }
-                }
                 else if (useColorChannel == "skin")
-                {
                     returnValue = GetSkinColor(pawn, first);
-                }
                 else if (useColorChannel == "hair")
-                {
                     returnValue = GetHairColor(pawn, first);
-                }
                 else if (useColorChannel == "base")
-                {
                     returnValue = Color.white;
-                }
                 else
-                {
                     returnValue = GetColorFromChannel(pawn, first);
-                }
                 return returnValue;
             }
 
