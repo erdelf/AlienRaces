@@ -158,9 +158,21 @@ namespace AlienRace
                 public Color first;
                 public Color second;
 
+                public GeneratedChannel()
+                {
+
+                }
+
                 public GeneratedChannel(string name)
                 {
                     channelName = name;
+                }
+
+                public GeneratedChannel(string name, Color first, Color second)
+                {
+                    channelName = name;
+                    this.first = first;
+                    this.second = second;
                 }
                 
                 public void ExposeData()
