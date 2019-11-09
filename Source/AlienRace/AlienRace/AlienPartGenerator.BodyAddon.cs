@@ -47,23 +47,6 @@ namespace AlienRace
 
             public ShaderTypeDef ShaderType => this.shaderType ?? (this.shaderType = ShaderTypeDefOf.Cutout);
 
-            /// <summary> Helper function to get the skin color of a pawn. If no skin color is found, this function generates it before returning the desired data. </summary>
-            /// <param name="pawn"> The pawn to retrieve skin data from. </param>
-            /// <param name="first"> Flag to return the primary skin color when <c>true</c> or the secondary color when <c>false</c> (Defaults to <c>true</c>). </param>
-            /// <returns> The primary or secondary skin color of the pawn. </returns>
-            public Color GetSkinColor(Pawn pawn, bool first = true)
-            {
-                AlienComp alienComp = pawn.TryGetComp<AlienComp>();
-                if (alienComp.skinColor == Color.clear)
-                {
-                    ColorGenerator skinColorGen = ((ThingDef_AlienRace)pawn.def).alienRace.generalSettings.alienPartGenerator.alienskincolorgen;
-                    alienComp.skinColor = skinColorGen?.NewRandomizedColor() ?? PawnSkinColors.GetSkinColor(pawn.story.melanin);
-                    ColorGenerator skinSecondColorGen = ((ThingDef_AlienRace)pawn.def).alienRace.generalSettings.alienPartGenerator.alienskinsecondcolorgen;
-                    alienComp.skinColorSecond = skinSecondColorGen?.NewRandomizedColor() ?? alienComp.skinColor;
-                }
-                return first ? alienComp.skinColor : alienComp.skinColorSecond;
-            }
-
             /// <summary> Helper function to get the hair color of a pawn. If no hair color is found, this function generates it before returning the desired data. </summary>
             /// <param name="pawn"> The pawn to retrieve hair data from. </param>
             /// <param name="first"> Flag to return the primary hair color when <c>true</c> or the secondary color when <c>false</c> (Defaults to <c>true</c>). </param>
@@ -155,11 +138,11 @@ namespace AlienRace
                 Color returnValue;
                 if (useColorChannel == null)
                     if (useSkinColor)
-                        returnValue = GetSkinColor(pawn, first);
+                        returnValue = ((ThingDef_AlienRace)pawn.def).alienRace.generalSettings.alienPartGenerator.SkinColor(pawn, first);
                     else
                         returnValue = GetHairColor(pawn, first);
                 else if (useColorChannel == "skin")
-                    returnValue = GetSkinColor(pawn, first);
+                    returnValue = ((ThingDef_AlienRace)pawn.def).alienRace.generalSettings.alienPartGenerator.SkinColor(pawn, first);
                 else if (useColorChannel == "hair")
                     returnValue = GetHairColor(pawn, first);
                 else if (useColorChannel == "base")
