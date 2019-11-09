@@ -41,7 +41,7 @@ namespace AlienRace
 
             private ShaderTypeDef shaderType;
 
-            public ShaderTypeDef ShaderType => this.shaderType ?? (this.shaderType = ShaderTypeDefOf.Cutout);
+            public ShaderTypeDef ShaderType => this.shaderType ??= ShaderTypeDefOf.Cutout;
 
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
