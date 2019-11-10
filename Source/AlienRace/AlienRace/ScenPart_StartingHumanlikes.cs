@@ -32,7 +32,7 @@ namespace AlienRace
 
         public PawnKindDef KindDef
         {
-            get => this.kindDef ??= PawnKindDefOf.Villager;
+            get => this.kindDef = this.kindDef ?? PawnKindDefOf.Villager;
             set => this.kindDef = value;
         }
 
