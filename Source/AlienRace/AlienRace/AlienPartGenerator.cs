@@ -22,6 +22,8 @@ namespace AlienRace
         public ColorGenerator alienhairsecondcolorgen;
         public bool useSkincolorForHair = false;
 
+        public List<ColorChannelGenerator> colorChannels = new List<ColorChannelGenerator>();
+
         public Vector2 headOffset = Vector2.zero;
 
         public Vector2 customDrawSize = Vector2.one;
@@ -109,6 +111,13 @@ namespace AlienRace
             });
         }
 
+        public class ColorChannelGenerator
+        {
+            public string         name = "";
+            public ColorGenerator first;
+            public ColorGenerator second;
+        }
+
 
         public class AlienComp : ThingComp
         {
@@ -123,6 +132,29 @@ namespace AlienRace
             public AlienGraphicMeshSet alienPortraitGraphics;
             public List<Graphic> addonGraphics;
             public List<int> addonVariants;
+
+            private Dictionary<string, ExposableValueTuple<Color, Color>> colorChannels;
+
+            public Dictionary<string, ExposableValueTuple<Color, Color>> ColorChannels
+            {
+                get
+                {
+                    if (this.colorChannels == null)
+                    {
+                        this.colorChannels = new Dictionary<string, ExposableValueTuple<Color, Color>>();
+                        Pawn               pawn = (Pawn)this.parent;
+                        AlienPartGenerator apg  = ((ThingDef_AlienRace)this.parent.def).alienRace.generalSettings.alienPartGenerator;
+
+                        this.colorChannels.Add("base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
+                        this.colorChannels.Add("skin", new ExposableValueTuple<Color, Color>(this.skinColor,       this.skinColorSecond));
+                        this.colorChannels.Add("hair", new ExposableValueTuple<Color, Color>(pawn.story.hairColor, this.hairColorSecond));
+
+                        foreach (ColorChannelGenerator channel in apg.colorChannels)
+                            this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color>(channel.first.NewRandomizedColor(), channel.second.NewRandomizedColor()));
+                    }
+                    return this.colorChannels;
+                }
+            }
 
             public override void PostSpawnSetup(bool respawningAfterLoad)
             {
@@ -141,12 +173,38 @@ namespace AlienRace
                 Scribe_Values.Look(value: ref this.hairColorSecond, label: "hairColorSecondAlien");
                 Scribe_Values.Look(value: ref this.crownType, label: "crownType");
                 Scribe_Collections.Look(list: ref this.addonVariants, label: "addonVariants");
+                Scribe_Collections.Look(dict: ref this.colorChannels, label: "colorChannels");
             }
+
+            public ExposableValueTuple<Color, Color> GetChannel(string channel) => 
+                this.ColorChannels[channel];
 
             internal void AssignProperMeshs()
             {
                 this.alienGraphics = meshPools[key: this.customDrawSize];
                 this.alienPortraitGraphics = meshPools[key: this.customPortraitDrawSize];
+            }
+        }
+
+        public class ExposableValueTuple<K, V> : IExposable
+        {
+            public K first;
+            public V second;
+
+            public ExposableValueTuple()
+            {
+            }
+
+            public ExposableValueTuple(K first, V second)
+            {
+                this.first = first;
+                this.second = second;
+            }
+
+            public void ExposeData()
+            {
+                Scribe_Values.Look(ref this.first, "first");
+                Scribe_Values.Look(ref this.second, "second");
             }
         }
 
