@@ -7,6 +7,7 @@ using System.Xml;
 
 namespace AlienRace
 {
+    using System;
     using JetBrains.Annotations;
 
     public partial class AlienPartGenerator
@@ -15,6 +16,7 @@ namespace AlienRace
         {
             public string path;
             public string bodyPart;
+            [Obsolete("Replaced by color channels")]
             public bool useSkinColor = true;
             public BodyAddonOffsets offsets;
             public bool linkVariantIndexWithPrevious = false;
@@ -28,6 +30,10 @@ namespace AlienRace
             public bool drawForFemale = true;
             
             public Vector2 drawSize = Vector2.one;
+            private string colorChannel;
+
+            public string ColorChannel => 
+                this.colorChannel = this.colorChannel ?? (this.useSkinColor ? "skin" : "hair");
 
             public int variantCount = 0;
 
@@ -69,6 +75,8 @@ namespace AlienRace
                     returnPath = this.path;
                     variantCounting = this.variantCount;
                 }
+                ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
+                
                 int tv;
                 return !returnPath.NullOrEmpty() ?
                             GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value) :
@@ -77,12 +85,7 @@ namespace AlienRace
                                         (sharedIndex = Rand.Range(min: 0, max: variantCounting))))) == 0 ? "" : tv.ToString())),
                                 shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
                                     drawSize: this.drawSize * 1.5f,
-                                        color: this.useSkinColor ?
-                                            pawn.story.SkinColor :
-                                            pawn.story.hairColor,
-                                                colorTwo: this.useSkinColor ?
-                                                    ((ThingDef_AlienRace) pawn.def).alienRace.generalSettings.alienPartGenerator.SkinColor(alien: pawn, first: false) :
-                                                    pawn.story.hairColor) :
+                                color: channel.first, channel.second) :
                             null;
             }
         }
