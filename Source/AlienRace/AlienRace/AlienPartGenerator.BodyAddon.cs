@@ -19,6 +19,7 @@ namespace AlienRace
             [Obsolete("Replaced by color channels")]
             public bool useSkinColor = true;
             public BodyAddonOffsets offsets;
+            public RotationalLayerInvert rotLayerInvert;
             public bool linkVariantIndexWithPrevious = false;
             public float angle = 0f;
             public bool inFrontOfBody = false;
@@ -117,6 +118,14 @@ namespace AlienRace
                 this.backstory = xmlRoot.Name;
                 this.path = xmlRoot.FirstChild.Value;
             }
+        }
+
+        public class RotationalLayerInvert
+        {
+            public bool south = false;
+            public bool north = false;
+            public bool east = false;
+            public bool west = false;
         }
 
         public class BodyAddonOffsets

@@ -2318,6 +2318,11 @@
                                                                     ba.offsets.east : 
                                                                     ba.offsets.west;
 
+                bool rotInvert = rotation == Rot4.South ? ba.rotLayerInvert.south :
+                                 rotation == Rot4.North ? ba.rotLayerInvert.north :
+                                 rotation == Rot4.East ? ba.rotLayerInvert.east :
+                                 ba.rotLayerInvert.west;
+
                 Vector2 bodyOffset = (portrait ? offset?.portraitBodyTypes ?? offset?.bodyTypes : offset?.bodyTypes)?.FirstOrDefault(predicate: to => to.bodyType == pawn.story.bodyType)
                                    ?.offset ?? Vector2.zero;
                 Vector2 crownOffset = (portrait ? offset?.portraitCrownTypes ?? offset?.crownTypes : offset?.crownTypes)?.FirstOrDefault(predicate: to => to.crownType == alienComp.crownType)
@@ -2330,7 +2335,7 @@
 
                 float moffsetX = 0.42f;
                 float moffsetZ = -0.22f;
-                float moffsetY = ba.inFrontOfBody ? 0.3f + ba.layerOffset : -0.3f - ba.layerOffset;
+                float moffsetY = ba.inFrontOfBody != rotInvert ? 0.3f + ba.layerOffset : -0.3f - ba.layerOffset; // Using != for XOR.
                 float num      = ba.angle;
 
                 if (rotation == Rot4.North)
