@@ -2099,6 +2099,11 @@
                         alienComp.addonVariants.Add(item: sharedIndex);
                 }
 
+                alienComp.ColorChannels["skin"].first = alienComp.skinColor;
+                alienComp.ColorChannels["skin"].second = alienComp.skinColorSecond;
+
+                alienComp.ColorChannels["hair"].first  = alien.story.hairColor;
+                alienComp.ColorChannels["hair"].second = alienComp.hairColorSecond;
                 __instance.ResolveApparelGraphics();
 
                 return false;
