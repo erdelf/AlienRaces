@@ -1702,7 +1702,7 @@
             Pawn pawn = Traverse.Create(root: __instance).Field(name: "pawn").GetValue<Pawn>();
             if (!(pawn.def is ThingDef_AlienRace alienProps)) return;
 
-            if (!pawn.def.race.lifeStageAges.Skip(count: 1).Any()) return;
+            if (!pawn.def.race.lifeStageAges.Skip(count: 1).Any() || pawn.ageTracker.CurLifeStageIndex == 0) return;
             LifeStageAge lsac = pawn.ageTracker.CurLifeStageRace;
             LifeStageAge lsap = pawn.def.race.lifeStageAges[index: pawn.ageTracker.CurLifeStageIndex - 1];
 
