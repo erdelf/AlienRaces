@@ -6,6 +6,11 @@
                 <attribute>Class</attribute>
                 <value>AlienRace.ThingDef_AlienRace</value>
             </li>
+            <li Class="PatchOperationAttributeSet">
+                <xpath>Defs/ThingDef[defName="Human"]</xpath>
+                <attribute>Name</attribute>
+                <value>HumanRace</value>
+            </li>
             <li Class="PatchOperationAdd">
                 <xpath>Defs/ThingDef[defName="Human"]</xpath>
                 <value>
