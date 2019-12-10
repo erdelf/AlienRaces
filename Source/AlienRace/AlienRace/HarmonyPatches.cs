@@ -1711,7 +1711,7 @@
             {
                 pawn.health.hediffSet = new HediffSet(newPawn: pawn);
                 string path = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStageRace.def).head;
-                if (!path.NullOrEmpty())
+                if (!path.NullOrEmpty() && path != GraphicPaths.VANILLA_HEAD_PATH)
                     Traverse.Create(root: pawn.story).Field(name: "headGraphicPath").SetValue(value: alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(userpath: path, pawn: pawn));
             }
         }
@@ -1892,12 +1892,17 @@
                     pawn.story.hairColor = new Color(r: grey, g: grey, b: grey);
                 }
 
-                Traverse.Create(root: pawn.story).Field(name: "headGraphicPath").SetValue(
-                    value: alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).head.NullOrEmpty() ?
-                               "" :
-                               alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(
-                                   userpath: alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).head, pawn: pawn));
-                pawn.story.crownType = CrownType.Average;
+                string headPath = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).head;
+
+                if (headPath != GraphicPaths.VANILLA_HEAD_PATH)
+                {
+                    Traverse.Create(root: pawn.story).Field(name: "headGraphicPath").SetValue(
+                        value: alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).head.NullOrEmpty() ?
+                                   "" :
+                                   alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(
+                                       userpath: headPath, pawn: pawn));
+                    pawn.story.crownType = CrownType.Average;
+                }
             }
         }
 
@@ -2031,13 +2036,16 @@
 
                 alienComp.AssignProperMeshs();
 
-                Traverse.Create(root: alien.story).Field(name: "headGraphicPath").SetValue(value: alienComp.crownType.NullOrEmpty() ?
-                                                                                                      alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(
-                                                                                                          userpath: graphicPaths.head, pawn: alien) :
-                                                                                                      AlienPartGenerator.GetAlienHead(userpath: graphicPaths.head,
-                                                                                                          gender: alienProps.alienRace.generalSettings.alienPartGenerator.useGenderedHeads ?
-                                                                                                                      alien.gender.ToString() :
-                                                                                                                      "", crowntype: alienComp.crownType));
+                if(graphicPaths.head != GraphicPaths.VANILLA_HEAD_PATH)
+                { 
+                    Traverse.Create(root: alien.story).Field(name: "headGraphicPath").SetValue(value: alienComp.crownType.NullOrEmpty() ?
+                                                                                                          alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(
+                                                                                                              userpath: graphicPaths.head, pawn: alien) :
+                                                                                                          AlienPartGenerator.GetAlienHead(userpath: graphicPaths.head,
+                                                                                                              gender: alienProps.alienRace.generalSettings.alienPartGenerator.useGenderedHeads ?
+                                                                                                                          alien.gender.ToString() :
+                                                                                                                          "", crowntype: alienComp.crownType));
+                }
 
                 __instance.nakedGraphic = !graphicPaths.body.NullOrEmpty() ?
                                               alienProps.alienRace.generalSettings.alienPartGenerator.GetNakedGraphic(bodyType: alien.story.bodyType,
