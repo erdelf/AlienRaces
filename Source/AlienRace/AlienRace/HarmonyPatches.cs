@@ -2005,7 +2005,6 @@
         public static void FilterBackstories(BackstorySlot slot, List<Backstory> tmpBackstories)
         {
             if(slot == BackstorySlot.Adulthood)
-                // ReSharper disable once RedundantAssignment
                 tmpBackstories = tmpBackstories.Where(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)?.linkedBackstory.NullOrEmpty() ?? true).ToList();
         }
         
