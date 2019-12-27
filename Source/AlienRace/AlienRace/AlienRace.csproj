@@ -64,6 +64,7 @@
     <Compile Include="AlienPartGenerator.BodyAddon.cs" />
     <Compile Include="AlienPartGenerator.cs" />
     <Compile Include="BackstoryDef.cs" />
+    <Compile Include="ColorGenerator_SkinColorMelanin.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="PawnBioDef.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

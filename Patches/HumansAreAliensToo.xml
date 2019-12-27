@@ -25,55 +25,38 @@
                                     <li>Narrow_Pointy</li>
                                     <li>Narrow_Wide</li>
                                 </aliencrowntypes>
-                                <bodyAddons>
-                                </bodyAddons>
+                                <alienskincolorgen Class="AlienRace.ColorGenerator_SkinColorMelanin">
+                                    <minMelanin>0</minMelanin>
+                                    <maxMelanin>1</maxMelanin>
+                                </alienskincolorgen>
+                                <bodyAddons></bodyAddons>
                             </alienPartGenerator>
                         </generalSettings>
-                        <graphicPaths>
-                        </graphicPaths>
-                        <hairSettings>
-                        </hairSettings>
+                        <graphicPaths></graphicPaths>
+                        <hairSettings></hairSettings>
                         <thoughtSettings>
-                            <cannotReceiveThoughts>
-                            </cannotReceiveThoughts>
-                            <canStillReceiveThoughts>
-                            </canStillReceiveThoughts>
+                            <cannotReceiveThoughts></cannotReceiveThoughts>
+                            <canStillReceiveThoughts></canStillReceiveThoughts>
                         </thoughtSettings>
                         <relationSettings>
-                            <renamer>
-                            </renamer>
+                            <renamer></renamer>
                         </relationSettings>
                         <raceRestriction>
-                            <apparelList>
-                            </apparelList>
-                            <whiteApparelList>
-                            </whiteApparelList>
-                            <weaponList>
-                            </weaponList>
-                            <whiteWeaponList>
-                            </whiteWeaponList>
-                            <buildingList>
-                            </buildingList>
-                            <whiteBuildingList>
-                            </whiteBuildingList>
-                            <recipeList>
-                            </recipeList>
-                            <plantList>
-                            </plantList>
-                            <whitePlantList>
-                            </whitePlantList>
-                            <traitList>
-                            </traitList>
-                            <whiteTraitList>
-                            </whiteTraitList>
-                            <foodList>
-                            </foodList>
-                            <petList>
-                            </petList>
-                            <conceptList>
-                            </conceptList>
-                            <workGiverList>
-                            </workGiverList>
+                            <apparelList></apparelList>
+                            <whiteApparelList></whiteApparelList>
+                            <weaponList></weaponList>
+                            <whiteWeaponList></whiteWeaponList>
+                            <buildingList></buildingList>
+                            <whiteBuildingList></whiteBuildingList>
+                            <recipeList></recipeList>
+                            <plantList></plantList>
+                            <whitePlantList></whitePlantList>
+                            <traitList></traitList>
+                            <whiteTraitList></whiteTraitList>
+                            <foodList></foodList>
+                            <petList></petList>
+                            <conceptList></conceptList>
+                            <workGiverList></workGiverList>
                         </raceRestriction>
                     </alienRace>
                 </value>
