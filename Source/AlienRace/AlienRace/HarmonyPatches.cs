@@ -58,7 +58,7 @@
                 postfix: new HarmonyMethod(type: patchType, name: nameof(TryGetRandomUnusedSolidBioForPostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "FillBackstorySlotShuffled"),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(FillBackstoryInSlotShuffledPrefix)));
+                prefix: new HarmonyMethod(type: patchType, name: nameof(FillBackstoryInSlotShuffledPrefix)), transpiler: new HarmonyMethod(type: patchType, nameof(FillBackstoryInSlotShuffledTranspiler)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(WorkGiver_Researcher), name: nameof(WorkGiver_Researcher.ShouldSkip)), prefix: null,
                 postfix: new HarmonyMethod(type: patchType, name: nameof(ShouldSkipResearchPostfix)));
@@ -1983,6 +1983,29 @@
 
             */
             return true;
+        }
+
+        public static IEnumerable<CodeInstruction> FillBackstoryInSlotShuffledTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo shuffleableInfo = AccessTools.Method(typeof(BackstoryDatabase), nameof(BackstoryDatabase.ShuffleableBackstoryList));
+
+            foreach (CodeInstruction codeInstruction in instructions)
+            {
+                yield return codeInstruction;
+
+                if (codeInstruction.opcode == OpCodes.Call && codeInstruction.operand == shuffleableInfo)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Method(typeof(PawnBioAndNameGenerator), "tmpBackstories"));
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(FilterBackstories)));
+                }
+            }
+        }
+
+        public static void FilterBackstories(BackstorySlot slot, List<Backstory> tmpBackstories)
+        {
+            if(slot == BackstorySlot.Adulthood)
+                tmpBackstories = tmpBackstories.Where(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)?.linkedBackstory.NullOrEmpty() ?? true).ToList();
         }
         
         private static PawnBioDef bioReference;
