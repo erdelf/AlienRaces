@@ -17,6 +17,6 @@ namespace AlienRace
         public float maxMelanin = 1f;
 
         public override Color NewRandomizedColor() => 
-            PawnSkinColors.GetSkinColor(melanin: Random.Range(min: this.minMelanin, max: this.maxMelanin));
+            PawnSkinColors.GetSkinColor(melanin: Rand.Range(min: this.minMelanin, max: this.maxMelanin));
     }
 }
