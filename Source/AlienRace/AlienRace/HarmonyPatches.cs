@@ -517,7 +517,7 @@
                                 ba.offsets.west,
                                 ba.offsets.north,
                                 ba.offsets.south,
-                            }.Sum(selector: ro => (ro.bodyTypes?.Count ?? 0) * 2/* + (ro.portraitBodyTypes?.Count ?? 0) * 2 + 
+                            }.Sum(selector: ro => (ro.bodyTypes?.Count ?? 0) * 2 + (ro.crownTypes?.Count ?? 0) * 2/* + (ro.portraitBodyTypes?.Count ?? 0) * 2 + 
                                                    (ro.crownTypes?.Count ?? 0) * 2 + (ro.portraitCrownTypes?.Count ?? 0) * 2*/) + 1) + 1);
                     yield return new CodeInstruction(opcode: OpCodes.Add);
                 }
@@ -610,6 +610,22 @@
                             NextLine();
                         }
 
+                        foreach (AlienPartGenerator.CrownTypeOffset crownTypeOffsets in ro.crownTypes)
+                        {
+                            string  label3Type = crownTypeOffsets.crownType + ".";
+                            Vector2 offset     = crownTypeOffsets.offset;
+                            float   offsetX    = offset.x;
+                            float   offsetY    = offset.y;
+
+                            float WriteAddonLine(float value, bool x) =>
+                                WriteLine(value: value, label: label3Rotation + label3Type + (x ? "x" : "y"));
+
+
+                            crownTypeOffsets.offset.x = WriteAddonLine(value: offsetX, x: true);
+                            NextLine();
+                            crownTypeOffsets.offset.y = WriteAddonLine(value: offsetY, x: false);
+                            NextLine();
+                        }
                     }
 
                     ba.layerOffset = WriteLine(ba.layerOffset, "layerOffset");
