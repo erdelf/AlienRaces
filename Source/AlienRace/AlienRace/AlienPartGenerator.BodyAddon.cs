@@ -49,32 +49,56 @@ namespace AlienRace
 
             public ShaderTypeDef ShaderType => this.shaderType = this.shaderType ?? ShaderTypeDefOf.Cutout;
 
+            private List<BodyAddonPrioritization> prioritization;
+            public List<BodyAddonPrioritization> Prioritization => this.prioritization ?? 
+                                                                   (this.prioritization = new List<BodyAddonPrioritization> { BodyAddonPrioritization.Hediff, BodyAddonPrioritization.Backstory });
+
+
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 (pawn.Drawer.renderer.graphics.apparelGraphics.NullOrEmpty() || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
                 !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(item: bpgd)) || 
                 ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(item: s))))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && ((pawn.CurrentBed()?.def.building.bed_showSleeperBody ?? true) || this.drawnInBed) &&
                     (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
-                    (this.bodyPart.NullOrEmpty() || pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) &&
+                    (this.bodyPart.NullOrEmpty() || 
+                     (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
+                     this.hediffGraphics.Any(bahg => bahg.hediff == HediffDefOf.MissingBodyPart.defName)) &&
                (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale );
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
                 string returnPath;
                 int variantCounting;
-                if (this.backstoryGraphics?.FirstOrDefault(predicate: babgs => pawn.story.AllBackstories.Any(predicate: bs => bs.identifier == babgs.backstory)) is BodyAddonBackstoryGraphic babg)
+
+                returnPath      = this.path;
+                variantCounting = this.variantCount;
+
+                foreach (BodyAddonPrioritization prio in this.Prioritization)
                 {
-                    returnPath = babg.path;
-                    variantCounting = babg.variantCount;
-                }else if(this.hediffGraphics?.FirstOrDefault(predicate: bahgs => pawn.health.hediffSet.hediffs.Any(predicate: h => h.def.defName == bahgs.hediff && (h.Part == null || this.bodyPart.NullOrEmpty() || (h.Part.untranslatedCustomLabel == this.bodyPart || h.Part.def.defName == this.bodyPart)))) is BodyAddonHediffGraphic bahg)
-                {
-                    returnPath = bahg.path;
-                    variantCounting = bahg.variantCount;
-                } else
-                {
-                    returnPath = this.path;
-                    variantCounting = this.variantCount;
+                    switch(prio)
+                    {
+                        case BodyAddonPrioritization.Backstory:
+                            if (this.backstoryGraphics?.FirstOrDefault(predicate: babgs => pawn.story.AllBackstories.Any(predicate: bs => bs.identifier == babgs.backstory)) is BodyAddonBackstoryGraphic babg)
+                            {
+                                returnPath      = babg.path;
+                                variantCounting = babg.variantCount;
+                            }
+                            break;
+                        case BodyAddonPrioritization.Hediff:
+                            if (this.hediffGraphics?.FirstOrDefault(predicate: bahgs => pawn.health.hediffSet.hediffs.Any(predicate: h => h.def.defName == bahgs.hediff && (h.Part == null || this.bodyPart.NullOrEmpty() || (h.Part.untranslatedCustomLabel == this.bodyPart || h.Part.def.defName == this.bodyPart)))) is BodyAddonHediffGraphic bahg)
+                            {
+                                returnPath      = bahg.path;
+                                variantCounting = bahg.variantCount;
+                            }
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    if (!returnPath.NullOrEmpty())
+                        break;
                 }
+
                 ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
                 
                 int tv;
@@ -159,6 +183,12 @@ namespace AlienRace
                 this.crownType = xmlRoot.Name;
                 this.offset = (Vector2) ParseHelper.FromString(str: xmlRoot.FirstChild.Value, itemType: typeof(Vector2));
             }
+        }
+
+        public enum BodyAddonPrioritization : byte
+        {
+            Backstory,
+            Hediff
         }
     }
 }
