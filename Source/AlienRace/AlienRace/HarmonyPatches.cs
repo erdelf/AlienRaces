@@ -592,40 +592,41 @@
                                 label3Rotation = "east.";
                                 break;
                         }
+                        if(!ro.bodyTypes.NullOrEmpty())
+                            foreach (AlienPartGenerator.BodyTypeOffset bodyTypeOffset in ro.bodyTypes)
+                            {
+                                string label3Type = bodyTypeOffset.bodyType.defName + ".";
+                                Vector2 offset = bodyTypeOffset.offset;
+                                float offsetX = offset.x;
+                                float offsetY = offset.y;
 
-                        foreach (AlienPartGenerator.BodyTypeOffset bodyTypeOffset in ro.bodyTypes)
-                        {
-                            string label3Type = bodyTypeOffset.bodyType.defName + ".";
-                            Vector2 offset = bodyTypeOffset.offset;
-                            float offsetX = offset.x;
-                            float offsetY = offset.y;
-
-                            float WriteAddonLine(float value, bool x) => 
-                                WriteLine(value: value, label: label3Rotation + label3Type + (x ? "x" : "y"));
-
-
-                            bodyTypeOffset.offset.x = WriteAddonLine(value: offsetX, x: true);
-                            NextLine();
-                            bodyTypeOffset.offset.y = WriteAddonLine(value: offsetY, x: false);
-                            NextLine();
-                        }
-
-                        foreach (AlienPartGenerator.CrownTypeOffset crownTypeOffsets in ro.crownTypes)
-                        {
-                            string  label3Type = crownTypeOffsets.crownType + ".";
-                            Vector2 offset     = crownTypeOffsets.offset;
-                            float   offsetX    = offset.x;
-                            float   offsetY    = offset.y;
-
-                            float WriteAddonLine(float value, bool x) =>
-                                WriteLine(value: value, label: label3Rotation + label3Type + (x ? "x" : "y"));
+                                float WriteAddonLine(float value, bool x) => 
+                                    WriteLine(value: value, label: label3Rotation + label3Type + (x ? "x" : "y"));
 
 
-                            crownTypeOffsets.offset.x = WriteAddonLine(value: offsetX, x: true);
-                            NextLine();
-                            crownTypeOffsets.offset.y = WriteAddonLine(value: offsetY, x: false);
-                            NextLine();
-                        }
+                                bodyTypeOffset.offset.x = WriteAddonLine(value: offsetX, x: true);
+                                NextLine();
+                                bodyTypeOffset.offset.y = WriteAddonLine(value: offsetY, x: false);
+                                NextLine();
+                            }
+
+                        if(!ro.crownTypes.NullOrEmpty())
+                            foreach (AlienPartGenerator.CrownTypeOffset crownTypeOffsets in ro.crownTypes)
+                            {
+                                string  label3Type = crownTypeOffsets.crownType + ".";
+                                Vector2 offset     = crownTypeOffsets.offset;
+                                float   offsetX    = offset.x;
+                                float   offsetY    = offset.y;
+
+                                float WriteAddonLine(float value, bool x) =>
+                                    WriteLine(value: value, label: label3Rotation + label3Type + (x ? "x" : "y"));
+
+
+                                crownTypeOffsets.offset.x = WriteAddonLine(value: offsetX, x: true);
+                                NextLine();
+                                crownTypeOffsets.offset.y = WriteAddonLine(value: offsetY, x: false);
+                                NextLine();
+                            }
                     }
 
                     ba.layerOffset = WriteLine(ba.layerOffset, "layerOffset");
