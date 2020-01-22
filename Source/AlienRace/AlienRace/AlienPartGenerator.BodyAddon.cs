@@ -62,7 +62,7 @@ namespace AlienRace
                     (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
                     (this.bodyPart.NullOrEmpty() || 
                      (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
-                     this.hediffGraphics.Any(bahg => bahg.hediff == HediffDefOf.MissingBodyPart.defName)) &&
+                     (this.hediffGraphics?.Any(bahg => bahg.hediff == HediffDefOf.MissingBodyPart.defName) ?? false)) &&
                (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale );
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
