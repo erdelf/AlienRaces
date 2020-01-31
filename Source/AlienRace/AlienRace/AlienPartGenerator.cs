@@ -82,52 +82,51 @@ namespace AlienRace
                 AddMeshSet(drawSize: graphicsPath.customPortraitDrawSize, headDrawSize: graphicsPath.customPortraitHeadDrawSize);
             }
 
+
             StringBuilder logBuilder = new StringBuilder();
             this.bodyAddons.Do(action: ba =>
             {
-                if (ba.variantCount == 0)
+
+                void AddToStringBuilder(string s)
                 {
-                    logBuilder.AppendLine($"loading variants for {ba.path}");
+                    if (ba.debug)
+                        logBuilder.AppendLine(s);
+                }
 
-                    while (ContentFinder<Texture2D>.Get(itemPath: ba.path + (ba.variantCount == 0 ? "" : ba.variantCount.ToString()) + "_north", reportFailure: false) != null)
-                        ba.variantCount++;
-                    logBuilder.AppendLine("Variants found for " + ba.path + ": " + ba.variantCount);
-                    if (ba.hediffGraphics != null)
-                    {
-                        foreach (BodyAddonHediffGraphic bahg in ba.hediffGraphics)
-                        {
-                            if (bahg.variantCount == 0)
-                            {
-                                while (ContentFinder<Texture2D>.Get(itemPath: bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_north", reportFailure: false) != null)
-                                    bahg.variantCount++;
-                                logBuilder.AppendLine("Variants found for " + bahg.path + ": " + bahg.variantCount);
-                                if (bahg.variantCount == 0) //would there ever be a reason for a hediff graphic entry to have no entries but still set? 
-                                {
-                                    Log.Warning($"no hediff graphics found for hediff {ba.path}:{bahg.hediff} in {this.alienProps.defName}");
-                                }
-                            }
-                        }
-                    }
-                    if (ba.backstoryGraphics != null)
-                    {
-                        foreach (BodyAddonBackstoryGraphic babg in ba.backstoryGraphics)
-                        {
-                            if (babg.variantCount == 0)
-                            {
-                                while (ContentFinder<Texture2D>.Get(itemPath: babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_north", reportFailure: false) != null)
-                                    babg.variantCount++;
-                                logBuilder.AppendLine("Variants found for " + babg.path + ": " + babg.variantCount);
-                                if (babg.variantCount == 0) //would there ever be a reason for background graphics to have no entries but still set? 
-                                {
-                                    Log.Warning($"no backstory graphics found for backstory {ba.path}:{babg.backstory} in {this.alienProps.defName}");
-                                }
-                            }
-                        }
+                if (ba.variantCount != 0) return;
 
+                AddToStringBuilder($"loading variants for {ba.path}");
+
+                while (ContentFinder<Texture2D>.Get(itemPath: $"{ba.path}{(ba.variantCount == 0 ? "" : ba.variantCount.ToString())}_north", reportFailure: false) != null)
+                    ba.variantCount++;
+
+                AddToStringBuilder($"Variants found for {ba.path}: {ba.variantCount}");
+
+                if (ba.hediffGraphics != null)
+                {
+                    foreach (BodyAddonHediffGraphic bahg in ba.hediffGraphics.Where(bahg => bahg.variantCount == 0))
+                    {
+                        while (ContentFinder<Texture2D>.Get(itemPath: bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_north", reportFailure: false) != null)
+                            bahg.variantCount++;
+                        AddToStringBuilder($"Variants found for {bahg.path}: {bahg.variantCount}");
+                        if (bahg.variantCount == 0)
+                            Log.Warning($"no hediff graphics found for hediff {ba.path}:{bahg.hediff} in {this.alienProps.defName}");
                     }
                 }
 
-                
+                if (ba.backstoryGraphics != null)
+                {
+                    foreach (BodyAddonBackstoryGraphic babg in ba.backstoryGraphics.Where(babg => babg.variantCount == 0))
+                    {
+                        while (ContentFinder<Texture2D>.Get(itemPath: babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_north", reportFailure: false) != null)
+                            babg.variantCount++;
+                        AddToStringBuilder($"Variants found for {babg.path}: {babg.variantCount}");
+                        if (babg.variantCount == 0)
+                            Log.Warning($"no backstory graphics found for backstory {ba.path}: {babg.backstory} in {this.alienProps.defName}");
+                    }
+                }
+
+
             });
             if (logBuilder.Length > 0)
                  Log.Message($"loaded body addon variants for {alienProps.defName}\n{logBuilder}"); 
