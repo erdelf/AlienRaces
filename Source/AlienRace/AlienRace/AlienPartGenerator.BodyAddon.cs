@@ -36,6 +36,7 @@ namespace AlienRace
                 this.colorChannel = this.colorChannel ?? (this.useSkinColor ? "skin" : "hair");
 
             public int variantCount = 0;
+            public bool debug = true;
 
             public List<BodyAddonHediffGraphic> hediffGraphics;
             public List<BodyAddonBackstoryGraphic> backstoryGraphics;
