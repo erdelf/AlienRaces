@@ -8,8 +8,7 @@
     using System.Reflection;
     using System.Reflection.Emit;
     using System.Runtime.CompilerServices;
-    using Harmony;
-    using Harmony.ILCopying;
+    using HarmonyLib;
     using RimWorld;
     using UnityEngine;
     using Verse;
@@ -29,369 +28,357 @@
 
         static HarmonyPatches()
         {
-            
-            HarmonyInstance harmony = HarmonyInstance.Create(id: "rimworld.erdelf.alien_race.main");
-
+            Harmony harmony = new Harmony(id: "rimworld.erdelf.alien_race.main");
+            //Harmony.DEBUG = true;
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_Child), name: nameof(PawnRelationWorker_Child.GenerationChance)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenerationChanceChildPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerationChanceChildPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_ExLover), name: nameof(PawnRelationWorker_ExLover.GenerationChance)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenerationChanceExLoverPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerationChanceExLoverPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_ExSpouse), name: nameof(PawnRelationWorker_ExSpouse.GenerationChance)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenerationChanceExSpousePostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerationChanceExSpousePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_Fiance), name: nameof(PawnRelationWorker_Spouse.GenerationChance)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenerationChanceFiancePostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerationChanceFiancePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_Lover), name: nameof(PawnRelationWorker_Lover.GenerationChance)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenerationChanceLoverPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerationChanceLoverPostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_Parent), name: nameof(PawnRelationWorker_Parent.GenerationChance)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenerationChanceParentPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerationChanceParentPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_Sibling), name: nameof(PawnRelationWorker_Sibling.GenerationChance)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenerationChanceSiblingPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerationChanceSiblingPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_Spouse), name: nameof(PawnRelationWorker_Spouse.GenerationChance)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenerationChanceSpousePostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerationChanceSpousePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GeneratePawnRelations"),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(GeneratePawnRelationsPrefix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GeneratePawnRelationsPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationDef), name: nameof(PawnRelationDef.GetGenderSpecificLabel)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(GetGenderSpecificLabelPrefix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GetGenderSpecificLabelPrefix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "TryGetRandomUnusedSolidBioFor"), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(TryGetRandomUnusedSolidBioForPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(TryGetRandomUnusedSolidBioForPostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "FillBackstorySlotShuffled"),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(FillBackstoryInSlotShuffledPrefix)), transpiler: new HarmonyMethod(type: patchType, nameof(FillBackstoryInSlotShuffledTranspiler)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(FillBackstoryInSlotShuffledPrefix)), transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(FillBackstoryInSlotShuffledTranspiler)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(WorkGiver_Researcher), name: nameof(WorkGiver_Researcher.ShouldSkip)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(ShouldSkipResearchPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(ShouldSkipResearchPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(MainTabWindow_Research), name: "ViewSize"), prefix: null, postfix: null,
-                transpiler: new HarmonyMethod(type: patchType, name: nameof(ResearchScreenTranspiler)));
+                transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(ResearchScreenTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(MainTabWindow_Research), name: "DrawRightRect"), prefix: null, postfix: null,
-                transpiler: new HarmonyMethod(type: patchType, name: nameof(ResearchScreenTranspiler)));
+                transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(ResearchScreenTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(GenConstruct), name: nameof(GenConstruct.CanConstruct)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(CanConstructPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanConstructPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(GameRules), name: nameof(GameRules.DesignatorAllowed)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(DesignatorAllowedPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(DesignatorAllowedPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Bill), name: nameof(Bill.PawnAllowedToStartAnew)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(PawnAllowedToStartAnewPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(PawnAllowedToStartAnewPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(WorkGiver_GrowerHarvest), name: nameof(WorkGiver_GrowerHarvest.HasJobOnCell)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(HasJobOnCellHarvestPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(HasJobOnCellHarvestPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(WorkGiver_GrowerSow), name: "ExtraRequirements"), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(ExtraRequirementsGrowerSowPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(ExtraRequirementsGrowerSowPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(FloatMenuMakerMap), name: "AddHumanlikeOrders"), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(AddHumanlikeOrdersPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.SetFaction)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(SetFactionPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(AddHumanlikeOrdersPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.SetFaction)), prefix: null, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(SetFactionPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Thing), name: nameof(Pawn.SetFactionDirect)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(SetFactionDirectPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(SetFactionDirectPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_OptimizeApparel), name: nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(ApparelScoreGainPostFix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(ApparelScoreGainPostFix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtUtility), name: nameof(ThoughtUtility.CanGetThought)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(CanGetThoughtPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(Corpse), name: nameof(Corpse.ButcherProducts)), prefix: new HarmonyMethod(type: patchType, name: nameof(ButcherProductsPrefix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanGetThoughtPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Corpse), name: nameof(Corpse.ButcherProducts)), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ButcherProductsPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(FoodUtility), name: nameof(FoodUtility.ThoughtsFromIngesting)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtsFromIngestingPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(ThoughtsFromIngestingPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(MemoryThoughtHandler), name: nameof(MemoryThoughtHandler.TryGainMemory), parameters: new[] { typeof(Thought_Memory), typeof(Pawn) }),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(TryGainMemoryPrefix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(TryGainMemoryPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(SituationalThoughtHandler), name: "TryCreateThought"),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(TryCreateThoughtPrefix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(TryCreateThoughtPrefix)));
 
             harmony.Patch(original: AccessTools.Method(type: AccessTools.TypeByName(name: "AgeInjuryUtility"), name: "GenerateRandomOldAgeInjuries"),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateRandomOldAgeInjuriesPrefix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateRandomOldAgeInjuriesPrefix)));
             harmony.Patch(
                 original: AccessTools.Method(type: AccessTools.TypeByName(name: "AgeInjuryUtility"), name: "RandomHediffsToGainOnBirthday", parameters: new[] { typeof(ThingDef), typeof(int) }),
-                prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(RandomHediffsToGainOnBirthdayPostfix)));
+                prefix: null, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(RandomHediffsToGainOnBirthdayPostfix)));
             //            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver), name: nameof(JobDriver.Posture)).GetGetMethod(nonPublic: false), prefix: null,
             //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
             //            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver_Skygaze), name: nameof(JobDriver_Skygaze.Posture)).GetGetMethod(nonPublic: false), prefix: null,
             //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
 
-            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateRandomAge"), prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateRandomAgePrefix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateTraits"), prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateTraitsPrefix)),
-                postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(GenerateTraitsTranspiler)));
-
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateRandomAge"), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateRandomAgePrefix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateTraits"), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateTraitsPrefix)),
+                          postfix: null, transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateTraitsTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_SatisfyChemicalNeed), name: "DrugValidator"), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(DrugValidatorPostfix)));
+                          postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(DrugValidatorPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(CompDrug), name: nameof(CompDrug.PostIngested)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(PostIngestedPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(PostIngestedPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(AddictionUtility), name: nameof(AddictionUtility.CanBingeOnNow)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(CanBingeNowPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanBingeNowPostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateBodyType"), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenerateBodyTypePostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateBodyTypePostfix)));
             harmony.Patch(original: AccessTools.Property(type: typeof(Pawn_StoryTracker), name: nameof(Pawn_StoryTracker.SkinColor)).GetGetMethod(), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(SkinColorPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(SkinColorPostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnHairChooser), name: nameof(PawnHairChooser.RandomHairDefFor)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(RandomHairDefForPrefix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_AgeTracker), name: "BirthdayBiological"), prefix: new HarmonyMethod(type: patchType, name: nameof(BirthdayBiologicalPrefix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(RandomHairDefForPrefix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_AgeTracker), name: "BirthdayBiological"), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(BirthdayBiologicalPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: nameof(PawnGenerator.GeneratePawn), parameters: new[] { typeof(PawnGenerationRequest) }),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(GeneratePawnPrefix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GeneratePawnPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGraphicSet), name: nameof(PawnGraphicSet.ResolveAllGraphics)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(ResolveAllGraphicsPrefix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ResolveAllGraphicsPrefix)));
             //HarmonyInstance.DEBUG = true;
             harmony.Patch(
                 original: AccessTools.Method(type: typeof(PawnRenderer), name: "RenderPawnInternal",
-                    parameters: new[] { typeof(Vector3), typeof(float), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool), typeof(bool) }), prefix: null, postfix: null,
-                transpiler: new HarmonyMethod(type: patchType, name: nameof(RenderPawnInternalTranspiler)));
+                                             parameters: new[] { typeof(Vector3), typeof(float), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool), typeof(bool), typeof(bool) }), prefix: null, postfix: null,
+                transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(RenderPawnInternalTranspiler)));
             //HarmonyInstance.DEBUG = false;
             harmony.Patch(original: AccessTools.Method(type: typeof(StartingPawnUtility), name: nameof(StartingPawnUtility.NewGeneratedStartingPawn)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(NewGeneratedStartingPawnPrefix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(NewGeneratedStartingPawnPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: nameof(PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GiveAppropriateBioAndNameToPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GiveAppropriateBioAndNameToPostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: nameof(PawnBioAndNameGenerator.GeneratePawnName)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(GeneratePawnNamePrefix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GeneratePawnNamePrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Page_ConfigureStartingPawns), name: "CanDoNext"), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(CanDoNextStartPawnPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanDoNextStartPawnPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(GameInitData), name: nameof(GameInitData.PrepForMapGen)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(PrepForMapGenPrefix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(PrepForMapGenPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_RelationsTracker), name: nameof(Pawn_RelationsTracker.SecondaryLovinChanceFactor)), prefix: null, postfix: null,
-                transpiler: new HarmonyMethod(type: patchType, name: nameof(SecondaryLovinChanceFactorTranspiler)));
+                transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(SecondaryLovinChanceFactorTranspiler)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_RelationsTracker), name: nameof(Pawn_RelationsTracker.CompatibilityWith)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(CompatibilityWithPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CompatibilityWithPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Faction), name: nameof(Faction.TryMakeInitialRelationsWith)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(TryMakeInitialRelationsWithPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(TraitSet), name: nameof(TraitSet.GainTrait)), prefix: new HarmonyMethod(type: patchType, name: nameof(GainTraitPrefix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(TryMakeInitialRelationsWithPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(TraitSet), name: nameof(TraitSet.GainTrait)), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GainTraitPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(TraderCaravanUtility), name: nameof(TraderCaravanUtility.GetTraderCaravanRole)), prefix: null, postfix: null,
-                transpiler: new HarmonyMethod(type: patchType, name: nameof(GetTraderCaravanRoleTranspiler)));
+                transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(GetTraderCaravanRoleTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(RestUtility), name: nameof(RestUtility.CanUseBedEver)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(CanUseBedEverPostfix)));
-            harmony.Patch(original: AccessTools.Property(type: typeof(Building_Bed), name: nameof(Building_Bed.AssigningCandidates)).GetGetMethod(), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(AssigningCandidatesPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(GrammarUtility), name: nameof(GrammarUtility.RulesForPawn), parameters: new[] { typeof(string), typeof(Pawn), typeof(Dictionary<string, string>) }), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(RulesForPawnPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanUseBedEverPostfix)));
+            harmony.Patch(original: AccessTools.Property(type: typeof(CompAssignableToPawn), name: nameof(CompAssignableToPawn.AssigningCandidates)).GetGetMethod(), prefix: null,
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(AssigningCandidatesPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(GrammarUtility), name: nameof(GrammarUtility.RulesForPawn), parameters: new[] { typeof(string), typeof(Pawn), typeof(Dictionary<string, string>), typeof(bool), typeof(bool) }), prefix: null,
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(RulesForPawnPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(RaceProperties), name: nameof(RaceProperties.CanEverEat), parameters: new[] { typeof(ThingDef) }), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(CanEverEat)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanEverEat)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Verb_MeleeAttackDamage), name: "DamageInfosToApply"), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(DamageInfosToApplyPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(DamageInfosToApplyPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnWeaponGenerator), name: nameof(PawnWeaponGenerator.TryGenerateWeaponFor)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(TryGenerateWeaponForPrefix)), postfix: new HarmonyMethod(type: patchType, name: nameof(TryGenerateWeaponForPostfix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(TryGenerateWeaponForPrefix)), postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(TryGenerateWeaponForPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnApparelGenerator), name: nameof(PawnApparelGenerator.GenerateStartingApparelFor)),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(GenerateStartingApparelForPrefix)),
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenerateStartingApparelForPostfix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateStartingApparelForPrefix)),
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateStartingApparelForPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateInitialHediffs"), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenerateInitialHediffsPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateInitialHediffsPostfix)));
             harmony.Patch(
-                original: typeof(HediffSet).GetMethods(bindingAttr: AccessTools.all).First(predicate: mi =>
-                    mi.HasAttribute<CompilerGeneratedAttribute>() && mi.ReturnType == typeof(bool) && mi.GetParameters().First().ParameterType == typeof(BodyPartRecord)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(HasHeadPostfix)));
+                original: typeof(HediffSet).GetNestedTypes(bindingAttr: AccessTools.all).SelectMany(AccessTools.GetDeclaredMethods).First(mi => mi.ReturnType == typeof(bool) && mi.GetParameters().First().ParameterType == typeof(BodyPartRecord)), prefix: null,
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(HasHeadPostfix)));
             harmony.Patch(original: AccessTools.Property(type: typeof(HediffSet), name: nameof(HediffSet.HasHead)).GetGetMethod(),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(HasHeadPrefix)));
+                prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(HasHeadPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_AgeTracker), name: "RecalculateLifeStageIndex"), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(RecalculateLifeStageIndexPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(RecalculateLifeStageIndexPostfix)));
             harmony.Patch(
-                original: typeof(FactionGenerator).GetNestedTypes(bindingAttr: BindingFlags.Instance | BindingFlags.NonPublic)
-                   .MaxBy(selector: t => t.GetMethods(bindingAttr: BindingFlags.NonPublic | BindingFlags.Instance).Length).GetMethods(bindingAttr: BindingFlags.NonPublic | BindingFlags.Instance)
-                   .MaxBy(selector: mi => mi.GetMethodBody()?.GetILAsByteArray().Length ?? -1), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(EnsureRequiredEnemiesPostfix)));
+                original: AccessTools.GetDeclaredMethods(typeof(FactionGenerator).GetNestedTypes(bindingAttr: AccessTools.all)
+                                               .MaxBy(selector: t => t.GetMethods(bindingAttr: AccessTools.all).Length)).Where(mi => mi.GetParameters()[0].ParameterType == typeof(Faction))
+                                               .MaxBy(selector: mi => mi.GetMethodBody()?.GetILAsByteArray().Length ?? -1), prefix: null, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(EnsureRequiredEnemiesPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Faction), name: nameof(Faction.FactionTick)), prefix: null, postfix: null,
-                transpiler: new HarmonyMethod(type: patchType, name: nameof(FactionTickTranspiler)));
+                transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(FactionTickTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Designator), name: nameof(Designator.CanDesignateThing)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(CanDesignateThingTamePostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanDesignateThingTamePostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(WorkGiver_InteractAnimal), name: "CanInteractWithAnimal"), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(CanInteractWithAnimalPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanInteractWithAnimalPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRenderer), name: nameof(PawnRenderer.BaseHeadOffsetAt)), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(BaseHeadOffsetAtPostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(BaseHeadOffsetAtPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_HealthTracker), name: "CheckForStateChange"), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(CheckForStateChangePostfix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CheckForStateChangePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(ApparelProperties), name: nameof(ApparelProperties.GetInterferingBodyPartGroups)), prefix: null, postfix: null,
-                transpiler: new HarmonyMethod(type: patchType, name: nameof(GetInterferingBodyPartGroupsTranspiler)));
+                transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(GetInterferingBodyPartGroupsTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateGearFor"), prefix: null,
-                postfix: new HarmonyMethod(type: patchType, name: nameof(GenerateGearForPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.ChangeKind)), prefix: new HarmonyMethod(type: patchType, name: nameof(ChangeKindPrefix)));
+                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateGearForPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.ChangeKind)), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ChangeKindPrefix)));
 
-            harmony.Patch(original: AccessTools.Method(type: typeof(EditWindow_TweakValues), name: nameof(EditWindow_TweakValues.DoWindowContents)), transpiler: new HarmonyMethod(type: patchType, name: nameof(TweakValuesTranspiler)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(EditWindow_TweakValues), name: nameof(EditWindow_TweakValues.DoWindowContents)), transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(TweakValuesTranspiler)));
 
-            harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "GetBackstoryCategoriesFor"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(GetBackstoryCategoriesForTranspiler)));
-
-            HarmonyMethod misandryMisogonyTranspiler = new HarmonyMethod(patchType, nameof(MisandryMisogynyTranspiler));
-            harmony.Patch(AccessTools.Method(typeof(ThoughtWorker_Woman), "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
-            harmony.Patch(AccessTools.Method(typeof(ThoughtWorker_Man), "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
+            HarmonyMethod misandryMisogonyTranspiler = new HarmonyMethod(methodType: patchType, methodName: nameof(MisandryMisogynyTranspiler));
+            harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_Woman), name: "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
+            harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_Man), name: "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
             
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
-            {
-                foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts.Select(selector: DefDatabase<ThoughtDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!ThoughtSettings.thoughtRestrictionDict.ContainsKey(key: thoughtDef))
-                        ThoughtSettings.thoughtRestrictionDict.Add(key: thoughtDef, value: new List<ThingDef_AlienRace>());
-                    ThoughtSettings.thoughtRestrictionDict[key: thoughtDef].Add(item: ar);
-                }
+                                                                                  {
+                                                                                      foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts.Select(selector: DefDatabase<ThoughtDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!ThoughtSettings.thoughtRestrictionDict.ContainsKey(key: thoughtDef))
+                                                                                              ThoughtSettings.thoughtRestrictionDict.Add(key: thoughtDef, value: new List<ThingDef_AlienRace>());
+                                                                                          ThoughtSettings.thoughtRestrictionDict[key: thoughtDef].Add(item: ar);
+                                                                                      }
 
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.apparelList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.apparelRestrictionDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.apparelRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.apparelRestrictionDict[key: thingDef].Add(item: ar);
-                }
+                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.apparelList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.apparelRestrictionDict.ContainsKey(key: thingDef))
+                                                                                              RaceRestrictionSettings.apparelRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.apparelRestrictionDict[key: thingDef].Add(item: ar);
+                                                                                      }
 
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteApparelList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.apparelWhiteDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.apparelWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.apparelWhiteDict[key: thingDef].Add(item: ar);
-                }
-
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.weaponList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.weaponRestrictionDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.weaponRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.weaponRestrictionDict[key: thingDef].Add(item: ar);
-                }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteWeaponList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.weaponWhiteDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.weaponWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.weaponWhiteDict[key: thingDef].Add(item: ar);
-                }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.buildingList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.buildingRestrictionDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.buildingRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.buildingRestrictionDict[key: thingDef].Add(item: ar);
-                }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteBuildingList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.buildingWhiteDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.buildingWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.buildingWhiteDict[key: thingDef].Add(item: ar);
-                }
-
-                foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.recipeList.Select(selector: DefDatabase<RecipeDef>.GetNamedSilentFail).Where(predicate: rp => rp != null))
-                {
-                    if (!RaceRestrictionSettings.recipeRestrictionDict.ContainsKey(key: recipeDef))
-                        RaceRestrictionSettings.recipeRestrictionDict.Add(key: recipeDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.recipeRestrictionDict[key: recipeDef].Add(item: ar);
-                }
-
-                foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.whiteRecipeList.Select(selector: DefDatabase<RecipeDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.recipeWhiteDict.ContainsKey(key: recipeDef))
-                        RaceRestrictionSettings.recipeWhiteDict.Add(key: recipeDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.recipeWhiteDict[key: recipeDef].Add(item: ar);
-                }
+                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteApparelList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.apparelWhiteDict.ContainsKey(key: thingDef))
+                                                                                              RaceRestrictionSettings.apparelWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.apparelWhiteDict[key: thingDef].Add(item: ar);
+                                                                                      }
 
 
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.plantList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.plantRestrictionDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.plantRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.plantRestrictionDict[key: thingDef].Add(item: ar);
-                }
+                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.weaponList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.weaponRestrictionDict.ContainsKey(key: thingDef))
+                                                                                              RaceRestrictionSettings.weaponRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.weaponRestrictionDict[key: thingDef].Add(item: ar);
+                                                                                      }
 
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whitePlantList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.plantWhiteDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.plantWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.plantWhiteDict[key: thingDef].Add(item: ar);
-                }
+                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteWeaponList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.weaponWhiteDict.ContainsKey(key: thingDef))
+                                                                                              RaceRestrictionSettings.weaponWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.weaponWhiteDict[key: thingDef].Add(item: ar);
+                                                                                      }
 
+                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.buildingList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.buildingRestrictionDict.ContainsKey(key: thingDef))
+                                                                                              RaceRestrictionSettings.buildingRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.buildingRestrictionDict[key: thingDef].Add(item: ar);
+                                                                                      }
 
-                foreach (TraitDef traitDef in ar.alienRace.raceRestriction.traitList.Select(selector: DefDatabase<TraitDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.traitRestrictionDict.ContainsKey(key: traitDef))
-                        RaceRestrictionSettings.traitRestrictionDict.Add(key: traitDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.traitRestrictionDict[key: traitDef].Add(item: ar);
-                }
+                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteBuildingList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.buildingWhiteDict.ContainsKey(key: thingDef))
+                                                                                              RaceRestrictionSettings.buildingWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.buildingWhiteDict[key: thingDef].Add(item: ar);
+                                                                                      }
 
-                foreach (TraitDef traitDef in ar.alienRace.raceRestriction.whiteTraitList.Select(selector: DefDatabase<TraitDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.traitWhiteDict.ContainsKey(key: traitDef))
-                        RaceRestrictionSettings.traitWhiteDict.Add(key: traitDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.traitWhiteDict[key: traitDef].Add(item: ar);
-                }
+                                                                                      foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.recipeList.Select(selector: DefDatabase<RecipeDef>.GetNamedSilentFail).Where(predicate: rp => rp != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.recipeRestrictionDict.ContainsKey(key: recipeDef))
+                                                                                              RaceRestrictionSettings.recipeRestrictionDict.Add(key: recipeDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.recipeRestrictionDict[key: recipeDef].Add(item: ar);
+                                                                                      }
 
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.foodList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.foodRestrictionDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.foodRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.foodRestrictionDict[key: thingDef].Add(item: ar);
-                }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteFoodList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.foodWhiteDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.foodWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.foodWhiteDict[key: thingDef].Add(item: ar);
-                }
+                                                                                      foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.whiteRecipeList.Select(selector: DefDatabase<RecipeDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.recipeWhiteDict.ContainsKey(key: recipeDef))
+                                                                                              RaceRestrictionSettings.recipeWhiteDict.Add(key: recipeDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.recipeWhiteDict[key: recipeDef].Add(item: ar);
+                                                                                      }
 
 
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.petList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.tameRestrictionDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.tameRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.tameRestrictionDict[key: thingDef].Add(item: ar);
-                }
+                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.plantList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.plantRestrictionDict.ContainsKey(key: thingDef))
+                                                                                              RaceRestrictionSettings.plantRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.plantRestrictionDict[key: thingDef].Add(item: ar);
+                                                                                      }
 
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whitePetList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                {
-                    if (!RaceRestrictionSettings.tameWhiteDict.ContainsKey(key: thingDef))
-                        RaceRestrictionSettings.tameWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.tameWhiteDict[key: thingDef].Add(item: ar);
-                }
+                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whitePlantList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.plantWhiteDict.ContainsKey(key: thingDef))
+                                                                                              RaceRestrictionSettings.plantWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.plantWhiteDict[key: thingDef].Add(item: ar);
+                                                                                      }
 
 
-                ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(item: ar.race.corpseDef);
-                ar.race.corpseDef.thingCategories = new List<ThingCategoryDef> { AlienDefOf.alienCorpseCategory };
-                AlienDefOf.alienCorpseCategory.childThingDefs.Add(item: ar.race.corpseDef);
-                ar.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
+                                                                                      foreach (TraitDef traitDef in ar.alienRace.raceRestriction.traitList.Select(selector: DefDatabase<TraitDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.traitRestrictionDict.ContainsKey(key: traitDef))
+                                                                                              RaceRestrictionSettings.traitRestrictionDict.Add(key: traitDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.traitRestrictionDict[key: traitDef].Add(item: ar);
+                                                                                      }
 
-                if (ar.alienRace.generalSettings.humanRecipeImport)
-                {
-                    (ar.recipes ?? (ar.recipes = new List<RecipeDef>())).AddRange(collection: ThingDefOf.Human.recipes.Where(predicate: rd =>
-                        !rd.targetsBodyPart || rd.appliedOnFixedBodyParts.NullOrEmpty() ||
-                        rd.appliedOnFixedBodyParts.Any(predicate: bpd => ar.race.body.AllParts.Any(predicate: bpr => bpr.def == bpd))));
+                                                                                      foreach (TraitDef traitDef in ar.alienRace.raceRestriction.whiteTraitList.Select(selector: DefDatabase<TraitDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.traitWhiteDict.ContainsKey(key: traitDef))
+                                                                                              RaceRestrictionSettings.traitWhiteDict.Add(key: traitDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.traitWhiteDict[key: traitDef].Add(item: ar);
+                                                                                      }
 
-                    DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(action: rd =>
-                    {
-                        if (rd.recipeUsers?.Contains(item: ThingDefOf.Human) ?? false)
-                            rd.recipeUsers.Add(item: ar);
-                        if (!rd.defaultIngredientFilter?.Allows(def: ThingDefOf.Meat_Human) ?? false)
-                            rd.defaultIngredientFilter.SetAllow(thingDef: ar.race.meatDef, allow: false);
-                    });
-                    ar.recipes.RemoveDuplicates();
-                }
 
-                ar.alienRace.raceRestriction?.workGiverList?.ForEach(action: wgd =>
-                {
-                    WorkGiverDef wg = DefDatabase<WorkGiverDef>.GetNamedSilentFail(defName: wgd);
-                    if (wg == null)
-                        return;
-                    harmony.Patch(original: AccessTools.Method(type: wg.giverClass, name: "JobOnThing"), prefix: null,
-                        postfix: new HarmonyMethod(type: patchType, name: nameof(GenericJobOnThingPostfix)));
-                    MethodInfo hasJobOnThingInfo = AccessTools.Method(type: wg.giverClass, name: "HasJobOnThing");
-                    if (hasJobOnThingInfo != null)
-                        harmony.Patch(original: hasJobOnThingInfo, prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(GenericHasJobOnThingPostfix)));
-                });
-            });
+                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.foodList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.foodRestrictionDict.ContainsKey(key: thingDef))
+                                                                                              RaceRestrictionSettings.foodRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.foodRestrictionDict[key: thingDef].Add(item: ar);
+                                                                                      }
+
+                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteFoodList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.foodWhiteDict.ContainsKey(key: thingDef))
+                                                                                              RaceRestrictionSettings.foodWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.foodWhiteDict[key: thingDef].Add(item: ar);
+                                                                                      }
+
+
+                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.petList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.tameRestrictionDict.ContainsKey(key: thingDef))
+                                                                                              RaceRestrictionSettings.tameRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.tameRestrictionDict[key: thingDef].Add(item: ar);
+                                                                                      }
+
+                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whitePetList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.tameWhiteDict.ContainsKey(key: thingDef))
+                                                                                              RaceRestrictionSettings.tameWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.tameWhiteDict[key: thingDef].Add(item: ar);
+                                                                                      }
+
+
+                                                                                      ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(item: ar.race.corpseDef);
+                                                                                      ar.race.corpseDef.thingCategories = new List<ThingCategoryDef> { AlienDefOf.alienCorpseCategory };
+                                                                                      AlienDefOf.alienCorpseCategory.childThingDefs.Add(item: ar.race.corpseDef);
+                                                                                      ar.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
+
+                                                                                      if (ar.alienRace.generalSettings.humanRecipeImport)
+                                                                                      {
+                                                                                          (ar.recipes ?? (ar.recipes = new List<RecipeDef>())).AddRange(collection: ThingDefOf.Human.recipes.Where(predicate: rd =>
+                                                                                                                                                                                                                  !rd.targetsBodyPart || rd.appliedOnFixedBodyParts.NullOrEmpty() ||
+                                                                                                                                                                                                                  rd.appliedOnFixedBodyParts.Any(predicate: bpd => ar.race.body.AllParts.Any(predicate: bpr => bpr.def == bpd))));
+
+                                                                                          DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(action: rd =>
+                                                                                                                                                       {
+                                                                                                                                                           if (rd.recipeUsers?.Contains(item: ThingDefOf.Human) ?? false)
+                                                                                                                                                               rd.recipeUsers.Add(item: ar);
+                                                                                                                                                           if (!rd.defaultIngredientFilter?.Allows(def: ThingDefOf.Meat_Human) ?? false)
+                                                                                                                                                               rd.defaultIngredientFilter.SetAllow(thingDef: ar.race.meatDef, allow: false);
+                                                                                                                                                       });
+                                                                                          ar.recipes.RemoveDuplicates();
+                                                                                      }
+
+                                                                                      ar.alienRace.raceRestriction?.workGiverList?.ForEach(action: wgd =>
+                                                                                                                                                   {
+                                                                                                                                                       WorkGiverDef wg = DefDatabase<WorkGiverDef>.GetNamedSilentFail(defName: wgd);
+                                                                                                                                                       if (wg == null)
+                                                                                                                                                           return;
+                                                                                                                                                       harmony.Patch(original: AccessTools.Method(type: wg.giverClass, name: "JobOnThing"), prefix: null,
+                                                                                                                                                                     postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenericJobOnThingPostfix)));
+                                                                                                                                                       MethodInfo hasJobOnThingInfo = AccessTools.Method(type: wg.giverClass, name: "HasJobOnThing");
+                                                                                                                                                       if (hasJobOnThingInfo != null)
+                                                                                                                                                           harmony.Patch(original: hasJobOnThingInfo, prefix: null, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenericHasJobOnThingPostfix)));
+                                                                                                                                                   });
+                                                                                  });
             
             
             {
-                harmony.Patch(original: AccessTools.Method(type: typeof(ILInstruction), name: nameof(ILInstruction.GetSize)), prefix: null, postfix: null,
-                    transpiler: new HarmonyMethod(type: patchType, name: nameof(HarmonySizeBugFix)));
-
-
                 FieldInfo bodyInfo = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
                 MethodInfo bodyCheck = AccessTools.Method(type: patchType, name: nameof(ReplacedBody));
-                HarmonyMethod bodyTranspiler = new HarmonyMethod(type: patchType, name: nameof(BodyReferenceTranspiler));
+                HarmonyMethod bodyTranspiler = new HarmonyMethod(methodType: patchType, methodName: nameof(BodyReferenceTranspiler));
 
-                ILGenerator ilg = new DynamicMethod(name: "ScanMethod", returnType: typeof(void), parameterTypes: Type.EmptyTypes).GetILGenerator();
-                
                 //Full assemblies scan
                 foreach (MethodInfo mi in typeof(LogEntry).Assembly.GetTypes().
                     //SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
                     Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(c: t) && !t.IsGenericType && !t.HasAttribute<CompilerGeneratedAttribute>()).SelectMany(selector: t =>
-                        t.GetMethods(bindingAttr: AccessTools.all)
-                           .Concat(second: t.GetProperties(bindingAttr: AccessTools.all).SelectMany(selector: pi =>
-                                new List<MethodInfo> { pi.GetGetMethod(nonPublic: true), pi.GetGetMethod(nonPublic: false), pi.GetSetMethod(nonPublic: true), pi.GetSetMethod(nonPublic: false) }))
-                           .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<System.Runtime.InteropServices.DllImportAttribute>()))// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
+                       t.GetMethods(bindingAttr: AccessTools.all).Concat(second: t.GetProperties(bindingAttr: AccessTools.all).SelectMany(selector: pi => 
+                            new List<MethodInfo> { pi.GetGetMethod(nonPublic: true), pi.GetGetMethod(nonPublic: false), pi.GetSetMethod(nonPublic: true), pi.GetSetMethod(nonPublic: false) }))
+                        .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<System.Runtime.InteropServices.DllImportAttribute>()))// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
                 ) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
                 {
-                    List<ILInstruction> instructions = PatchFunctions.GetInstructions(generator: ilg, method: mi);
-                    if (mi != bodyCheck && instructions.Any(predicate: il => il.operand == bodyInfo))
+                    IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
+                    if (mi != bodyCheck && instructions.Any(il => il.Value == bodyInfo))
                         harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: bodyTranspiler);
                 }
 
@@ -400,26 +387,23 @@
                 MethodInfo postureInfo = AccessTools.Method(type: typeof(PawnUtility), name: nameof(PawnUtility.GetPosture));
 
                 foreach (MethodInfo mi in typeof(PawnRenderer).GetMethods(bindingAttr: AccessTools.all).Concat(second: typeof(PawnRenderer).GetProperties(bindingAttr: AccessTools.all)
-                       .SelectMany(selector: pi =>
-                            new List<MethodInfo> { pi.GetGetMethod(nonPublic: true), pi.GetGetMethod(nonPublic: false), pi.GetSetMethod(nonPublic: true), pi.GetSetMethod(nonPublic: false) }))
+                                                                                                                                        .SelectMany(selector: pi =>
+                                                                                                                                                                  new List<MethodInfo> { pi.GetGetMethod(nonPublic: true), pi.GetGetMethod(nonPublic: false), pi.GetSetMethod(nonPublic: true), pi.GetSetMethod(nonPublic: false) }))
                    .Where(predicate: mi => mi != null && mi.DeclaringType == typeof(PawnRenderer) && !mi.IsGenericMethod))
                 {
-                    List<ILInstruction> instructions = PatchFunctions.GetInstructions(generator: ilg, method: mi);
-                    if (instructions.Any(predicate: il => il.operand == postureInfo))
-                        harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PostureTranspiler)));
+                    IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
+                    if (instructions.Any(il => il.Value == postureInfo))
+                        harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(PostureTranspiler)));
                 }
             }
 
-            Log.Message(text:
-                $"Alien race successfully completed {harmony.GetPatchedMethods().Select(selector: mb => harmony.GetPatchInfo(method: mb)).SelectMany(selector: p => p.Prefixes.Concat(second: p.Postfixes).Concat(second: p.Transpilers)).Count(predicate: p => p.owner == harmony.Id)} patches with harmony.");
+            Log.Message(text: $"Alien race successfully completed {harmony.GetPatchedMethods().Select(selector: Harmony.GetPatchInfo).SelectMany(selector: p => p.Prefixes.Concat(second: p.Postfixes).Concat(second: p.Transpilers)).Count(predicate: p => p.owner == harmony.Id)} patches with harmony.");
             DefDatabase<HairDef>.GetNamed(defName: "Shaved").hairTags.Add(item: "alienNoHair");
             
             foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs) BackstoryDef.UpdateTranslateableFields(bs: bd);
-
-
         }
 
-        public static IEnumerable<CodeInstruction> MisandryMisogynyTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        public static IEnumerable<CodeInstruction> MisandryMisogynyTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> instructionList = instructions.ToList();
 
@@ -437,49 +421,6 @@
 
                 if (!yield && instruction.opcode == OpCodes.Ldarg_2)
                     yield = true;
-            }
-        }
-
-        public static IEnumerable<CodeInstruction> GetBackstoryCategoriesForTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
-        {
-            List<CodeInstruction> instructionList = instructions.ToList();
-
-            for (int index = 0; index < instructionList.Count; index++)
-            {
-                CodeInstruction instruction = instructionList[index: index];
-
-                if (instruction.opcode == OpCodes.Ldc_I4_0)
-                {
-                    Label label = ilg.DefineLabel();
-                    Label label2 = ilg.DefineLabel();
-
-                    object breakLabel = instructionList[index: index - 1].operand;
-
-                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Pawn), name: nameof(Pawn.def)));
-                    yield return new CodeInstruction(opcode: OpCodes.Isinst, operand: typeof(ThingDef_AlienRace));
-                    yield return new CodeInstruction(opcode: OpCodes.Brfalse, operand: label);
-                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Pawn), name: nameof(Pawn.def)));
-                    yield return new CodeInstruction(opcode: OpCodes.Castclass, operand: typeof(ThingDef_AlienRace));
-                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(ThingDef_AlienRace), name: nameof(ThingDef_AlienRace.alienRace)));
-                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(ThingDef_AlienRace.AlienSettings), name: nameof(ThingDef_AlienRace.AlienSettings.generalSettings)));
-                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(GeneralSettings), name: nameof(GeneralSettings.useOnlyPawnkindBackstories)));
-                    yield return new CodeInstruction(opcode: OpCodes.Brtrue, operand: breakLabel);
-                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_0) { labels = new List<Label> { label }};
-                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Pawn), name: nameof(Pawn.kindDef)));
-                    yield return new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: typeof(PawnKindDef), name: nameof(PawnKindDef.GetModExtension)).MakeGenericMethod(typeof(Info)));
-                    yield return new CodeInstruction(opcode: OpCodes.Brfalse, operand: label2);
-                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Pawn), name: nameof(Pawn.kindDef)));
-                    yield return new CodeInstruction(opcode: OpCodes.Call,  operand: AccessTools.Method(type: typeof(PawnKindDef), name: nameof(PawnKindDef.GetModExtension)).MakeGenericMethod(typeof(Info)));
-                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(Info), name: nameof(Info.useOnlyPawnkindBackstories)));
-                    yield return new CodeInstruction(opcode: OpCodes.Brtrue, operand: breakLabel);
-
-                    instruction.labels.Add(item: label2);
-                }
-
-                yield return instruction;
             }
         }
 
@@ -635,16 +576,6 @@
             }
         }
 
-        public static IEnumerable<CodeInstruction> HarmonySizeBugFix(IEnumerable<CodeInstruction> instructions)
-        {
-            foreach (CodeInstruction instruction in instructions)
-            {
-                if (instruction.opcode == OpCodes.Castclass)
-                    instruction.operand = typeof(IEnumerable<object>);
-                yield return instruction;
-            }
-        }
-
         public static IEnumerable<CodeInstruction> PostureTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             MethodInfo postureInfo = AccessTools.Method(type: typeof(PawnUtility), name: nameof(PawnUtility.GetPosture));
@@ -746,9 +677,9 @@
         public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) =>
             __result = __result && RaceRestrictionSettings.CanTame(pet: animal.def, race: pawn.def);
 
-        public static void CanDesignateThingTamePostfix(Designator __instance, ref bool __result, Thing t)
+        public static void CanDesignateThingTamePostfix(Designator __instance, ref AcceptanceReport __result, Thing t)
         {
-            if (!__result || !(__instance is Designator_Build)) return;
+            if (!__result.Accepted || !(__instance is Designator_Build)) return;
 
             __result = colonistRaces.Any(predicate: td => RaceRestrictionSettings.CanTame(pet: t.def, race: td));
         }
@@ -775,8 +706,8 @@
                        (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(item: f.def.defName) ?? false) ?? false));
         }
 
-        public static void EnsureRequiredEnemiesPostfix(ref bool __result, Faction f) => __result = __result ||
-                                                                                                    !FactionTickFactionRelationCheck(f: f);
+        public static void EnsureRequiredEnemiesPostfix(ref bool __result, Faction x) => __result = __result ||
+                                                                                                    !FactionTickFactionRelationCheck(f: x);
 
         public static void RecalculateLifeStageIndexPostfix(Pawn_AgeTracker __instance)
         {
@@ -865,7 +796,7 @@
         }
         
         public static IEnumerable<Rule> RulesForPawnPostfix(IEnumerable<Rule> __result, Pawn pawn, string pawnSymbol) =>
-            __result.Add(item: new Rule_String(keyword: pawnSymbol + "_alienRace", output: pawn.def.LabelCap));
+            __result.AddItem(item: new Rule_String(keyword: pawnSymbol + "_alienRace", output: pawn.def.LabelCap));
 
         public static IEnumerable<CodeInstruction> GenerateTraitsTranspiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -873,32 +804,23 @@
             MethodInfo            defListInfo     = AccessTools.Property(type: typeof(DefDatabase<TraitDef>), name: nameof(DefDatabase<TraitDef>.AllDefsListForReading)).GetGetMethod();
             MethodInfo            validatorInfo   = AccessTools.Method(type: patchType, name: nameof(GenerateTraitsValidator));
 
-            for (int i = 0; i < instructionList.Count; i++)
-            {
-                CodeInstruction instruction = instructionList[index: i];
-
+            foreach (CodeInstruction instruction in instructionList)
                 if (instruction.opcode == OpCodes.Call && instruction.operand == defListInfo)
                 {
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
                     instruction.operand = validatorInfo;
-
-                    for (int x = 0; x < 4; x++)
-                        instructionList.RemoveAt(index: i + 1);
                 }
-
-                yield return instruction;
-            }
+                else
+                    yield return instruction;
         }
 
-        public static TraitDef GenerateTraitsValidator(Pawn p)
+        public static IEnumerable<TraitDef> GenerateTraitsValidator(Pawn p)
         {
-            IEnumerable<TraitDef> defs       = DefDatabase<TraitDef>.AllDefs;
-            defs = defs.Where(predicate: tr => RaceRestrictionSettings.CanGetTrait(trait: tr, race: p.def));
-            return defs.RandomElementByWeight(weightSelector: tr => tr.GetGenderSpecificCommonality(gender: p.gender));
+            return DefDatabase<TraitDef>.AllDefs.Where(predicate: tr => RaceRestrictionSettings.CanGetTrait(trait: tr, race: p.def));
         }
 
-        public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, Building_Bed __instance) =>
-            __result = __result.Where(predicate: p => RestUtility.CanUseBedEver(p: p, bedDef: __instance.def));
+        public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, CompAssignableToPawn __instance) =>
+            __result = __result.Where(predicate: p => !(__instance is CompAssignableToPawn_Bed) || RestUtility.CanUseBedEver(p: p, bedDef: __instance.parent.def));
 
         public static void CanUseBedEverPostfix(ref bool __result, Pawn p, ThingDef bedDef)
         {
@@ -1271,6 +1193,7 @@
                     relation.goodwill = offset;
                     relation.kind = kind;
                     relation = __instance.RelationWith(other: other);
+                    relation.goodwill = offset;
                     relation.goodwill = offset;
                     relation.kind = kind;
                 });
@@ -1737,7 +1660,7 @@
         {
             Pawn               corpse = __instance.InnerPawn;
             IEnumerable<Thing> things = corpse.ButcherProducts(butcher: butcher, efficiency: efficiency);
-            if (corpse.RaceProps.BloodDef != null) FilthMaker.MakeFilth(c: butcher.Position, map: butcher.Map, filthDef: corpse.RaceProps.BloodDef, source: corpse.LabelIndefinite());
+            if (corpse.RaceProps.BloodDef != null) FilthMaker.TryMakeFilth(c: butcher.Position, map: butcher.Map, filthDef: corpse.RaceProps.BloodDef, source: corpse.LabelIndefinite());
             if (!corpse.RaceProps.Humanlike)
             {
                 __result = things;
@@ -2009,23 +1932,22 @@
                 if (codeInstruction.opcode == OpCodes.Call && codeInstruction.operand == shuffleableInfo)
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
-                    yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Method(typeof(PawnBioAndNameGenerator), "tmpBackstories"));
                     yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(FilterBackstories)));
                 }
             }
         }
 
-        public static void FilterBackstories(BackstorySlot slot, List<Backstory> tmpBackstories)
+        public static List<Backstory> FilterBackstories(List<Backstory> backstories, BackstorySlot slot)
         {
-            if(slot == BackstorySlot.Adulthood)
-                // ReSharper disable once RedundantAssignment
-                tmpBackstories = tmpBackstories.Where(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)?.linkedBackstory.NullOrEmpty() ?? true).ToList();
+            return slot == BackstorySlot.Adulthood ? 
+                       backstories.Where(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)?.linkedBackstory.NullOrEmpty() ?? true).ToList() : 
+                       backstories;
         }
         
         private static PawnBioDef bioReference;
 
         // ReSharper disable once RedundantAssignment
-        public static void TryGetRandomUnusedSolidBioForPostfix(List<string> backstoryCategories, ref PawnBio __result, PawnKindDef kind, Gender gender, string requiredLastName)
+        public static void TryGetRandomUnusedSolidBioForPostfix(List<string> backstoryCategories, ref bool __result, ref PawnBio result, PawnKindDef kind, Gender gender, string requiredLastName)
         {
             if (SolidBioDatabase.allBios.Where(predicate: pb =>
                 (((kind.race as ThingDef_AlienRace)?.alienRace.generalSettings.allowHumanBios ?? true) && (kind.GetModExtension<Info>()?.allowHumanBios ?? true) ||
@@ -2036,12 +1958,14 @@
                 pb.adulthood.spawnCategories.Any(predicate: backstoryCategories.Contains)                                                                                                     &&
                 !pb.name.UsedThisGame).TryRandomElement(result: out PawnBio bio))
             {
-                __result     = bio;
+                result     = bio;
                 bioReference = DefDatabase<PawnBioDef>.AllDefs.FirstOrDefault(predicate: pbd => bio.name.ConfusinglySimilarTo(other: pbd.name));
+                __result = true;
             }
             else
             {
-                __result = null;
+                result = null;
+                __result = false;
             }
         }
 
@@ -2315,6 +2239,7 @@
                     yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(PawnRenderer), name: "pawn"));
                     yield return new CodeInstruction(opcode: OpCodes.Ldloc_0);             // quat
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_S, operand: 4); // bodyfacing
+                    yield return new CodeInstruction(opcode: OpCodes.Ldarga_S, operand: 9); //invisible
                     yield return new CodeInstruction(opcode: OpCodes.Call,    operand: AccessTools.Method(type: patchType, name: nameof(DrawAddons)));
 
                     instruction = new CodeInstruction(opcode: OpCodes.Ldarg_S, operand: 7);
@@ -2344,9 +2269,9 @@
                           alienComp.alienGraphics.hairSetAverage).MeshAt(rot: headFacing) :
                 graphics.HairMeshSet.MeshAt(rot: headFacing);
 
-        public static void DrawAddons(bool portrait, Vector3 vector, Pawn pawn, Quaternion quat, Rot4 rotation)
+        public static void DrawAddons(bool portrait, Vector3 vector, Pawn pawn, Quaternion quat, Rot4 rotation, bool invisible)
         {
-            if (!(pawn.def is ThingDef_AlienRace alienProps)) return;
+            if (!(pawn.def is ThingDef_AlienRace alienProps) || invisible) return;
 
             List<AlienPartGenerator.BodyAddon> addons    = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
             AlienPartGenerator.AlienComp       alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();

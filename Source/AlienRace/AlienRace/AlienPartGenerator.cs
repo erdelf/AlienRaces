@@ -1,4 +1,4 @@
-﻿using Harmony;
+﻿using HarmonyLib;
 using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
@@ -129,7 +129,7 @@ namespace AlienRace
 
             });
             if (logBuilder.Length > 0)
-                 Log.Message($"loaded body addon variants for {alienProps.defName}\n{logBuilder}"); 
+                 Log.Message($"loaded body addon variants for {this.alienProps.defName}\n{logBuilder}"); 
         }
 
         public class ColorChannelGenerator
