@@ -2229,7 +2229,7 @@
                     instruction = new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(GetPawnHairMesh)));
                     instructionList.RemoveRange(index: i, count: 4);
                 }
-                else if (i > 1 && instructionList[index: i -1].OperandIs(AccessTools.Method(type: typeof(Graphics), name: nameof(Graphics.DrawMesh), parameters: new []{typeof(Mesh), typeof(Vector3), typeof(Quaternion), typeof(Material), typeof(Int32)})) && (i+1) < instructionList.Count && instructionList[index: i + 1].opcode == OpCodes.Brtrue)
+                else if (i > 1 && instructionList[index: i -1].OperandIs(AccessTools.Method(type: typeof(Graphics), name: nameof(Graphics.DrawMesh), parameters: new []{typeof(Mesh), typeof(Vector3), typeof(Quaternion), typeof(Material), typeof(Int32)})) && (i+1) < instructionList.Count && instructionList[index: i + 1].opcode == OpCodes.Brtrue_S)
                 {
                     yield return instruction; // portrait
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_1);
@@ -2237,7 +2237,7 @@
                     yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: AccessTools.Field(type: typeof(PawnRenderer), name: "pawn"));
                     yield return new CodeInstruction(opcode: OpCodes.Ldloc_0);             // quat
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_S, operand: 4); // bodyfacing
-                    yield return new CodeInstruction(opcode: OpCodes.Ldarga_S, operand: 9); //invisible
+                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_S, operand: 9); //invisible
                     yield return new CodeInstruction(opcode: OpCodes.Call,    operand: AccessTools.Method(type: patchType, name: nameof(DrawAddons)));
 
                     instruction = new CodeInstruction(opcode: OpCodes.Ldarg_S, operand: 7);
