@@ -68,11 +68,8 @@ namespace AlienRace
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
-                string returnPath;
-                int variantCounting;
-
-                returnPath      = this.path;
-                variantCounting = this.variantCount;
+                string returnPath = string.Empty;
+                int variantCounting = this.variantCount;
 
                 foreach (BodyAddonPrioritization prio in this.Prioritization)
                 {
@@ -99,6 +96,9 @@ namespace AlienRace
                     if (!returnPath.NullOrEmpty())
                         break;
                 }
+
+                if(returnPath.NullOrEmpty())
+                    returnPath      = this.path;
 
                 ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
                 
