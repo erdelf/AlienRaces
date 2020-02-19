@@ -29,7 +29,8 @@
         static HarmonyPatches()
         {
             Harmony harmony = new Harmony(id: "rimworld.erdelf.alien_race.main");
-            //Harmony.DEBUG = true;
+            Harmony.DEBUG = true;
+            
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_Child), name: nameof(PawnRelationWorker_Child.GenerationChance)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerationChanceChildPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_ExLover), name: nameof(PawnRelationWorker_ExLover.GenerationChance)), prefix: null,
@@ -100,8 +101,9 @@
             //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
             //            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver_Skygaze), name: nameof(JobDriver_Skygaze.Posture)).GetGetMethod(nonPublic: false), prefix: null,
             //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
-
+                            
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateRandomAge"), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateRandomAgePrefix)));
+            
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateTraits"), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateTraitsPrefix)),
                           postfix: null, transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateTraitsTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_SatisfyChemicalNeed), name: "DrugValidator"), prefix: null,
@@ -110,12 +112,12 @@
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(PostIngestedPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(AddictionUtility), name: nameof(AddictionUtility.CanBingeOnNow)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanBingeNowPostfix)));
-
+                
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateBodyType"), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateBodyTypePostfix)));
             harmony.Patch(original: AccessTools.Property(type: typeof(Pawn_StoryTracker), name: nameof(Pawn_StoryTracker.SkinColor)).GetGetMethod(), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(SkinColorPostfix)));
-
+                
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnHairChooser), name: nameof(PawnHairChooser.RandomHairDefFor)),
                 prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(RandomHairDefForPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_AgeTracker), name: "BirthdayBiological"), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(BirthdayBiologicalPrefix)));
@@ -124,6 +126,7 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGraphicSet), name: nameof(PawnGraphicSet.ResolveAllGraphics)),
                 prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ResolveAllGraphicsPrefix)));
             //HarmonyInstance.DEBUG = true;
+                            
             harmony.Patch(
                 original: AccessTools.Method(type: typeof(PawnRenderer), name: "RenderPawnInternal",
                                              parameters: new[] { typeof(Vector3), typeof(float), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool), typeof(bool), typeof(bool) }), prefix: null, postfix: null,
@@ -133,7 +136,6 @@
                 prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(NewGeneratedStartingPawnPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: nameof(PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GiveAppropriateBioAndNameToPostfix)));
-
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: nameof(PawnBioAndNameGenerator.GeneratePawnName)),
                 prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GeneratePawnNamePrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Page_ConfigureStartingPawns), name: "CanDoNext"), prefix: null,
@@ -142,7 +144,6 @@
                 prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(PrepForMapGenPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_RelationsTracker), name: nameof(Pawn_RelationsTracker.SecondaryLovinChanceFactor)), prefix: null, postfix: null,
                 transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(SecondaryLovinChanceFactorTranspiler)));
-
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_RelationsTracker), name: nameof(Pawn_RelationsTracker.CompatibilityWith)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CompatibilityWithPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Faction), name: nameof(Faction.TryMakeInitialRelationsWith)), prefix: null,
@@ -176,7 +177,7 @@
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(RecalculateLifeStageIndexPostfix)));
             harmony.Patch(
                 original: AccessTools.GetDeclaredMethods(typeof(FactionGenerator).GetNestedTypes(bindingAttr: AccessTools.all)
-                                               .MaxBy(selector: t => t.GetMethods(bindingAttr: AccessTools.all).Length)).Where(mi => mi.GetParameters()[0].ParameterType == typeof(Faction))
+                                               .OrderBy(t => t.GetMethods(bindingAttr: AccessTools.all).Length).Skip(1).First()).Where(mi => mi.GetParameters()[0].ParameterType == typeof(Faction))
                                                .MaxBy(selector: mi => mi.GetMethodBody()?.GetILAsByteArray().Length ?? -1), prefix: null, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(EnsureRequiredEnemiesPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Faction), name: nameof(Faction.FactionTick)), prefix: null, postfix: null,
                 transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(FactionTickTranspiler)));
@@ -378,7 +379,7 @@
                 ) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
                 {
                     IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
-                    if (mi != bodyCheck && instructions.Any(il => il.Value == bodyInfo))
+                    if (mi != bodyCheck && instructions.Any(il => il.Value?.Equals(bodyInfo) ?? false))
                         harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: bodyTranspiler);
                 }
 
@@ -392,7 +393,7 @@
                    .Where(predicate: mi => mi != null && mi.DeclaringType == typeof(PawnRenderer) && !mi.IsGenericMethod))
                 {
                     IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
-                    if (instructions.Any(il => il.Value == postureInfo))
+                    if (instructions.Any(il => il.Value?.Equals(postureInfo) ?? false))
                         harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(PostureTranspiler)));
                 }
             }
@@ -413,7 +414,7 @@
             
             foreach (CodeInstruction instruction in instructionList)
             {
-                if (yield && instruction.operand == defInfo)
+                if (yield && instruction.OperandIs(defInfo))
                     yield = false;
 
                 if (yield)
@@ -434,7 +435,7 @@
 
             foreach (CodeInstruction instruction in instructions)
             {
-                if (instruction.operand == endScrollInfo)
+                if (instruction.OperandIs(endScrollInfo))
                 {
                     yield return new CodeInstruction(opcode: OpCodes.Ldloc_2) { labels = instruction.labels.ListFullCopy() };
                     instruction.labels.Clear();
@@ -447,7 +448,7 @@
 
                 yield return instruction;
 
-                if (instruction.operand == countInfo)
+                if (instruction.OperandIs(countInfo))
                 {
                     yield return new CodeInstruction(opcode: OpCodes.Ldc_I4, operand:
                         DefDatabase<ThingDef_AlienRace>.AllDefs.SelectMany(selector: ar =>
@@ -582,7 +583,7 @@
 
             CodeInstruction[] codeInstructions = instructions as CodeInstruction[] ?? instructions.ToArray();
             foreach (CodeInstruction instruction in codeInstructions)
-                if (instruction.opcode == OpCodes.Call && instruction.operand == postureInfo)
+                if (instruction.opcode == OpCodes.Call && instruction.OperandIs(postureInfo))
                     yield return new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(PostureTweak)));
                 else
                     yield return instruction;
@@ -609,13 +610,13 @@
                 {
                     CodeInstruction instruction = instructionList[index: i];
 
-                    if (i < instructionList.Count - 2 && instructionList[index: i + 2].operand == bodyInfo && instructionList[index: i + 1].operand == propsInfo && instruction.operand == defInfo)
+                    if (i < instructionList.Count - 2 && instructionList[index: i + 2].OperandIs(bodyInfo) && instructionList[index: i + 1].OperandIs(propsInfo) && instruction.OperandIs(defInfo))
                     {
                         instruction =  new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(ReplacedBody)));
                         i           += 2;
                     }
 
-                    if (i < instructionList.Count - 1 && instructionList[index: i + 1].operand == bodyInfo && instruction.operand == defInfo)
+                    if (i < instructionList.Count - 1 && instructionList[index: i + 1].OperandIs(bodyInfo) && instruction.OperandIs(defInfo))
                     {
                         instruction = new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(ReplacedBody)));
                         i++;
@@ -706,8 +707,8 @@
                        (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(item: f.def.defName) ?? false) ?? false));
         }
 
-        public static void EnsureRequiredEnemiesPostfix(ref bool __result, Faction x) => __result = __result ||
-                                                                                                    !FactionTickFactionRelationCheck(f: x);
+        public static void EnsureRequiredEnemiesPostfix(ref bool __result, Faction f) => __result = __result ||
+                                                                                                    !FactionTickFactionRelationCheck(f: f);
 
         public static void RecalculateLifeStageIndexPostfix(Pawn_AgeTracker __instance)
         {
@@ -805,19 +806,19 @@
             MethodInfo            validatorInfo   = AccessTools.Method(type: patchType, name: nameof(GenerateTraitsValidator));
 
             foreach (CodeInstruction instruction in instructionList)
-                if (instruction.opcode == OpCodes.Call && instruction.operand == defListInfo)
+            {
+                if (instruction.opcode == OpCodes.Call && instruction.OperandIs(defListInfo))
                 {
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
                     instruction.operand = validatorInfo;
                 }
-                else
-                    yield return instruction;
+
+                yield return instruction;
+            }
         }
 
-        public static IEnumerable<TraitDef> GenerateTraitsValidator(Pawn p)
-        {
-            return DefDatabase<TraitDef>.AllDefs.Where(predicate: tr => RaceRestrictionSettings.CanGetTrait(trait: tr, race: p.def));
-        }
+        public static IEnumerable<TraitDef> GenerateTraitsValidator(Pawn p) => DefDatabase<TraitDef>.AllDefs.Where(predicate: tr => 
+            RaceRestrictionSettings.CanGetTrait(trait: tr, race: p.def));
 
         public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, CompAssignableToPawn __instance) =>
             __result = __result.Where(predicate: p => !(__instance is CompAssignableToPawn_Bed) || RestUtility.CanUseBedEver(p: p, bedDef: __instance.parent.def));
@@ -1281,7 +1282,7 @@
             {
                 counter++;
                 if (counter < 10)
-                    if (instruction.opcode == OpCodes.Ldfld && instruction.operand == defField)
+                    if (instruction.opcode == OpCodes.Ldfld && instruction.OperandIs(defField))
                     {
                         yield return new CodeInstruction(opcode: OpCodes.Callvirt, operand: racePropsProperty);
 
@@ -1419,11 +1420,11 @@
 
         public static IEnumerable<CodeInstruction> ResearchScreenTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            MethodInfo defListInfo = AccessTools.Method(
+            MethodInfo defListInfo = AccessTools.PropertyGetter(
                 type: typeof(DefDatabase<ResearchProjectDef>), name: nameof(DefDatabase<ResearchProjectDef>.AllDefsListForReading));
 
             foreach (CodeInstruction instruction in instructions)
-                if (instruction.opcode == OpCodes.Call && instruction.operand == defListInfo)
+                if (instruction.opcode == OpCodes.Call && instruction.OperandIs(defListInfo))
                 {
                     yield return instruction;
                     yield return new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(ResearchFixed)));
@@ -1929,7 +1930,7 @@
             {
                 yield return codeInstruction;
 
-                if (codeInstruction.opcode == OpCodes.Call && codeInstruction.operand == shuffleableInfo)
+                if (codeInstruction.opcode == OpCodes.Call && codeInstruction.OperandIs(shuffleableInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
                     yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(FilterBackstories)));
@@ -1937,13 +1938,11 @@
             }
         }
 
-        public static List<Backstory> FilterBackstories(List<Backstory> backstories, BackstorySlot slot)
-        {
-            return slot == BackstorySlot.Adulthood ? 
-                       backstories.Where(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)?.linkedBackstory.NullOrEmpty() ?? true).ToList() : 
-                       backstories;
-        }
-        
+        public static List<Backstory> FilterBackstories(List<Backstory> backstories, BackstorySlot slot) =>
+            slot == BackstorySlot.Adulthood ? 
+                backstories.Where(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)?.linkedBackstory.NullOrEmpty() ?? true).ToList() : 
+                backstories;
+
         private static PawnBioDef bioReference;
 
         // ReSharper disable once RedundantAssignment
@@ -2086,7 +2085,6 @@
                 pawn.relations.ClearAllRelations();
                 AccessTools.Method(type: typeof(PawnGenerator), name: "GeneratePawnRelations").Invoke(obj: null, parameters: new object[] {pawn, request});
             }
-
             if (pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
                 alienProps.alienRace.generalSettings.forcedRaceTraitEntries.ForEach(action: ate =>
                 {
@@ -2200,7 +2198,7 @@
             for (int i = 0; i < instructionList.Count; i++)
             {
                 CodeInstruction instruction = instructionList[index: i];
-                if (instruction.operand == humanlikeBodyInfo)
+                if (instruction.OperandIs(humanlikeBodyInfo))
                 {
                     instructionList.RemoveRange(index: i, count: 2);
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_S, operand: 7); // portrait
@@ -2210,7 +2208,7 @@
                     yield return new CodeInstruction(opcode: OpCodes.Ldc_I4_1);
                     instruction = new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(GetPawnMesh)));
                 }
-                else if (instruction.operand == humanlikeHeadInfo)
+                else if (instruction.OperandIs(humanlikeHeadInfo))
                 {
                     instructionList.RemoveRange(index: i, count: 2);
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_S, operand: 7); // portrait
@@ -2220,7 +2218,7 @@
                     yield return new CodeInstruction(opcode: OpCodes.Ldc_I4_0);
                     instruction = new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(GetPawnMesh)));
                 }
-                else if (i + 4 < instructionList.Count && instructionList[index: i + 2].operand == hairInfo)
+                else if (i + 4 < instructionList.Count && instructionList[index: i + 2].OperandIs(hairInfo))
                 {
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_S, operand: 7) {labels = instruction.labels}; // portrait
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
@@ -2231,7 +2229,7 @@
                     instruction = new CodeInstruction(opcode: OpCodes.Call, operand: AccessTools.Method(type: patchType, name: nameof(GetPawnHairMesh)));
                     instructionList.RemoveRange(index: i, count: 4);
                 }
-                else if (i > 1 && instructionList[index: i -1].operand == AccessTools.Method(type: typeof(Graphics), name: nameof(Graphics.DrawMesh), parameters: new []{typeof(Mesh), typeof(Vector3), typeof(Quaternion), typeof(Material), typeof(Int32)}) && (i+1) < instructionList.Count && instructionList[index: i + 1].opcode == OpCodes.Brtrue)
+                else if (i > 1 && instructionList[index: i -1].OperandIs(AccessTools.Method(type: typeof(Graphics), name: nameof(Graphics.DrawMesh), parameters: new []{typeof(Mesh), typeof(Vector3), typeof(Quaternion), typeof(Material), typeof(Int32)})) && (i+1) < instructionList.Count && instructionList[index: i + 1].opcode == OpCodes.Brtrue)
                 {
                     yield return instruction; // portrait
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_1);

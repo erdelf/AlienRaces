@@ -138,7 +138,7 @@ namespace AlienRace
         public ThoughtDef ReplaceIfApplicable(ThoughtDef def) =>
             (this.replacerList == null || this.replacerList.Select(tr => tr.replacer).Contains(def.defName))
                 ? def
-                : DefDatabase<ThoughtDef>.GetNamedSilentFail(this.replacerList.FirstOrDefault(tr => tr.original.EqualsIgnoreCase(def.defName))?.replacer ?? String.Empty) ?? def;
+                : DefDatabase<ThoughtDef>.GetNamedSilentFail(this.replacerList.FirstOrDefault(tr => tr.original.EqualsIgnoreCase(def.defName))?.replacer ?? string.Empty) ?? def;
 
         public ButcherThought       butcherThoughtGeneral  = new ButcherThought();
         public List<ButcherThought> butcherThoughtSpecific = new List<ButcherThought>();
