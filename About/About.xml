@@ -6,6 +6,7 @@
   <supportedVersions>
     <li>1.1</li>
   </supportedVersions>
+  <packageId>erdelf.HumanoidAlienRaces</packageId>
   <url>https://github.com/erdelf/AlienRaces/wiki</url>
   <description>
 A framework for the creation of new alien races in Rimworld
