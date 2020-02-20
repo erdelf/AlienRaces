@@ -492,19 +492,15 @@
 
                         float num = Widgets.HorizontalSlider(rect: rect5, value: value, leftValue: -1, rightValue: 1);
 
-                        if (Math.Abs(value: num - value) > 0.0001)
-                        {
-                            GUI.color = Color.red;
-                            Widgets.Label(rect: rect4, label: $"{value} -> {num}");
-                            GUI.color = Color.white;
-                            //if (Widgets.ButtonInvisible(butRect: rect5))
-                            //    bodyTypeOffset.offset.x = num;
-                        }
-                        else
-                        {
-                            Widgets.Label(rect: rect4, label: value.ToString(provider: CultureInfo.InvariantCulture));
-                        }
-                        return num;
+                        string valueS = value.ToString(provider: CultureInfo.InvariantCulture);
+                        string num2 = Widgets.TextField(rect: rect4.LeftPartPixels(Text.CalcSize(valueS).x + 6*3), text: valueS);
+                        
+                        if (Mathf.Abs(num-value)<float.Epsilon)
+                            if (float.TryParse(num2, out float num3))
+                                num = num3;
+
+                        //Widgets.Label(rect: rect4, label: value.ToString(provider: CultureInfo.InvariantCulture));
+                        return Mathf.Clamp(num, -1, 1);
                     }
 
 
