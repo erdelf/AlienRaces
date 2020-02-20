@@ -437,11 +437,11 @@
             {
                 if (instruction.OperandIs(endScrollInfo))
                 {
-                    yield return new CodeInstruction(opcode: OpCodes.Ldloc_2) { labels = instruction.labels.ListFullCopy() };
+                    yield return new CodeInstruction(opcode: OpCodes.Ldloc_1) { labels = instruction.labels.ListFullCopy() };
                     instruction.labels.Clear();
+                    yield return new CodeInstruction(opcode: OpCodes.Ldloc_2);
                     yield return new CodeInstruction(opcode: OpCodes.Ldloc_3);
                     yield return new CodeInstruction(opcode: OpCodes.Ldloc_S, operand: 4);
-                    yield return new CodeInstruction(opcode: OpCodes.Ldloc_S, operand: 5);
                     yield return new CodeInstruction(opcode: OpCodes.Call, 
                         operand: AccessTools.Method(type: patchType, name: nameof(TweakValuesInstanceBased)));
                 }
