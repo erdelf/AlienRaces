@@ -477,6 +477,8 @@
             }
             NextLine();
 
+            rect5.y += rect2.height / 3f;
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefs)
             {
                 string label2 = ar.LabelCap;
@@ -493,7 +495,7 @@
                         float num = Widgets.HorizontalSlider(rect: rect5, value: value, leftValue: -1, rightValue: 1);
 
                         string valueS = value.ToString(provider: CultureInfo.InvariantCulture);
-                        string num2 = Widgets.TextField(rect: rect4.LeftPartPixels(Text.CalcSize(valueS).x + 6*3), text: valueS);
+                        string num2 = Widgets.TextField(rect: rect4.ContractedBy(2).LeftPartPixels(Text.CalcSize(valueS).x + 6*3), text: valueS);
                         
                         if (Mathf.Abs(num-value)<float.Epsilon)
                             if (float.TryParse(num2, out float num3))
