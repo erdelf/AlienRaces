@@ -190,10 +190,8 @@
                 transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(BaseHeadOffsetAtTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_HealthTracker), name: "CheckForStateChange"), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CheckForStateChangePostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(ApparelProperties), name: nameof(ApparelProperties.GetInterferingBodyPartGroups)), prefix: null, postfix: null,
-                transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(GetInterferingBodyPartGroupsTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateGearFor"), prefix: null,
-                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateGearForPostfix)));
+                          postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateGearForPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.ChangeKind)), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ChangeKindPrefix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(EditWindow_TweakValues), name: nameof(EditWindow_TweakValues.DoWindowContents)), transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(TweakValuesTranspiler)));
@@ -638,25 +636,6 @@
                     for(int i = 0; i < tdcrc.countRange.RandomInRange; i++)
                         pawn.inventory?.TryAddItemNotForSale(item: ThingMaker.MakeThing(def: tdcrc.thingDef, stuff: GenStuff.RandomStuffFor(td: tdcrc.thingDef)));
                });
-               
-
-        //Zorba.....
-        public static IEnumerable<CodeInstruction> GetInterferingBodyPartGroupsTranspiler(IEnumerable<CodeInstruction> instructions)
-        {
-            bool done = false;
-
-            foreach (CodeInstruction instruction in instructions)
-                if (!done && instruction.opcode == OpCodes.Call)
-                {
-                    yield return new CodeInstruction(opcode: OpCodes.Call,
-                        operand: AccessTools.Property(type: typeof(DefDatabase<BodyDef>), name: nameof(DefDatabase<BodyDef>.DefCount)).GetGetMethod());
-                    done = true;
-                }
-                else
-                {
-                    yield return instruction;
-                }
-        }
 
         public static void CheckForStateChangePostfix(Pawn_HealthTracker __instance)
         {
