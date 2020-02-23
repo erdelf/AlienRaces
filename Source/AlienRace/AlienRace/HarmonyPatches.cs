@@ -187,7 +187,7 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(WorkGiver_InteractAnimal), name: "CanInteractWithAnimal"), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanInteractWithAnimalPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRenderer), name: nameof(PawnRenderer.BaseHeadOffsetAt)), prefix: null,
-                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(BaseHeadOffsetAtPostfix)));
+                transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(BaseHeadOffsetAtTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_HealthTracker), name: "CheckForStateChange"), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CheckForStateChangePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(ApparelProperties), name: nameof(ApparelProperties.GetInterferingBodyPartGroups)), prefix: null, postfix: null,
@@ -665,13 +665,22 @@
                 pawn.Drawer.renderer.graphics.ResolveAllGraphics();
         }
 
-        public static void BaseHeadOffsetAtPostfix(PawnRenderer __instance, ref Vector3 __result)
+        public static IEnumerable<CodeInstruction> BaseHeadOffsetAtTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            Pawn    pawn   = Traverse.Create(root: __instance).Field(name: "pawn").GetValue<Pawn>();
-            Vector2 offset = (pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).headOffset ?? Vector2.zero;
-            __result.x += offset.x;
-            __result.z += offset.y;
+            FieldInfo offsetInfo = AccessTools.Field(typeof(BodyTypeDef), nameof(BodyTypeDef.headOffset));
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+                if (!instruction.OperandIs(offsetInfo)) continue;
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), "pawn"));
+                yield return new CodeInstruction(OpCodes.Call,  AccessTools.Method(patchType, nameof(BaseHeadOffsetAtHelper)));
+            }
         }
+
+        public static Vector2 BaseHeadOffsetAtHelper(Vector2 offset, Pawn pawn) => 
+            offset + ((pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).headOffset ?? Vector2.zero);
 
         public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) =>
             __result = __result && RaceRestrictionSettings.CanTame(pet: animal.def, race: pawn.def);
