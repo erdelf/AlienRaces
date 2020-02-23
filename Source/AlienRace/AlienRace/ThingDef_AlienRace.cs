@@ -330,7 +330,6 @@ namespace AlienRace
 
     public class Info : DefModExtension
     {
-        public bool useOnlyPawnkindBackstories = false;
         public bool allowHumanBios = true;
         public float maleGenderProbability = 0.5f;
     }
