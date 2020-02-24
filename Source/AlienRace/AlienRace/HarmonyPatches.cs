@@ -1383,7 +1383,7 @@
                 __result = RaceRestrictionSettings.CanDoRecipe(recipe: recipe, race: p.def);
         }
 
-        private static HashSet<ThingDef> colonistRaces;
+        private static HashSet<ThingDef> colonistRaces = new HashSet<ThingDef>();
         private static int               colonistRacesTick;
         private const  int               COLONIST_RACES_TICK_TIMER = GenDate.TicksPerHour * 2;
 
