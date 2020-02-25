@@ -29,7 +29,7 @@
         static HarmonyPatches()
         {
             Harmony harmony = new Harmony(id: "rimworld.erdelf.alien_race.main");
-            Harmony.DEBUG = true;
+            //Harmony.DEBUG = true;
             
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnRelationWorker_Child), name: nameof(PawnRelationWorker_Child.GenerationChance)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerationChanceChildPostfix)));
@@ -1814,8 +1814,11 @@
 
                 if (alienProps.alienRace.hairSettings.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                 {
-                    float grey = Rand.Range(min: 0.65f, max: 0.85f);
-                    pawn.story.hairColor = new Color(r: grey, g: grey, b: grey);
+                    if(Rand.Value < GenMath.SmootherStep(alienProps.alienRace.hairSettings.getsGreyAt, pawn.RaceProps.ageGenerationCurve.Points.Count < 3 ? alienProps.alienRace.hairSettings.getsGreyAt + 35 : pawn.RaceProps.ageGenerationCurve.Points.Skip(pawn.RaceProps.ageGenerationCurve.Points.Count-3).First().x, pawn.ageTracker.AgeBiologicalYears))
+                    {
+                        float grey = Rand.Range(min: 0.65f, max: 0.85f);
+                        pawn.story.hairColor = new Color(r: grey, g: grey, b: grey);
+                    }
                 }
 
                 string headPath = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).head;
