@@ -217,7 +217,11 @@ namespace AlienRace
             (races?.Contains(item: race as ThingDef_AlienRace) ?? false) ||
             apparelWhiteDict.TryGetValue(key: apparel, value: out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
-        public List<ResearchProjectRestrictions> researchList;
+        public List<ResearchProjectRestrictions> researchList = new List<ResearchProjectRestrictions>();
+        public static Dictionary<ResearchProjectDef, List<ThingDef_AlienRace>> researchRestrictionDict = new Dictionary<ResearchProjectDef, List<ThingDef_AlienRace>>();
+
+        public static bool CanResearch(IEnumerable<ThingDef> races, ResearchProjectDef project) =>
+            !researchRestrictionDict.ContainsKey(project) || races.Any(ar => researchRestrictionDict[project].Contains(ar));
 
 
         public bool onlyUseRaceRestrictedWeapons = false;

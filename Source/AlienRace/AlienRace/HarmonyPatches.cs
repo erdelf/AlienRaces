@@ -326,6 +326,13 @@
                                                                                           RaceRestrictionSettings.tameWhiteDict[key: thingDef].Add(item: ar);
                                                                                       }
 
+                                                                                      foreach (ResearchProjectDef projectDef in ar.alienRace.raceRestriction.researchList.Select(selector: rl => rl?.projects).SelectMany(pr => pr?.Select(pn => pn.NullOrEmpty() ? null : DefDatabase<ResearchProjectDef>.GetNamedSilentFail(pn)) ?? new List<ResearchProjectDef>()).Where(rpd => rpd != null))
+                                                                                      {
+                                                                                          if (!RaceRestrictionSettings.researchRestrictionDict.ContainsKey(key: projectDef))
+                                                                                              RaceRestrictionSettings.researchRestrictionDict.Add(key: projectDef, value: new List<ThingDef_AlienRace>());
+                                                                                          RaceRestrictionSettings.researchRestrictionDict[key: projectDef].Add(item: ar);
+                                                                                      }
+
 
                                                                                       ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(item: ar.race.corpseDef);
                                                                                       ar.race.corpseDef.thingCategories = new List<ThingCategoryDef> { AlienDefOf.alienCorpseCategory };
@@ -1391,8 +1398,14 @@
         {
             if (!__result || !(d is Designator_Build build)) return;
             if (Find.TickManager.TicksAbs > colonistRacesTick + COLONIST_RACES_TICK_TIMER || Find.TickManager.TicksAbs < colonistRacesTick)
-                if ((colonistRaces = new HashSet<ThingDef>(collection: PawnsFinder.AllMaps_FreeColonistsSpawned.Select(selector: p => p.def))).Count > 0)
+                if ((colonistRaces =
+                         new HashSet<ThingDef>(collection:
+                                               PawnsFinder.AllMaps_FreeColonistsSpawned.Select(selector: p => p.def)))
+                .Count > 0)
+                {
                     colonistRacesTick = Find.TickManager.TicksAbs;
+                    Log.Message(string.Join(" | ", colonistRaces.Select(td => td.defName)));
+                }
 
             __result = colonistRaces.Any(predicate: ar => RaceRestrictionSettings.CanBuild(building: build.PlacingDef, race: ar));
         }
@@ -1422,9 +1435,8 @@
         }
 
         private static List<ResearchProjectDef> ResearchFixed(List<ResearchProjectDef> researchList) =>
-            researchList.Where(predicate: prj => !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(predicate: ar => !colonistRaces.Contains(item: ar) &&
-                                                                                                                             (ar.alienRace.raceRestriction?.researchList?.Any(predicate: rpr =>
-                                                                                                                                  rpr.projects.Contains(item: prj.defName)) ?? false))).ToList();
+            researchList.Where(rpd => RaceRestrictionSettings.CanResearch(colonistRaces, rpd)).ToList();
+        
 
         public static void ShouldSkipResearchPostfix(Pawn pawn, ref bool __result)
         {
