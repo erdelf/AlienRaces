@@ -1404,7 +1404,7 @@
                 .Count > 0)
                 {
                     colonistRacesTick = Find.TickManager.TicksAbs;
-                    Log.Message(string.Join(" | ", colonistRaces.Select(td => td.defName)));
+                    //Log.Message(string.Join(" | ", colonistRaces.Select(td => td.defName)));
                 }
 
             __result = colonistRaces.Any(predicate: ar => RaceRestrictionSettings.CanBuild(building: build.PlacingDef, race: ar));
