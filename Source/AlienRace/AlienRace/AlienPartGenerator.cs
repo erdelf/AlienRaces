@@ -95,7 +95,7 @@ namespace AlienRace
 
                 if (ba.variantCount != 0) return;
 
-                AddToStringBuilder($"loading variants for {ba.path}");
+                AddToStringBuilder($"Loading variants for {ba.path}");
 
                 while (ContentFinder<Texture2D>.Get(itemPath: $"{ba.path}{(ba.variantCount == 0 ? "" : ba.variantCount.ToString())}_north", reportFailure: false) != null)
                     ba.variantCount++;
@@ -110,7 +110,7 @@ namespace AlienRace
                             bahg.variantCount++;
                         AddToStringBuilder($"Variants found for {bahg.path}: {bahg.variantCount}");
                         if (bahg.variantCount == 0)
-                            Log.Warning($"no hediff graphics found for hediff {ba.path}:{bahg.hediff} in {this.alienProps.defName}");
+                            Log.Warning($"No hediff graphics found for hediff {ba.path}:{bahg.hediff} in {this.alienProps.defName}");
                     }
                 }
 
@@ -129,7 +129,7 @@ namespace AlienRace
 
             });
             if (logBuilder.Length > 0)
-                 Log.Message($"loaded body addon variants for {this.alienProps.defName}\n{logBuilder}"); 
+                 Log.Message($"Loaded body addon variants for {this.alienProps.defName}\n{logBuilder}"); 
         }
 
         public class ColorChannelGenerator
