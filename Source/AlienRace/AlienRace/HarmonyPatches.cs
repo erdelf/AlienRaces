@@ -406,9 +406,10 @@
             Log.Message(text: $"Alien race successfully completed {harmony.GetPatchedMethods().Select(selector: Harmony.GetPatchInfo).SelectMany(selector: p => p.Prefixes.Concat(second: p.Postfixes).Concat(second: p.Transpilers)).Count(predicate: p => p.owner == harmony.Id)} patches with harmony.");
             DefDatabase<HairDef>.GetNamed(defName: "Shaved").hairTags.Add(item: "alienNoHair");
             
-            foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs) BackstoryDef.UpdateTranslateableFields(bs: bd);
+            foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs)
+                BackstoryDef.UpdateTranslateableFields(bs: bd);
         }
-
+        
         public static IEnumerable<CodeInstruction> MisandryMisogynyTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> instructionList = instructions.ToList();
@@ -1267,21 +1268,19 @@
 
         public static IEnumerable<CodeInstruction> SecondaryLovinChanceFactorTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            FieldInfo  defField          = AccessTools.Field(type: typeof(Pawn), name: nameof(Pawn.def));
+            FieldInfo  defField          = AccessTools.Field(type: typeof(Thing), name: nameof(Pawn.def));
             MethodInfo racePropsProperty = AccessTools.Property(type: typeof(Pawn), name: nameof(Pawn.RaceProps)).GetGetMethod();
             MethodInfo humanlikeProperty = AccessTools.Property(type: typeof(RaceProperties), name: nameof(RaceProperties.Humanlike)).GetGetMethod();
-            int        counter           = 0;
+            
             foreach (CodeInstruction instruction in instructions)
             {
-                counter++;
-                if (counter < 10)
-                    if (instruction.opcode == OpCodes.Ldfld && instruction.OperandIs(defField))
-                    {
-                        yield return new CodeInstruction(opcode: OpCodes.Callvirt, operand: racePropsProperty);
+                if (instruction.opcode == OpCodes.Ldfld && instruction.OperandIs(defField))
+                {
+                    yield return new CodeInstruction(opcode: OpCodes.Callvirt, operand: racePropsProperty);
 
-                        instruction.opcode  = OpCodes.Callvirt;
-                        instruction.operand = humanlikeProperty;
-                    }
+                    instruction.opcode  = OpCodes.Callvirt;
+                    instruction.operand = humanlikeProperty;
+                }
 
                 yield return instruction;
             }
