@@ -36,6 +36,8 @@ namespace AlienRace
                     gp.customPortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize;
                 if (gp.headOffset == Vector2.zero)
                     gp.headOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
+                if (gp.headOffsetDirectional == null)
+                    gp.headOffsetDirectional = this.alienRace.generalSettings.alienPartGenerator.headOffsetDirectional;
             });
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
             foreach (AlienPartGenerator.BodyAddon bodyAddon in this.alienRace.generalSettings.alienPartGenerator.bodyAddons)
@@ -107,6 +109,7 @@ namespace AlienRace
         public Vector2 customPortraitHeadDrawSize = Vector2.zero;
 
         public Vector2 headOffset = Vector2.zero;
+        public DirectionOffset headOffsetDirectional;
 
         public const string VANILLA_HEAD_PATH = "Things/Pawn/Humanlike/Heads/";
         public const string VANILLA_SKELETON_PATH = "Things/Pawn/Humanlike/HumanoidDessicated";
@@ -116,6 +119,17 @@ namespace AlienRace
         public string skeleton = "Things/Pawn/Humanlike/HumanoidDessicated";
         public string skull = "Things/Pawn/Humanlike/Heads/None_Average_Skull";
         public string stump = "Things/Pawn/Humanlike/Heads/None_Average_Stump";
+    }
+
+    public class DirectionOffset
+    {
+        public Vector2 north = Vector2.zero;
+        public Vector2 west = Vector2.zero;
+        public Vector2 east = Vector2.zero;
+        public Vector2 south = Vector2.zero;
+
+        public Vector2 GetOffset(Rot4 rot) => 
+            rot == Rot4.North ? this.north : rot == Rot4.East ? this.east : rot == Rot4.West ? this.west : this.south;
     }
 
     public class HairSettings
