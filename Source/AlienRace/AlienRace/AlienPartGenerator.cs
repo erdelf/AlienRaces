@@ -27,6 +27,7 @@ namespace AlienRace
         public List<ColorChannelGenerator> colorChannels = new List<ColorChannelGenerator>();
 
         public Vector2 headOffset = Vector2.zero;
+        public DirectionOffset headOffsetDirectional = new DirectionOffset();
 
         public Vector2 customDrawSize = Vector2.one;
         public Vector2 customPortraitDrawSize = Vector2.one;
