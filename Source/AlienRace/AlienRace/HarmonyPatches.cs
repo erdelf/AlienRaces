@@ -673,7 +673,7 @@
         public static void BaseHeadOffsetAtPostfix(ref Vector3 __result, Rot4 rotation, PawnRenderer __instance)
         {
             Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
-            Vector2 offset = (pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).headOffsetDirectional.GetOffset(rotation) ?? Vector2.zero;
+            Vector2 offset = (pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).headOffsetDirectional?.GetOffset(rotation) ?? Vector2.zero;
             __result += new Vector3(offset.x, 0, offset.y);
         }
 
