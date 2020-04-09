@@ -111,7 +111,7 @@ namespace AlienRace
                             bahg.variantCount++;
                         AddToStringBuilder($"Variants found for {bahg.path}: {bahg.variantCount}");
                         if (bahg.variantCount == 0)
-                            Log.Warning($"No hediff graphics found for hediff {ba.path}:{bahg.hediff} in {this.alienProps.defName}");
+                            Log.Warning($"No hediff graphics found at {bahg.path} for hediff {bahg.hediff} in {this.alienProps.defName}");
                     }
                 }
 
@@ -123,7 +123,7 @@ namespace AlienRace
                             babg.variantCount++;
                         AddToStringBuilder($"Variants found for {babg.path}: {babg.variantCount}");
                         if (babg.variantCount == 0)
-                            Log.Warning($"no backstory graphics found for backstory {ba.path}: {babg.backstory} in {this.alienProps.defName}");
+                            Log.Warning($"no backstory graphics found at {babg.path} for backstory {babg.backstory} in {this.alienProps.defName}");
                     }
                 }
 
@@ -170,7 +170,7 @@ namespace AlienRace
                         this.colorChannels.Add("base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
                         this.colorChannels.Add("skin", new ExposableValueTuple<Color, Color>(this.skinColor,       this.skinColorSecond));
                         this.colorChannels.Add("hair", new ExposableValueTuple<Color, Color>(pawn.story.hairColor, this.hairColorSecond));
-
+                        
                         foreach (ColorChannelGenerator channel in apg.colorChannels)
                             this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color>(channel.first.NewRandomizedColor(), channel.second.NewRandomizedColor()));
                     }

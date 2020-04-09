@@ -101,7 +101,6 @@ namespace AlienRace
                     returnPath      = this.path;
 
                 ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
-                
                 int tv;
                 return !returnPath.NullOrEmpty() ?
                             GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value) :
