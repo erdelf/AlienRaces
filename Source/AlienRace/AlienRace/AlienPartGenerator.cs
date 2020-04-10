@@ -112,6 +112,18 @@ namespace AlienRace
                         AddToStringBuilder($"Variants found for {bahg.path}: {bahg.variantCount}");
                         if (bahg.variantCount == 0)
                             Log.Warning($"No hediff graphics found at {bahg.path} for hediff {bahg.hediff} in {this.alienProps.defName}");
+
+                        if (bahg.severity != null)
+                        {
+                            foreach (BodyAddonHediffSeverityGraphic bahsg in bahg.severity)
+                            {
+                                while (ContentFinder<Texture2D>.Get(itemPath: bahsg.path + (bahsg.variantCount == 0 ? "" : bahsg.variantCount.ToString()) + "_north", reportFailure: false) != null)
+                                    bahsg.variantCount++;
+                                AddToStringBuilder($"Variants found for {bahsg.path} at severity {bahsg.severity}: {bahsg.variantCount}");
+                                if (bahsg.variantCount == 0)
+                                    Log.Warning($"No hediff graphics found at {bahsg.path} at severity {bahsg.severity} for hediff {bahg.hediff} in {this.alienProps.defName}");
+                            }
+                        }
                     }
                 }
 
