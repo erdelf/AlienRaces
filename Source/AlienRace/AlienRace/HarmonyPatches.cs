@@ -2285,7 +2285,6 @@
             for (int i = 0; i < addons.Count; i++)
             {
                 AlienPartGenerator.BodyAddon ba = addons[index: i];
-                
                 if (!ba.CanDrawAddon(pawn: pawn)) continue;
 
                 AlienPartGenerator.RotationOffset offset = rotation == Rot4.South ?

@@ -8,6 +8,7 @@ using System.Xml;
 namespace AlienRace
 {
     using System;
+    using HarmonyLib;
     using JetBrains.Annotations;
 
     public partial class AlienPartGenerator
@@ -68,8 +69,9 @@ namespace AlienRace
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
+
                 string returnPath = string.Empty;
-                int variantCounting = this.variantCount;
+                int variantCounting = 0;
 
                 foreach (BodyAddonPrioritization prio in this.Prioritization)
                 {
@@ -83,25 +85,50 @@ namespace AlienRace
                             }
                             break;
                         case BodyAddonPrioritization.Hediff:
-                            if (this.hediffGraphics?.FirstOrDefault(predicate: bahgs => pawn.health.hediffSet.hediffs.Any(predicate: h => h.def.defName == bahgs.hediff && (h.Part == null || this.bodyPart.NullOrEmpty() || (h.Part.untranslatedCustomLabel == this.bodyPart || h.Part.def.defName == this.bodyPart)))) is BodyAddonHediffGraphic bahg)
-                            {
-                                returnPath      = bahg.path;
-                                variantCounting = bahg.variantCount;
-                            }
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                            if(!this.hediffGraphics.NullOrEmpty())
+                                foreach (BodyAddonHediffGraphic bahg in this.hediffGraphics)
+                                {
 
+                                    foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(h => h.def.defName == bahg.hediff &&
+                                                                                                  (h.Part == null                                  ||
+                                                                                                   this.bodyPart.NullOrEmpty()                     ||
+                                                                                                   h.Part.untranslatedCustomLabel == this.bodyPart ||
+                                                                                                   h.Part.def.defName             == this.bodyPart)))
+                                    {
+                                        returnPath      = bahg.path;
+                                        variantCounting = bahg.variantCount;
+
+                                        if (!bahg.severity.NullOrEmpty())
+                                            foreach (BodyAddonHediffSeverityGraphic bahsg in bahg.severity)
+                                            {
+                                                if (h.Severity >= bahsg.severity)
+                                                {
+                                                    returnPath      = bahsg.path;
+                                                    variantCounting = bahsg.variantCount;
+                                                    break;
+                                                }
+                                            }
+                                        break;
+                                    }
+                                }
+
+                            break;
+                        default: 
+                            throw new ArrayTypeMismatchException();
+                    }
                     if (!returnPath.NullOrEmpty())
                         break;
                 }
 
-                if(returnPath.NullOrEmpty())
-                    returnPath      = this.path;
+                if (returnPath.NullOrEmpty())
+                {
+                    returnPath = this.path;
+                    variantCounting = this.variantCount;
+                }
 
                 ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
                 int tv;
+
                 return !returnPath.NullOrEmpty() ?
                             GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value) :
                                     (this.linkVariantIndexWithPrevious ?
@@ -120,12 +147,37 @@ namespace AlienRace
             public string hediff;
             public string path;
             public int variantCount = 0;
+            public List<BodyAddonHediffSeverityGraphic> severity;
 
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.hediff = xmlRoot.Name;
-                this.path = xmlRoot.FirstChild.Value;
+                this.path = xmlRoot.FirstChild.Value?.Trim();
+
+                Traverse traverse = Traverse.Create(root: this);
+                foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
+                {
+                    Traverse field = traverse.Field(xmlRootChildNode.Name);
+                    if (field.FieldExists())
+                        field.SetValue(field.GetValueType().IsGenericType ?
+                                       DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, false) :
+                                       xmlRootChildNode.InnerXml.Trim());
+                }
+            }
+        }
+
+        public class BodyAddonHediffSeverityGraphic
+        {
+            public float severity;
+            public string path;
+            public int variantCount = 0;
+
+            [UsedImplicitly]
+            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+            {
+                this.severity = float.Parse(s: xmlRoot.Name.Substring(1).Trim());
+                this.path   = xmlRoot.InnerXml.Trim();
             }
         }
 
