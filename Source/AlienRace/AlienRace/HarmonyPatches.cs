@@ -10,6 +10,7 @@
     using System.Runtime.CompilerServices;
     using HarmonyLib;
     using RimWorld;
+    using RimWorld.BaseGen;
     using UnityEngine;
     using Verse;
     using Verse.AI;
@@ -200,7 +201,9 @@
             HarmonyMethod misandryMisogonyTranspiler = new HarmonyMethod(methodType: patchType, methodName: nameof(MisandryMisogynyTranspiler));
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_Woman), name: "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_Man), name: "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
-            
+
+            harmony.Patch(original: AccessTools.Method(type: typeof(EquipmentUtility), name: nameof(EquipmentUtility.CanEquip), parameters: new []{typeof(Thing), typeof(Pawn), typeof(string).MakeByRefType()}), postfix: new HarmonyMethod(patchType, nameof(CanEquipPostfix)));
+
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
                                                                                   {
                                                                                       foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts.Select(selector: DefDatabase<ThoughtDef>.GetNamedSilentFail).Where(predicate: td => td != null))
@@ -1719,41 +1722,24 @@
                     }
                 }
             }
-            if (pawn.equipment != null)
+        }
+
+        public static void CanEquipPostfix(ref bool __result, Thing thing, Pawn pawn, ref string cantReason)
+        {
+            if (__result)
             {
-                ThingWithComps equipment = (ThingWithComps) c.GetThingList(map: pawn.Map).FirstOrDefault(predicate: t => t.TryGetComp<CompEquippable>() != null && t.def.IsWeapon);
-                if (equipment != null)
+                if (thing.def.IsApparel && !RaceRestrictionSettings.CanWear(thing.def, pawn.def))
                 {
-                    List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: "Equip".Translate(arg1: equipment.LabelShort))).ToList();
-
-
-                    if (!options.NullOrEmpty() && !RaceRestrictionSettings.CanEquip(weapon: equipment.def, race: pawn.def))
-                        foreach (FloatMenuOption fmo in options)
-                        {
-                            int index = opts.IndexOf(item: fmo);
-                            opts.Remove(item: fmo);
-
-                            opts.Insert(index: index,
-                                item: new FloatMenuOption(label: $"{"CannotEquip".Translate(arg1: equipment.LabelShort)} ({pawn.def.LabelCap} can't equip this)", action: null));
-                        } 
+                    __result = false;
+                    cantReason = $"{pawn.def.LabelCap} can't wear this";
+                    return;
                 }
-            }
 
-            if (pawn.apparel == null) return;
-            {
-                Apparel apparel = pawn.Map.thingGrid.ThingAt<Apparel>(c: c);
-                if (apparel == null) return;
-                List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: "ForceWear".Translate(arg1: apparel.LabelShort, arg2: apparel))).ToList();
-
-                if (options.NullOrEmpty() || RaceRestrictionSettings.CanWear(apparel: apparel.def, race: pawn.def)) return;
+                if (thing.def.IsWeapon && !RaceRestrictionSettings.CanEquip(thing.def, pawn.def))
                 {
-                    foreach (FloatMenuOption fmo in options)
-                    {
-                        int index = opts.IndexOf(item: fmo);
-                        opts.Remove(item: fmo);
-
-                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotWear".Translate(arg1: apparel.LabelShort, arg2: apparel)} ({pawn.def.LabelCap} can't wear this)", action: null));
-                    }
+                    __result   = false;
+                    cantReason = $"{pawn.def.LabelCap} can't equip this";
+                    return;
                 }
             }
         }
