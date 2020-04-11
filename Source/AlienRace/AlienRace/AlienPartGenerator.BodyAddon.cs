@@ -69,7 +69,6 @@ namespace AlienRace
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
-
                 string returnPath = string.Empty;
                 int variantCounting = 0;
 
