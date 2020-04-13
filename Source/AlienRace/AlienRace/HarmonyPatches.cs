@@ -645,8 +645,15 @@
             pawn.story?.AllBackstories?.Select(selector: bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)).Where(predicate: bs => bs != null)
                .SelectMany(selector: bd => bd.forcedItems).Concat(second: bioReference?.forcedItems ?? new List<ThingDefCountRangeClass>(capacity: 0)).Do(action: tdcrc =>
                {
-                    for(int i = 0; i < tdcrc.countRange.RandomInRange; i++)
-                        pawn.inventory?.TryAddItemNotForSale(item: ThingMaker.MakeThing(def: tdcrc.thingDef, stuff: GenStuff.RandomStuffFor(td: tdcrc.thingDef)));
+                   int count = tdcrc.countRange.RandomInRange;
+
+                   while(count > 0)
+                   {
+                       Thing thing = ThingMaker.MakeThing(def: tdcrc.thingDef, stuff: GenStuff.RandomStuffFor(td: tdcrc.thingDef));
+                       thing.stackCount = Mathf.Min(count, tdcrc.thingDef.stackLimit);
+                       count -= thing.stackCount;
+                       pawn.inventory?.TryAddItemNotForSale(item: thing);
+                   }
                });
 
         public static void CheckForStateChangePostfix(Pawn_HealthTracker __instance)
