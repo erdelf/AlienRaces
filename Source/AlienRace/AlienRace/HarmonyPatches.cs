@@ -1818,11 +1818,9 @@
                 //Log.Message(pawn.LabelCap);
                 if (alienProps.alienRace.generalSettings.alienPartGenerator.alienhaircolorgen != null)
                     pawn.story.hairColor = alienProps.alienRace.generalSettings.alienPartGenerator.alienhaircolorgen.NewRandomizedColor();
-                else if (alienProps.alienRace.generalSettings.alienPartGenerator.useSkincolorForHair && alienProps.alienRace.generalSettings.alienPartGenerator.alienskincolorgen != null)
-                    pawn.story.hairColor = pawn.story.SkinColor;
 
-                pawn.GetComp<AlienPartGenerator.AlienComp>().hairColorSecond =
-                    alienProps.alienRace.generalSettings.alienPartGenerator.alienhairsecondcolorgen?.NewRandomizedColor() ?? pawn.story.hairColor;
+                AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
+                alienComp.hairColorSecond = alienProps.alienRace.generalSettings.alienPartGenerator.alienhairsecondcolorgen?.NewRandomizedColor() ?? pawn.story.hairColor;
 
                 if (alienProps.alienRace.hairSettings.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                 {
@@ -1831,6 +1829,12 @@
                         float grey = Rand.Range(min: 0.65f, max: 0.85f);
                         pawn.story.hairColor = new Color(r: grey, g: grey, b: grey);
                     }
+                }
+
+                if (alienProps.alienRace.generalSettings.alienPartGenerator.useSkincolorForHair)
+                {
+                    pawn.story.hairColor      = pawn.story.SkinColor;
+                    alienComp.hairColorSecond = alienComp.skinColorSecond;
                 }
 
                 string headPath = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).head;
