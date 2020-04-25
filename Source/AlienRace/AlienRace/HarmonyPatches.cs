@@ -1805,6 +1805,7 @@
             if (!maleGenderProbability.HasValue) return;
 
             pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
+
             AlienPartGenerator.AlienComp alienComp = pawn.TryGetComp<AlienPartGenerator.AlienComp>();
             if ((alienComp == null || !(Math.Abs(value: maleGenderProbability.Value) < 0.001f)) && !(Math.Abs(value: maleGenderProbability.Value - 1f) < 0.001f)) return;
             if (alienComp != null)
@@ -1981,7 +1982,9 @@
                 AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
                 if (alienComp.fixGenderPostSpawn)
                 {
-                    __instance.pawn.gender = Rand.Value >= alienProps.alienRace.generalSettings.maleGenderProbability ? Gender.Female : Gender.Male;
+                    Log.Message("hello");
+                    float? maleGenderProbability = alien.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? alienProps.alienRace.generalSettings.maleGenderProbability;
+                    __instance.pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
                     __instance.pawn.Name   = PawnBioAndNameGenerator.GeneratePawnName(pawn: __instance.pawn);
 
 
