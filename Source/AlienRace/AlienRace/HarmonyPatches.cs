@@ -1938,16 +1938,19 @@
 
                 if (codeInstruction.opcode == OpCodes.Call && codeInstruction.OperandIs(shuffleableInfo))
                 {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
                     yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(FilterBackstories)));
                 }
             }
         }
 
-        public static List<Backstory> FilterBackstories(List<Backstory> backstories, BackstorySlot slot) =>
-            slot == BackstorySlot.Adulthood ? 
-                backstories.Where(bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)?.linkedBackstory.NullOrEmpty() ?? true).ToList() : 
-                backstories;
+        public static List<Backstory> FilterBackstories(List<Backstory> backstories, Pawn pawn, BackstorySlot slot) =>
+            backstories.Where(bs =>
+                              {
+                                  BackstoryDef def = DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier);
+                                  return (def?.Approved(pawn) ?? true) && (slot != BackstorySlot.Adulthood || (def?.linkedBackstory.NullOrEmpty() ?? true));
+                              }).ToList();
 
         private static PawnBioDef bioReference;
 
