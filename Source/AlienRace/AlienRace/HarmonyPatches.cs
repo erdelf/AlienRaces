@@ -1192,42 +1192,54 @@
 
         public static void TryMakeInitialRelationsWithPostfix(Faction __instance, Faction other)
         {
-            if (other.def.basicMemberKind?.race is ThingDef_AlienRace alienProps)
-                alienProps.alienRace.generalSettings.factionRelations?.ForEach(action: frs =>
+            ThingDef_AlienRace GetRaceOfFaction(FactionDef fac) =>
+                (fac.basicMemberKind?.race ?? fac.pawnGroupMakers?.SelectMany(pgm => pgm.options).GroupBy(pgm => pgm.kind.race).OrderByDescending(g => g.Count()).First().Key) as ThingDef_AlienRace;
+
+            ThingDef_AlienRace alienRace = GetRaceOfFaction(other.def);
+            alienRace?.alienRace.generalSettings.factionRelations?.ForEach(action: frs =>
                 {
                     if (!frs.factions.Contains(item: __instance.def.defName)) return;
+
                     int           offset = frs.goodwill.RandomInRange;
+
                     FactionRelationKind kind = offset > 75 ?
                                                    FactionRelationKind.Ally :
                                                    offset <= -10 ?
                                                        FactionRelationKind.Hostile :
                                                        FactionRelationKind.Neutral;
+
                     FactionRelation relation = other.RelationWith(other: __instance);
                     relation.goodwill = offset;
                     relation.kind = kind;
+
                     relation = __instance.RelationWith(other: other);
                     relation.goodwill = offset;
                     relation.goodwill = offset;
                     relation.kind = kind;
                 });
 
-            alienProps = __instance.def.basicMemberKind?.race as ThingDef_AlienRace;
-            alienProps?.alienRace.generalSettings.factionRelations?.ForEach(action: frs =>
+            alienRace = GetRaceOfFaction(__instance.def);
+
+            alienRace?.alienRace.generalSettings.factionRelations?.ForEach(action: frs =>
             {
                 if (!frs.factions.Contains(item: other.def.defName)) return;
                 int           offset = frs.goodwill.RandomInRange;
+
                 FactionRelationKind kind = offset > 75 ?
                                                FactionRelationKind.Ally :
                                                offset <= -10 ?
                                                    FactionRelationKind.Hostile :
                                                    FactionRelationKind.Neutral;
+
                 FactionRelation relation = other.RelationWith(other: __instance);
                 relation.goodwill = offset;
                 relation.kind     = kind;
+
                 relation          = __instance.RelationWith(other: other);
                 relation.goodwill = offset;
                 relation.kind     = kind;
             });
+
         }
 
         public static bool TryCreateThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance)
