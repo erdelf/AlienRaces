@@ -7,6 +7,7 @@ using UnityEngine;
 namespace AlienRace
 {
     using System;
+    using HarmonyLib;
 
     public class ThingDef_AlienRace : ThingDef
     {
@@ -43,6 +44,9 @@ namespace AlienRace
             foreach (AlienPartGenerator.BodyAddon bodyAddon in this.alienRace.generalSettings.alienPartGenerator.bodyAddons)
                 if (bodyAddon.offsets.west == null)
                     bodyAddon.offsets.west = bodyAddon.offsets.east;
+
+            if (this.alienRace.generalSettings.minAgeForAdulthood < 0)
+                this.alienRace.generalSettings.minAgeForAdulthood = (float) AccessTools.Field(typeof(PawnBioAndNameGenerator), "MinAgeForAdulthood").GetValue(null);
         }
 
         public class AlienSettings
@@ -61,6 +65,7 @@ namespace AlienRace
         public float maleGenderProbability = 0.5f;
         public bool immuneToAge = false;
         public bool canLayDown = true;
+        public float minAgeForAdulthood = -1f;
 
         public List<string> validBeds;
         public List<ChemicalSettings> chemicalSettings;

@@ -204,6 +204,11 @@
 
             harmony.Patch(original: AccessTools.Method(type: typeof(EquipmentUtility), name: nameof(EquipmentUtility.CanEquip), parameters: new []{typeof(Thing), typeof(Pawn), typeof(string).MakeByRefType()}), postfix: new HarmonyMethod(patchType, nameof(CanEquipPostfix)));
 
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "GiveShuffledBioTo"), transpiler: 
+                          new HarmonyMethod(methodType: patchType, methodName: nameof(MinAgeForAdulthood)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "TryGiveSolidBioTo"), transpiler:
+                          new HarmonyMethod(methodType: patchType, methodName: nameof(MinAgeForAdulthood)));
+
             DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
                                                                                   {
                                                                                       foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts.Select(selector: DefDatabase<ThoughtDef>.GetNamedSilentFail).Where(predicate: td => td != null))
@@ -413,6 +418,27 @@
             foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs)
                 BackstoryDef.UpdateTranslateableFields(bs: bd);
         }
+
+
+        public static IEnumerable<CodeInstruction> MinAgeForAdulthood(IEnumerable<CodeInstruction> instructions)
+        {
+            float value = (float) AccessTools.Field(typeof(PawnBioAndNameGenerator), "MinAgeForAdulthood").GetValue(null);
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.opcode == OpCodes.Ldc_R4 && instruction.OperandIs(value))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return instruction;
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetMinAgeForAdulthood)));
+                }
+                else
+                    yield return instruction;
+            }
+        }
+
+        public static float GetMinAgeForAdulthood(Pawn pawn, float value) => 
+            pawn.def is ThingDef_AlienRace alienProps ? alienProps.alienRace.generalSettings.minAgeForAdulthood : value;
 
         public static IEnumerable<CodeInstruction> MisandryMisogynyTranspiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -1997,7 +2023,6 @@
                 AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
                 if (alienComp.fixGenderPostSpawn)
                 {
-                    Log.Message("hello");
                     float? maleGenderProbability = alien.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? alienProps.alienRace.generalSettings.maleGenderProbability;
                     __instance.pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
                     __instance.pawn.Name   = PawnBioAndNameGenerator.GeneratePawnName(pawn: __instance.pawn);
