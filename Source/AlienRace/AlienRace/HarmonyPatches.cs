@@ -1752,18 +1752,25 @@
             IntVec3            c          = IntVec3.FromVector3(v: clickPos);
             ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
             {
-                Thing drugs = c.GetThingList(map: pawn.Map).FirstOrDefault(predicate: t => t?.TryGetComp<CompDrug>() != null);
-                if (drugs != null && (alienProps?.alienRace.generalSettings.chemicalSettings?.Any(predicate: cs =>
-                                          cs.chemical.EqualsIgnoreCase(B: drugs.TryGetComp<CompDrug>()?.Props.chemical?.defName) && !cs.ingestible) ?? false))
-                {
-                    List<FloatMenuOption> options = opts.Where(predicate: fmo =>
-                        !fmo.Disabled && fmo.Label.Contains(value: string.Format(format: drugs.def.ingestible.ingestCommandString, arg0: drugs.LabelShort))).ToList();
-                    foreach (FloatMenuOption fmo in options)
-                    {
-                        int index = opts.IndexOf(item: fmo);
-                        opts.Remove(item: fmo);
+                IEnumerable<Thing> drugs = c.GetThingList(map: pawn.Map).Where(predicate: t => t?.TryGetComp<CompDrug>() != null);
 
-                        opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotEquip".Translate(arg1: drugs.LabelShort)} {pawn.def.LabelCap} can't consume this)", action: null));
+                foreach (Thing drug in drugs)
+                {
+                    if (alienProps?.alienRace.generalSettings.chemicalSettings?.Any(predicate: cs =>
+                                                                                                   cs.chemical.EqualsIgnoreCase(B: drug.TryGetComp<CompDrug>()?.Props.chemical?.defName) &&
+                                                                                                   !cs.ingestible) ?? false)
+                    {
+
+
+                        List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: string.Format(format: drug.def.ingestible.ingestCommandString,
+                                                                                                                                              arg0: drug.LabelShort))).ToList();
+                        foreach (FloatMenuOption fmo in options)
+                        {
+                            int index = opts.IndexOf(item: fmo);
+                            opts.Remove(item: fmo);
+
+                            opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotEquip".Translate(arg1: drug.LabelShort)} {pawn.def.LabelCap} can't consume this)", action: null));
+                        }
                     }
                 }
             }
