@@ -16,6 +16,7 @@
                 <value>
                     <alienRace>
                         <generalSettings>
+                            <allowHumanBios>true</allowHumanBios>
                             <alienPartGenerator>
                                 <aliencrowntypes>
                                     <li>Average_Normal</li>
