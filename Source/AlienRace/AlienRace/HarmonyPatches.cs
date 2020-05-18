@@ -417,6 +417,8 @@
 
             foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs)
                 BackstoryDef.UpdateTranslateableFields(bs: bd);
+
+            AlienRaceMod.settings.UpdateSettings();
         }
 
 

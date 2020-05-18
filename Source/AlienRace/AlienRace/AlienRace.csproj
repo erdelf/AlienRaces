@@ -309,6 +309,7 @@
   <ItemGroup>
     <Compile Include="AlienPartGenerator.BodyAddon.cs" />
     <Compile Include="AlienPartGenerator.cs" />
+    <Compile Include="AlienRaceMod.cs" />
     <Compile Include="BackstoryDef.cs" />
     <Compile Include="ColorGenerator_SkinColorMelanin.cs" />
     <Compile Include="HarmonyPatches.cs" />
