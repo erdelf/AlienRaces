@@ -76,8 +76,6 @@
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(HasJobOnCellHarvestPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(WorkGiver_GrowerSow), name: "ExtraRequirements"), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(ExtraRequirementsGrowerSowPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(FloatMenuMakerMap), name: "AddHumanlikeOrders"), prefix: null,
-                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(AddHumanlikeOrdersPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.SetFaction)), prefix: null, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(SetFactionPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Thing), name: nameof(Pawn.SetFactionDirect)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(SetFactionDirectPostfix)));
@@ -1747,35 +1745,6 @@
             TaleRecorder.RecordTale(def: TaleDefOf.ButcheredHumanlikeCorpse, args: new object[] {butcher});
             __result = things;
             return false;
-        }
-
-        public static void AddHumanlikeOrdersPostfix(ref List<FloatMenuOption> opts, Pawn pawn, Vector3 clickPos)
-        {
-            IntVec3            c          = IntVec3.FromVector3(v: clickPos);
-            ThingDef_AlienRace alienProps = pawn.def as ThingDef_AlienRace;
-            {
-                IEnumerable<Thing> drugs = c.GetThingList(map: pawn.Map).Where(predicate: t => t?.TryGetComp<CompDrug>() != null);
-
-                foreach (Thing drug in drugs)
-                {
-                    if (alienProps?.alienRace.generalSettings.chemicalSettings?.Any(predicate: cs =>
-                                                                                                   cs.chemical.EqualsIgnoreCase(B: drug.TryGetComp<CompDrug>()?.Props.chemical?.defName) &&
-                                                                                                   !cs.ingestible) ?? false)
-                    {
-
-
-                        List<FloatMenuOption> options = opts.Where(predicate: fmo => !fmo.Disabled && fmo.Label.Contains(value: string.Format(format: drug.def.ingestible.ingestCommandString,
-                                                                                                                                              arg0: drug.LabelShort))).ToList();
-                        foreach (FloatMenuOption fmo in options)
-                        {
-                            int index = opts.IndexOf(item: fmo);
-                            opts.Remove(item: fmo);
-
-                            opts.Insert(index: index, item: new FloatMenuOption(label: $"{"CannotEquip".Translate(arg1: drug.LabelShort)} {pawn.def.LabelCap} can't consume this)", action: null));
-                        }
-                    }
-                }
-            }
         }
 
         public static void CanEquipPostfix(ref bool __result, Thing thing, Pawn pawn, ref string cantReason)
