@@ -33,7 +33,11 @@
                                 <bodyAddons></bodyAddons>
                             </alienPartGenerator>
                         </generalSettings>
-                        <graphicPaths></graphicPaths>
+                        <graphicPaths>
+                            <li>
+                                <skinShader>CutoutSkin</skinShader>
+                            </li>
+                        </graphicPaths>
                         <hairSettings></hairSettings>
                         <thoughtSettings>
                             <cannotReceiveThoughts></cannotReceiveThoughts>
