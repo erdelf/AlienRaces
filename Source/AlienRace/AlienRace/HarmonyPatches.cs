@@ -2067,13 +2067,13 @@
                                                               itemPath: AlienPartGenerator.GetNakedPath(bodyType: alien.story.bodyType, userpath: graphicPaths.body,
                                                                             gender: alienProps.alienRace.generalSettings.alienPartGenerator.useGenderedBodies ? alien.gender.ToString() : "") +
                                                                         "_northm", reportFailure: false) == null ?
-                                                              ShaderDatabase.Cutout :
+                                                              graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout :
                                                               ShaderDatabase.CutoutComplex, skinColor: __instance.pawn.story.SkinColor,
                                                   skinColorSecond: alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien: alien, first: false), userpath: graphicPaths.body,
                                                   gender: alien.gender.ToString()) :
                                               null;
                 __instance.rottingGraphic = !graphicPaths.body.NullOrEmpty() ?
-                                                alienProps.alienRace.generalSettings.alienPartGenerator.GetNakedGraphic(bodyType: alien.story.bodyType, shader: ShaderDatabase.Cutout,
+                                                alienProps.alienRace.generalSettings.alienPartGenerator.GetNakedGraphic(bodyType: alien.story.bodyType, shader: graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout,
                                                     skinColor: PawnGraphicSet.RottingColor, skinColorSecond: PawnGraphicSet.RottingColor, userpath: graphicPaths.body,
                                                     gender: alien.gender.ToString()) :
                                                 null;
@@ -2081,7 +2081,7 @@
                 __instance.headGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
                                              GraphicDatabase.Get<Graphic_Multi>(path: alien.story.HeadGraphicPath,
                                                  shader: ContentFinder<Texture2D>.Get(itemPath: alien.story.HeadGraphicPath + "_northm", reportFailure: false) == null ?
-                                                             (alienProps.alienRace.hairSettings.shader?.Shader ?? ShaderDatabase.Cutout) :
+                                                             graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout :
                                                              ShaderDatabase.CutoutComplex, drawSize: Vector2.one, color: alien.story.SkinColor,
                                                  colorTwo: alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien: alien, first: false)) :
                                              null;
@@ -2094,7 +2094,7 @@
                                               null;
                 __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(path: __instance.pawn.story.hairDef.texPath,
                     shader: ContentFinder<Texture2D>.Get(itemPath: __instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
-                                ShaderDatabase.Cutout :
+                                (alienProps.alienRace.hairSettings.shader?.Shader ?? ShaderDatabase.Cutout) :
                                 ShaderDatabase.CutoutComplex, drawSize: Vector2.one, color: alien.story.hairColor, colorTwo: alienComp.hairColorSecond);
                 __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
                                                   GraphicDatabase.Get<Graphic_Multi>(path: graphicPaths.stump,
