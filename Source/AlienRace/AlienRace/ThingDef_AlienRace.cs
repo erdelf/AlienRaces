@@ -323,7 +323,7 @@ namespace AlienRace
             !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyEatRaceRestrictedFood ?? false) ||
             (races?.Contains(item: race as ThingDef_AlienRace) ?? false) ||
             foodWhiteDict.TryGetValue(key: food, value: out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false)) && 
-            ((race as ThingDef_AlienRace)?.alienRace.generalSettings.chemicalSettings.TrueForAll(c => c.ingestible || !c.chemical.EqualsIgnoreCase(food.GetCompProperties<CompProperties_Drug>().chemical.defName)) ?? true);
+            ((race as ThingDef_AlienRace)?.alienRace.generalSettings.chemicalSettings?.TrueForAll(c => c.ingestible || !c.chemical.EqualsIgnoreCase(food.GetCompProperties<CompProperties_Drug>().chemical.defName)) ?? true);
 
         public bool onlyTameRaceRestrictedPets = false;
         public List<string> petList = new List<string>();
