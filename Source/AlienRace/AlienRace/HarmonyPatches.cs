@@ -346,7 +346,7 @@
                                                                                       AlienDefOf.alienCorpseCategory.childThingDefs.Add(item: ar.race.corpseDef);
                                                                                       ar.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
 
-                                                                                      if (ar.alienRace.generalSettings.humanRecipeImport)
+                                                                                      if (ar.alienRace.generalSettings.humanRecipeImport && ar != ThingDefOf.Human)
                                                                                       {
                                                                                           (ar.recipes ?? (ar.recipes = new List<RecipeDef>())).AddRange(collection: ThingDefOf.Human.recipes.Where(predicate: rd =>
                                                                                                                                                                                                                   !rd.targetsBodyPart || rd.appliedOnFixedBodyParts.NullOrEmpty() ||
@@ -829,9 +829,9 @@
         {
             if (!__instance.Humanlike) return;
             ThingDef eater = new List<ThingDef>(collection: DefDatabase<ThingDef>.AllDefsListForReading).Concat(
-                second: new List<ThingDef_AlienRace>(collection: DefDatabase<ThingDef_AlienRace>.AllDefsListForReading).Cast<ThingDef>()).First(predicate: td => td.race == __instance);
+                second: new List<ThingDef_AlienRace>(collection: DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)).First(predicate: td => td.race == __instance);
 
-            __result = RaceRestrictionSettings.CanEat(food: t, race: eater) && __result;
+            __result = __result && RaceRestrictionSettings.CanEat(food: t, race: eater);
         }
         
         public static IEnumerable<Rule> RulesForPawnPostfix(IEnumerable<Rule> __result, Pawn pawn, string pawnSymbol) =>
