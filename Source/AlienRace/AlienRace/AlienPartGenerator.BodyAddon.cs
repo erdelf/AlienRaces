@@ -129,7 +129,7 @@ namespace AlienRace
                 int tv;
 
                 return !returnPath.NullOrEmpty() ?
-                            GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value) :
+                            GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
                                     (this.linkVariantIndexWithPrevious ?
                                         sharedIndex % variantCounting :
                                         (sharedIndex = Rand.Range(min: 0, max: variantCounting))))) == 0 ? "" : tv.ToString())),
