@@ -125,6 +125,9 @@ namespace AlienRace
                     variantCounting = this.variantCount;
                 }
 
+                if (variantCounting <= 0)
+                    variantCounting = 1;
+
                 ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
                 int tv;
 
