@@ -1414,7 +1414,7 @@
 
             if (newThoughtDef == newThought.def) return true;
 
-            Thought_Memory replacedThought = (Thought_Memory)ThoughtMaker.MakeThought(def: newThoughtDef);
+            Thought_Memory replacedThought = (Thought_Memory)ThoughtMaker.MakeThought(def: newThoughtDef, newThought.CurStageIndex);
             //foreach (FieldInfo field in newThought.GetType().GetFields(AccessTools.all))
             //field.SetValue(replacedThought, field.GetValue(newThought));
             newThought = replacedThought;
