@@ -2017,8 +2017,10 @@
 
                 GraphicPaths graphicPaths = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: alien.ageTracker.CurLifeStage);
 
-                alienComp.customDrawSize         = graphicPaths.customDrawSize;
-                alienComp.customPortraitDrawSize = graphicPaths.customPortraitDrawSize;
+                alienComp.customDrawSize             = graphicPaths.customDrawSize;
+                alienComp.customHeadDrawSize         = graphicPaths.customHeadDrawSize;
+                alienComp.customPortraitDrawSize     = graphicPaths.customPortraitDrawSize;
+                alienComp.customPortraitHeadDrawSize = graphicPaths.customPortraitHeadDrawSize;
 
                 alienComp.AssignProperMeshs();
 
@@ -2278,10 +2280,10 @@
                 portrait ?
                     wantsBody ?
                         alienComp.alienPortraitGraphics.bodySet.MeshAt(rot: facing) :
-                        alienComp.alienPortraitGraphics.headSet.MeshAt(rot: facing) :
+                        alienComp.alienPortraitHeadGraphics.headSet.MeshAt(rot: facing) :
                     wantsBody ?
                         alienComp.alienGraphics.bodySet.MeshAt(rot: facing) :
-                        alienComp.alienGraphics.headSet.MeshAt(rot: facing) :
+                        alienComp.alienHeadGraphics.headSet.MeshAt(rot: facing) :
                 wantsBody ?
                     MeshPool.humanlikeBodySet.MeshAt(rot: facing) :
                     MeshPool.humanlikeHeadSet.MeshAt(rot: facing);
@@ -2289,8 +2291,8 @@
         public static Mesh GetPawnHairMesh(bool portrait, Pawn pawn, Rot4 headFacing, PawnGraphicSet graphics) =>
             pawn.GetComp<AlienPartGenerator.AlienComp>() is AlienPartGenerator.AlienComp alienComp ?
                      (portrait ?
-                          alienComp.alienPortraitGraphics.hairSetAverage :
-                          alienComp.alienGraphics.hairSetAverage).MeshAt(rot: headFacing) :
+                          alienComp.alienPortraitHeadGraphics.hairSetAverage :
+                          alienComp.alienHeadGraphics.hairSetAverage).MeshAt(rot: headFacing) :
                 graphics.HairMeshSet.MeshAt(rot: headFacing);
 
         public static void DrawAddons(bool portrait, Vector3 vector, Pawn pawn, Quaternion quat, Rot4 rotation, bool invisible)
