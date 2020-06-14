@@ -90,6 +90,18 @@
                 prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(TryGainMemoryPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(SituationalThoughtHandler), name: "TryCreateThought"),
                 prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(TryCreateThoughtPrefix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(MemoryThoughtHandler), name: nameof(MemoryThoughtHandler.RemoveMemoriesOfDef)),
+                          prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ThoughtReplacementPrefix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(MemoryThoughtHandler), name: nameof(MemoryThoughtHandler.RemoveMemoriesOfDefIf)),
+                          prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ThoughtReplacementPrefix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(MemoryThoughtHandler), name: nameof(MemoryThoughtHandler.RemoveMemoriesOfDefWhereOtherPawnIs)),
+                          prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ThoughtReplacementPrefix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(MemoryThoughtHandler), name: nameof(MemoryThoughtHandler.OldestMemoryOfDef)),
+                          prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ThoughtReplacementPrefix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(MemoryThoughtHandler), name: nameof(MemoryThoughtHandler.NumMemoriesOfDef)),
+                          prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ThoughtReplacementPrefix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(MemoryThoughtHandler), name: nameof(MemoryThoughtHandler.GetFirstMemoryOfDef)),
+                          prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ThoughtReplacementPrefix)));
 
             harmony.Patch(original: AccessTools.Method(type: AccessTools.TypeByName(name: "AgeInjuryUtility"), name: "GenerateRandomOldAgeInjuries"),
                 prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateRandomOldAgeInjuriesPrefix)));
@@ -419,6 +431,12 @@
             AlienRaceMod.settings.UpdateSettings();
         }
 
+        public static void ThoughtReplacementPrefix(MemoryThoughtHandler __instance, ref ThoughtDef def)
+        {
+            Pawn pawn = __instance.pawn;
+            if (pawn.def is ThingDef_AlienRace race)
+                def = race.alienRace.thoughtSettings.ReplaceIfApplicable(def);
+        }
 
         public static IEnumerable<CodeInstruction> MinAgeForAdulthood(IEnumerable<CodeInstruction> instructions)
         {
