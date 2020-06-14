@@ -318,12 +318,20 @@ namespace AlienRace
         public static Dictionary<ThingDef, List<ThingDef_AlienRace>> foodRestrictionDict = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
         public static Dictionary<ThingDef, List<ThingDef_AlienRace>> foodWhiteDict = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
 
-        public static bool CanEat(ThingDef food, ThingDef race) =>
-            (!foodRestrictionDict.TryGetValue(key: food, value: out List<ThingDef_AlienRace> races) &&
-            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyEatRaceRestrictedFood ?? false) ||
-            (races?.Contains(item: race as ThingDef_AlienRace) ?? false) ||
-            foodWhiteDict.TryGetValue(key: food, value: out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false)) && 
-            ((race as ThingDef_AlienRace)?.alienRace.generalSettings.chemicalSettings?.TrueForAll(c => c.ingestible || !c.chemical.EqualsIgnoreCase(food.GetCompProperties<CompProperties_Drug>().chemical.defName)) ?? true);
+        public static bool CanEat(ThingDef food, ThingDef race)
+        {
+            if (foodRestrictionDict.TryGetValue(key: food, value: out List<ThingDef_AlienRace> races) || 
+                ((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyEatRaceRestrictedFood ?? false))
+            {
+                if (!(races?.Contains(race as ThingDef_AlienRace) ?? false) && (!foodWhiteDict.TryGetValue(key: food, value: out races) || !races.Contains(item: race as ThingDef_AlienRace)))
+                    return false;
+            }
+
+            string chemical = food.GetCompProperties<CompProperties_Drug>()?.chemical?.defName ?? string.Empty;
+
+            return chemical.NullOrEmpty() || ((race as ThingDef_AlienRace)?.alienRace.generalSettings.chemicalSettings?.TrueForAll(c => 
+                                                c.ingestible || !c.chemical.EqualsIgnoreCase(chemical)) ?? true);
+        }
 
         public bool onlyTameRaceRestrictedPets = false;
         public List<string> petList = new List<string>();
