@@ -79,8 +79,10 @@ namespace AlienRace
             foreach (GraphicPaths graphicsPath in this.alienProps.alienRace.graphicPaths.Concat(
                     rhs: new GraphicPaths() { customDrawSize = this.customDrawSize, customHeadDrawSize = this.customHeadDrawSize, customPortraitDrawSize = this.customPortraitDrawSize, customPortraitHeadDrawSize = this.customPortraitHeadDrawSize }))
             {
-                AddMeshSet(drawSize: graphicsPath.customDrawSize, headDrawSize: graphicsPath.customHeadDrawSize);
-                AddMeshSet(drawSize: graphicsPath.customPortraitDrawSize, headDrawSize: graphicsPath.customPortraitHeadDrawSize);
+                AddMeshSet(drawSize: graphicsPath.customDrawSize, headDrawSize: graphicsPath.customDrawSize);
+                AddMeshSet(drawSize: graphicsPath.customHeadDrawSize, headDrawSize: graphicsPath.customHeadDrawSize);
+                AddMeshSet(drawSize: graphicsPath.customPortraitDrawSize, headDrawSize: graphicsPath.customPortraitDrawSize);
+                AddMeshSet(drawSize: graphicsPath.customPortraitHeadDrawSize, headDrawSize: graphicsPath.customPortraitHeadDrawSize);
             }
 
 
@@ -161,9 +163,13 @@ namespace AlienRace
             public Color hairColorSecond;
             public string crownType;
             public Vector2 customDrawSize = Vector2.one;
+            public Vector2 customHeadDrawSize = Vector2.one;
             public Vector2 customPortraitDrawSize = Vector2.one;
+            public Vector2 customPortraitHeadDrawSize = Vector2.one;
             public AlienGraphicMeshSet alienGraphics;
+            public AlienGraphicMeshSet alienHeadGraphics;
             public AlienGraphicMeshSet alienPortraitGraphics;
+            public AlienGraphicMeshSet alienPortraitHeadGraphics;
             public List<Graphic> addonGraphics;
             public List<int> addonVariants;
 
@@ -195,7 +201,9 @@ namespace AlienRace
                 base.PostSpawnSetup(respawningAfterLoad: respawningAfterLoad);
                 AlienPartGenerator apg = ((ThingDef_AlienRace) this.parent.def).alienRace.generalSettings.alienPartGenerator;
                 this.customDrawSize = apg.customDrawSize;
+                this.customHeadDrawSize = apg.customHeadDrawSize;
                 this.customPortraitDrawSize = apg.customPortraitDrawSize;
+                this.customPortraitHeadDrawSize = apg.customPortraitHeadDrawSize;
             }
 
             public override void PostExposeData()
@@ -216,7 +224,9 @@ namespace AlienRace
             internal void AssignProperMeshs()
             {
                 this.alienGraphics = meshPools[key: this.customDrawSize];
+                this.alienHeadGraphics = meshPools[key: this.customHeadDrawSize];
                 this.alienPortraitGraphics = meshPools[key: this.customPortraitDrawSize];
+                this.alienPortraitHeadGraphics = meshPools[key: this.customPortraitHeadDrawSize];
             }
         }
 
