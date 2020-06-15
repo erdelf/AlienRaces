@@ -12,6 +12,7 @@
     using RimWorld;
     using RimWorld.BaseGen;
     using UnityEngine;
+    using UnityEngine.Experimental.PlayerLoop;
     using Verse;
     using Verse.AI;
     using Verse.Grammar;
@@ -1467,19 +1468,21 @@
         private static int               colonistRacesTick;
         private const  int               COLONIST_RACES_TICK_TIMER = GenDate.TicksPerHour * 2;
 
-        public static void DesignatorAllowedPostfix(Designator d, ref bool __result)
+        public static void UpdateColonistRaces()
         {
-            if (!__result || !(d is Designator_Build build)) return;
             if (Find.TickManager.TicksAbs > colonistRacesTick + COLONIST_RACES_TICK_TIMER || Find.TickManager.TicksAbs < colonistRacesTick)
-                if ((colonistRaces =
-                         new HashSet<ThingDef>(collection:
-                                               PawnsFinder.AllMaps_FreeColonistsSpawned.Select(selector: p => p.def)))
-                .Count > 0)
+                if ((colonistRaces = new HashSet<ThingDef>(collection: PawnsFinder.AllMaps_FreeColonistsSpawned.Select(selector: p => p.def))).Count > 0)
                 {
                     colonistRacesTick = Find.TickManager.TicksAbs;
                     //Log.Message(string.Join(" | ", colonistRaces.Select(td => td.defName)));
                 }
+        }
 
+        public static void DesignatorAllowedPostfix(Designator d, ref bool __result)
+        {
+            if (!__result || !(d is Designator_Build build)) 
+                return;
+            UpdateColonistRaces();
             __result = colonistRaces.Any(predicate: ar => RaceRestrictionSettings.CanBuild(building: build.PlacingDef, race: ar));
         }
 
@@ -1507,9 +1510,12 @@
                 }
         }
 
-        private static List<ResearchProjectDef> ResearchFixed(List<ResearchProjectDef> researchList) =>
-            researchList.Where(rpd => RaceRestrictionSettings.CanResearch(colonistRaces, rpd)).ToList();
-        
+        private static List<ResearchProjectDef> ResearchFixed(List<ResearchProjectDef> researchList)
+        {
+            UpdateColonistRaces();
+            return researchList.Where(rpd => RaceRestrictionSettings.CanResearch(colonistRaces, rpd)).ToList();
+        }
+
 
         public static void ShouldSkipResearchPostfix(Pawn pawn, ref bool __result)
         {
