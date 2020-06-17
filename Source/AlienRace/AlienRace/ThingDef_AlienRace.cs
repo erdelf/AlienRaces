@@ -57,6 +57,7 @@ namespace AlienRace
             public ThoughtSettings thoughtSettings = new ThoughtSettings();
             public RelationSettings relationSettings = new RelationSettings();
             public RaceRestrictionSettings raceRestriction = new RaceRestrictionSettings();
+            public CompatibilityInfo compatibility = new CompatibilityInfo();
         }
     }
 
@@ -371,5 +372,38 @@ namespace AlienRace
     public class LifeStageAgeAlien : LifeStageAge
     {
         public BodyDef body;
+    }
+
+    public class CompatibilityInfo
+    {
+        private bool isFlesh = true;
+
+        public virtual bool IsFlesh
+        {
+            get => this.isFlesh;
+            set => this.isFlesh = value;
+        }
+
+        public virtual bool IsFleshPawn(Pawn pawn) => this.IsFlesh;
+
+        private bool isSentient = true;
+
+        public virtual bool IsSentient
+        {
+            get => this.isSentient;
+            set => this.isSentient = value;
+        }
+
+        public virtual bool IsSentientPawn(Pawn pawn) => this.IsSentient;
+
+        private bool hasBlood = true;
+
+        public virtual bool HasBlood
+        {
+            get => this.hasBlood;
+            set => this.hasBlood = value;
+        }
+
+        public virtual bool HasBloodPawn(Pawn pawn) => this.HasBlood;
     }
 }
