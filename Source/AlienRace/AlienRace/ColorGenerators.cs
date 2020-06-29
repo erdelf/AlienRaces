@@ -5,12 +5,12 @@ using System.Text;
 
 namespace AlienRace
 {
+    using System.Xml;
     using JetBrains.Annotations;
     using RimWorld;
     using UnityEngine;
     using Verse;
 
-    [UsedImplicitly]
     public class ColorGenerator_SkinColorMelanin : ColorGenerator
     {
         public float minMelanin = 0f;
@@ -18,5 +18,18 @@ namespace AlienRace
 
         public override Color NewRandomizedColor() => 
             PawnSkinColors.GetSkinColor(melanin: Rand.Range(min: this.minMelanin, max: this.maxMelanin));
+    }
+
+    public class ColorGenerator_CustomAlienChannel : ColorGenerator
+    {
+        public string colorChannel;
+
+        public override Color NewRandomizedColor() => 
+            Color.clear;
+
+        public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+        {
+            this.colorChannel = ParseHelper.FromString<string>(xmlRoot.FirstChild.Value);
+        }
     }
 }
