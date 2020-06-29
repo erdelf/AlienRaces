@@ -190,9 +190,21 @@ namespace AlienRace
                         this.colorChannels.Add("hair", new ExposableValueTuple<Color, Color>(pawn.story.hairColor, this.hairColorSecond));
                         
                         foreach (ColorChannelGenerator channel in apg.colorChannels)
-                            this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color>(channel.first.NewRandomizedColor(), channel.second.NewRandomizedColor()));
+                            this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color>(GenerateColor(channel.first), GenerateColor(channel.second)));
                     }
                     return this.colorChannels;
+                }
+            }
+
+            public Color GenerateColor(ColorGenerator gen)
+            {
+                switch (gen)
+                {
+                    case ColorGenerator_CustomAlienChannel ac:
+                        string[] split = ac.colorChannel.Split('_');
+                        return split[1] == "1" ? this.ColorChannels[split[0]].first : this.ColorChannels[split[0]].second;
+                    default:
+                        return gen.NewRandomizedColor();
                 }
             }
 
