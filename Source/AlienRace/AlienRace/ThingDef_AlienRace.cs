@@ -376,7 +376,7 @@ namespace AlienRace
 
     public class CompatibilityInfo
     {
-        private bool isFlesh = true;
+        protected bool isFlesh = true;
 
         public virtual bool IsFlesh
         {
@@ -386,7 +386,7 @@ namespace AlienRace
 
         public virtual bool IsFleshPawn(Pawn pawn) => this.IsFlesh;
 
-        private bool isSentient = true;
+        protected bool isSentient = true;
 
         public virtual bool IsSentient
         {
@@ -396,7 +396,7 @@ namespace AlienRace
 
         public virtual bool IsSentientPawn(Pawn pawn) => this.IsSentient;
 
-        private bool hasBlood = true;
+        protected bool hasBlood = true;
 
         public virtual bool HasBlood
         {
