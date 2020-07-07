@@ -2123,6 +2123,8 @@
                 alienComp.ColorChannels["hair"].second = alienComp.hairColorSecond;
                 __instance.ResolveApparelGraphics();
 
+                PortraitsCache.SetDirty(alien);
+
                 return false;
             }
 
