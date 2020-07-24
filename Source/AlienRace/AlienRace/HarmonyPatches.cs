@@ -104,10 +104,10 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(MemoryThoughtHandler), name: nameof(MemoryThoughtHandler.GetFirstMemoryOfDef)),
                           prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ThoughtReplacementPrefix)));
 
-            harmony.Patch(original: AccessTools.Method(type: AccessTools.TypeByName(name: "AgeInjuryUtility"), name: "GenerateRandomOldAgeInjuries"),
+            harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssembly("AgeInjuryUtility"), name: "GenerateRandomOldAgeInjuries"),
                 prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateRandomOldAgeInjuriesPrefix)));
             harmony.Patch(
-                original: AccessTools.Method(type: AccessTools.TypeByName(name: "AgeInjuryUtility"), name: "RandomHediffsToGainOnBirthday", parameters: new[] { typeof(ThingDef), typeof(int) }),
+                original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssembly("AgeInjuryUtility"), name: "RandomHediffsToGainOnBirthday", parameters: new[] { typeof(ThingDef), typeof(int) }),
                 prefix: null, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(RandomHediffsToGainOnBirthdayPostfix)));
             //            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver), name: nameof(JobDriver.Posture)).GetGetMethod(nonPublic: false), prefix: null,
             //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
