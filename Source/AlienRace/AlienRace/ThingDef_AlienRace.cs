@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace AlienRace
 {
-    using System;
     using HarmonyLib;
 
     public class ThingDef_AlienRace : ThingDef

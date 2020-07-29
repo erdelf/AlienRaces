@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace AlienRace
+﻿namespace AlienRace
 {
-    using System.Xml;
-    using JetBrains.Annotations;
     using RimWorld;
     using UnityEngine;
     using Verse;
