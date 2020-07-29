@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AlienRace
+﻿namespace AlienRace
 {
     using RimWorld;
     using UnityEngine;
@@ -16,10 +10,8 @@ namespace AlienRace
 
         public override string SettingsCategory() => "Alien Race";
 
-        public AlienRaceMod(ModContentPack content) : base(content)
-        {
+        public AlienRaceMod(ModContentPack content) : base(content) => 
             settings = this.GetSettings<AlienRaceSettings>();
-        }
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
@@ -47,10 +39,8 @@ namespace AlienRace
             Scribe_Values.Look(ref this.centralMelanin, "centralMelanin", false);
         }
 
-        public void UpdateSettings()
-        {
-            ((ThingDef_AlienRace)ThingDefOf.Human).alienRace.generalSettings.alienPartGenerator.alienskincolorgen =
-                centralMelanin ? null : new ColorGenerator_SkinColorMelanin { maxMelanin = 1f, minMelanin = 0f };
-        }
+        public void UpdateSettings() =>
+            ((ThingDef_AlienRace)ThingDefOf.Human).alienRace.generalSettings.alienPartGenerator.alienskincolorgen = 
+            this.centralMelanin ? null : new ColorGenerator_SkinColorMelanin { maxMelanin = 1f, minMelanin = 0f };
     }
 }

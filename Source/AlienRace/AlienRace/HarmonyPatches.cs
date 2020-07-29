@@ -10,9 +10,7 @@
     using System.Runtime.CompilerServices;
     using HarmonyLib;
     using RimWorld;
-    using RimWorld.BaseGen;
     using UnityEngine;
-    using UnityEngine.Experimental.PlayerLoop;
     using Verse;
     using Verse.AI;
     using Verse.Grammar;
