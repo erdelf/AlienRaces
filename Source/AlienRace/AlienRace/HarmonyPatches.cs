@@ -78,9 +78,9 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.SetFaction)), prefix: null, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(SetFactionPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Thing), name: nameof(Pawn.SetFactionDirect)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(SetFactionDirectPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_OptimizeApparel), name: nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), prefix: null,
+            harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_OptimizeApparel), name: nameof(JobGiver_OptimizeApparel.ApparelScoreGain_NewTmp)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(ApparelScoreGainPostFix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtUtility), name: nameof(ThoughtUtility.CanGetThought)), prefix: null,
+            harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtUtility), name: nameof(ThoughtUtility.CanGetThought_NewTemp)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanGetThoughtPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Corpse), name: nameof(Corpse.ButcherProducts)), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ButcherProductsPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(FoodUtility), name: nameof(FoodUtility.ThoughtsFromIngesting)), prefix: null,
@@ -123,7 +123,7 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(AddictionUtility), name: nameof(AddictionUtility.CanBingeOnNow)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanBingeNowPostfix)));
                 
-            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateBodyType"), prefix: null,
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateBodyType_NewTemp"), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateBodyTypePostfix)));
             harmony.Patch(original: AccessTools.Property(type: typeof(Pawn_StoryTracker), name: nameof(Pawn_StoryTracker.SkinColor)).GetGetMethod(), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(SkinColorPostfix)));
@@ -211,7 +211,7 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_Woman), name: "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_Man), name: "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
 
-            harmony.Patch(original: AccessTools.Method(type: typeof(EquipmentUtility), name: nameof(EquipmentUtility.CanEquip), parameters: new []{typeof(Thing), typeof(Pawn), typeof(string).MakeByRefType()}), postfix: new HarmonyMethod(patchType, nameof(CanEquipPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(EquipmentUtility), name: nameof(EquipmentUtility.CanEquip_NewTmp), parameters: new []{typeof(Thing), typeof(Pawn), typeof(string).MakeByRefType(), typeof(bool)}), postfix: new HarmonyMethod(patchType, nameof(CanEquipPostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "GiveShuffledBioTo"), transpiler: 
                           new HarmonyMethod(methodType: patchType, methodName: nameof(MinAgeForAdulthood)));
