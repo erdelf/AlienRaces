@@ -70,7 +70,7 @@ namespace AlienRace
         public List<string> validBeds;
         public List<ChemicalSettings> chemicalSettings;
         public List<AlienTraitEntry> forcedRaceTraitEntries;
-        public List<string> disallowedTraits;
+        public List<AlienTraitEntry> disallowedTraits;
         public AlienPartGenerator alienPartGenerator = new AlienPartGenerator();
 
         public List<FactionRelationSettings> factionRelations;
