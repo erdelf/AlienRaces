@@ -17,8 +17,6 @@ namespace AlienRace
         {
             public string path;
             public string bodyPart;
-            [Obsolete("Replaced by color channels")]
-            public bool useSkinColor = true;
             public BodyAddonOffsets offsets;
             public bool linkVariantIndexWithPrevious = false;
             public float angle = 0f;
@@ -34,7 +32,7 @@ namespace AlienRace
             private string colorChannel;
 
             public string ColorChannel => 
-                this.colorChannel = this.colorChannel ?? (this.useSkinColor ? "skin" : "hair");
+                this.colorChannel = this.colorChannel ?? "skin";
 
             public int variantCount = 0;
             public bool debug = true;
