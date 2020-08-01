@@ -18,12 +18,6 @@ namespace AlienRace
         public bool useGenderedHeads = true;
         public bool useGenderedBodies = false;
 
-        public ColorGenerator alienskincolorgen;
-        public ColorGenerator alienskinsecondcolorgen;
-        public ColorGenerator alienhaircolorgen;
-        public ColorGenerator alienhairsecondcolorgen;
-        public bool useSkincolorForHair = false;
-
         public List<ColorChannelGenerator> colorChannels = new List<ColorChannelGenerator>();
 
         public Vector2 headOffset = Vector2.zero;
@@ -53,12 +47,8 @@ namespace AlienRace
         public Color SkinColor(Pawn alien, bool first = true)
         {
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
-            if (alienComp.skinColor != Color.clear)
-                return first ? alienComp.skinColor : alienComp.skinColorSecond;
-
-            alienComp.skinColor       = this.alienskincolorgen?.NewRandomizedColor() ?? PawnSkinColors.GetSkinColor(melanin: alien.story.melanin);
-            alienComp.skinColorSecond = this.alienskinsecondcolorgen?.NewRandomizedColor() ?? alienComp.skinColor;
-            return first ? alienComp.skinColor : alienComp.skinColorSecond;
+            ExposableValueTuple<Color, Color> skinColors = alienComp.GetChannel("skin");
+            return first ? skinColors.first : skinColors.second;
         }
 
         public void GenerateMeshsAndMeshPools()
@@ -158,9 +148,6 @@ namespace AlienRace
         public class AlienComp : ThingComp
         {
             public bool fixGenderPostSpawn;
-            public Color skinColor;
-            public Color skinColorSecond;
-            public Color hairColorSecond;
             public string crownType;
             public Vector2 customDrawSize = Vector2.one;
             public Vector2 customHeadDrawSize = Vector2.one;
@@ -186,11 +173,21 @@ namespace AlienRace
                         AlienPartGenerator apg  = ((ThingDef_AlienRace)this.parent.def).alienRace.generalSettings.alienPartGenerator;
 
                         this.colorChannels.Add("base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
-                        this.colorChannels.Add("skin", new ExposableValueTuple<Color, Color>(this.skinColor,       this.skinColorSecond));
-                        this.colorChannels.Add("hair", new ExposableValueTuple<Color, Color>(pawn.story.hairColor, this.hairColorSecond));
-                        
+                        this.colorChannels.Add("hair", new ExposableValueTuple<Color, Color>(pawn.story.hairColor, pawn.story.hairColor));
+                        Color skinColor = PawnSkinColors.GetSkinColor(pawn.story.melanin);
+                        this.colorChannels.Add("skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
+
                         foreach (ColorChannelGenerator channel in apg.colorChannels)
-                            this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color>(GenerateColor(channel.first), GenerateColor(channel.second)));
+                        {
+                            if(!this.colorChannels.ContainsKey(channel.name))
+                                this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color>(Color.white, Color.white));
+                            ExposableValueTuple<Color, Color> colors = this.colorChannels[channel.name];
+                            if(channel.first != null)
+                                colors.first = this.GenerateColor(channel.first);
+                            if (channel.second != null)
+                                colors.second = this.GenerateColor(channel.second);
+                        }
+                            
                     }
                     return this.colorChannels;
                 }
@@ -222,9 +219,6 @@ namespace AlienRace
             {
                 base.PostExposeData();
                 Scribe_Values.Look(value: ref this.fixGenderPostSpawn, label: "fixAlienGenderPostSpawn");
-                Scribe_Values.Look(value: ref this.skinColor, label: "skinColorAlien");
-                Scribe_Values.Look(value: ref this.skinColorSecond, label: "skinColorSecondAlien");
-                Scribe_Values.Look(value: ref this.hairColorSecond, label: "hairColorSecondAlien");
                 Scribe_Values.Look(value: ref this.crownType, label: "crownType");
                 Scribe_Collections.Look(list: ref this.addonVariants, label: "addonVariants");
                 Scribe_Collections.Look(dict: ref this.colorChannels, label: "colorChannels");
