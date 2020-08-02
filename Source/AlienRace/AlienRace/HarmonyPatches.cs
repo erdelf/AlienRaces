@@ -385,7 +385,7 @@
                                                                                  harmony.Patch(original: AccessTools.Method(type: wg.giverClass, name: "JobOnThing"),
                                                                                                postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenericJobOnThingPostfix)));
                                                                                  MethodInfo hasJobOnThingInfo = AccessTools.Method(type: wg.giverClass, name: "HasJobOnThing");
-                                                                                 if (hasJobOnThingInfo != null)
+                                                                                 if (hasJobOnThingInfo?.IsDeclaredMember() ?? false)
                                                                                      harmony.Patch(original: hasJobOnThingInfo, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenericHasJobOnThingPostfix)));
                                                                              });
             }
