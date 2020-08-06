@@ -173,7 +173,7 @@ namespace AlienRace
                         AlienPartGenerator apg  = ((ThingDef_AlienRace)this.parent.def).alienRace.generalSettings.alienPartGenerator;
 
                         this.colorChannels.Add("base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
-                        this.colorChannels.Add("hair", new ExposableValueTuple<Color, Color>(pawn.story.hairColor, pawn.story.hairColor));
+                        this.colorChannels.Add("hair", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
                         Color skinColor = PawnSkinColors.GetSkinColor(pawn.story.melanin);
                         this.colorChannels.Add("skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
 
@@ -187,7 +187,13 @@ namespace AlienRace
                             if (channel.second != null)
                                 colors.second = this.GenerateColor(channel.second);
                         }
-                            
+                        ExposableValueTuple<Color, Color> hairColors = this.colorChannels["hair"];
+                        if (hairColors.first == Color.clear)
+                        {
+                            pawn.story.hairColor = PawnHairColors.RandomHairColor(pawn.story.SkinColor, pawn.ageTracker.AgeBiologicalYears);
+                            hairColors.first = pawn.story.hairColor;
+                            hairColors.second = pawn.story.hairColor;
+                        }
                     }
                     return this.colorChannels;
                 }
