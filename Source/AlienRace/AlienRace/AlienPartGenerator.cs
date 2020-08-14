@@ -190,10 +190,11 @@ namespace AlienRace
                         ExposableValueTuple<Color, Color> hairColors = this.colorChannels["hair"];
                         if (hairColors.first == Color.clear)
                         {
-                            pawn.story.hairColor = PawnHairColors.RandomHairColor(pawn.story.SkinColor, pawn.ageTracker.AgeBiologicalYears);
                             hairColors.first = pawn.story.hairColor;
                             hairColors.second = pawn.story.hairColor;
                         }
+                        
+                        pawn.story.hairColor = hairColors.first;
                     }
                     return this.colorChannels;
                 }

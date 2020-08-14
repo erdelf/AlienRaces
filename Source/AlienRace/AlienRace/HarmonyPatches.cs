@@ -1231,7 +1231,7 @@
             if (ate != null)
             {
                 if(trait.Degree == ate.degree || ate.degree == 0)
-                    if (Rand.Range(0, 100) >= ate.chance)
+                    if (Rand.Range(0, 100) > ate.chance)
                         return false;
             }
             
@@ -1865,9 +1865,6 @@
             {
                 //Log.Message(pawn.LabelCap);
 
-                AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
-                pawn.story.hairColor = alienComp.GetChannel("hair").first;
-
                 if (alienProps.alienRace.hairSettings.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                 {
                     if(Rand.Value < GenMath.SmootherStep(alienProps.alienRace.hairSettings.getsGreyAt, pawn.RaceProps.ageGenerationCurve.Points.Count < 3 ? alienProps.alienRace.hairSettings.getsGreyAt + 35 : pawn.RaceProps.ageGenerationCurve.Points.Skip(pawn.RaceProps.ageGenerationCurve.Points.Count-3).First().x, pawn.ageTracker.AgeBiologicalYears))
@@ -2102,6 +2099,8 @@
                                                                 shader: ShaderDatabase.Cutout, drawSize: Vector2.one,
                                                                 color: PawnGraphicSet.RottingColor) :
                                                             null;
+
+                alienComp.ColorChannels["hair"].first = alien.story.hairColor;
 
                 alienComp.addonGraphics = new List<Graphic>();
                 if (alienComp.addonVariants == null)
