@@ -223,7 +223,7 @@ namespace AlienRace
 
     public class RaceRestrictionSettings
     {
-
+       
         public bool onlyUseRaceRestrictedApparel = false;
         public List<string> apparelList = new List<string>();
         public List<string> whiteApparelList = new List<string>();

@@ -130,15 +130,17 @@ namespace AlienRace
                 ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
                 int tv;
 
+                //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
+
                 return !returnPath.NullOrEmpty() ?
-                            GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
-                                    (this.linkVariantIndexWithPrevious ?
-                                        sharedIndex % variantCounting :
-                                        (sharedIndex = Rand.Range(min: 0, max: variantCounting))))) == 0 ? "" : tv.ToString())),
-                                shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
-                                    drawSize: this.drawSize * 1.5f,
-                                color: channel.first, channel.second) :
-                            null;
+                           GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
+                                                                                                           (this.linkVariantIndexWithPrevious ?
+                                                                                                                sharedIndex % variantCounting :
+                                                                                                                (sharedIndex = Rand.Range(min: 0, max: variantCounting))))) == 0 ? "" : tv.ToString())),
+                                                              shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
+                                                              drawSize: this.drawSize * 1.5f,
+                                                              color: channel.first, channel.second) :
+                           null;
             }
         }
 
