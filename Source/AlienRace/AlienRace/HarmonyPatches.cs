@@ -1226,13 +1226,14 @@
         public static bool GainTraitPrefix(Trait trait, TraitSet __instance)
         {
             if (!(Traverse.Create(root: __instance).Field(name: "pawn").GetValue<Pawn>().def is ThingDef_AlienRace alienProps)) return true;
-
             AlienTraitEntry ate = alienProps.alienRace.generalSettings.disallowedTraits?.FirstOrDefault(predicate: at => at.defName.EqualsIgnoreCase(B: trait.def.defName));
             if (ate != null)
             {
-                if(trait.Degree == ate.degree || ate.degree == 0)
-                    if (Rand.Range(0, 100) > ate.chance)
+                if (trait.Degree == ate.degree || ate.degree == 0)
+                {
+                    if (Rand.Range(0, 100) < ate.chance)
                         return false;
+                }
             }
             
 
