@@ -170,7 +170,8 @@ namespace AlienRace
                     {
                         this.colorChannels = new Dictionary<string, ExposableValueTuple<Color, Color>>();
                         Pawn               pawn = (Pawn)this.parent;
-                        AlienPartGenerator apg  = ((ThingDef_AlienRace)this.parent.def).alienRace.generalSettings.alienPartGenerator;
+                        ThingDef_AlienRace alienProps = ((ThingDef_AlienRace)this.parent.def);
+                        AlienPartGenerator apg  = alienProps.alienRace.generalSettings.alienPartGenerator;
 
                         this.colorChannels.Add("base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
                         this.colorChannels.Add("hair", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
@@ -193,8 +194,17 @@ namespace AlienRace
                             hairColors.first = pawn.story.hairColor;
                             hairColors.second = pawn.story.hairColor;
                         }
-                        
                         pawn.story.hairColor = hairColors.first;
+
+                        if (alienProps.alienRace.hairSettings.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
+                        {
+                            if (Rand.Value < GenMath.SmootherStep(alienProps.alienRace.hairSettings.getsGreyAt, pawn.RaceProps.ageGenerationCurve.Points.Count < 3 ? alienProps.alienRace.hairSettings.getsGreyAt + 35 : pawn.RaceProps.ageGenerationCurve.Points.Skip(pawn.RaceProps.ageGenerationCurve.Points.Count - 3).First().x, pawn.ageTracker.AgeBiologicalYears))
+                            {
+                                float grey = Rand.Range(min: 0.65f, max: 0.85f);
+                                pawn.story.hairColor = new Color(r: grey, g: grey, b: grey);
+                                hairColors.first = pawn.story.hairColor;
+                            }
+                        }
                     }
                     return this.colorChannels;
                 }
