@@ -1866,14 +1866,7 @@
             {
                 //Log.Message(pawn.LabelCap);
 
-                if (alienProps.alienRace.hairSettings.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
-                {
-                    if(Rand.Value < GenMath.SmootherStep(alienProps.alienRace.hairSettings.getsGreyAt, pawn.RaceProps.ageGenerationCurve.Points.Count < 3 ? alienProps.alienRace.hairSettings.getsGreyAt + 35 : pawn.RaceProps.ageGenerationCurve.Points.Skip(pawn.RaceProps.ageGenerationCurve.Points.Count-3).First().x, pawn.ageTracker.AgeBiologicalYears))
-                    {
-                        float grey = Rand.Range(min: 0.65f, max: 0.85f);
-                        pawn.story.hairColor = new Color(r: grey, g: grey, b: grey);
-                    }
-                }
+                pawn.story.hairColor = pawn.GetComp<AlienPartGenerator.AlienComp>().GetChannel("hair").first;
 
                 string headPath = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).head;
 
