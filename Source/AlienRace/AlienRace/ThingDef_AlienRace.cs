@@ -71,6 +71,7 @@ namespace AlienRace
         public List<ChemicalSettings> chemicalSettings;
         public List<AlienTraitEntry> forcedRaceTraitEntries;
         public List<AlienTraitEntry> disallowedTraits;
+        public IntRange additionalTraits = IntRange.zero;
         public AlienPartGenerator alienPartGenerator = new AlienPartGenerator();
 
         public List<FactionRelationSettings> factionRelations;
