@@ -114,8 +114,8 @@
                             
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateRandomAge"), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateRandomAgePrefix)));
             
-            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateTraits"), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateTraitsPrefix)),
-                          postfix: null, transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateTraitsTranspiler)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateTraits"), postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateTraitsPostfix)),
+                          transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateTraitsTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_SatisfyChemicalNeed), name: "DrugValidator"), prefix: null,
                           postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(DrugValidatorPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(CompDrug), name: nameof(CompDrug.PostIngested)), prefix: null,
@@ -870,8 +870,21 @@
                     instruction.operand = validatorInfo;
                 }
 
+                if (instruction.opcode == OpCodes.Stloc_1)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(AdditionalInitialTraits)));
+                }
+
                 yield return instruction;
             }
+        }
+
+        public static int AdditionalInitialTraits(int count, Pawn pawn)
+        {
+            if (!(pawn.def is ThingDef_AlienRace alienProps)) return count;
+
+            return count + alienProps.alienRace.generalSettings.additionalTraits.RandomInRange;
         }
 
         public static IEnumerable<TraitDef> GenerateTraitsValidator(Pawn p) => DefDatabase<TraitDef>.AllDefs.Where(predicate: tr => 
@@ -2119,18 +2132,18 @@
             return true;
         }
 
-        public static void GenerateTraitsPrefix(Pawn pawn, PawnGenerationRequest request)
+        public static void GenerateTraitsPostfix(Pawn pawn, PawnGenerationRequest request)
         {
             if (!request.Newborn && request.CanGeneratePawnRelations &&
                 pawn.story.AllBackstories.Any(predicate: bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)?.relationSettings != null))
             {
                 pawn.relations.ClearAllRelations();
-                AccessTools.Method(type: typeof(PawnGenerator), name: "GeneratePawnRelations").Invoke(obj: null, parameters: new object[] {pawn, request});
+                Traverse.Create(typeof(PawnGenerator)).Method("GeneratePawnRelations", pawn, request).GetValue();
             }
             if (pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
                 alienProps.alienRace.generalSettings.forcedRaceTraitEntries.ForEach(action: ate =>
                 {
-                    if ((pawn.story.traits.allTraits.Count >= 4 || pawn.gender != Gender.Male ||
+                    if ((pawn.gender != Gender.Male ||
                          !(Math.Abs(value: ate.commonalityMale - -1f) < 0.001f) && !(Rand.Range(min: 0, max: 100) < ate.commonalityMale))                           &&
                         (pawn.gender != Gender.Female || Math.Abs(value: ate.commonalityFemale - -1f) > 0.001f && !(Rand.Range(min: 0, max: 100) < ate.commonalityFemale)) &&
                         pawn.gender != Gender.None) return;
