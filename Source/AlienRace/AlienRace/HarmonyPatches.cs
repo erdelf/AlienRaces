@@ -217,7 +217,7 @@
                           new HarmonyMethod(methodType: patchType, methodName: nameof(MinAgeForAdulthood)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "TryGiveSolidBioTo"), transpiler:
                           new HarmonyMethod(methodType: patchType, methodName: nameof(MinAgeForAdulthood)));
-
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnTranspiler)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -430,6 +430,25 @@
                 BackstoryDef.UpdateTranslateableFields(bs: bd);
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> TryGenerateNewPawnTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+            MethodInfo newbornInfo = AccessTools.PropertyGetter(typeof(PawnGenerationRequest), nameof(PawnGenerationRequest.Newborn));
+
+            bool done = false;
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+                if (!done && instructionList[i + 1].OperandIs(newbornInfo))
+                {
+                    done = true;
+                    i += 8;
+                } else 
+                    yield return instruction;
+            }
         }
 
         public static void ThoughtReplacementPrefix(MemoryThoughtHandler __instance, ref ThoughtDef def)
@@ -2134,12 +2153,9 @@
 
         public static void GenerateTraitsPostfix(Pawn pawn, PawnGenerationRequest request)
         {
-            if (!request.Newborn && request.CanGeneratePawnRelations &&
-                pawn.story.AllBackstories.Any(predicate: bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)?.relationSettings != null))
-            {
-                pawn.relations.ClearAllRelations();
-                Traverse.Create(typeof(PawnGenerator)).Method("GeneratePawnRelations", pawn, request).GetValue();
-            }
+            if (!request.Newborn && request.CanGeneratePawnRelations)
+                AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations").Invoke(null, new object[] {pawn, request});
+
             if (pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
                 alienProps.alienRace.generalSettings.forcedRaceTraitEntries.ForEach(action: ate =>
                 {
