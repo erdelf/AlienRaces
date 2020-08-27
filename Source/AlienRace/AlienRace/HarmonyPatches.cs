@@ -2215,7 +2215,7 @@
             {
                 IEnumerable<RaceSettings> settings = DefDatabase<RaceSettings>.AllDefsListForReading;
                 PawnKindEntry                   pk;
-                if (request.KindDef == PawnKindDefOf.SpaceRefugee)
+                if (request.KindDef == PawnKindDefOf.SpaceRefugee || request.KindDef == PawnKindDefOf.Refugee)
                 {
                     if (settings.Where(predicate: r => !r.pawnKindSettings.alienrefugeekinds.NullOrEmpty()).Select(selector: r => r.pawnKindSettings.alienrefugeekinds.RandomElement())
                        .TryRandomElementByWeight(weightSelector: pke => pke.chance, result: out pk))
