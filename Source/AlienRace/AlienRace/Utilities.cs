@@ -24,10 +24,10 @@ namespace AlienRace
     [UsedImplicitly]
     public class ThinkNode_ConditionalIsMemberOfRace : ThinkNode_Conditional
     {
-        public List<string> races;
+        public List<ThingDef> races;
 
         protected override bool Satisfied(Pawn pawn) => 
-            this.races.Contains(item: pawn.def.defName);
+            this.races.Contains(item: pawn.def);
     }
 
     [UsedImplicitly]
@@ -58,7 +58,7 @@ namespace AlienRace
     {
         protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) =>
             p.def != otherPawn.def && p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && RelationsUtility.PawnsKnowEachOther(p1: p, p2: otherPawn) &&
-            !(p.def is ThingDef_AlienRace par && par.alienRace.generalSettings.notXenophobistTowards.Contains(item: otherPawn.def.defName)) &&
+            !(p.def is ThingDef_AlienRace par && par.alienRace.generalSettings.notXenophobistTowards.Contains(item: otherPawn.def)) &&
             !(otherPawn.def is ThingDef_AlienRace oar && oar.alienRace.generalSettings.immuneToXenophobia) ?
                 p.story.traits.HasTrait(tDef: AlienDefOf.Xenophobia) ?
                     p.story.traits.DegreeOfTrait(tDef: AlienDefOf.Xenophobia) == -1 ?
@@ -73,7 +73,7 @@ namespace AlienRace
     {
         protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) =>
             p.def != otherPawn.def && p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && RelationsUtility.PawnsKnowEachOther(p1: p, p2: otherPawn) &&
-            !(otherPawn.def is ThingDef_AlienRace par && par.alienRace.generalSettings.notXenophobistTowards.Contains(item: p.def.defName)) &&
+            !(otherPawn.def is ThingDef_AlienRace par && par.alienRace.generalSettings.notXenophobistTowards.Contains(item: p.def)) &&
             !(p.def is ThingDef_AlienRace oar && oar.alienRace.generalSettings.immuneToXenophobia) ?
                 otherPawn.story.traits.HasTrait(tDef: AlienDefOf.Xenophobia) ?
                     otherPawn.story.traits.DegreeOfTrait(tDef: AlienDefOf.Xenophobia) == -1 ?

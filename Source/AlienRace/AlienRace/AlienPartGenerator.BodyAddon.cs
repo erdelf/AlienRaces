@@ -63,7 +63,7 @@ namespace AlienRace
                     (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
                     (this.bodyPart.NullOrEmpty() || 
                      (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
-                     (this.hediffGraphics?.Any(bahg => bahg.hediff == HediffDefOf.MissingBodyPart.defName) ?? false)) &&
+                     (this.hediffGraphics?.Any(bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
                (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement.NullOrEmpty() || pawn.story.bodyType.ToString() == this.bodyTypeRequirement);
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
@@ -87,7 +87,7 @@ namespace AlienRace
                                 foreach (BodyAddonHediffGraphic bahg in this.hediffGraphics)
                                 {
 
-                                    foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(h => h.def.defName == bahg.hediff &&
+                                    foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(h => h.def == bahg.hediff &&
                                                                                                   (h.Part == null                                  ||
                                                                                                    this.bodyPart.NullOrEmpty()                     ||
                                                                                                    h.Part.untranslatedCustomLabel == this.bodyPart ||
@@ -147,7 +147,7 @@ namespace AlienRace
 
         public class BodyAddonHediffGraphic
         {
-            public string hediff;
+            public HediffDef hediff;
             public string path;
             public int variantCount = 0;
             public List<BodyAddonHediffSeverityGraphic> severity;
@@ -155,7 +155,10 @@ namespace AlienRace
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
-                this.hediff = xmlRoot.Name;
+                XmlAttribute mayRequire = xmlRoot.Attributes["MayRequire"];
+                int index = mayRequire != null ? xmlRoot.Name.LastIndexOf('\"') + 1 : 0;
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.hediff),  xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index), mayRequire?.Value.ToLower());
+
                 this.path = xmlRoot.FirstChild.Value?.Trim();
 
                 Traverse traverse = Traverse.Create(root: this);
@@ -194,6 +197,7 @@ namespace AlienRace
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.backstory = xmlRoot.Name;
+
                 this.path = xmlRoot.FirstChild.Value;
             }
         }
