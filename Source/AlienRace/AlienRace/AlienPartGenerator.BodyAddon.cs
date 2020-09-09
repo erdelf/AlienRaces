@@ -44,7 +44,7 @@ namespace AlienRace
             public List<string> hiddenUnderApparelTag = new List<string>();
 
             public string backstoryRequirement;
-            public string bodyTypeRequirement;
+            public List<string> bodyTypeRequirement;
 
             private ShaderTypeDef shaderType;
 
@@ -64,7 +64,7 @@ namespace AlienRace
                     (this.bodyPart.NullOrEmpty() || 
                      (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
                      (this.hediffGraphics?.Any(bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
-               (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement.NullOrEmpty() || pawn.story.bodyType.ToString() == this.bodyTypeRequirement);
+               (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement.NullOrEmpty() || this.bodyTypeRequirement.Any(predicate: bt => bt == pawn.story.bodyType.ToString()));
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
