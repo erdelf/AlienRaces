@@ -284,7 +284,7 @@ namespace AlienRace
             recipeWhiteDict.TryGetValue(key: recipe, value: out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
 
-        public bool onlyDoRaceRastrictedPlants = false;
+        public bool onlyDoRaceRestrictedPlants = false;
         public List<ThingDef> plantList = new List<ThingDef>();
         public List<ThingDef> whitePlantList = new List<ThingDef>();
 
@@ -293,7 +293,7 @@ namespace AlienRace
 
         public static bool CanPlant(ThingDef plant, ThingDef race) =>
             !plantRestrictionDict.TryGetValue(key: plant, value: out List<ThingDef_AlienRace> races) &&
-            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRastrictedPlants ?? false) ||
+            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRestrictedPlants ?? false) ||
             (races?.Contains(item: race as ThingDef_AlienRace) ?? false) ||
             plantWhiteDict.TryGetValue(key: plant, value: out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
