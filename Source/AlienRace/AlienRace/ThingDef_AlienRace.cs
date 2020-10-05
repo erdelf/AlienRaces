@@ -65,7 +65,10 @@ namespace AlienRace
                         object value = instanceNew.GetValue();
                         if (value != null)
                             foreach (object o in (IList) value)
-                                RecursiveAttributeCheck(o.GetType(), Traverse.Create(o));
+                            {
+                                if (o.GetType().Assembly == typeof(ThingDef_AlienRace).Assembly)
+                                    RecursiveAttributeCheck(o.GetType(), Traverse.Create(o));
+                            }
                     }
 
                     if (field.FieldType.Assembly == typeof(ThingDef_AlienRace).Assembly) 
