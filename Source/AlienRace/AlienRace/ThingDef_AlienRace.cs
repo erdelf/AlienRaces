@@ -6,6 +6,9 @@ using UnityEngine;
 
 namespace AlienRace
 {
+    using System;
+    using System.Collections;
+    using System.Reflection;
     using HarmonyLib;
 
     public class ThingDef_AlienRace : ThingDef
@@ -16,6 +19,7 @@ namespace AlienRace
         {
             this.comps.Add(item: new CompProperties(compClass: typeof(AlienPartGenerator.AlienComp)));
             base.ResolveReferences();
+
             if (this.alienRace.graphicPaths.NullOrEmpty())
                 this.alienRace.graphicPaths.Add(item: new GraphicPaths());
 
@@ -46,6 +50,35 @@ namespace AlienRace
 
             if (this.alienRace.generalSettings.minAgeForAdulthood < 0)
                 this.alienRace.generalSettings.minAgeForAdulthood = (float) AccessTools.Field(typeof(PawnBioAndNameGenerator), "MinAgeForAdulthood").GetValue(null);
+
+            void RecursiveAttributeCheck(Type type, Traverse instance)
+            {
+                if (type == typeof(ThingDef_AlienRace))
+                    return;
+
+                foreach (FieldInfo field in type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+                {
+                    Traverse instanceNew = instance.Field(field.Name);
+
+                    if (typeof(IList).IsAssignableFrom(field.FieldType))
+                    {
+                        object value = instanceNew.GetValue();
+                        if (value != null)
+                            foreach (object o in (IList) value)
+                                RecursiveAttributeCheck(o.GetType(), Traverse.Create(o));
+                    }
+
+                    if (field.FieldType.Assembly == typeof(ThingDef_AlienRace).Assembly) 
+                        RecursiveAttributeCheck(field.FieldType, instanceNew);
+
+                    LoadDefFromField attribute = field.GetCustomAttribute<LoadDefFromField>();
+                    if (attribute != null)
+                        if (instanceNew.GetValue() == null)
+                            instanceNew.SetValue(attribute.GetDef);
+                }
+            }
+            RecursiveAttributeCheck(typeof(AlienSettings), Traverse.Create(this.alienRace));
+            
         }
 
         public class AlienSettings
@@ -177,17 +210,28 @@ namespace AlienRace
     public class ButcherThought
     {
         public List<ThingDef> raceList;
-        public ThoughtDef thought = ThoughtDefOf.ButcheredHumanlikeCorpse;// "ButcheredHumanlikeCorpse";
-        public ThoughtDef knowThought = ThoughtDefOf.KnowButcheredHumanlikeCorpse;// "KnowButcheredHumanlikeCorpse";
+
+        [LoadDefFromField(typeof(ThoughtDef), nameof(ThoughtDefOf.ButcheredHumanlikeCorpse))]
+        public ThoughtDef thought;// "ButcheredHumanlikeCorpse";
+
+        [LoadDefFromField(typeof(ThoughtDef), nameof(ThoughtDefOf.KnowButcheredHumanlikeCorpse))]
+        public ThoughtDef knowThought;// "KnowButcheredHumanlikeCorpse";
     }
 
     public class AteThought
     {
         public List<ThingDef> raceList;
-        public ThoughtDef thought = ThoughtDefOf.AteHumanlikeMeatDirect;// "AteHumanlikeMeatDirect";
-        public ThoughtDef thoughtCannibal = ThoughtDefOf.AteHumanlikeMeatDirectCannibal; // "AteHumanlikeMeatDirectCannibal";
-        public ThoughtDef ingredientThought = ThoughtDefOf.AteHumanlikeMeatAsIngredient; // "AteHumanlikeMeatAsIngredient";
-        public ThoughtDef ingredientThoughtCannibal = ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal; // "AteHumanlikeMeatAsIngredientCannibal";
+        [LoadDefFromField(typeof(ThoughtDef), nameof(ThoughtDefOf.AteHumanlikeMeatDirect))]
+        public ThoughtDef thought;// "AteHumanlikeMeatDirect";
+
+        [LoadDefFromField(typeof(ThoughtDef), nameof(ThoughtDefOf.AteHumanlikeMeatDirectCannibal))]
+        public ThoughtDef thoughtCannibal; // "AteHumanlikeMeatDirectCannibal";
+
+        [LoadDefFromField(typeof(ThoughtDef), nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredient))]
+        public ThoughtDef ingredientThought; // "AteHumanlikeMeatAsIngredient";
+
+        [LoadDefFromField(typeof(ThoughtDef), nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))]
+        public ThoughtDef ingredientThoughtCannibal; // "AteHumanlikeMeatAsIngredientCannibal";
 
         public ThoughtDef GetThought(bool cannibal, bool ingredient) =>
             cannibal ? ingredient ? this.ingredientThoughtCannibal : this.thoughtCannibal : ingredient ? this.ingredientThought : this.thought;
@@ -357,7 +401,8 @@ namespace AlienRace
     
     public static class GraphicPathsExtension
     {
-        public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef) => list.FirstOrDefault(predicate: gp => gp.lifeStageDefs?.Contains(item: lifeStageDef) ?? false) ?? list.First();
+        public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef) => 
+            list.FirstOrDefault(predicate: gp => gp.lifeStageDefs?.Contains(item: lifeStageDef) ?? false) ?? list.First();
     }
 
     public class Info : DefModExtension

@@ -5,6 +5,7 @@ using Verse.AI;
 
 namespace AlienRace
 {
+    using System;
     using JetBrains.Annotations;
 
     [DefOf]
@@ -81,5 +82,21 @@ namespace AlienRace
                         ThoughtState.ActiveAtStage(stageIndex: 1) :
                     false :
                 false;
+    }
+
+    [AttributeUsage(AttributeTargets.Field)]
+    public class LoadDefFromField : Attribute
+    {
+        private Type defType;
+        private string defName;
+
+        public LoadDefFromField(Type defType, string defName)
+        {
+            this.defType = defType;
+            this.defName = defName;
+        }
+
+        public Def GetDef => 
+            GenDefDatabase.GetDef(this.defType, this.defName);
     }
 }
