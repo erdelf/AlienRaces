@@ -77,7 +77,7 @@ namespace AlienRace
                     LoadDefFromField attribute = field.GetCustomAttribute<LoadDefFromField>();
                     if (attribute != null)
                         if (instanceNew.GetValue() == null)
-                            instanceNew.SetValue(attribute.GetDef);
+                            instanceNew.SetValue(attribute.GetDef(field.FieldType));
                 }
             }
             RecursiveAttributeCheck(typeof(AlienSettings), Traverse.Create(this.alienRace));
@@ -214,26 +214,26 @@ namespace AlienRace
     {
         public List<ThingDef> raceList;
 
-        [LoadDefFromField(typeof(ThoughtDef), nameof(ThoughtDefOf.ButcheredHumanlikeCorpse))]
+        [LoadDefFromField(nameof(ThoughtDefOf.ButcheredHumanlikeCorpse))]
         public ThoughtDef thought;// "ButcheredHumanlikeCorpse";
 
-        [LoadDefFromField(typeof(ThoughtDef), nameof(ThoughtDefOf.KnowButcheredHumanlikeCorpse))]
+        [LoadDefFromField(nameof(ThoughtDefOf.KnowButcheredHumanlikeCorpse))]
         public ThoughtDef knowThought;// "KnowButcheredHumanlikeCorpse";
     }
 
     public class AteThought
     {
         public List<ThingDef> raceList;
-        [LoadDefFromField(typeof(ThoughtDef), nameof(ThoughtDefOf.AteHumanlikeMeatDirect))]
+        [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatDirect))]
         public ThoughtDef thought;// "AteHumanlikeMeatDirect";
 
-        [LoadDefFromField(typeof(ThoughtDef), nameof(ThoughtDefOf.AteHumanlikeMeatDirectCannibal))]
+        [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatDirectCannibal))]
         public ThoughtDef thoughtCannibal; // "AteHumanlikeMeatDirectCannibal";
 
-        [LoadDefFromField(typeof(ThoughtDef), nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredient))]
+        [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredient))]
         public ThoughtDef ingredientThought; // "AteHumanlikeMeatAsIngredient";
 
-        [LoadDefFromField(typeof(ThoughtDef), nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))]
+        [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))]
         public ThoughtDef ingredientThoughtCannibal; // "AteHumanlikeMeatAsIngredientCannibal";
 
         public ThoughtDef GetThought(bool cannibal, bool ingredient) =>
