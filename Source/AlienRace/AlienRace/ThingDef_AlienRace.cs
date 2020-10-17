@@ -44,19 +44,20 @@ namespace AlienRace
                     gp.headOffsetDirectional = this.alienRace.generalSettings.alienPartGenerator.headOffsetDirectional;
             });
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
+
             foreach (AlienPartGenerator.BodyAddon bodyAddon in this.alienRace.generalSettings.alienPartGenerator.bodyAddons)
                 if (bodyAddon.offsets.west == null)
                     bodyAddon.offsets.west = bodyAddon.offsets.east;
 
             if (this.alienRace.generalSettings.minAgeForAdulthood < 0)
-                this.alienRace.generalSettings.minAgeForAdulthood = (float) AccessTools.Field(typeof(PawnBioAndNameGenerator), "MinAgeForAdulthood").GetValue(null);
+                this.alienRace.generalSettings.minAgeForAdulthood = (float) AccessTools.Field(type: typeof(PawnBioAndNameGenerator), name: "MinAgeForAdulthood").GetValue(obj: null);
 
             void RecursiveAttributeCheck(Type type, Traverse instance)
             {
                 if (type == typeof(ThingDef_AlienRace))
                     return;
 
-                foreach (FieldInfo field in type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+                foreach (FieldInfo field in type.GetFields(bindingAttr: BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
                 {
                     Traverse instanceNew = instance.Field(field.Name);
 
@@ -67,7 +68,7 @@ namespace AlienRace
                             foreach (object o in (IList) value)
                             {
                                 if (o.GetType().Assembly == typeof(ThingDef_AlienRace).Assembly)
-                                    RecursiveAttributeCheck(o.GetType(), Traverse.Create(o));
+                                    RecursiveAttributeCheck(type: o.GetType(), instance: Traverse.Create(o));
                             }
                     }
 
@@ -77,11 +78,10 @@ namespace AlienRace
                     LoadDefFromField attribute = field.GetCustomAttribute<LoadDefFromField>();
                     if (attribute != null)
                         if (instanceNew.GetValue() == null)
-                            instanceNew.SetValue(attribute.GetDef(field.FieldType));
+                            instanceNew.SetValue(value: attribute.GetDef(field.FieldType));
                 }
             }
-            RecursiveAttributeCheck(typeof(AlienSettings), Traverse.Create(this.alienRace));
-            
+            RecursiveAttributeCheck(type: typeof(AlienSettings), instance: Traverse.Create(this.alienRace));
         }
 
         public class AlienSettings
@@ -194,8 +194,8 @@ namespace AlienRace
         public        List<ThoughtDef>                                     restrictedThoughts     = new List<ThoughtDef>();
 
         public ThoughtDef ReplaceIfApplicable(ThoughtDef def) =>
-            (this.replacerList == null || this.replacerList.Select(tr => tr.replacer).Contains(def))
-                ? def : this.replacerList.FirstOrDefault(tr => tr.original == def)?.replacer ?? def;
+            (this.replacerList == null || this.replacerList.Select(selector: tr => tr.replacer).Contains(def))
+                ? def : this.replacerList.FirstOrDefault(predicate: tr => tr.original == def)?.replacer ?? def;
 
         public ButcherThought       butcherThoughtGeneral  = new ButcherThought();
         public List<ButcherThought> butcherThoughtSpecific = new List<ButcherThought>();
@@ -204,7 +204,7 @@ namespace AlienRace
         public List<AteThought> ateThoughtSpecific = new List<AteThought>();
 
         public ThoughtDef GetAteThought(ThingDef race, bool cannibal, bool ingredient) =>
-            (this.ateThoughtSpecific?.FirstOrDefault(predicate: at => at.raceList?.Contains(item: race) ?? false) ?? this.ateThoughtGeneral)?.GetThought(cannibal: cannibal, ingredient: ingredient);
+            (this.ateThoughtSpecific?.FirstOrDefault(predicate: at => at.raceList?.Contains(race) ?? false) ?? this.ateThoughtGeneral)?.GetThought(cannibal, ingredient);
 
 
         public List<ThoughtReplacer> replacerList;
@@ -214,26 +214,26 @@ namespace AlienRace
     {
         public List<ThingDef> raceList;
 
-        [LoadDefFromField(nameof(ThoughtDefOf.ButcheredHumanlikeCorpse))]
+        [LoadDefFromField(defName: nameof(ThoughtDefOf.ButcheredHumanlikeCorpse))]
         public ThoughtDef thought;// "ButcheredHumanlikeCorpse";
 
-        [LoadDefFromField(nameof(ThoughtDefOf.KnowButcheredHumanlikeCorpse))]
+        [LoadDefFromField(defName: nameof(ThoughtDefOf.KnowButcheredHumanlikeCorpse))]
         public ThoughtDef knowThought;// "KnowButcheredHumanlikeCorpse";
     }
 
     public class AteThought
     {
         public List<ThingDef> raceList;
-        [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatDirect))]
+        [LoadDefFromField(defName: nameof(ThoughtDefOf.AteHumanlikeMeatDirect))]
         public ThoughtDef thought;// "AteHumanlikeMeatDirect";
 
-        [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatDirectCannibal))]
+        [LoadDefFromField(defName: nameof(ThoughtDefOf.AteHumanlikeMeatDirectCannibal))]
         public ThoughtDef thoughtCannibal; // "AteHumanlikeMeatDirectCannibal";
 
-        [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredient))]
+        [LoadDefFromField(defName: nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredient))]
         public ThoughtDef ingredientThought; // "AteHumanlikeMeatAsIngredient";
 
-        [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))]
+        [LoadDefFromField(defName: nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))]
         public ThoughtDef ingredientThoughtCannibal; // "AteHumanlikeMeatAsIngredientCannibal";
 
         public ThoughtDef GetThought(bool cannibal, bool ingredient) =>
@@ -279,16 +279,16 @@ namespace AlienRace
 
 
         public static bool CanWear(ThingDef apparel, ThingDef race) =>
-            !apparelRestrictionDict.TryGetValue(key: apparel, value: out List<ThingDef_AlienRace> races) && 
+            !apparelRestrictionDict.TryGetValue(apparel, value: out List<ThingDef_AlienRace> races) && 
             !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel ?? false) || 
             (races?.Contains(item: race as ThingDef_AlienRace) ?? false) ||
-            apparelWhiteDict.TryGetValue(key: apparel, value: out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
+            apparelWhiteDict.TryGetValue(apparel, out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
         public List<ResearchProjectRestrictions> researchList = new List<ResearchProjectRestrictions>();
         public static Dictionary<ResearchProjectDef, List<ThingDef_AlienRace>> researchRestrictionDict = new Dictionary<ResearchProjectDef, List<ThingDef_AlienRace>>();
 
         public static bool CanResearch(IEnumerable<ThingDef> races, ResearchProjectDef project) =>
-            !researchRestrictionDict.ContainsKey(project) || races.Any(ar => researchRestrictionDict[project].Contains(ar));
+            !researchRestrictionDict.ContainsKey(project) || races.Any(predicate: ar => researchRestrictionDict[project].Contains(ar));
 
 
         public bool onlyUseRaceRestrictedWeapons = false;
@@ -299,10 +299,10 @@ namespace AlienRace
         public static Dictionary<ThingDef, List<ThingDef_AlienRace>> weaponWhiteDict = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
 
         public static bool CanEquip(ThingDef weapon, ThingDef race) =>
-            !weaponRestrictionDict.TryGetValue(key: weapon, value: out List<ThingDef_AlienRace> races) &&
+            !weaponRestrictionDict.TryGetValue(weapon, value: out List<ThingDef_AlienRace> races) &&
             !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyUseRaceRestrictedWeapons ?? false) ||
             (races?.Contains(item: race as ThingDef_AlienRace) ?? false) ||
-            weaponWhiteDict.TryGetValue(key: weapon, value: out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
+            weaponWhiteDict.TryGetValue(weapon, out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
         public bool onlyBuildRaceRestrictedBuildings = false;
         public List<ThingDef> buildingList = new List<ThingDef>();
@@ -312,10 +312,10 @@ namespace AlienRace
         public static Dictionary<BuildableDef, List<ThingDef_AlienRace>> buildingWhiteDict = new Dictionary<BuildableDef, List<ThingDef_AlienRace>>();
 
         public static bool CanBuild(BuildableDef building, ThingDef race) =>
-            !buildingRestrictionDict.TryGetValue(key: building, value: out List<ThingDef_AlienRace> races) &&
+            !buildingRestrictionDict.TryGetValue(building, value: out List<ThingDef_AlienRace> races) &&
             !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyBuildRaceRestrictedBuildings ?? false) ||
             (races?.Contains(item: race as ThingDef_AlienRace) ?? false) ||
-            buildingWhiteDict.TryGetValue(key: building, value: out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
+            buildingWhiteDict.TryGetValue(building, out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
         public bool onlyDoRaceRestrictedRecipes = false;
         public List<RecipeDef> recipeList = new List<RecipeDef>();
@@ -325,10 +325,10 @@ namespace AlienRace
         public static Dictionary<RecipeDef, List<ThingDef_AlienRace>> recipeWhiteDict = new Dictionary<RecipeDef, List<ThingDef_AlienRace>>();
 
         public static bool CanDoRecipe(RecipeDef recipe, ThingDef race) =>
-            !recipeRestrictionDict.TryGetValue(key: recipe, value: out List<ThingDef_AlienRace> races) &&
+            !recipeRestrictionDict.TryGetValue(recipe, value: out List<ThingDef_AlienRace> races) &&
             !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRestrictedRecipes ?? false) ||
             (races?.Contains(item: race as ThingDef_AlienRace) ?? false) ||
-            recipeWhiteDict.TryGetValue(key: recipe, value: out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
+            recipeWhiteDict.TryGetValue(recipe, out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
 
         public bool onlyDoRaceRestrictedPlants = false;
@@ -339,10 +339,10 @@ namespace AlienRace
         public static Dictionary<ThingDef, List<ThingDef_AlienRace>> plantWhiteDict = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
 
         public static bool CanPlant(ThingDef plant, ThingDef race) =>
-            !plantRestrictionDict.TryGetValue(key: plant, value: out List<ThingDef_AlienRace> races) &&
+            !plantRestrictionDict.TryGetValue(plant, value: out List<ThingDef_AlienRace> races) &&
             !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyDoRaceRestrictedPlants ?? false) ||
             (races?.Contains(item: race as ThingDef_AlienRace) ?? false) ||
-            plantWhiteDict.TryGetValue(key: plant, value: out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
+            plantWhiteDict.TryGetValue(plant, out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
         public bool onlyGetRaceRestrictedTraits = false;
         public List<TraitDef> traitList = new List<TraitDef>();
@@ -352,10 +352,10 @@ namespace AlienRace
         public static Dictionary<TraitDef, List<ThingDef_AlienRace>> traitWhiteDict = new Dictionary<TraitDef, List<ThingDef_AlienRace>>();
 
         public static bool CanGetTrait(TraitDef trait, ThingDef race) =>
-            !traitRestrictionDict.TryGetValue(key: trait, value: out List<ThingDef_AlienRace> races) &&
+            !traitRestrictionDict.TryGetValue(trait, value: out List<ThingDef_AlienRace> races) &&
             !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyGetRaceRestrictedTraits ?? false) ||
             (races?.Contains(item: race as ThingDef_AlienRace) ?? false) ||
-            traitWhiteDict.TryGetValue(key: trait, value: out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
+            traitWhiteDict.TryGetValue(trait, out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
         public bool onlyEatRaceRestrictedFood = false;
         public List<ThingDef> foodList = new List<ThingDef>();
@@ -366,16 +366,16 @@ namespace AlienRace
 
         public static bool CanEat(ThingDef food, ThingDef race)
         {
-            if (foodRestrictionDict.TryGetValue(key: food, value: out List<ThingDef_AlienRace> races) || 
+            if (foodRestrictionDict.TryGetValue(food, value: out List<ThingDef_AlienRace> races) || 
                 ((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyEatRaceRestrictedFood ?? false))
             {
-                if (!(races?.Contains(race as ThingDef_AlienRace) ?? false) && (!foodWhiteDict.TryGetValue(key: food, value: out races) || !races.Contains(item: race as ThingDef_AlienRace)))
+                if (!(races?.Contains(item: race as ThingDef_AlienRace) ?? false) && (!foodWhiteDict.TryGetValue(food, out races) || !races.Contains(item: race as ThingDef_AlienRace)))
                     return false;
             }
 
             ChemicalDef chemical = food.GetCompProperties<CompProperties_Drug>()?.chemical;
 
-            return chemical == null || ((race as ThingDef_AlienRace)?.alienRace.generalSettings.chemicalSettings?.TrueForAll(c => c.ingestible || c.chemical != chemical) ?? true);
+            return chemical == null || ((race as ThingDef_AlienRace)?.alienRace.generalSettings.chemicalSettings?.TrueForAll(match: c => c.ingestible || c.chemical != chemical) ?? true);
         }
 
         public bool onlyTameRaceRestrictedPets = false;
@@ -386,10 +386,10 @@ namespace AlienRace
         public static Dictionary<ThingDef, List<ThingDef_AlienRace>> tameWhiteDict = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
 
         public static bool CanTame(ThingDef pet, ThingDef race) =>
-            !tameRestrictionDict.TryGetValue(key: pet, value: out List<ThingDef_AlienRace> races) &&
+            !tameRestrictionDict.TryGetValue(pet, value: out List<ThingDef_AlienRace> races) &&
             !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyTameRaceRestrictedPets ?? false) ||
             (races?.Contains(item: race as ThingDef_AlienRace) ?? false) ||
-            tameWhiteDict.TryGetValue(key: pet, value: out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
+            tameWhiteDict.TryGetValue(pet, out races) && (races?.Contains(item: race as ThingDef_AlienRace) ?? false);
 
         public List<ConceptDef> conceptList = new List<ConceptDef>();
 
@@ -405,7 +405,7 @@ namespace AlienRace
     public static class GraphicPathsExtension
     {
         public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef) => 
-            list.FirstOrDefault(predicate: gp => gp.lifeStageDefs?.Contains(item: lifeStageDef) ?? false) ?? list.First();
+            list.FirstOrDefault(predicate: gp => gp.lifeStageDefs?.Contains(lifeStageDef) ?? false) ?? list.First();
     }
 
     public class Info : DefModExtension

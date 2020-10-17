@@ -23,7 +23,7 @@ namespace AlienRace
             };
             scenPart.ResolveReferences();
             scenPart.PostLoad();
-            DefDatabase<ScenPartDef>.Add(def: scenPart);
+            DefDatabase<ScenPartDef>.Add(scenPart);
         }
 
         private PawnKindDef kindDef;
@@ -44,24 +44,24 @@ namespace AlienRace
                 List<FloatMenuOption> list = new List<FloatMenuOption>();
                 list.AddRange(collection: DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: ar => ar.pawnKindSettings.startingColonists != null)
                    .SelectMany(selector: ar => ar.pawnKindSettings.startingColonists.SelectMany(selector: ste => ste.pawnKindEntries.SelectMany(selector: pke => pke.kindDefs)))
-                   .Where(predicate: s => DefDatabase<PawnKindDef>.GetNamedSilentFail(defName: s) != null).Select(selector: DefDatabase<PawnKindDef>.GetNamedSilentFail)
+                   .Where(predicate: s => DefDatabase<PawnKindDef>.GetNamedSilentFail(s) != null).Select(DefDatabase<PawnKindDef>.GetNamedSilentFail)
                    .Select(selector: pkd => new FloatMenuOption(label: pkd.label.CapitalizeFirst(), action: () => this.KindDef = pkd)));
                 list.Add(item: new FloatMenuOption(label: "Villager", action: () => this.KindDef = PawnKindDefOf.Villager));
                 list.Add(item: new FloatMenuOption(label: "Slave",    action: () => this.KindDef = PawnKindDefOf.Slave));
-                Find.WindowStack.Add(window: new FloatMenu(options: list));
+                Find.WindowStack.Add(window: new FloatMenu(list));
             }
 
-            Widgets.TextFieldNumeric(rect: scenPartRect.BottomPart(pct: 0.45f), val: ref this.pawnCount, buffer: ref this.buffer);
+            Widgets.TextFieldNumeric(rect: scenPartRect.BottomPart(pct: 0.45f), ref this.pawnCount, ref this.buffer);
         }
 
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look(value: ref this.pawnCount, label: "alienRaceScenPawnCount");
-            Scribe_Defs.Look(value: ref this.kindDef, label: "PawnKindDefAlienRaceScen");
+            Scribe_Values.Look(ref this.pawnCount, label: "alienRaceScenPawnCount");
+            Scribe_Defs.Look(ref this.kindDef, label: "PawnKindDefAlienRaceScen");
         }
 
-        public override string Summary(Scenario scen) => ScenSummaryList.SummaryWithList(scen: scen, tag: "PlayerStartsWith", intro: ScenPart_StartingThing_Defined.PlayerStartWithIntro);
+        public override string Summary(Scenario scen) => ScenSummaryList.SummaryWithList(scen, tag: "PlayerStartsWith", ScenPart_StartingThing_Defined.PlayerStartWithIntro);
 
         public override IEnumerable<string> GetSummaryListEntries(string tag)
         {
@@ -81,7 +81,7 @@ namespace AlienRace
 
         public IEnumerable<Pawn> GetPawns()
         {
-            bool PawnCheck(Pawn p) => p != null && DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(predicate: wtd => wtd.requireCapableColonist).ToList().TrueForAll(match: w => !p.WorkTypeIsDisabled(w: w));
+            bool PawnCheck(Pawn p) => p != null && DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(predicate: wtd => wtd.requireCapableColonist).ToList().TrueForAll(match: w => !p.WorkTypeIsDisabled(w));
 
 
             for (int i = 0; i < this.pawnCount; i++)
@@ -89,8 +89,8 @@ namespace AlienRace
                 Pawn newPawn = null;
                 for (int x = 0; x < 200; x++)
                 {
-                    newPawn = PawnGenerator.GeneratePawn(request: new PawnGenerationRequest(kind: this.KindDef, faction: Faction.OfPlayer, context: PawnGenerationContext.PlayerStarter, tile: -1, forceGenerateNewPawn: true, newborn: false, allowDead: false, allowDowned: false, canGeneratePawnRelations: true, mustBeCapableOfViolence: false, colonistRelationChanceFactor: 26f, forceAddFreeWarmLayerIfNeeded: true));
-                    if (PawnCheck(p: newPawn))
+                    newPawn = PawnGenerator.GeneratePawn(request: new PawnGenerationRequest(this.KindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, tile: -1, forceGenerateNewPawn: true, newborn: false, allowDead: false, allowDowned: false, canGeneratePawnRelations: true, mustBeCapableOfViolence: false, colonistRelationChanceFactor: 26f, forceAddFreeWarmLayerIfNeeded: true));
+                    if (PawnCheck(newPawn))
                     {
                         x = 200;
                     }

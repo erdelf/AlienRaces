@@ -36,13 +36,13 @@ namespace AlienRace
 
         public ThingDef_AlienRace alienProps;
 
-        public string RandomAlienHead(string userpath, Pawn pawn) => GetAlienHead(userpath: userpath, gender: (this.useGenderedHeads ? pawn.gender.ToString() : ""), crowntype: pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[index: Rand.Range(min: 0, max: this.aliencrowntypes.Count)]);
+        public string RandomAlienHead(string userpath, Pawn pawn) => GetAlienHead(userpath, gender: (this.useGenderedHeads ? pawn.gender.ToString() : ""), crowntype: pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[index: Rand.Range(min: 0, this.aliencrowntypes.Count)]);
 
         public static string GetAlienHead(string userpath, string gender, string crowntype) => userpath.NullOrEmpty() ? "" : userpath + (userpath == GraphicPaths.VANILLA_HEAD_PATH ? gender + "/" : "") + (!gender.NullOrEmpty() ? gender + "_" : "") + crowntype;
 
         public Graphic GetNakedGraphic(BodyTypeDef bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender) =>
-            GraphicDatabase.Get(typeof(Graphic_Multi), path: GetNakedPath(bodyType: bodyType, userpath: userpath, gender: this.useGenderedBodies ? gender : ""), shader: shader, drawSize: Vector2.one, 
-                                color: skinColor, colorTwo: skinColorSecond, null, null);
+            GraphicDatabase.Get(graphicClass: typeof(Graphic_Multi), path: GetNakedPath(bodyType, userpath, gender: this.useGenderedBodies ? gender : ""), shader, Vector2.one, 
+                                skinColor, skinColorSecond, data: null, shaderParameters: null);
             //GraphicDatabase.Get<Graphic_Multi>(path: GetNakedPath(bodyType: bodyType, userpath: userpath, gender: this.useGenderedBodies ? gender : ""), shader: shader, drawSize: Vector2.one, color: skinColor, colorTwo: skinColorSecond);
 
         public static string GetNakedPath(BodyTypeDef bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + bodyType;
@@ -51,7 +51,7 @@ namespace AlienRace
         {
             
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
-            ExposableValueTuple<Color, Color> skinColors = alienComp.GetChannel("skin");
+            ExposableValueTuple<Color, Color> skinColors = alienComp.GetChannel(channel: "skin");
             return first ? skinColors.first : skinColors.second;
         }
 
@@ -59,9 +59,9 @@ namespace AlienRace
         {
             void AddMeshSet(Vector2 drawSize, Vector2 headDrawSize)
             {
-                if (!meshPools.Keys.Any(predicate: v => v.Equals(other: drawSize)))
+                if (!meshPools.Keys.Any(predicate: v => v.Equals(drawSize)))
                 {
-                    meshPools.Add(key: drawSize, value: new AlienGraphicMeshSet()
+                    meshPools.Add(drawSize, value: new AlienGraphicMeshSet()
                     {
                         bodySet = new GraphicMeshSet(width: 1.5f * drawSize.x, height: 1.5f * drawSize.y), // bodySet
                         headSet = new GraphicMeshSet(width: 1.5f * headDrawSize.x, height: 1.5f * headDrawSize.y), // headSet
@@ -73,10 +73,10 @@ namespace AlienRace
             foreach (GraphicPaths graphicsPath in this.alienProps.alienRace.graphicPaths.Concat(
                     rhs: new GraphicPaths() { customDrawSize = this.customDrawSize, customHeadDrawSize = this.customHeadDrawSize, customPortraitDrawSize = this.customPortraitDrawSize, customPortraitHeadDrawSize = this.customPortraitHeadDrawSize }))
             {
-                AddMeshSet(drawSize: graphicsPath.customDrawSize, headDrawSize: graphicsPath.customDrawSize);
-                AddMeshSet(drawSize: graphicsPath.customHeadDrawSize, headDrawSize: graphicsPath.customHeadDrawSize);
-                AddMeshSet(drawSize: graphicsPath.customPortraitDrawSize, headDrawSize: graphicsPath.customPortraitDrawSize);
-                AddMeshSet(drawSize: graphicsPath.customPortraitHeadDrawSize, headDrawSize: graphicsPath.customPortraitHeadDrawSize);
+                AddMeshSet(graphicsPath.customDrawSize, graphicsPath.customDrawSize);
+                AddMeshSet(graphicsPath.customHeadDrawSize, graphicsPath.customHeadDrawSize);
+                AddMeshSet(graphicsPath.customPortraitDrawSize, graphicsPath.customPortraitDrawSize);
+                AddMeshSet(graphicsPath.customPortraitHeadDrawSize, graphicsPath.customPortraitHeadDrawSize);
             }
 
 
@@ -92,22 +92,22 @@ namespace AlienRace
 
                 if (ba.variantCount != 0) return;
 
-                AddToStringBuilder($"Loading variants for {ba.path}");
+                AddToStringBuilder(s: $"Loading variants for {ba.path}");
 
                 while (ContentFinder<Texture2D>.Get(itemPath: $"{ba.path}{(ba.variantCount == 0 ? "" : ba.variantCount.ToString())}_north", reportFailure: false) != null)
                     ba.variantCount++;
 
-                AddToStringBuilder($"Variants found for {ba.path}: {ba.variantCount}");
+                AddToStringBuilder(s: $"Variants found for {ba.path}: {ba.variantCount}");
 
                 if (ba.hediffGraphics != null)
                 {
-                    foreach (BodyAddonHediffGraphic bahg in ba.hediffGraphics.Where(bahg => bahg.variantCount == 0))
+                    foreach (BodyAddonHediffGraphic bahg in ba.hediffGraphics.Where(predicate: bahg => bahg.variantCount == 0))
                     {
                         while (ContentFinder<Texture2D>.Get(itemPath: bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_north", reportFailure: false) != null)
                             bahg.variantCount++;
-                        AddToStringBuilder($"Variants found for {bahg.path}: {bahg.variantCount}");
+                        AddToStringBuilder(s: $"Variants found for {bahg.path}: {bahg.variantCount}");
                         if (bahg.variantCount == 0)
-                            Log.Warning($"No hediff graphics found at {bahg.path} for hediff {bahg.hediff} in {this.alienProps.defName}");
+                            Log.Warning(text: $"No hediff graphics found at {bahg.path} for hediff {bahg.hediff} in {this.alienProps.defName}");
 
                         if (bahg.severity != null)
                         {
@@ -115,9 +115,9 @@ namespace AlienRace
                             {
                                 while (ContentFinder<Texture2D>.Get(itemPath: bahsg.path + (bahsg.variantCount == 0 ? "" : bahsg.variantCount.ToString()) + "_north", reportFailure: false) != null)
                                     bahsg.variantCount++;
-                                AddToStringBuilder($"Variants found for {bahsg.path} at severity {bahsg.severity}: {bahsg.variantCount}");
+                                AddToStringBuilder(s: $"Variants found for {bahsg.path} at severity {bahsg.severity}: {bahsg.variantCount}");
                                 if (bahsg.variantCount == 0)
-                                    Log.Warning($"No hediff graphics found at {bahsg.path} at severity {bahsg.severity} for hediff {bahg.hediff} in {this.alienProps.defName}");
+                                    Log.Warning(text: $"No hediff graphics found at {bahsg.path} at severity {bahsg.severity} for hediff {bahg.hediff} in {this.alienProps.defName}");
                             }
                         }
                     }
@@ -125,20 +125,20 @@ namespace AlienRace
 
                 if (ba.backstoryGraphics != null)
                 {
-                    foreach (BodyAddonBackstoryGraphic babg in ba.backstoryGraphics.Where(babg => babg.variantCount == 0))
+                    foreach (BodyAddonBackstoryGraphic babg in ba.backstoryGraphics.Where(predicate: babg => babg.variantCount == 0))
                     {
                         while (ContentFinder<Texture2D>.Get(itemPath: babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_north", reportFailure: false) != null)
                             babg.variantCount++;
-                        AddToStringBuilder($"Variants found for {babg.path}: {babg.variantCount}");
+                        AddToStringBuilder(s: $"Variants found for {babg.path}: {babg.variantCount}");
                         if (babg.variantCount == 0)
-                            Log.Warning($"no backstory graphics found at {babg.path} for backstory {babg.backstory} in {this.alienProps.defName}");
+                            Log.Warning(text: $"no backstory graphics found at {babg.path} for backstory {babg.backstory} in {this.alienProps.defName}");
                     }
                 }
 
 
             });
             if (logBuilder.Length > 0)
-                 Log.Message($"Loaded body addon variants for {this.alienProps.defName}\n{logBuilder}"); 
+                 Log.Message(text: $"Loaded body addon variants for {this.alienProps.defName}\n{logBuilder}"); 
         }
 
         public class ColorChannelGenerator
@@ -177,15 +177,15 @@ namespace AlienRace
                         ThingDef_AlienRace alienProps = ((ThingDef_AlienRace) this.parent.def);
                         AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
 
-                        this.colorChannels.Add("base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
-                        this.colorChannels.Add("hair", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
+                        this.colorChannels.Add(key: "base", value: new ExposableValueTuple<Color, Color>(Color.white, Color.white));
+                        this.colorChannels.Add(key: "hair", value: new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
                         Color skinColor = PawnSkinColors.GetSkinColor(pawn.story.melanin);
-                        this.colorChannels.Add("skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
+                        this.colorChannels.Add(key: "skin", value: new ExposableValueTuple<Color, Color>(skinColor, skinColor));
 
                         foreach (ColorChannelGenerator channel in apg.colorChannels)
                         {
                             if (!this.colorChannels.ContainsKey(channel.name))
-                                this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color>(Color.white, Color.white));
+                                this.colorChannels.Add(channel.name, value: new ExposableValueTuple<Color, Color>(Color.white, Color.white));
                             ExposableValueTuple<Color, Color> colors = this.colorChannels[channel.name];
                             if (channel.first != null)
                                 colors.first = this.GenerateColor(channel.first);
@@ -193,7 +193,7 @@ namespace AlienRace
                                 colors.second = this.GenerateColor(channel.second);
                         }
 
-                        ExposableValueTuple<Color, Color> hairColors = this.colorChannels["hair"];
+                        ExposableValueTuple<Color, Color> hairColors = this.colorChannels[key: "hair"];
                         if (hairColors.first == Color.clear)
                         {
                             Color color = PawnHairColors.RandomHairColor(pawn.story.SkinColor, pawn.ageTracker.AgeBiologicalYears);
@@ -206,13 +206,13 @@ namespace AlienRace
                         if (alienProps.alienRace.hairSettings.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                         {
                             if (Rand.Value < GenMath.SmootherStep(alienProps.alienRace.hairSettings.getsGreyAt,
-                                                                  pawn.RaceProps.ageGenerationCurve.Points.Count < 3
-                                                                      ? alienProps.alienRace.hairSettings.getsGreyAt + 35
-                                                                      : pawn.RaceProps.ageGenerationCurve.Points.Skip(pawn.RaceProps.ageGenerationCurve.Points.Count - 3).First().x,
+                                                                  edge1: pawn.RaceProps.ageGenerationCurve.Points.Count < 3
+                                                                             ? alienProps.alienRace.hairSettings.getsGreyAt + 35
+                                                                             : pawn.RaceProps.ageGenerationCurve.Points.Skip(count: pawn.RaceProps.ageGenerationCurve.Points.Count - 3).First().x,
                                                                   pawn.ageTracker.AgeBiologicalYears))
                             {
                                 float grey = Rand.Range(min: 0.65f, max: 0.85f);
-                                pawn.story.hairColor = new Color(r: grey, g: grey, b: grey);
+                                pawn.story.hairColor = new Color(grey, grey, grey);
                                 hairColors.first     = pawn.story.hairColor;
                             }
                         }
@@ -228,7 +228,7 @@ namespace AlienRace
                 {
                     case ColorGenerator_CustomAlienChannel ac:
                         string[] split = ac.colorChannel.Split('_');
-                        return split[1] == "1" ? this.ColorChannels[split[0]].first : this.ColorChannels[split[0]].second;
+                        return split[1] == "1" ? this.ColorChannels[key: split[0]].first : this.ColorChannels[key: split[0]].second;
                     default:
                         return gen.NewRandomizedColor();
                 }
@@ -236,7 +236,7 @@ namespace AlienRace
 
             public override void PostSpawnSetup(bool respawningAfterLoad)
             {
-                base.PostSpawnSetup(respawningAfterLoad: respawningAfterLoad);
+                base.PostSpawnSetup(respawningAfterLoad);
                 AlienPartGenerator apg = ((ThingDef_AlienRace) this.parent.def).alienRace.generalSettings.alienPartGenerator;
                 this.customDrawSize             = apg.customDrawSize;
                 this.customHeadDrawSize         = apg.customHeadDrawSize;
@@ -247,10 +247,10 @@ namespace AlienRace
             public override void PostExposeData()
             {
                 base.PostExposeData();
-                Scribe_Values.Look(value: ref this.fixGenderPostSpawn, label: "fixAlienGenderPostSpawn");
-                Scribe_Values.Look(value: ref this.crownType,          label: "crownType");
-                Scribe_Collections.Look(list: ref this.addonVariants, label: "addonVariants");
-                Scribe_Collections.Look(dict: ref this.colorChannels, label: "colorChannels");
+                Scribe_Values.Look(ref this.fixGenderPostSpawn, label: "fixAlienGenderPostSpawn");
+                Scribe_Values.Look(ref this.crownType,          label: "crownType");
+                Scribe_Collections.Look(ref this.addonVariants, label: "addonVariants");
+                Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
             }
 
             public ExposableValueTuple<Color, Color> GetChannel(string channel) =>
@@ -258,13 +258,13 @@ namespace AlienRace
 
             internal void AssignProperMeshs()
             {
-                this.alienGraphics             = meshPools[key: this.customDrawSize];
-                this.alienHeadGraphics         = meshPools[key: this.customHeadDrawSize];
-                this.alienPortraitGraphics     = meshPools[key: this.customPortraitDrawSize];
-                this.alienPortraitHeadGraphics = meshPools[key: this.customPortraitHeadDrawSize];
+                this.alienGraphics             = meshPools[this.customDrawSize];
+                this.alienHeadGraphics         = meshPools[this.customHeadDrawSize];
+                this.alienPortraitGraphics     = meshPools[this.customPortraitDrawSize];
+                this.alienPortraitHeadGraphics = meshPools[this.customPortraitHeadDrawSize];
             }
 
-            [DebugAction("AlienRace", "Regenerate all colorchannels", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+            [DebugAction(category: "AlienRace", name: "Regenerate all colorchannels", allowedGameStates = AllowedGameStates.PlayingOnMap)]
             private static void RegenerateColorchannels()
             {
                 foreach (Pawn pawn in Find.CurrentMap.mapPawns.AllPawns)
@@ -293,8 +293,8 @@ namespace AlienRace
 
             public void ExposeData()
             {
-                Scribe_Values.Look(ref this.first, "first");
-                Scribe_Values.Look(ref this.second, "second");
+                Scribe_Values.Look(ref this.first, label: "first");
+                Scribe_Values.Look(ref this.second, label: "second");
             }
         }
 

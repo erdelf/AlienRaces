@@ -44,7 +44,7 @@ namespace AlienRace
 
         public bool CommonalityApproved(Gender g) => Rand.Range(min: 0, max: 100) < (g == Gender.Female ? this.femaleCommonality : this.maleCommonality);
 
-        public bool Approved(Pawn p) => this.CommonalityApproved(g: p.gender) && 
+        public bool Approved(Pawn p) => this.CommonalityApproved(p.gender) && 
             (this.bioAgeRange == default || (this.bioAgeRange.min < p.ageTracker.AgeBiologicalYears && p.ageTracker.AgeBiologicalYears < this.bioAgeRange.max)) &&
             (this.chronoAgeRange == default || (this.chronoAgeRange.min < p.ageTracker.AgeChronologicalYears && p.ageTracker.AgeChronologicalYears < this.chronoAgeRange.max));
 
@@ -54,15 +54,15 @@ namespace AlienRace
             base.ResolveReferences();
 
             
-            if (!this.addToDatabase || BackstoryDatabase.allBackstories.ContainsKey(key: this.defName) || this.title.NullOrEmpty() || this.spawnCategories.NullOrEmpty()) return;
+            if (!this.addToDatabase || BackstoryDatabase.allBackstories.ContainsKey(this.defName) || this.title.NullOrEmpty() || this.spawnCategories.NullOrEmpty()) return;
 
             this.backstory = new Backstory
             {
                 slot = this.slot,
                 shuffleable = this.shuffleable,
                 spawnCategories = this.spawnCategories,
-                forcedTraits = this.forcedTraits.NullOrEmpty() ? null : this.forcedTraits.Where(predicate: trait => Rand.Range(min: 0, max: 100) < trait.chance).ToList().ConvertAll(converter: trait => new TraitEntry(def: trait.defName, degree: trait.degree)),
-                disallowedTraits = this.disallowedTraits.NullOrEmpty() ? null : this.disallowedTraits.Where(predicate: trait => Rand.Range(min: 0, max: 100) < trait.chance).ToList().ConvertAll(converter: trait => new TraitEntry(def: trait.defName, degree: trait.degree)),
+                forcedTraits = this.forcedTraits.NullOrEmpty() ? null : this.forcedTraits.Where(predicate: trait => Rand.Range(min: 0, max: 100) < trait.chance).ToList().ConvertAll(converter: trait => new TraitEntry(trait.defName, trait.degree)),
+                disallowedTraits = this.disallowedTraits.NullOrEmpty() ? null : this.disallowedTraits.Where(predicate: trait => Rand.Range(min: 0, max: 100) < trait.chance).ToList().ConvertAll(converter: trait => new TraitEntry(trait.defName, trait.degree)),
                 workDisables = this.workAllows.NullOrEmpty() ? this.workDisables.NullOrEmpty() ? WorkTags.None : ((Func<WorkTags>) delegate
                  {
                      WorkTags wt = WorkTags.None;
@@ -71,7 +71,7 @@ namespace AlienRace
                  })() : ((Func<WorkTags>) delegate
                  {
                      WorkTags wt = WorkTags.None;
-                     Enum.GetValues(enumType: typeof(WorkTags)).Cast<WorkTags>().Where(predicate: tag => !this.workAllows.Contains(item: tag)).ToList().ForEach(action: tag => wt |= tag);
+                     Enum.GetValues(enumType: typeof(WorkTags)).Cast<WorkTags>().Where(predicate: tag => !this.workAllows.Contains(tag)).ToList().ForEach(action: tag => wt |= tag);
                      return wt;
                  })(),
                 identifier = this.defName,
@@ -89,11 +89,11 @@ namespace AlienRace
                 this.bodyTypeGlobal = DefDatabase<BodyTypeDef>.GetRandom();
             }
 
-            Traverse.Create(root: this.backstory).Field(name: "bodyTypeGlobalResolved").SetValue(value: this.bodyTypeGlobal);
-            Traverse.Create(root: this.backstory).Field(name: "bodyTypeFemaleResolved").SetValue(value: this.bodyTypeFemale);
-            Traverse.Create(root: this.backstory).Field(name: "bodyTypeMaleResolved").SetValue(value: this.bodyTypeMale);
+            Traverse.Create(this.backstory).Field(name: "bodyTypeGlobalResolved").SetValue(this.bodyTypeGlobal);
+            Traverse.Create(this.backstory).Field(name: "bodyTypeFemaleResolved").SetValue(this.bodyTypeFemale);
+            Traverse.Create(this.backstory).Field(name: "bodyTypeMaleResolved").SetValue(this.bodyTypeMale);
 
-                Traverse.Create(root: this.backstory).Field(name: nameof(this.skillGains)).SetValue(value: this.skillGains.ToDictionary(keySelector: i => i.defName, elementSelector: i => i.amount));
+                Traverse.Create(this.backstory).Field(name: nameof(this.skillGains)).SetValue(value: this.skillGains.ToDictionary(keySelector: i => i.defName, elementSelector: i => i.amount));
 
             UpdateTranslateableFields(bs: this);
             
@@ -104,7 +104,7 @@ namespace AlienRace
 
             IEnumerable<string> errors;
             if (!(errors = this.backstory.ConfigErrors(ignoreNoSpawnCategories: false)).Any())
-                BackstoryDatabase.AddBackstory(bs: this.backstory);
+                BackstoryDatabase.AddBackstory(this.backstory);
             else
                 Log.Error(text: this.defName + " has errors:\n" + string.Join(separator: "\n", value: errors.ToArray()));
         }
@@ -114,7 +114,7 @@ namespace AlienRace
             if (bs.backstory == null) return;
 
             bs.backstory.baseDesc = bs.baseDescription.NullOrEmpty() ? "Empty." : bs.baseDescription;
-            bs.backstory.SetTitle(newTitle: bs.title, newTitleFemale: bs.titleFemale);
+            bs.backstory.SetTitle(bs.title, bs.titleFemale);
             bs.backstory.SetTitleShort(newTitleShort: bs.titleShort.NullOrEmpty() ? bs.backstory.title : bs.titleShort,
                 newTitleShortFemale: bs.titleShortFemale.NullOrEmpty() ? bs.backstory.titleFemale : bs.titleShortFemale);
         }
