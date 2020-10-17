@@ -58,12 +58,12 @@ namespace AlienRace
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 (pawn.Drawer.renderer.graphics.apparelGraphics.NullOrEmpty() || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
-                !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(item: bpgd)) || 
-                ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(item: s))))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && ((pawn.CurrentBed()?.def.building.bed_showSleeperBody ?? true) || this.drawnInBed) &&
+                !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
+                ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(s))))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && ((pawn.CurrentBed()?.def.building.bed_showSleeperBody ?? true) || this.drawnInBed) &&
                     (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
                     (this.bodyPart.NullOrEmpty() || 
                      (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
-                     (this.hediffGraphics?.Any(bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
+                     (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
                (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement.NullOrEmpty() || pawn.story.bodyType.ToString() == this.bodyTypeRequirement);
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
@@ -87,11 +87,11 @@ namespace AlienRace
                                 foreach (BodyAddonHediffGraphic bahg in this.hediffGraphics)
                                 {
 
-                                    foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(h => h.def == bahg.hediff &&
-                                                                                                  (h.Part == null                                  ||
-                                                                                                   this.bodyPart.NullOrEmpty()                     ||
-                                                                                                   h.Part.untranslatedCustomLabel == this.bodyPart ||
-                                                                                                   h.Part.def.defName             == this.bodyPart)))
+                                    foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(predicate: h => h.def == bahg.hediff &&
+                                                                                                             (h.Part == null                                  ||
+                                                                                                              this.bodyPart.NullOrEmpty()                     ||
+                                                                                                              h.Part.untranslatedCustomLabel == this.bodyPart ||
+                                                                                                              h.Part.def.defName             == this.bodyPart)))
                                     {
                                         returnPath      = bahg.path;
                                         variantCounting = bahg.variantCount;
@@ -136,10 +136,10 @@ namespace AlienRace
                            GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
                                                                                                            (this.linkVariantIndexWithPrevious ?
                                                                                                                 sharedIndex % variantCounting :
-                                                                                                                (sharedIndex = Rand.Range(min: 0, max: variantCounting))))) == 0 ? "" : tv.ToString())),
+                                                                                                                (sharedIndex = Rand.Range(min: 0, variantCounting))))) == 0 ? "" : tv.ToString())),
                                                               shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
                                                               drawSize: this.drawSize * 1.5f,
-                                                              color: channel.first, channel.second) :
+                                                              channel.first, channel.second) :
                            null;
             }
         }
@@ -155,9 +155,9 @@ namespace AlienRace
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
-                XmlAttribute mayRequire = xmlRoot.Attributes["MayRequire"];
-                int index = mayRequire != null ? xmlRoot.Name.LastIndexOf('\"') + 1 : 0;
-                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.hediff),  xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index), mayRequire?.Value.ToLower());
+                XmlAttribute mayRequire = xmlRoot.Attributes[name: "MayRequire"];
+                int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(wanter: this, fieldName: nameof(this.hediff),  targetDefName: xmlRoot.Name.Substring(index, length: xmlRoot.Name.Length - index), mayRequireMod: mayRequire?.Value.ToLower());
 
                 this.path = xmlRoot.FirstChild.Value?.Trim();
 
@@ -166,9 +166,9 @@ namespace AlienRace
                 {
                     Traverse field = traverse.Field(xmlRootChildNode.Name);
                     if (field.FieldExists())
-                        field.SetValue(field.GetValueType().IsGenericType ?
-                                       DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, false) :
-                                       xmlRootChildNode.InnerXml.Trim());
+                        field.SetValue(value: field.GetValueType().IsGenericType ?
+                                                  DirectXmlToObject.GetObjectFromXmlMethod(type: field.GetValueType())(xmlRootChildNode, arg2: false) :
+                                                  xmlRootChildNode.InnerXml.Trim());
                 }
             }
         }
@@ -182,7 +182,7 @@ namespace AlienRace
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
-                this.severity = float.Parse(s: xmlRoot.Name.Substring(1).Trim());
+                this.severity = float.Parse(s: xmlRoot.Name.Substring(startIndex: 1).Trim());
                 this.path   = xmlRoot.InnerXml.Trim();
             }
         }
@@ -226,8 +226,8 @@ namespace AlienRace
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
-                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(wanter: this, fieldName: nameof(this.bodyType), targetDefName: xmlRoot.Name);
-                this.offset = (Vector2) ParseHelper.FromString(str: xmlRoot.FirstChild.Value, itemType: typeof(Vector2));
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(wanter: this, fieldName: nameof(this.bodyType), xmlRoot.Name);
+                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, itemType: typeof(Vector2));
             }
         }
 
@@ -240,7 +240,7 @@ namespace AlienRace
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.crownType = xmlRoot.Name;
-                this.offset = (Vector2) ParseHelper.FromString(str: xmlRoot.FirstChild.Value, itemType: typeof(Vector2));
+                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, itemType: typeof(Vector2));
             }
         }
 
