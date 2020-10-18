@@ -253,8 +253,23 @@ namespace AlienRace
                 Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
             }
 
-            public ExposableValueTuple<Color, Color> GetChannel(string channel) =>
-                this.ColorChannels[channel];
+            public ExposableValueTuple<Color, Color> GetChannel(string channel)
+            {
+                if (this.ColorChannels.ContainsKey(channel))
+                    return this.ColorChannels[channel];
+
+                ThingDef_AlienRace alienProps = ((ThingDef_AlienRace)this.parent.def);
+                AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
+
+                foreach (ColorChannelGenerator apgChannel in apg.colorChannels)
+                    if (apgChannel.name == channel)
+                    {
+                        this.ColorChannels.Add(channel, new ExposableValueTuple<Color, Color>(this.GenerateColor(apgChannel.first), this.GenerateColor(apgChannel.second)));
+                        return this.ColorChannels[channel];
+                    }
+
+                return new ExposableValueTuple<Color, Color>(Color.white, Color.white);
+            }
 
             internal void AssignProperMeshs()
             {
