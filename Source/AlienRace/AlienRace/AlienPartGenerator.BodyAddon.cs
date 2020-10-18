@@ -27,8 +27,10 @@ namespace AlienRace
             public bool drawnInBed = true;
             public bool drawForMale = true;
             public bool drawForFemale = true;
-            
+
             public Vector2 drawSize = Vector2.one;
+            public bool drawRotated = true;
+
             private string colorChannel;
 
             public string ColorChannel => 
@@ -133,13 +135,16 @@ namespace AlienRace
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
 
                 return !returnPath.NullOrEmpty() ?
-                           GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
-                                                                                                           (this.linkVariantIndexWithPrevious ?
-                                                                                                                sharedIndex % variantCounting :
-                                                                                                                (sharedIndex = Rand.Range(min: 0, variantCounting))))) == 0 ? "" : tv.ToString())),
+                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(path: returnPath += (tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
+                                                                                             (this.linkVariantIndexWithPrevious ?
+                                                                                                  sharedIndex % variantCounting :
+                                                                                                  (sharedIndex = Rand.Range(min: 0, variantCounting))))) == 0 ? "" : tv.ToString(),
                                                               shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
                                                               drawSize: this.drawSize * 1.5f,
-                                                              channel.first, channel.second) :
+                                                              channel.first, channel.second, new GraphicData
+                                                                                                   {
+                                                                                                       drawRotated = !this.drawRotated
+                                                                                                   }) :
                            null;
             }
         }
