@@ -21,9 +21,9 @@ namespace AlienRace
         public override void ResolveReferences()
         {
             if (!BackstoryDatabase.TryGetWithIdentifier(this.childhoodDef, out this.resolvedChildhood))
-                Log.Error(text: "Error in " + this.defName + ": Childhood backstory not found");
+                Log.Error("Error in " + this.defName + ": Childhood backstory not found");
             if (!BackstoryDatabase.TryGetWithIdentifier(this.adulthoodDef, out this.resolvedAdulthood))
-                Log.Error(text: "Error in " + this.defName + ": Adulthood backstory not found");
+                Log.Error("Error in " + this.defName + ": Adulthood backstory not found");
 
             base.ResolveReferences();
 
@@ -45,7 +45,7 @@ namespace AlienRace
             if(!bio.ConfigErrors().Any())
                 SolidBioDatabase.allBios.Add(bio);
             else
-                Log.Error(text: this.defName + " has errors");
+                Log.Error(this.defName + " has errors");
         }
     }
 }

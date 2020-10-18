@@ -71,7 +71,7 @@ namespace AlienRace
                  })() : ((Func<WorkTags>) delegate
                  {
                      WorkTags wt = WorkTags.None;
-                     Enum.GetValues(enumType: typeof(WorkTags)).Cast<WorkTags>().Where(predicate: tag => !this.workAllows.Contains(tag)).ToList().ForEach(action: tag => wt |= tag);
+                     Enum.GetValues(typeof(WorkTags)).Cast<WorkTags>().Where(predicate: tag => !this.workAllows.Contains(tag)).ToList().ForEach(action: tag => wt |= tag);
                      return wt;
                  })(),
                 identifier = this.defName,
@@ -93,9 +93,9 @@ namespace AlienRace
             Traverse.Create(this.backstory).Field(name: "bodyTypeFemaleResolved").SetValue(this.bodyTypeFemale);
             Traverse.Create(this.backstory).Field(name: "bodyTypeMaleResolved").SetValue(this.bodyTypeMale);
 
-                Traverse.Create(this.backstory).Field(name: nameof(this.skillGains)).SetValue(value: this.skillGains.ToDictionary(keySelector: i => i.defName, elementSelector: i => i.amount));
+                Traverse.Create(this.backstory).Field(nameof(this.skillGains)).SetValue(this.skillGains.ToDictionary(keySelector: i => i.defName, elementSelector: i => i.amount));
 
-            UpdateTranslateableFields(bs: this);
+            UpdateTranslateableFields(this);
             
             this.backstory.ResolveReferences();
             this.backstory.PostLoad();
@@ -106,7 +106,7 @@ namespace AlienRace
             if (!(errors = this.backstory.ConfigErrors(ignoreNoSpawnCategories: false)).Any())
                 BackstoryDatabase.AddBackstory(this.backstory);
             else
-                Log.Error(text: this.defName + " has errors:\n" + string.Join(separator: "\n", value: errors.ToArray()));
+                Log.Error(this.defName + " has errors:\n" + string.Join(separator: "\n", errors.ToArray()));
         }
 
         internal static void UpdateTranslateableFields(BackstoryDef bs)
@@ -115,8 +115,8 @@ namespace AlienRace
 
             bs.backstory.baseDesc = bs.baseDescription.NullOrEmpty() ? "Empty." : bs.baseDescription;
             bs.backstory.SetTitle(bs.title, bs.titleFemale);
-            bs.backstory.SetTitleShort(newTitleShort: bs.titleShort.NullOrEmpty() ? bs.backstory.title : bs.titleShort,
-                newTitleShortFemale: bs.titleShortFemale.NullOrEmpty() ? bs.backstory.titleFemale : bs.titleShortFemale);
+            bs.backstory.SetTitleShort(bs.titleShort.NullOrEmpty() ? bs.backstory.title : bs.titleShort,
+                bs.titleShortFemale.NullOrEmpty() ? bs.backstory.titleFemale : bs.titleShortFemale);
         }
 
 
