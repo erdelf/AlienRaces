@@ -1254,17 +1254,18 @@
         {
             if (!(Traverse.Create(__instance).Field(name: "pawn").GetValue<Pawn>().def is ThingDef_AlienRace alienProps)) return true;
 
-            foreach (AlienTraitEntry traitEntry in alienProps.alienRace.generalSettings.disallowedTraits)
-            {
-                if (traitEntry.defName == trait.def)
+            if(!alienProps.alienRace.generalSettings.disallowedTraits.NullOrEmpty())
+                foreach (AlienTraitEntry traitEntry in alienProps.alienRace.generalSettings.disallowedTraits)
                 {
-                    if (trait.Degree == traitEntry.degree || traitEntry.degree == 0)
+                    if (traitEntry.defName == trait.def)
                     {
-                        if (Rand.Range(min: 0, max: 100) < traitEntry.chance)
-                            return false;
+                        if (trait.Degree == traitEntry.degree || traitEntry.degree == 0)
+                        {
+                            if (Rand.Range(min: 0, max: 100) < traitEntry.chance)
+                                return false;
+                        }
                     }
                 }
-            }
 
             AlienTraitEntry ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(predicate: at => at.defName == trait.def);
             if (ate == null) return true;
