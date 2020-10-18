@@ -135,12 +135,12 @@ namespace AlienRace
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
 
                 return !returnPath.NullOrEmpty() ?
-                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(path: returnPath += (tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
+                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath += (tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
                                                                                              (this.linkVariantIndexWithPrevious ?
                                                                                                   sharedIndex % variantCounting :
                                                                                                   (sharedIndex = Rand.Range(min: 0, variantCounting))))) == 0 ? "" : tv.ToString(),
-                                                              shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
-                                                              drawSize: this.drawSize * 1.5f,
+                                                              ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
+                                                              this.drawSize * 1.5f,
                                                               channel.first, channel.second, new GraphicData
                                                                                                    {
                                                                                                        drawRotated = !this.drawRotated
@@ -162,17 +162,17 @@ namespace AlienRace
             {
                 XmlAttribute mayRequire = xmlRoot.Attributes[name: "MayRequire"];
                 int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
-                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(wanter: this, fieldName: nameof(this.hediff),  targetDefName: xmlRoot.Name.Substring(index, length: xmlRoot.Name.Length - index), mayRequireMod: mayRequire?.Value.ToLower());
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.hediff),  xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index), mayRequire?.Value.ToLower());
 
                 this.path = xmlRoot.FirstChild.Value?.Trim();
 
-                Traverse traverse = Traverse.Create(root: this);
+                Traverse traverse = Traverse.Create(this);
                 foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
                 {
                     Traverse field = traverse.Field(xmlRootChildNode.Name);
                     if (field.FieldExists())
-                        field.SetValue(value: field.GetValueType().IsGenericType ?
-                                                  DirectXmlToObject.GetObjectFromXmlMethod(type: field.GetValueType())(xmlRootChildNode, arg2: false) :
+                        field.SetValue(field.GetValueType().IsGenericType ?
+                                                  DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, arg2: false) :
                                                   xmlRootChildNode.InnerXml.Trim());
                 }
             }
@@ -187,7 +187,7 @@ namespace AlienRace
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
-                this.severity = float.Parse(s: xmlRoot.Name.Substring(startIndex: 1).Trim());
+                this.severity = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
                 this.path   = xmlRoot.InnerXml.Trim();
             }
         }
@@ -231,8 +231,8 @@ namespace AlienRace
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
-                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(wanter: this, fieldName: nameof(this.bodyType), xmlRoot.Name);
-                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, itemType: typeof(Vector2));
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.bodyType), xmlRoot.Name);
+                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
             }
         }
 
@@ -245,7 +245,7 @@ namespace AlienRace
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.crownType = xmlRoot.Name;
-                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, itemType: typeof(Vector2));
+                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
             }
         }
 

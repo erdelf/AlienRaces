@@ -16,7 +16,7 @@
             foreach (BackstoryTagItem bt in DefDatabase<RaceSettings>.AllDefs.SelectMany(selector: rs => rs.backstoryTagInsertion))
             {
                 foreach (string backstory in bt.backstories)
-                    if (BackstoryDatabase.TryGetWithIdentifier(backstory, bs: out Backstory bs))
+                    if (BackstoryDatabase.TryGetWithIdentifier(backstory, out Backstory bs))
                         bs.spawnCategories.AddRange(bt.spawnCategories);
             }
         }

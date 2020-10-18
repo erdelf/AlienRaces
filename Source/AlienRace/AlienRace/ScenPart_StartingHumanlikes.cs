@@ -38,20 +38,20 @@ namespace AlienRace
 
         public override void DoEditInterface(Listing_ScenEdit listing)
         {
-            Rect scenPartRect = listing.GetScenPartRect(part: this, height: RowHeight * 3f);
-            if (Widgets.ButtonText(rect: scenPartRect.TopPart(pct: 0.45f), label: this.KindDef.label.CapitalizeFirst()))
+            Rect scenPartRect = listing.GetScenPartRect(this, RowHeight * 3f);
+            if (Widgets.ButtonText(scenPartRect.TopPart(pct: 0.45f), this.KindDef.label.CapitalizeFirst()))
             {
                 List<FloatMenuOption> list = new List<FloatMenuOption>();
-                list.AddRange(collection: DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: ar => ar.pawnKindSettings.startingColonists != null)
+                list.AddRange(DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: ar => ar.pawnKindSettings.startingColonists != null)
                    .SelectMany(selector: ar => ar.pawnKindSettings.startingColonists.SelectMany(selector: ste => ste.pawnKindEntries.SelectMany(selector: pke => pke.kindDefs)))
                    .Where(predicate: s => DefDatabase<PawnKindDef>.GetNamedSilentFail(s) != null).Select(DefDatabase<PawnKindDef>.GetNamedSilentFail)
-                   .Select(selector: pkd => new FloatMenuOption(label: pkd.label.CapitalizeFirst(), action: () => this.KindDef = pkd)));
-                list.Add(item: new FloatMenuOption(label: "Villager", action: () => this.KindDef = PawnKindDefOf.Villager));
-                list.Add(item: new FloatMenuOption(label: "Slave",    action: () => this.KindDef = PawnKindDefOf.Slave));
-                Find.WindowStack.Add(window: new FloatMenu(list));
+                   .Select(selector: pkd => new FloatMenuOption(pkd.label.CapitalizeFirst(), action: () => this.KindDef = pkd)));
+                list.Add(new FloatMenuOption(label: "Villager", action: () => this.KindDef = PawnKindDefOf.Villager));
+                list.Add(new FloatMenuOption(label: "Slave",    action: () => this.KindDef = PawnKindDefOf.Slave));
+                Find.WindowStack.Add(new FloatMenu(list));
             }
 
-            Widgets.TextFieldNumeric(rect: scenPartRect.BottomPart(pct: 0.45f), ref this.pawnCount, ref this.buffer);
+            Widgets.TextFieldNumeric(scenPartRect.BottomPart(pct: 0.45f), ref this.pawnCount, ref this.buffer);
         }
 
         public override void ExposeData()
@@ -89,7 +89,7 @@ namespace AlienRace
                 Pawn newPawn = null;
                 for (int x = 0; x < 200; x++)
                 {
-                    newPawn = PawnGenerator.GeneratePawn(request: new PawnGenerationRequest(this.KindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, tile: -1, forceGenerateNewPawn: true, newborn: false, allowDead: false, allowDowned: false, canGeneratePawnRelations: true, mustBeCapableOfViolence: false, colonistRelationChanceFactor: 26f, forceAddFreeWarmLayerIfNeeded: true));
+                    newPawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(this.KindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, tile: -1, forceGenerateNewPawn: true, newborn: false, allowDead: false, allowDowned: false, canGeneratePawnRelations: true, mustBeCapableOfViolence: false, colonistRelationChanceFactor: 26f, forceAddFreeWarmLayerIfNeeded: true));
                     if (PawnCheck(newPawn))
                     {
                         x = 200;
