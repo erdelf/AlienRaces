@@ -1255,18 +1255,20 @@
         public static bool GainTraitPrefix(Trait trait, TraitSet __instance)
         {
             if (!(Traverse.Create(__instance).Field(name: "pawn").GetValue<Pawn>().def is ThingDef_AlienRace alienProps)) return true;
-            AlienTraitEntry ate = alienProps.alienRace.generalSettings.disallowedTraits?.FirstOrDefault(predicate: at => at.defName == trait.def);
-            if (ate != null)
+
+            foreach (AlienTraitEntry traitEntry in alienProps.alienRace.generalSettings.disallowedTraits)
             {
-                if (trait.Degree == ate.degree || ate.degree == 0)
+                if (traitEntry.defName == trait.def)
                 {
-                    if (Rand.Range(min: 0, max: 100) < ate.chance)
-                        return false;
+                    if (trait.Degree == traitEntry.degree || traitEntry.degree == 0)
+                    {
+                        if (Rand.Range(min: 0, max: 100) < traitEntry.chance)
+                            return false;
+                    }
                 }
             }
-            
 
-            ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(predicate: at => at.defName == trait.def);
+            AlienTraitEntry ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(predicate: at => at.defName == trait.def);
             if (ate == null) return true;
 
             return Rand.Range(min: 0, max: 100) < ate.chance;
