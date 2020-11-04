@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using Verse;
 using System.Xml;
-
+using AvaliMod;
 namespace AlienRace
 {
     using System;
@@ -33,7 +33,7 @@ namespace AlienRace
 
             private string colorChannel;
 
-            public string ColorChannel => 
+            public string ColorChannel =>
                 this.colorChannel = this.colorChannel ?? "skin";
 
             public int variantCount = 0;
@@ -53,49 +53,49 @@ namespace AlienRace
             public ShaderTypeDef ShaderType => this.shaderType = this.shaderType ?? ShaderTypeDefOf.Cutout;
 
             private List<BodyAddonPrioritization> prioritization;
-            public List<BodyAddonPrioritization> Prioritization => this.prioritization ?? 
+            public List<BodyAddonPrioritization> Prioritization => this.prioritization ??
                                                                    (this.prioritization = new List<BodyAddonPrioritization> { BodyAddonPrioritization.Hediff, BodyAddonPrioritization.Backstory });
 
 
 
-            public virtual bool CanDrawAddon(Pawn pawn) => 
-                (pawn.Drawer.renderer.graphics.apparelGraphics.NullOrEmpty() || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
-                !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
+            public virtual bool CanDrawAddon(Pawn pawn) =>
+                (pawn.Drawer.renderer.graphics.apparelGraphics.NullOrEmpty() || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
+                !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||
                 ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(s))))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && ((pawn.CurrentBed()?.def.building.bed_showSleeperBody ?? true) || this.drawnInBed) &&
-                    (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
-                    (this.bodyPart.NullOrEmpty() || 
-                     (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
+                    (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b => b.identifier == this.backstoryRequirement)) &&
+                    (this.bodyPart.NullOrEmpty() ||
+                     (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) ||
                      (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
                (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement.NullOrEmpty() || pawn.story.bodyType.ToString() == this.bodyTypeRequirement);
 
-            public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
+            public virtual AvaliGraphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
                 string returnPath = string.Empty;
                 int variantCounting = 0;
 
                 foreach (BodyAddonPrioritization prio in this.Prioritization)
                 {
-                    switch(prio)
+                    switch (prio)
                     {
                         case BodyAddonPrioritization.Backstory:
                             if (this.backstoryGraphics?.FirstOrDefault(predicate: babgs => pawn.story.AllBackstories.Any(predicate: bs => bs.identifier == babgs.backstory)) is BodyAddonBackstoryGraphic babg)
                             {
-                                returnPath      = babg.path;
+                                returnPath = babg.path;
                                 variantCounting = babg.variantCount;
                             }
                             break;
                         case BodyAddonPrioritization.Hediff:
-                            if(!this.hediffGraphics.NullOrEmpty())
+                            if (!this.hediffGraphics.NullOrEmpty())
                                 foreach (BodyAddonHediffGraphic bahg in this.hediffGraphics)
                                 {
 
                                     foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(predicate: h => h.def == bahg.hediff &&
-                                                                                                             (h.Part == null                                  ||
-                                                                                                              this.bodyPart.NullOrEmpty()                     ||
+                                                                                                             (h.Part == null ||
+                                                                                                              this.bodyPart.NullOrEmpty() ||
                                                                                                               h.Part.untranslatedCustomLabel == this.bodyPart ||
-                                                                                                              h.Part.def.defName             == this.bodyPart)))
+                                                                                                              h.Part.def.defName == this.bodyPart)))
                                     {
-                                        returnPath      = bahg.path;
+                                        returnPath = bahg.path;
                                         variantCounting = bahg.variantCount;
 
                                         if (!bahg.severity.NullOrEmpty())
@@ -103,7 +103,7 @@ namespace AlienRace
                                             {
                                                 if (h.Severity >= bahsg.severity)
                                                 {
-                                                    returnPath      = bahsg.path;
+                                                    returnPath = bahsg.path;
                                                     variantCounting = bahsg.variantCount;
                                                     break;
                                                 }
@@ -113,7 +113,7 @@ namespace AlienRace
                                 }
 
                             break;
-                        default: 
+                        default:
                             throw new ArrayTypeMismatchException();
                     }
                     if (!returnPath.NullOrEmpty())
@@ -129,22 +129,22 @@ namespace AlienRace
                 if (variantCounting <= 0)
                     variantCounting = 1;
 
-                ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
+                ExposableValueTuple<Color, Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
                 int tv;
 
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
 
                 return !returnPath.NullOrEmpty() ?
-                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath += (tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
+                           AvaliGraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath += (tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
                                                                                              (this.linkVariantIndexWithPrevious ?
                                                                                                   sharedIndex % variantCounting :
                                                                                                   (sharedIndex = Rand.Range(min: 0, variantCounting))))) == 0 ? "" : tv.ToString(),
-                                                              ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
+                                                              ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : AvaliShaderDatabase.Tricolor, //ShaderDatabase.Transparent,
                                                               this.drawSize * 1.5f,
-                                                              channel.first, channel.second, new GraphicData
-                                                                                                   {
-                                                                                                       drawRotated = !this.drawRotated
-                                                                                                   }) :
+                                                              channel.first, channel.second, channel.third, new AvaliGraphicData
+                                                              {
+                                                                  drawRotated = !this.drawRotated
+                                                              }) :
                            null;
             }
         }
@@ -162,7 +162,7 @@ namespace AlienRace
             {
                 XmlAttribute mayRequire = xmlRoot.Attributes[name: "MayRequire"];
                 int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
-                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.hediff),  xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index), mayRequire?.Value.ToLower());
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.hediff), xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index), mayRequire?.Value.ToLower());
 
                 this.path = xmlRoot.FirstChild.Value?.Trim();
 
@@ -188,7 +188,7 @@ namespace AlienRace
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.severity = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
-                this.path   = xmlRoot.InnerXml.Trim();
+                this.path = xmlRoot.InnerXml.Trim();
             }
         }
 
@@ -232,7 +232,7 @@ namespace AlienRace
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.bodyType), xmlRoot.Name);
-                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
+                this.offset = (Vector2)ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
             }
         }
 
@@ -245,7 +245,7 @@ namespace AlienRace
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.crownType = xmlRoot.Name;
-                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
+                this.offset = (Vector2)ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
             }
         }
 

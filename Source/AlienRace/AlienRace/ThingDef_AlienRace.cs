@@ -30,7 +30,7 @@ namespace AlienRace
 
             this.alienRace.graphicPaths.ForEach(action: gp =>
             {
-                if(gp.customDrawSize == Vector2.one)
+                if (gp.customDrawSize == Vector2.one)
                     gp.customDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
                 if (gp.customPortraitDrawSize == Vector2.one)
                     gp.customPortraitDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
@@ -50,7 +50,7 @@ namespace AlienRace
                     bodyAddon.offsets.west = bodyAddon.offsets.east;
 
             if (this.alienRace.generalSettings.minAgeForAdulthood < 0)
-                this.alienRace.generalSettings.minAgeForAdulthood = (float) AccessTools.Field(typeof(PawnBioAndNameGenerator), name: "MinAgeForAdulthood").GetValue(obj: null);
+                this.alienRace.generalSettings.minAgeForAdulthood = (float)AccessTools.Field(typeof(PawnBioAndNameGenerator), name: "MinAgeForAdulthood").GetValue(obj: null);
 
             void RecursiveAttributeCheck(Type type, Traverse instance)
             {
@@ -65,14 +65,14 @@ namespace AlienRace
                     {
                         object value = instanceNew.GetValue();
                         if (value != null)
-                            foreach (object o in (IList) value)
+                            foreach (object o in (IList)value)
                             {
                                 if (o.GetType().Assembly == typeof(ThingDef_AlienRace).Assembly)
                                     RecursiveAttributeCheck(o.GetType(), Traverse.Create(o));
                             }
                     }
 
-                    if (field.FieldType.Assembly == typeof(ThingDef_AlienRace).Assembly) 
+                    if (field.FieldType.Assembly == typeof(ThingDef_AlienRace).Assembly)
                         RecursiveAttributeCheck(field.FieldType, instanceNew);
 
                     LoadDefFromField attribute = field.GetCustomAttribute<LoadDefFromField>();
@@ -172,7 +172,7 @@ namespace AlienRace
         public Vector2 east = Vector2.zero;
         public Vector2 south = Vector2.zero;
 
-        public Vector2 GetOffset(Rot4 rot) => 
+        public Vector2 GetOffset(Rot4 rot) =>
             rot == Rot4.North ? this.north : rot == Rot4.East ? this.east : rot == Rot4.West ? this.west : this.south;
     }
 
@@ -187,20 +187,20 @@ namespace AlienRace
     public class ThoughtSettings
     {
         public List<ThoughtDef> cannotReceiveThoughts;
-        public bool         cannotReceiveThoughtsAtAll = false;
+        public bool cannotReceiveThoughtsAtAll = false;
         public List<ThoughtDef> canStillReceiveThoughts;
 
         public static Dictionary<ThoughtDef, List<ThingDef_AlienRace>> thoughtRestrictionDict = new Dictionary<ThoughtDef, List<ThingDef_AlienRace>>();
-        public        List<ThoughtDef>                                     restrictedThoughts     = new List<ThoughtDef>();
+        public List<ThoughtDef> restrictedThoughts = new List<ThoughtDef>();
 
         public ThoughtDef ReplaceIfApplicable(ThoughtDef def) =>
             (this.replacerList == null || this.replacerList.Select(selector: tr => tr.replacer).Contains(def))
                 ? def : this.replacerList.FirstOrDefault(predicate: tr => tr.original == def)?.replacer ?? def;
 
-        public ButcherThought       butcherThoughtGeneral  = new ButcherThought();
+        public ButcherThought butcherThoughtGeneral = new ButcherThought();
         public List<ButcherThought> butcherThoughtSpecific = new List<ButcherThought>();
 
-        public AteThought       ateThoughtGeneral  = new AteThought();
+        public AteThought ateThoughtGeneral = new AteThought();
         public List<AteThought> ateThoughtSpecific = new List<AteThought>();
 
         public ThoughtDef GetAteThought(ThingDef race, bool cannibal, bool ingredient) =>
@@ -269,7 +269,7 @@ namespace AlienRace
 
     public class RaceRestrictionSettings
     {
-       
+
         public bool onlyUseRaceRestrictedApparel = false;
         public List<ThingDef> apparelList = new List<ThingDef>();
         public List<ThingDef> whiteApparelList = new List<ThingDef>();
@@ -279,8 +279,8 @@ namespace AlienRace
 
 
         public static bool CanWear(ThingDef apparel, ThingDef race) =>
-            !apparelRestrictionDict.TryGetValue(apparel, out List<ThingDef_AlienRace> races) && 
-            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel ?? false) || 
+            !apparelRestrictionDict.TryGetValue(apparel, out List<ThingDef_AlienRace> races) &&
+            !((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyUseRaceRestrictedApparel ?? false) ||
             (races?.Contains(race as ThingDef_AlienRace) ?? false) ||
             apparelWhiteDict.TryGetValue(apparel, out races) && (races?.Contains(race as ThingDef_AlienRace) ?? false);
 
@@ -366,7 +366,7 @@ namespace AlienRace
 
         public static bool CanEat(ThingDef food, ThingDef race)
         {
-            if (foodRestrictionDict.TryGetValue(food, out List<ThingDef_AlienRace> races) || 
+            if (foodRestrictionDict.TryGetValue(food, out List<ThingDef_AlienRace> races) ||
                 ((race as ThingDef_AlienRace)?.alienRace.raceRestriction.onlyEatRaceRestrictedFood ?? false))
             {
                 if (!(races?.Contains(race as ThingDef_AlienRace) ?? false) && (!foodWhiteDict.TryGetValue(food, out races) || !races.Contains(race as ThingDef_AlienRace)))
@@ -401,10 +401,10 @@ namespace AlienRace
         public List<ResearchProjectDef> projects = new List<ResearchProjectDef>();
         public List<ThingDef> apparelList;
     }
-    
+
     public static class GraphicPathsExtension
     {
-        public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef) => 
+        public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef) =>
             list.FirstOrDefault(predicate: gp => gp.lifeStageDefs?.Contains(lifeStageDef) ?? false) ?? list.First();
     }
 

@@ -1,4 +1,4 @@
-﻿namespace AlienRace
+namespace AlienRace
 {
     using RimWorld;
     using UnityEngine;
@@ -6,12 +6,16 @@
 
     public class AlienRaceMod : Mod
     {
+        public static string dir;
         public static AlienRaceSettings settings;
 
         public override string SettingsCategory() => "Alien Race";
 
-        public AlienRaceMod(ModContentPack content) : base(content) => 
+        public AlienRaceMod(ModContentPack content) : base(content)
+        {
+            dir = this.mod.RootDir.ToString();
             settings = this.GetSettings<AlienRaceSettings>();
+        }
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
@@ -40,7 +44,6 @@
         }
 
         public void UpdateSettings() =>
-            ((ThingDef_AlienRace)ThingDefOf.Human).alienRace.generalSettings.alienPartGenerator.colorChannels.Find(match: ccg => ccg.name == "skin").first = 
+            ((ThingDef_AlienRace)ThingDefOf.Human).alienRace.generalSettings.alienPartGenerator.colorChannels.Find(match: ccg => ccg.name == "skin").first =
             this.centralMelanin ? null : new ColorGenerator_SkinColorMelanin { maxMelanin = 1f, minMelanin = 0f };
-    }
-}
+    

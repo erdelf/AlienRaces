@@ -2,8 +2,9 @@
 using RimWorld;
 using Verse;
 using Verse.AI;
+using AvaliMod;
 
-namespace AlienRace
+namespace RVHAR
 {
     using System;
     using JetBrains.Annotations;
@@ -27,7 +28,7 @@ namespace AlienRace
     {
         public List<ThingDef> races;
 
-        protected override bool Satisfied(Pawn pawn) => 
+        protected override bool Satisfied(Pawn pawn) =>
             this.races.Contains(pawn.def);
     }
 
@@ -41,16 +42,16 @@ namespace AlienRace
     [UsedImplicitly]
     public class ThoughtWorker_XenophobeVsXenophile : ThoughtWorker
     {
-        protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) => 
-            p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && p.story.traits.HasTrait(AlienDefOf.Xenophobia) && otherPawn.story.traits.HasTrait(AlienDefOf.Xenophobia) && 
+        protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) =>
+            p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && p.story.traits.HasTrait(AlienDefOf.Xenophobia) && otherPawn.story.traits.HasTrait(AlienDefOf.Xenophobia) &&
             p.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) != otherPawn.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) && RelationsUtility.PawnsKnowEachOther(p, otherPawn);
     }
 
     [UsedImplicitly]
     public class Thought_XenophobiaVsAlien : Thought_SituationalSocial
     {
-        public override float OpinionOffset() => 
-            this.pawn.def != this.OtherPawn().def ? this.pawn.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1 ? -30 : 
+        public override float OpinionOffset() =>
+            this.pawn.def != this.OtherPawn().def ? this.pawn.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1 ? -30 :
             this.OtherPawn().story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1 ? -15 : 0 : 0;
     }
 
@@ -94,13 +95,13 @@ namespace AlienRace
             this.defName = defName;
         }
 
-        public Def GetDef(Type defType) => 
+        public Def GetDef(Type defType) =>
             GenDefDatabase.GetDef(defType, this.defName);
     }
 
-    public class Graphic_Multi_RotationFromData : Graphic_Multi
+    public class Graphic_Multi_RotationFromData : AvaliGraphic_Multi
     {
-        public override bool ShouldDrawRotated => 
+        public override bool ShouldDrawRotated =>
             this.data?.drawRotated ?? false;
     }
 }
