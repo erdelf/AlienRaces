@@ -4,7 +4,7 @@ using Verse;
 using Verse.AI;
 using AvaliMod;
 
-namespace RVHAR
+namespace AlienRace
 {
     using System;
     using JetBrains.Annotations;
