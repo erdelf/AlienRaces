@@ -38,13 +38,13 @@
 
     public class PawnKindEntry
     {
-        public List<string> kindDefs = new List<string>();
+        public List<PawnKindDef> kindDefs = new List<PawnKindDef>();
         public float        chance;
     }
 
     public class FactionPawnKindEntry
     {
         public List<PawnKindEntry> pawnKindEntries = new List<PawnKindEntry>();
-        public List<string>        factionDefs = new List<string>();
+        public List<FactionDef>        factionDefs = new List<FactionDef>();
     }
 }
