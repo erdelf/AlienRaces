@@ -44,8 +44,7 @@ namespace AlienRace
                 List<FloatMenuOption> list = new List<FloatMenuOption>();
                 list.AddRange(DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: ar => ar.pawnKindSettings.startingColonists != null)
                    .SelectMany(selector: ar => ar.pawnKindSettings.startingColonists.SelectMany(selector: ste => ste.pawnKindEntries.SelectMany(selector: pke => pke.kindDefs)))
-                   .Where(predicate: s => DefDatabase<PawnKindDef>.GetNamedSilentFail(s) != null).Select(DefDatabase<PawnKindDef>.GetNamedSilentFail)
-                   .Select(selector: pkd => new FloatMenuOption(pkd.label.CapitalizeFirst(), action: () => this.KindDef = pkd)));
+                   .Where(predicate: s => s != null).Select(selector: pkd => new FloatMenuOption(pkd.label.CapitalizeFirst(), action: () => this.KindDef = pkd)));
                 list.Add(new FloatMenuOption(label: "Villager", action: () => this.KindDef = PawnKindDefOf.Villager));
                 list.Add(new FloatMenuOption(label: "Slave",    action: () => this.KindDef = PawnKindDefOf.Slave));
                 Find.WindowStack.Add(new FloatMenu(list));
