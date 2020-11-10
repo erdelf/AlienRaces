@@ -264,7 +264,12 @@ namespace AlienRace
                 foreach (ColorChannelGenerator apgChannel in apg.colorChannels)
                     if (apgChannel.name == channel)
                     {
-                        this.ColorChannels.Add(channel, new ExposableValueTuple<Color, Color>(this.GenerateColor(apgChannel.first), this.GenerateColor(apgChannel.second)));
+                        this.ColorChannels.Add(channel, new ExposableValueTuple<Color, Color>());
+                        if (apgChannel.first != null)
+                            this.ColorChannels[channel].first = this.GenerateColor(apgChannel.first);
+                        if (apgChannel.second != null)
+                            this.ColorChannels[channel].second = this.GenerateColor(apgChannel.second);
+
                         return this.ColorChannels[channel];
                     }
 
