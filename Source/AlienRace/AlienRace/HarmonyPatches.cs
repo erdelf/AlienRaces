@@ -988,7 +988,7 @@
 
         private static bool GetTraderCaravanRoleInfix(Pawn p) => 
             p.def is ThingDef_AlienRace && 
-                DefDatabase<RaceSettings>.AllDefs.Any(predicate: rs => rs.pawnKindSettings.alienslavekinds.Any(predicate: pke => pke.kindDefs.Contains(p.kindDef.defName)));
+                DefDatabase<RaceSettings>.AllDefs.Any(predicate: rs => rs.pawnKindSettings.alienslavekinds.Any(predicate: pke => pke.kindDefs.Contains(p.kindDef)));
 
         public static bool GetGenderSpecificLabelPrefix(Pawn pawn, ref string __result, PawnRelationDef __instance)
         {
@@ -1906,14 +1906,10 @@
         {
             PawnKindDef kindDef = Faction.OfPlayer.def.basicMemberKind;
 
-            DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.startingColonists.NullOrEmpty())
-               .SelectMany(selector: tdar => tdar.pawnKindSettings.startingColonists).Where(predicate: sce => sce.factionDefs.Contains(Faction.OfPlayer.def.defName))
-               .SelectMany(selector: sce => sce.pawnKindEntries).InRandomOrder().ToList().ForEach(action: pke =>
-                {
-                    if (!(Rand.Range(min: 0f, max: 100f) < pke.chance)) return;
-                    PawnKindDef pk          = DefDatabase<PawnKindDef>.GetNamedSilentFail(pke.kindDefs.RandomElement());
-                    if (pk != null) kindDef = pk;
-                });
+            if (DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.startingColonists.NullOrEmpty())
+                                      .SelectMany(selector: tdar => tdar.pawnKindSettings.startingColonists).Where(predicate: sce => sce.factionDefs.Contains(Faction.OfPlayer.def))
+                                      .SelectMany(selector: sce => sce.pawnKindEntries).TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk))
+                kindDef = pk.kindDefs.RandomElement();
 
             if (kindDef == Faction.OfPlayer.def.basicMemberKind) return true;
 
@@ -2202,51 +2198,43 @@
             if (Faction.OfPlayerSilentFail != null && kindDef == PawnKindDefOf.Villager && request.Faction.IsPlayer && kindDef.race != Faction.OfPlayer?.def.basicMemberKind.race)
                 kindDef = Faction.OfPlayer?.def.basicMemberKind;
 
-            if (Rand.Value <= 0.4f)
+
+
+            IEnumerable<RaceSettings> settings = DefDatabase<RaceSettings>.AllDefsListForReading;
+            PawnKindEntry             pk;
+            if (request.KindDef == PawnKindDefOf.SpaceRefugee || request.KindDef == PawnKindDefOf.Refugee)
             {
-                IEnumerable<RaceSettings> settings = DefDatabase<RaceSettings>.AllDefsListForReading;
-                PawnKindEntry                   pk;
-                if (request.KindDef == PawnKindDefOf.SpaceRefugee || request.KindDef == PawnKindDefOf.Refugee)
-                {
-                    if (settings.Where(predicate: r => !r.pawnKindSettings.alienrefugeekinds.NullOrEmpty()).Select(selector: r => r.pawnKindSettings.alienrefugeekinds.RandomElement())
-                       .TryRandomElementByWeight(weightSelector: pke => pke.chance, out pk))
-                    {
-                        PawnKindDef pkd          = DefDatabase<PawnKindDef>.GetNamedSilentFail(pk.kindDefs.RandomElement());
-                        if (pkd != null) kindDef = pkd;
-                    }
-                }
-                else if (request.KindDef == PawnKindDefOf.Slave)
-                {
-                    if (settings.Where(predicate: r => !r.pawnKindSettings.alienslavekinds.NullOrEmpty()).Select(selector: r => r.pawnKindSettings.alienslavekinds.RandomElement())
-                       .TryRandomElementByWeight(weightSelector: pke => pke.chance, out pk))
-                    {
-                        PawnKindDef pkd          = DefDatabase<PawnKindDef>.GetNamedSilentFail(pk.kindDefs.RandomElement());
-                        if (pkd != null) kindDef = pkd;
-                    }
-                }
-                else if (request.KindDef == PawnKindDefOf.Villager)
-                {
-                    DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.alienwandererkinds.NullOrEmpty())
-                       .SelectMany(selector: tdar => tdar.pawnKindSettings.alienwandererkinds).Where(predicate: sce => sce.factionDefs.Contains(Faction.OfPlayer.def.defName))
-                       .SelectMany(selector: sce => sce.pawnKindEntries).InRandomOrder().ToList().ForEach(action: pke =>
-                        {
-                            if (!(Rand.Range(min: 0f, max: 100f) < pke.chance)) return;
-                            PawnKindDef fpk          = DefDatabase<PawnKindDef>.GetNamedSilentFail(pke.kindDefs.RandomElement());
-                            if (fpk != null) kindDef = fpk;
-                        });
-                }
+                if (settings.Where(predicate: r => !r.pawnKindSettings.alienrefugeekinds.NullOrEmpty()).SelectMany(selector: r => r.pawnKindSettings.alienrefugeekinds)
+                         .TryRandomElementByWeight(weightSelector: pke => pke.chance, out pk)) 
+                    kindDef = pk.kindDefs.RandomElement();
+            }
+            else if (request.KindDef == PawnKindDefOf.Slave)
+            {
+                if (settings.Where(predicate: r => !r.pawnKindSettings.alienslavekinds.NullOrEmpty()).SelectMany(selector: r => r.pawnKindSettings.alienslavekinds)
+                         .TryRandomElementByWeight(weightSelector: pke => pke.chance, out pk))
+                    kindDef = pk.kindDefs.RandomElement();
+            }
+            else if (request.KindDef == PawnKindDefOf.Villager)
+            {
+                if (DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.alienwandererkinds.NullOrEmpty())
+                                          .SelectMany(selector: rs => rs.pawnKindSettings.alienwandererkinds).Where(predicate: fpke => fpke.factionDefs.Contains(Faction.OfPlayer.def))
+                                          .SelectMany(selector: fpke => fpke.pawnKindEntries).TryRandomElementByWeight(pke => pke.chance, out pk))
+                    kindDef = pk.kindDefs.RandomElement();
             }
 
             request = new PawnGenerationRequest(kindDef, request.Faction, request.Context, request.Tile, request.ForceGenerateNewPawn,
-                request.Newborn,
-                request.AllowDead, request.AllowDead, request.CanGeneratePawnRelations, request.MustBeCapableOfViolence,
-                request.ColonistRelationChanceFactor,
-                request.ForceAddFreeWarmLayerIfNeeded, request.AllowGay, request.AllowFood, inhabitant: request.Inhabitant,
-                certainlyBeenInCryptosleep: request.CertainlyBeenInCryptosleep,
-                forceRedressWorldPawnIfFormerColonist: request.ForceRedressWorldPawnIfFormerColonist, worldPawnFactionDoesntMatter: request.WorldPawnFactionDoesntMatter,
-                validatorPreGear: request.ValidatorPreGear,
-                validatorPostGear: request.ValidatorPostGear, minChanceToRedressWorldPawn: request.MinChanceToRedressWorldPawn, fixedBiologicalAge: request.FixedBiologicalAge,
-                fixedChronologicalAge: request.FixedChronologicalAge, fixedGender: request.FixedGender, fixedMelanin: request.FixedMelanin, fixedLastName: request.FixedLastName);
+                                                request.Newborn,
+                                                request.AllowDead, request.AllowDead, request.CanGeneratePawnRelations, request.MustBeCapableOfViolence,
+                                                request.ColonistRelationChanceFactor,
+                                                request.ForceAddFreeWarmLayerIfNeeded, request.AllowGay, request.AllowFood, inhabitant: request.Inhabitant,
+                                                certainlyBeenInCryptosleep: request.CertainlyBeenInCryptosleep,
+                                                forceRedressWorldPawnIfFormerColonist: request.ForceRedressWorldPawnIfFormerColonist,
+                                                worldPawnFactionDoesntMatter: request.WorldPawnFactionDoesntMatter,
+                                                validatorPreGear: request.ValidatorPreGear,
+                                                validatorPostGear: request.ValidatorPostGear, minChanceToRedressWorldPawn: request.MinChanceToRedressWorldPawn,
+                                                fixedBiologicalAge: request.FixedBiologicalAge,
+                                                fixedChronologicalAge: request.FixedChronologicalAge, fixedGender: request.FixedGender, fixedMelanin: request.FixedMelanin,
+                                                fixedLastName: request.FixedLastName);
         }
 
         public static IEnumerable<CodeInstruction> RenderPawnInternalTranspiler(IEnumerable<CodeInstruction> instructions)
