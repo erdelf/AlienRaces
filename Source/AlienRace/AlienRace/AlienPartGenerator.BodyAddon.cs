@@ -29,6 +29,7 @@ namespace AlienRace
             public bool drawForFemale = true;
 
             public Vector2 drawSize = Vector2.one;
+            public Vector2 drawSizePortrait = Vector2.one;
             public bool drawRotated = true;
 
             private string colorChannel;

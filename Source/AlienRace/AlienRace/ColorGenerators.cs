@@ -19,10 +19,5 @@
 
         public override Color NewRandomizedColor() => 
             Color.clear;
-        /*
-        public void LoadDataFromXmlCustom(XmlNode xmlRoot)
-        {
-            this.colorChannel = ParseHelper.FromString<string>(xmlRoot.FirstChild.Value);
-        }*/
     }
 }
