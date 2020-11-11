@@ -5,6 +5,7 @@ using UnityEngine;
 using Verse;
 using System.Xml;
 
+
 namespace AlienRace
 {
     using System;
@@ -69,6 +70,7 @@ namespace AlienRace
                      (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
                (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement.NullOrEmpty() || pawn.story.bodyType.ToString() == this.bodyTypeRequirement);
 
+
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
                 string returnPath = string.Empty;
@@ -130,19 +132,19 @@ namespace AlienRace
                 if (variantCounting <= 0)
                     variantCounting = 1;
 
-                ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
+                ExposableValueTuple<Color, Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
                 int tv;
 
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
 
                 return !returnPath.NullOrEmpty() ?
-                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath += (tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
+                           TriColorGraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath += (tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
                                                                                              (this.linkVariantIndexWithPrevious ?
                                                                                                   sharedIndex % variantCounting :
                                                                                                   (sharedIndex = Rand.Range(min: 0, variantCounting))))) == 0 ? "" : tv.ToString(),
-                                                              ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
+                                                              ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : TriColorShaderDatabase.Tricolor, //ShaderDatabase.Transparent,
                                                               this.drawSize * 1.5f,
-                                                              channel.first, channel.second, new GraphicData
+                                                              channel.first, channel.second, channel.third, new GraphicData
                                                                                                    {
                                                                                                        drawRotated = !this.drawRotated
                                                                                                    }) :

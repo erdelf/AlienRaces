@@ -7,6 +7,7 @@ using Verse;
 
 namespace AlienRace
 {
+    using System.Runtime.ExceptionServices;
     using System.Text;
 
     public partial class AlienPartGenerator
@@ -40,19 +41,27 @@ namespace AlienRace
 
         public static string GetAlienHead(string userpath, string gender, string crowntype) => userpath.NullOrEmpty() ? "" : userpath + (userpath == GraphicPaths.VANILLA_HEAD_PATH ? gender + "/" : "") + (!gender.NullOrEmpty() ? gender + "_" : "") + crowntype;
 
-        public Graphic GetNakedGraphic(BodyTypeDef bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender) =>
-            GraphicDatabase.Get(typeof(Graphic_Multi), GetNakedPath(bodyType, userpath, this.useGenderedBodies ? gender : ""), shader, Vector2.one, 
-                                skinColor, skinColorSecond, data: null, shaderParameters: null);
+        public Graphic GetNakedGraphic(BodyTypeDef bodyType, Shader shader, Color skinColor, Color skinColorSecond, Color skinColorThird, string userpath, string gender) =>
+            TriColorGraphicDatabase.Get(typeof(Graphic_Multi), GetNakedPath(bodyType, userpath, this.useGenderedBodies ? gender : ""), shader, Vector2.one, 
+                                skinColor, skinColorSecond, skinColorThird, data: null, shaderParameters: null);
             //GraphicDatabase.Get<Graphic_Multi>(path: GetNakedPath(bodyType: bodyType, userpath: userpath, gender: this.useGenderedBodies ? gender : ""), shader: shader, drawSize: Vector2.one, color: skinColor, colorTwo: skinColorSecond);
 
         public static string GetNakedPath(BodyTypeDef bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + bodyType;
 
-        public Color SkinColor(Pawn alien, bool first = true)
+        public Color SkinColor(Pawn alien, int channel = 1)
         {
             
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
-            ExposableValueTuple<Color, Color> skinColors = alienComp.GetChannel(channel: "skin");
-            return first ? skinColors.first : skinColors.second;
+            ExposableValueTuple<Color, Color, Color> skinColors = alienComp.GetChannel(channel: "skin");
+            switch (channel)
+            {
+                default:
+                    return skinColors.first;
+                case 2:
+                    return skinColors.second;
+                case 3:
+                    return skinColors.third;
+            }
         }
 
         public void GenerateMeshsAndMeshPools()
@@ -146,6 +155,7 @@ namespace AlienRace
             public string         name = "";
             public ColorGenerator first;
             public ColorGenerator second;
+            public ColorGenerator third;
         }
 
 
@@ -164,41 +174,42 @@ namespace AlienRace
             public List<Graphic>       addonGraphics;
             public List<int>           addonVariants;
 
-            private Dictionary<string, ExposableValueTuple<Color, Color>> colorChannels;
+            private Dictionary<string, ExposableValueTuple<Color, Color, Color>> colorChannels;
 
-            public Dictionary<string, ExposableValueTuple<Color, Color>> ColorChannels
+            public Dictionary<string, ExposableValueTuple<Color, Color, Color>> ColorChannels
             {
                 get
                 {
                     if (this.colorChannels == null || !this.colorChannels.Any())
                     {
-                        this.colorChannels = new Dictionary<string, ExposableValueTuple<Color, Color>>();
+                        this.colorChannels = new Dictionary<string, ExposableValueTuple<Color, Color, Color>>();
                         Pawn               pawn       = (Pawn) this.parent;
                         ThingDef_AlienRace alienProps = ((ThingDef_AlienRace) this.parent.def);
                         AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
 
-                        this.colorChannels.Add(key: "base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
-                        this.colorChannels.Add(key: "hair", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
+                        this.colorChannels.Add(key: "base", new ExposableValueTuple<Color, Color, Color>(Color.white, Color.white, Color.white));
+                        this.colorChannels.Add(key: "hair", new ExposableValueTuple<Color, Color, Color>(Color.clear, Color.clear, Color.clear));
                         Color skinColor = PawnSkinColors.GetSkinColor(pawn.story.melanin);
-                        this.colorChannels.Add(key: "skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
+                        this.colorChannels.Add(key: "skin", new ExposableValueTuple<Color, Color, Color>(skinColor, skinColor, skinColor));
 
                         foreach (ColorChannelGenerator channel in apg.colorChannels)
                         {
                             if (!this.colorChannels.ContainsKey(channel.name))
-                                this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color>(Color.white, Color.white));
-                            ExposableValueTuple<Color, Color> colors = this.colorChannels[channel.name];
+                                this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color, Color>(Color.white, Color.white, Color.white));
+                            ExposableValueTuple<Color, Color, Color> colors = this.colorChannels[channel.name];
                             if (channel.first != null)
                                 colors.first = this.GenerateColor(channel.first);
                             if (channel.second != null)
                                 colors.second = this.GenerateColor(channel.second);
                         }
 
-                        ExposableValueTuple<Color, Color> hairColors = this.colorChannels[key: "hair"];
+                        ExposableValueTuple<Color, Color, Color> hairColors = this.colorChannels[key: "hair"];
                         if (hairColors.first == Color.clear)
                         {
                             Color color = PawnHairColors.RandomHairColor(pawn.story.SkinColor, pawn.ageTracker.AgeBiologicalYears);
                             hairColors.first  = color;
                             hairColors.second = color;
+                            hairColors.third = color;
                         }
 
                         pawn.story.hairColor = hairColors.first;
@@ -253,7 +264,7 @@ namespace AlienRace
                 Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
             }
 
-            public ExposableValueTuple<Color, Color> GetChannel(string channel)
+            public ExposableValueTuple<Color, Color, Color> GetChannel(string channel)
             {
                 if (this.ColorChannels.ContainsKey(channel))
                     return this.ColorChannels[channel];
@@ -264,16 +275,17 @@ namespace AlienRace
                 foreach (ColorChannelGenerator apgChannel in apg.colorChannels)
                     if (apgChannel.name == channel)
                     {
-                        this.ColorChannels.Add(channel, new ExposableValueTuple<Color, Color>());
+                        this.ColorChannels.Add(channel, new ExposableValueTuple<Color, Color, Color>());
                         if (apgChannel.first != null)
                             this.ColorChannels[channel].first = this.GenerateColor(apgChannel.first);
                         if (apgChannel.second != null)
                             this.ColorChannels[channel].second = this.GenerateColor(apgChannel.second);
-
+                        if (apgChannel.third != null)
+                            this.ColorChannels[channel].third = this.GenerateColor(apgChannel.third);
                         return this.ColorChannels[channel];
                     }
 
-                return new ExposableValueTuple<Color, Color>(Color.white, Color.white);
+                return new ExposableValueTuple<Color, Color, Color>(Color.white, Color.white, Color.white);
             }
 
             internal void AssignProperMeshs()
@@ -296,25 +308,28 @@ namespace AlienRace
             }
         }
 
-        public class ExposableValueTuple<K, V> : IExposable
+        public class ExposableValueTuple<K, V, P> : IExposable
         {
             public K first;
             public V second;
+            public P third;
 
             public ExposableValueTuple()
             {
             }
 
-            public ExposableValueTuple(K first, V second)
+            public ExposableValueTuple(K first, V second, P third)
             {
                 this.first = first;
                 this.second = second;
+                this.third = third;
             }
 
             public void ExposeData()
             {
                 Scribe_Values.Look(ref this.first, label: "first");
                 Scribe_Values.Look(ref this.second, label: "second");
+                Scribe_Values.Look(ref this.third, label: "third");
             }
         }
 

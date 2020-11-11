@@ -2068,29 +2068,30 @@
                                                                                                                       "", alienComp.crownType));
 
                 __instance.nakedGraphic = !graphicPaths.body.NullOrEmpty() ?
-                                              apg.GetNakedGraphic(alien.story.bodyType,
-                                                                                                ContentFinder<Texture2D>.Get(
-                                                                                                                                     AlienPartGenerator.GetNakedPath(alien.story.bodyType, graphicPaths.body,
-                                                                                                                                                                               apg.useGenderedBodies ? alien.gender.ToString() : "") +
-                                                                                                                                               "_northm", reportFailure: false) == null ?
-                                                                                                            graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout :
-                                                                                                            ShaderDatabase.CutoutComplex, __instance.pawn.story.SkinColor,
-                                                                                                apg.SkinColor(alien, first: false), graphicPaths.body,
-                                                                                                alien.gender.ToString()) :
-                                              null;
+                apg.GetNakedGraphic(alien.story.bodyType,
+                ContentFinder<Texture2D>.Get(
+                AlienPartGenerator.GetNakedPath(alien.story.bodyType, graphicPaths.body,
+                apg.useGenderedBodies ? alien.gender.ToString() : "") +
+                "_northm", reportFailure: false) == null ?
+                graphicPaths.skinShader?.Shader ?? TriColorShaderDatabase.Tricolor :
+                TriColorShaderDatabase.Tricolor, __instance.pawn.story.SkinColor,
+                apg.SkinColor(alien, 2), apg.SkinColor(alien, 3),graphicPaths.body,
+                alien.gender.ToString()) : null;
+
                 __instance.rottingGraphic = !graphicPaths.body.NullOrEmpty() ?
-                                                apg.GetNakedGraphic(alien.story.bodyType, graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout,
-                                                                                                  PawnGraphicSet.RottingColor, PawnGraphicSet.RottingColor, graphicPaths.body,
-                                                                                                  alien.gender.ToString()) :
-                                                null;
+                apg.GetNakedGraphic(alien.story.bodyType, graphicPaths.skinShader?.Shader ?? TriColorShaderDatabase.Tricolor,
+                PawnGraphicSet.RottingColor, PawnGraphicSet.RottingColor, PawnGraphicSet.RottingColor, graphicPaths.body,
+                alien.gender.ToString()) : null;
+
                 __instance.dessicatedGraphic = !graphicPaths.skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>((graphicPaths.skeleton == GraphicPaths.VANILLA_SKELETON_PATH ? alien.story.bodyType.bodyDessicatedGraphicPath : graphicPaths.skeleton), ShaderDatabase.Cutout) : null;
+                
                 __instance.headGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
-                                             GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath,
-                                                 ContentFinder<Texture2D>.Get(alien.story.HeadGraphicPath + "_northm", reportFailure: false) == null ?
-                                                             graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout :
-                                                             ShaderDatabase.CutoutComplex, Vector2.one, alien.story.SkinColor,
-                                                 apg.SkinColor(alien, first: false)) :
-                                             null;
+                GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath,
+                ContentFinder<Texture2D>.Get(alien.story.HeadGraphicPath + "_northm", reportFailure: false) == null ?
+                graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout :
+                ShaderDatabase.CutoutComplex, Vector2.one, alien.story.SkinColor,
+                apg.SkinColor(alien, 2)) : null;
+
                 __instance.desiccatedHeadGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
                                                        GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one,
                                                            PawnGraphicSet.RottingColor) :
@@ -2102,11 +2103,12 @@
                     ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
                                 (alienProps.alienRace.hairSettings.shader?.Shader ?? ShaderDatabase.Cutout) :
                                 ShaderDatabase.CutoutComplex, Vector2.one, alien.story.hairColor, alienComp.GetChannel(channel: "hair").second);
+               
                 __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
-                                                  GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,
-                                                      alien.story.SkinColor == apg.SkinColor(alien, first: false) ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, Vector2.one,
-                                                      alien.story.SkinColor, apg.SkinColor(alien, first: false)) :
-                                                  null;
+                GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,
+                alien.story.SkinColor == apg.SkinColor(alien, 2) ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, Vector2.one,
+                alien.story.SkinColor, apg.SkinColor(alien, 2)) : null;
+                
                 __instance.desiccatedHeadStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
                                                             GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,
                                                                 ShaderDatabase.Cutout, Vector2.one,

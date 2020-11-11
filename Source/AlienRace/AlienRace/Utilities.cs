@@ -98,7 +98,7 @@ namespace AlienRace
             GenDefDatabase.GetDef(defType, this.defName);
     }
 
-    public class Graphic_Multi_RotationFromData : Graphic_Multi
+    public class Graphic_Multi_RotationFromData : TriColorGraphic_Multi
     {
         public override bool ShouldDrawRotated => 
             this.data?.drawRotated ?? false;
