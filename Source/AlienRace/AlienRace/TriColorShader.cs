@@ -518,7 +518,7 @@ namespace AlienRace
         static TriColorShaderDatabase()
         {
             // This is where you'd change the path it loads the shader from. 
-            string path = dir + "/Shader/TriColorShader";
+            string path = dir + "/1.2/Shader/TriColorShader";
             AssetBundle bundle = shaderLoader(path);
 
                                                   // internal assetbundle name, do not change.
