@@ -2026,18 +2026,6 @@
             }
         }
 
-        /*
-        public static Material[] ApplyShader(Material[] oldMats, Color colorThree)
-        {
-            foreach (Material material in oldMats)
-            {
-                    material.shader = TriColorShaderDatabase.Tricolor;
-                    material.SetColor(TriColorShaderDatabase.ColorThree, colorThree);
-            }
-            return oldMats;
-        }
-        */
-
         public static bool ResolveAllGraphicsPrefix(PawnGraphicSet __instance)
         {
             Pawn alien = __instance.pawn;
