@@ -2026,6 +2026,18 @@
             }
         }
 
+        /*
+        public static Material[] ApplyShader(Material[] oldMats, Color colorThree)
+        {
+            foreach (Material material in oldMats)
+            {
+                    material.shader = TriColorShaderDatabase.Tricolor;
+                    material.SetColor(TriColorShaderDatabase.ColorThree, colorThree);
+            }
+            return oldMats;
+        }
+        */
+
         public static bool ResolveAllGraphicsPrefix(PawnGraphicSet __instance)
         {
             Pawn alien = __instance.pawn;
@@ -2059,38 +2071,44 @@
 
                 alienComp.AssignProperMeshs();
 
-                Traverse.Create(alien.story).Field(name: "headGraphicPath").SetValue(alienComp.crownType.NullOrEmpty() ?
-                                                                                                      apg.RandomAlienHead(
-                                                                                                                                                        graphicPaths.head, alien) :
-                                                                                                      AlienPartGenerator.GetAlienHead(graphicPaths.head,
-                                                                                                          apg.useGenderedHeads ?
-                                                                                                                      alien.gender.ToString() :
-                                                                                                                      "", alienComp.crownType));
+                // There were crimes against formatting here.
 
+                Traverse.Create(alien.story).Field(name: "headGraphicPath").SetValue(alienComp.crownType.NullOrEmpty() ?
+                apg.RandomAlienHead(
+                graphicPaths.head, alien) :
+                AlienPartGenerator.GetAlienHead(graphicPaths.head,
+                apg.useGenderedHeads ?
+                alien.gender.ToString() :
+                "", alienComp.crownType));
+
+                
+                // Has 3rd color now & using new shader
                 __instance.nakedGraphic = !graphicPaths.body.NullOrEmpty() ?
                 apg.GetNakedGraphic(alien.story.bodyType,
                 ContentFinder<Texture2D>.Get(
                 AlienPartGenerator.GetNakedPath(alien.story.bodyType, graphicPaths.body,
                 apg.useGenderedBodies ? alien.gender.ToString() : "") +
                 "_northm", reportFailure: false) == null ?
-                graphicPaths.skinShader?.Shader ?? TriColorShaderDatabase.Tricolor :
+                graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout :
                 TriColorShaderDatabase.Tricolor, __instance.pawn.story.SkinColor,
-                apg.SkinColor(alien, 2), apg.SkinColor(alien, 3),graphicPaths.body,
+                apg.SkinColor(alien, 2), apg.SkinColor(alien, 3), graphicPaths.body,
                 alien.gender.ToString()) : null;
 
+                // Has 3rd color now & using new shader
                 __instance.rottingGraphic = !graphicPaths.body.NullOrEmpty() ?
                 apg.GetNakedGraphic(alien.story.bodyType, graphicPaths.skinShader?.Shader ?? TriColorShaderDatabase.Tricolor,
                 PawnGraphicSet.RottingColor, PawnGraphicSet.RottingColor, PawnGraphicSet.RottingColor, graphicPaths.body,
                 alien.gender.ToString()) : null;
 
                 __instance.dessicatedGraphic = !graphicPaths.skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>((graphicPaths.skeleton == GraphicPaths.VANILLA_SKELETON_PATH ? alien.story.bodyType.bodyDessicatedGraphicPath : graphicPaths.skeleton), ShaderDatabase.Cutout) : null;
-                
+
+                // Has 3rd color now & using new shader
                 __instance.headGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
-                GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath,
+                TriColorGraphicDatabase.Get<TriColorGraphic_Multi>(alien.story.HeadGraphicPath,
                 ContentFinder<Texture2D>.Get(alien.story.HeadGraphicPath + "_northm", reportFailure: false) == null ?
                 graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout :
-                ShaderDatabase.CutoutComplex, Vector2.one, alien.story.SkinColor,
-                apg.SkinColor(alien, 2)) : null;
+                TriColorShaderDatabase.Tricolor, Vector2.one, alien.story.SkinColor,
+                apg.SkinColor(alien, 2), apg.SkinColor(alien, 3)) : null;
 
                 __instance.desiccatedHeadGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
                                                        GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one,
@@ -2099,15 +2117,18 @@
                 __instance.skullGraphic = alien.health.hediffSet.HasHead && !graphicPaths.skull.NullOrEmpty() ?
                                               GraphicDatabase.Get<Graphic_Multi>(graphicPaths.skull, ShaderDatabase.Cutout, Vector2.one, Color.white) :
                                               null;
-                __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath,
+
+                // Has 3rd color now & using new shader
+                __instance.hairGraphic = TriColorGraphicDatabase.Get<TriColorGraphic_Multi>(__instance.pawn.story.hairDef.texPath,
                     ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
                                 (alienProps.alienRace.hairSettings.shader?.Shader ?? ShaderDatabase.Cutout) :
-                                ShaderDatabase.CutoutComplex, Vector2.one, alien.story.hairColor, alienComp.GetChannel(channel: "hair").second);
-               
+                                TriColorShaderDatabase.Tricolor, Vector2.one, alien.story.hairColor, alienComp.GetChannel(channel: "hair").second, alienComp.GetChannel(channel: "hair").third);
+
+                // Has 3rd color now & using new shader
                 __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
-                GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,
-                alien.story.SkinColor == apg.SkinColor(alien, 2) ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, Vector2.one,
-                alien.story.SkinColor, apg.SkinColor(alien, 2)) : null;
+                TriColorGraphicDatabase.Get<TriColorGraphic_Multi>(graphicPaths.stump,
+                alien.story.SkinColor == apg.SkinColor(alien, 2) ? ShaderDatabase.Cutout : TriColorShaderDatabase.Tricolor, Vector2.one,
+                alien.story.SkinColor, apg.SkinColor(alien, 2), apg.SkinColor(alien, 3)) : null;
                 
                 __instance.desiccatedHeadStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
                                                             GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,

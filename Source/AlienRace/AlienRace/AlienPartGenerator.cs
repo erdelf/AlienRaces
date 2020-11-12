@@ -40,14 +40,21 @@ namespace AlienRace
         public string RandomAlienHead(string userpath, Pawn pawn) => GetAlienHead(userpath, (this.useGenderedHeads ? pawn.gender.ToString() : ""), pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[Rand.Range(min: 0, this.aliencrowntypes.Count)]);
 
         public static string GetAlienHead(string userpath, string gender, string crowntype) => userpath.NullOrEmpty() ? "" : userpath + (userpath == GraphicPaths.VANILLA_HEAD_PATH ? gender + "/" : "") + (!gender.NullOrEmpty() ? gender + "_" : "") + crowntype;
-
+        
+        public Graphic GetNakedGraphic(BodyTypeDef bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender) =>
+            GraphicDatabase.Get(typeof(Graphic_Multi), GetNakedPath(bodyType, userpath, this.useGenderedBodies ? gender : ""), shader, Vector2.one,
+                                skinColor, skinColorSecond, data: null, shaderParameters: null);
+        
+        // New GetNakedGraphic, gets our new Graphic type 
         public Graphic GetNakedGraphic(BodyTypeDef bodyType, Shader shader, Color skinColor, Color skinColorSecond, Color skinColorThird, string userpath, string gender) =>
             TriColorGraphicDatabase.Get(typeof(Graphic_Multi), GetNakedPath(bodyType, userpath, this.useGenderedBodies ? gender : ""), shader, Vector2.one, 
                                 skinColor, skinColorSecond, skinColorThird, data: null, shaderParameters: null);
             //GraphicDatabase.Get<Graphic_Multi>(path: GetNakedPath(bodyType: bodyType, userpath: userpath, gender: this.useGenderedBodies ? gender : ""), shader: shader, drawSize: Vector2.one, color: skinColor, colorTwo: skinColorSecond);
-
+            
         public static string GetNakedPath(BodyTypeDef bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + bodyType;
 
+
+        // New SkinColor, not really that different.
         public Color SkinColor(Pawn alien, int channel = 1)
         {
             
@@ -150,6 +157,8 @@ namespace AlienRace
                  Log.Message($"Loaded body addon variants for {this.alienProps.defName}\n{logBuilder}"); 
         }
 
+
+        // Added third generator
         public class ColorChannelGenerator
         {
             public string         name = "";
@@ -201,6 +210,8 @@ namespace AlienRace
                                 colors.first = this.GenerateColor(channel.first);
                             if (channel.second != null)
                                 colors.second = this.GenerateColor(channel.second);
+                            if (channel.third != null)
+                                colors.third = this.GenerateColor(channel.third);
                         }
 
                         ExposableValueTuple<Color, Color, Color> hairColors = this.colorChannels[key: "hair"];
@@ -239,7 +250,10 @@ namespace AlienRace
                 {
                     case ColorGenerator_CustomAlienChannel ac:
                         string[] split = ac.colorChannel.Split('_');
-                        return split[1] == "1" ? this.ColorChannels[split[0]].first : this.ColorChannels[split[0]].second;
+                        if (split[1] == "1") { return this.ColorChannels[split[0]].first; }
+                        if (split[1] == "3") { return this.colorChannels[split[0]].third; }
+                        return this.ColorChannels[split[0]].second;
+                        //return split[1] == "1" ? this.ColorChannels[split[0]].first : this.ColorChannels[split[0]].second;
                     default:
                         return gen.NewRandomizedColor();
                 }

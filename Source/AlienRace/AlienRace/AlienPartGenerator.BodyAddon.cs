@@ -5,7 +5,6 @@ using UnityEngine;
 using Verse;
 using System.Xml;
 
-
 namespace AlienRace
 {
     using System;
@@ -69,7 +68,6 @@ namespace AlienRace
                      (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
                      (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
                (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement.NullOrEmpty() || pawn.story.bodyType.ToString() == this.bodyTypeRequirement);
-
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
