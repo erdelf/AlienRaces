@@ -143,7 +143,7 @@
                 new HarmonyMethod(patchType, nameof(RenderPawnInternalTranspiler)));
             //HarmonyInstance.DEBUG = false;
             harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), nameof(StartingPawnUtility.NewGeneratedStartingPawn)),
-                new HarmonyMethod(patchType, nameof(NewGeneratedStartingPawnPrefix)));
+                transpiler: new HarmonyMethod(patchType, nameof(NewGeneratedStartingPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo)), prefix: null,
                 new HarmonyMethod(patchType, nameof(GiveAppropriateBioAndNameToPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GeneratePawnName)),
@@ -1912,7 +1912,6 @@
 
                 if (!instruction.LoadsField(basicMemberInfo)) continue;
 
-                yield return instruction;
                 yield return CodeInstruction.Call(patchType, nameof(NewGeneratedStartingPawnHelper));
             }
         }
@@ -1920,39 +1919,10 @@
         public static PawnKindDef NewGeneratedStartingPawnHelper(PawnKindDef basicMember) =>
             DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.startingColonists.NullOrEmpty())
                                   .SelectMany(selector: tdar => tdar.pawnKindSettings.startingColonists).Where(predicate: sce => sce.factionDefs.Contains(Faction.OfPlayer.def))
-                                  .SelectMany(selector: sce => sce.pawnKindEntries).AddItem(new PawnKindEntry { chance = 100f, kindDefs = new List<PawnKindDef>() { basicMember }}).
-                                      TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk) ? pk.kindDefs.RandomElement() : basicMember;
-
-
-        public static bool NewGeneratedStartingPawnPrefix(ref Pawn __result)
-        {
-            PawnKindDef kindDef = Faction.OfPlayer.def.basicMemberKind;
-
-            if (DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.startingColonists.NullOrEmpty())
-                                      .SelectMany(selector: tdar => tdar.pawnKindSettings.startingColonists).Where(predicate: sce => sce.factionDefs.Contains(Faction.OfPlayer.def))
-                                      .SelectMany(selector: sce => sce.pawnKindEntries).TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk))
-                kindDef = pk.kindDefs.RandomElement();
-
-            if (kindDef == Faction.OfPlayer.def.basicMemberKind) return true;
-
-            PawnGenerationRequest request = new PawnGenerationRequest(kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, forceGenerateNewPawn: true, colonistRelationChanceFactor: 26f);
-            Pawn pawn;
-            try
-            {
-                pawn = PawnGenerator.GeneratePawn(request);
-            }
-            catch (Exception arg)
-            {
-                Log.Error($"There was an exception thrown by the PawnGenerator during generating a starting pawn. Trying one more time...\nException: {arg}");
-                pawn = PawnGenerator.GeneratePawn(request);
-            }
-
-            pawn.relations.everSeenByPlayer = true;
-            PawnComponentsUtility.AddComponentsForSpawn(pawn);
-            __result = pawn;
-
-            return false;
-        }
+                                  .SelectMany(selector: sce => sce.pawnKindEntries).AddItem(new PawnKindEntry {chance = 100f, kindDefs = new List<PawnKindDef>() {basicMember}})
+                                  .TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk)
+                ? pk.kindDefs.RandomElement()
+                : basicMember;
 
         public static void RandomHediffsToGainOnBirthdayPostfix(ref IEnumerable<HediffGiver_Birthday> __result, ThingDef raceDef)
         {
