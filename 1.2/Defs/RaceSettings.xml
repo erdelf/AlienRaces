@@ -41,22 +41,6 @@
           </factionDefs>
         </li>
       </alienwandererkinds>
-      <startingColonists>
-        <li>
-          <pawnKindEntries>
-            <li>
-              <kindDefs>
-                <li>Colonist</li>
-              </kindDefs>
-              <chance>100.0</chance>
-            </li>
-          </pawnKindEntries>
-          <factionDefs>
-            <li>PlayerColony</li>
-            <li>PlayerTribe</li>
-          </factionDefs>
-        </li>
-      </startingColonists>
     </pawnKindSettings>
   </AlienRace.RaceSettings>
 </Defs>

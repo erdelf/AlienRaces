@@ -1902,6 +1902,28 @@
             }
         }
 
+        public static IEnumerable<CodeInstruction> NewGeneratedStartingPawnTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo basicMemberInfo = AccessTools.Field(typeof(FactionDef), nameof(FactionDef.basicMemberKind));
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+
+                if (!instruction.LoadsField(basicMemberInfo)) continue;
+
+                yield return instruction;
+                yield return CodeInstruction.Call(patchType, nameof(NewGeneratedStartingPawnHelper));
+            }
+        }
+
+        public static PawnKindDef NewGeneratedStartingPawnHelper(PawnKindDef basicMember) =>
+            DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.startingColonists.NullOrEmpty())
+                                  .SelectMany(selector: tdar => tdar.pawnKindSettings.startingColonists).Where(predicate: sce => sce.factionDefs.Contains(Faction.OfPlayer.def))
+                                  .SelectMany(selector: sce => sce.pawnKindEntries).AddItem(new PawnKindEntry { chance = 100f, kindDefs = new List<PawnKindDef>() { basicMember }}).
+                                      TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk) ? pk.kindDefs.RandomElement() : basicMember;
+
+
         public static bool NewGeneratedStartingPawnPrefix(ref Pawn __result)
         {
             PawnKindDef kindDef = Faction.OfPlayer.def.basicMemberKind;
@@ -1913,8 +1935,7 @@
 
             if (kindDef == Faction.OfPlayer.def.basicMemberKind) return true;
 
-            PawnGenerationRequest request = new PawnGenerationRequest(kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, forceGenerateNewPawn: true,
-                colonistRelationChanceFactor: 26f);
+            PawnGenerationRequest request = new PawnGenerationRequest(kindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, forceGenerateNewPawn: true, colonistRelationChanceFactor: 26f);
             Pawn pawn;
             try
             {
