@@ -31,6 +31,7 @@ namespace AlienRace
             public Vector2 drawSize = Vector2.one;
             public Vector2 drawSizePortrait = Vector2.zero;
             public bool drawRotated = true;
+            public bool scaleWithPawnDrawsize = false;
 
             private string colorChannel;
 
