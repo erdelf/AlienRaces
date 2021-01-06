@@ -2212,7 +2212,7 @@
                                           .SelectMany(selector: fpke => fpke.pawnKindEntries).TryRandomElementByWeight(pke => pke.chance, out pk))
                     kindDef = pk.kindDefs.RandomElement();
             }
-
+            
             request = new PawnGenerationRequest(kindDef, request.Faction, request.Context, request.Tile, request.ForceGenerateNewPawn,
                                                 request.Newborn,
                                                 request.AllowDead, request.AllowDead, request.CanGeneratePawnRelations, request.MustBeCapableOfViolence,
@@ -2364,7 +2364,7 @@
                 Vector3 offsetVector = new Vector3(moffsetX, moffsetY, moffsetZ);
 
                 Graphic addonGraphic = alienComp.addonGraphics[i];
-                addonGraphic.drawSize = (portrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) * 1.5f;
+                addonGraphic.drawSize = (portrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) * (ba.scaleWithPawnDrawsize ? alienComp.customDrawSize : Vector2.one) * 1.5f;
                 //                                                                                        Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
                 GenDraw.DrawMeshNowOrLater(addonGraphic.MeshAt(rotation), vector + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
                                            Quaternion.AngleAxis(num, Vector3.up) * quat, addonGraphic.MatAt(rotation), portrait);
