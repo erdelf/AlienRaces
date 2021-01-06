@@ -2212,20 +2212,8 @@
                                           .SelectMany(selector: fpke => fpke.pawnKindEntries).TryRandomElementByWeight(pke => pke.chance, out pk))
                     kindDef = pk.kindDefs.RandomElement();
             }
-            
-            request = new PawnGenerationRequest(kindDef, request.Faction, request.Context, request.Tile, request.ForceGenerateNewPawn,
-                                                request.Newborn,
-                                                request.AllowDead, request.AllowDead, request.CanGeneratePawnRelations, request.MustBeCapableOfViolence,
-                                                request.ColonistRelationChanceFactor,
-                                                request.ForceAddFreeWarmLayerIfNeeded, request.AllowGay, request.AllowFood, inhabitant: request.Inhabitant,
-                                                certainlyBeenInCryptosleep: request.CertainlyBeenInCryptosleep,
-                                                forceRedressWorldPawnIfFormerColonist: request.ForceRedressWorldPawnIfFormerColonist,
-                                                worldPawnFactionDoesntMatter: request.WorldPawnFactionDoesntMatter,
-                                                validatorPreGear: request.ValidatorPreGear,
-                                                validatorPostGear: request.ValidatorPostGear, minChanceToRedressWorldPawn: request.MinChanceToRedressWorldPawn,
-                                                fixedBiologicalAge: request.FixedBiologicalAge,
-                                                fixedChronologicalAge: request.FixedChronologicalAge, fixedGender: request.FixedGender, fixedMelanin: request.FixedMelanin,
-                                                fixedLastName: request.FixedLastName);
+
+            request.KindDef = kindDef;
         }
 
         public static IEnumerable<CodeInstruction> RenderPawnInternalTranspiler(IEnumerable<CodeInstruction> instructions)
