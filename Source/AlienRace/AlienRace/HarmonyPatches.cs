@@ -1989,7 +1989,7 @@
             backstories.Where(predicate: bs =>
                                          {
                                              BackstoryDef def = DefDatabase<BackstoryDef>.GetNamedSilentFail(bs.identifier);
-                                             return (def?.Approved(pawn) ?? true) && (slot != BackstorySlot.Adulthood || (def?.linkedBackstory.NullOrEmpty() ?? true));
+                                             return (def?.Approved(pawn) ?? true) && (slot != BackstorySlot.Adulthood || ((def?.linkedBackstory.NullOrEmpty() ?? true) || pawn.story.childhood.identifier == def.linkedBackstory));
                                          }).ToList();
 
         private static PawnBioDef bioReference;
