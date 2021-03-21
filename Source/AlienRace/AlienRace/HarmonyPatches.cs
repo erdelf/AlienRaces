@@ -654,11 +654,10 @@
                    }
                });
 
-        public static void CheckForStateChangePostfix(Pawn_HealthTracker __instance)
+        public static void CheckForStateChangePostfix(Pawn ___pawn)
         {
-            Pawn pawn = Traverse.Create(__instance).Field(name: "pawn").GetValue<Pawn>();
-            if (Current.ProgramState == ProgramState.Playing && pawn.Spawned && pawn.def is ThingDef_AlienRace)
-                pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+            if (Current.ProgramState == ProgramState.Playing && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace)
+                ___pawn.Drawer.renderer.graphics.ResolveAllGraphics();
         }
 
         public static IEnumerable<CodeInstruction> BaseHeadOffsetAtTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -678,10 +677,9 @@
         public static Vector2 BaseHeadOffsetAtHelper(Vector2 offset, Pawn pawn) => 
             offset + ((pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).headOffset ?? Vector2.zero);
 
-        public static void BaseHeadOffsetAtPostfix(ref Vector3 __result, Rot4 rotation, PawnRenderer __instance)
+        public static void BaseHeadOffsetAtPostfix(ref Vector3 __result, Rot4 rotation, Pawn ___pawn)
         {
-            Pawn pawn = Traverse.Create(__instance).Field(name: "pawn").GetValue<Pawn>();
-            Vector2 offset = (pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).headOffsetDirectional?.GetOffset(rotation) ?? Vector2.zero;
+            Vector2 offset = (___pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(___pawn.ageTracker.CurLifeStage).headOffsetDirectional?.GetOffset(rotation) ?? Vector2.zero;
             __result += new Vector3(offset.x, y: 0, offset.y);
         }
 
@@ -720,12 +718,11 @@
         public static void EnsureRequiredEnemiesPostfix(ref bool __result, Faction f) => __result = __result ||
                                                                                                     !FactionTickFactionRelationCheck(f);
 
-        public static void RecalculateLifeStageIndexPostfix(Pawn_AgeTracker __instance)
+        public static void RecalculateLifeStageIndexPostfix(Pawn ___pawn)
         {
-            Pawn pawn;
-            if (Current.ProgramState == ProgramState.Playing && (pawn = Traverse.Create(__instance).Field(name: "pawn").GetValue<Pawn>()).def is ThingDef_AlienRace &&
-                pawn.Drawer.renderer.graphics.AllResolved)
-                pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+            if (Current.ProgramState == ProgramState.Playing && (___pawn).def is ThingDef_AlienRace &&
+                ___pawn.Drawer.renderer.graphics.AllResolved)
+                ___pawn.Drawer.renderer.graphics.ResolveAllGraphics();
         }
 
         public static void HasHeadPrefix(HediffSet __instance) =>
@@ -749,44 +746,41 @@
                 });
 
         public static void GenerateStartingApparelForPostfix() =>
-            Traverse.Create(typeof(PawnApparelGenerator)).Field(name: "allApparelPairs").GetValue<List<ThingStuffPair>>().AddRange(apparelList);
+            CachedData.allApparelPairs().AddRange(apparelList);
 
         private static HashSet<ThingStuffPair> apparelList;
 
         public static void GenerateStartingApparelForPrefix(Pawn pawn)
         {
-            Traverse apparelInfo = Traverse.Create(typeof(PawnApparelGenerator)).Field(name: "allApparelPairs");
-
             apparelList = new HashSet<ThingStuffPair>();
 
-            foreach (ThingStuffPair pair in apparelInfo.GetValue<List<ThingStuffPair>>().ListFullCopy())
+            foreach (ThingStuffPair pair in CachedData.allApparelPairs().ListFullCopy())
             {
                 ThingDef equipment = pair.thing;
                 if (!RaceRestrictionSettings.CanWear(equipment, pawn.def))
                     apparelList.Add(pair);
             }
 
-            apparelInfo.GetValue<List<ThingStuffPair>>().RemoveAll(match: tsp => apparelList.Contains(tsp));
+            CachedData.allApparelPairs().RemoveAll(match: tsp => apparelList.Contains(tsp));
         }
 
         public static void TryGenerateWeaponForPostfix() =>
-            Traverse.Create(typeof(PawnWeaponGenerator)).Field(name: "allWeaponPairs").GetValue<List<ThingStuffPair>>().AddRange(weaponList);
+            CachedData.allWeaponPairs().AddRange(weaponList);
 
         private static HashSet<ThingStuffPair> weaponList;
 
         public static void TryGenerateWeaponForPrefix(Pawn pawn)
         {
-            Traverse weaponInfo = Traverse.Create(typeof(PawnWeaponGenerator)).Field(name: "allWeaponPairs");
             weaponList = new HashSet<ThingStuffPair>();
 
-            foreach (ThingStuffPair pair in weaponInfo.GetValue<List<ThingStuffPair>>().ListFullCopy())
+            foreach (ThingStuffPair pair in CachedData.allWeaponPairs().ListFullCopy())
             {
                 ThingDef equipment = pair.thing;
                 if (!RaceRestrictionSettings.CanEquip(equipment, pawn.def))
                     weaponList.Add(pair);
             }
 
-            weaponInfo.GetValue<List<ThingStuffPair>>().RemoveAll(match: tsp => weaponList.Contains(tsp));
+            CachedData.allWeaponPairs().RemoveAll(match: tsp => weaponList.Contains(tsp));
         }
 
         public static void DamageInfosToApplyPostfix(Verb __instance, ref IEnumerable<DamageInfo> __result)
@@ -1186,9 +1180,9 @@
 
         }
 
-        public static bool GainTraitPrefix(Trait trait, TraitSet __instance)
+        public static bool GainTraitPrefix(Trait trait, Pawn ___pawn)
         {
-            if (!(Traverse.Create(__instance).Field(name: "pawn").GetValue<Pawn>().def is ThingDef_AlienRace alienProps)) return true;
+            if (!(___pawn.def is ThingDef_AlienRace alienProps)) return true;
 
             if(!alienProps.alienRace.generalSettings.disallowedTraits.NullOrEmpty())
                 foreach (AlienTraitEntry traitEntry in alienProps.alienRace.generalSettings.disallowedTraits)
@@ -1298,18 +1292,15 @@
             CanBingeNowPostfix(pawn, drug?.TryGetComp<CompDrug>()?.Props?.chemical, ref __result);
 
         // ReSharper disable once RedundantAssignment
-        public static void CompatibilityWithPostfix(Pawn_RelationsTracker __instance, Pawn otherPawn, ref float __result)
+        public static void CompatibilityWithPostfix(Pawn_RelationsTracker __instance, Pawn otherPawn, ref float __result, Pawn ___pawn)
         {
-            Traverse traverse = Traverse.Create(__instance);
-            Pawn     pawn     = traverse.Field(name: "pawn").GetValue<Pawn>();
-
-            if (pawn.RaceProps.Humanlike != otherPawn.RaceProps.Humanlike || pawn == otherPawn)
+            if (___pawn.RaceProps.Humanlike != otherPawn.RaceProps.Humanlike || ___pawn == otherPawn)
             {
                 __result = 0f;
                 return;
             }
 
-            float x   = Mathf.Abs(pawn.ageTracker.AgeBiologicalYearsFloat - otherPawn.ageTracker.AgeBiologicalYearsFloat);
+            float x   = Mathf.Abs(___pawn.ageTracker.AgeBiologicalYearsFloat - otherPawn.ageTracker.AgeBiologicalYearsFloat);
             float num = GenMath.LerpDouble(inFrom: 0f, inTo: 20f, outFrom: 0.45f, outTo: -0.45f, x);
             num = Mathf.Clamp(num, min: -0.45f, max: 0.45f);
             float num2 = __instance.ConstantPerPawnsPairCompatibilityOffset(otherPawn.thingIDNumber);
@@ -1402,7 +1393,7 @@
 
             if (newThoughtDef == newThought.def) return true;
 
-            Thought_Memory replacedThought = (Thought_Memory)ThoughtMaker.MakeThought(newThoughtDef, newThought.CurStageIndex);
+            Thought_Memory replacedThought = ThoughtMaker.MakeThought(newThoughtDef, newThought.CurStageIndex);
             //foreach (FieldInfo field in newThought.GetType().GetFields(AccessTools.all))
             //field.SetValue(replacedThought, field.GetValue(newThought));
             newThought = replacedThought;
@@ -1684,21 +1675,20 @@
             if (generated == other) __result = 0;
         }
 
-        public static void BirthdayBiologicalPrefix(Pawn_AgeTracker __instance)
+        public static void BirthdayBiologicalPrefix(Pawn ___pawn)
         {
-            Pawn pawn = Traverse.Create(__instance).Field(name: "pawn").GetValue<Pawn>();
-            if (!(pawn.def is ThingDef_AlienRace alienProps)) return;
+            if (!(___pawn.def is ThingDef_AlienRace alienProps)) return;
 
-            if (!pawn.def.race.lifeStageAges.Skip(count: 1).Any() || pawn.ageTracker.CurLifeStageIndex == 0) return;
-            LifeStageAge lsac = pawn.ageTracker.CurLifeStageRace;
-            LifeStageAge lsap = pawn.def.race.lifeStageAges[pawn.ageTracker.CurLifeStageIndex - 1];
+            if (!___pawn.def.race.lifeStageAges.Skip(count: 1).Any() || ___pawn.ageTracker.CurLifeStageIndex == 0) return;
+            LifeStageAge lsac = ___pawn.ageTracker.CurLifeStageRace;
+            LifeStageAge lsap = ___pawn.def.race.lifeStageAges[___pawn.ageTracker.CurLifeStageIndex - 1];
 
-            if (lsac is LifeStageAgeAlien lsaac && lsaac.body != null && ((lsap as LifeStageAgeAlien)?.body ?? pawn.RaceProps.body) != lsaac.body ||
-                lsap is LifeStageAgeAlien lsaap && lsaap.body != null && ((lsac as LifeStageAgeAlien)?.body ?? pawn.RaceProps.body) != lsaap.body)
+            if (lsac is LifeStageAgeAlien lsaac && lsaac.body != null && ((lsap as LifeStageAgeAlien)?.body ?? ___pawn.RaceProps.body) != lsaac.body ||
+                lsap is LifeStageAgeAlien lsaap && lsaap.body != null && ((lsac as LifeStageAgeAlien)?.body ?? ___pawn.RaceProps.body) != lsaap.body)
             {
-                pawn.health.hediffSet = new HediffSet(pawn);
-                string path = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStageRace.def).head;
-                Traverse.Create(pawn.story).Field(name: "headGraphicPath").SetValue(alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(path, pawn));
+                ___pawn.health.hediffSet = new HediffSet(___pawn);
+                string path = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(___pawn.ageTracker.CurLifeStageRace.def).head;
+                CachedData.headGraphicPath(___pawn.story) = alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(path, ___pawn);
             }
         }
 
@@ -1829,11 +1819,9 @@
 
                 string headPath = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).head;
 
-                Traverse.Create(pawn.story).Field(name: "headGraphicPath").SetValue(
-                    alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).head.NullOrEmpty() ?
-                               "" :
-                               alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(
-                                   headPath, pawn));
+                CachedData.headGraphicPath(pawn.story) = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).head.NullOrEmpty() ?
+                                                             "" :
+                                                             alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(headPath, pawn);
                 pawn.story.crownType = CrownType.Average;
             }
         }
@@ -1968,11 +1956,9 @@
                     __instance.pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
                     __instance.pawn.Name   = PawnBioAndNameGenerator.GeneratePawnName(__instance.pawn);
 
-
-                    Traverse.Create(__instance.pawn.story).Field(name: "headGraphicPath").SetValue(
-                        alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ?
-                                   "" :
-                                   apg.RandomAlienHead(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head, __instance.pawn));
+                    CachedData.headGraphicPath(__instance.pawn.story) = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ?
+                                                                            "" :
+                                                                            apg.RandomAlienHead(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head, __instance.pawn);
 
                     alienComp.fixGenderPostSpawn = false;
                 }
@@ -1986,22 +1972,16 @@
 
                 alienComp.AssignProperMeshs();
 
-                Traverse.Create(alien.story).Field(name: "headGraphicPath").SetValue(alienComp.crownType.NullOrEmpty() ?
-                                                                                                      apg.RandomAlienHead(
-                                                                                                                                                        graphicPaths.head, alien) :
-                                                                                                      AlienPartGenerator.GetAlienHead(graphicPaths.head,
-                                                                                                          apg.useGenderedHeads ?
-                                                                                                                      alien.gender.ToString() :
-                                                                                                                      "", alienComp.crownType));
+                CachedData.headGraphicPath(alien.story) = alienComp.crownType.NullOrEmpty() ? apg.RandomAlienHead(graphicPaths.head, alien) : 
+                                                              AlienPartGenerator.GetAlienHead(graphicPaths.head, apg.useGenderedHeads ? alien.gender.ToString() : "", alienComp.crownType);
 
                 __instance.nakedGraphic = !graphicPaths.body.NullOrEmpty() ?
-                                              apg.GetNakedGraphic(alien.story.bodyType,
-                                                                                                ContentFinder<Texture2D>.Get(
-                                                                                                                                     AlienPartGenerator.GetNakedPath(alien.story.bodyType, graphicPaths.body,
-                                                                                                                                                                               apg.useGenderedBodies ? alien.gender.ToString() : "") +
-                                                                                                                                               "_northm", reportFailure: false) == null ?
-                                                                                                            graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout :
-                                                                                                            ShaderDatabase.CutoutComplex, __instance.pawn.story.SkinColor,
+                                              apg.GetNakedGraphic(alien.story.bodyType, ContentFinder<Texture2D>.Get(
+                                                                                                                     AlienPartGenerator.GetNakedPath(alien.story.bodyType, graphicPaths.body,
+                                                                                                                         apg.useGenderedBodies ? alien.gender.ToString() : "") +
+                                                                                                                     "_northm", reportFailure: false) == null ?
+                                                                                            graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout :
+                                                                                            ShaderDatabase.CutoutComplex, __instance.pawn.story.SkinColor,
                                                                                                 apg.SkinColor(alien, first: false), graphicPaths.body,
                                                                                                 alien.gender.ToString()) :
                                               null;
@@ -2082,10 +2062,9 @@
                 });
         }
 
-        public static void SkinColorPostfix(Pawn_StoryTracker __instance, ref Color __result)
+        public static void SkinColorPostfix(Pawn ___pawn, ref Color __result)
         {
-            Pawn pawn                                               = Traverse.Create(__instance).Field(name: "pawn").GetValue<Pawn>();
-            if (pawn.def is ThingDef_AlienRace alienProps) __result = alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(pawn);
+            if (___pawn.def is ThingDef_AlienRace alienProps) __result = alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(___pawn);
         }
 
         public static void GenerateBodyTypePostfix(ref Pawn pawn)

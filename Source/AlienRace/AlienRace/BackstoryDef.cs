@@ -93,7 +93,7 @@ namespace AlienRace
             Traverse.Create(this.backstory).Field(name: "bodyTypeFemaleResolved").SetValue(this.bodyTypeFemale);
             Traverse.Create(this.backstory).Field(name: "bodyTypeMaleResolved").SetValue(this.bodyTypeMale);
 
-                Traverse.Create(this.backstory).Field(nameof(this.skillGains)).SetValue(this.skillGains.ToDictionary(keySelector: i => i.defName, elementSelector: i => i.amount));
+            Traverse.Create(this.backstory).Field(nameof(this.skillGains)).SetValue(this.skillGains.ToDictionary(keySelector: i => i.defName, elementSelector: i => i.amount));
 
             UpdateTranslateableFields(this);
             
