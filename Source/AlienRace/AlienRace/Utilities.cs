@@ -6,8 +6,9 @@ using Verse.AI;
 namespace AlienRace
 {
     using System;
+    using System.Linq;
     using JetBrains.Annotations;
-
+    
     [DefOf]
     public static class AlienDefOf
     {
@@ -102,5 +103,18 @@ namespace AlienRace
     {
         public override bool ShouldDrawRotated => 
             this.data?.drawRotated ?? false;
+    }
+
+    public static class CachedData
+    {
+        private static Dictionary<RaceProperties, ThingDef> racePropsToRaceDict = new Dictionary<RaceProperties, ThingDef>();
+
+        public static ThingDef GetRaceFromRaceProps(RaceProperties props)
+        {
+            if (!racePropsToRaceDict.ContainsKey(props)) 
+                racePropsToRaceDict.Add(props, new List<ThingDef>(DefDatabase<ThingDef>.AllDefsListForReading).Concat(new List<ThingDef_AlienRace>(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)).First(predicate: td => td.race == props));
+
+            return racePropsToRaceDict[props];
+        }
     }
 }
