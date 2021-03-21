@@ -7,6 +7,7 @@ namespace AlienRace
 {
     using System;
     using System.Linq;
+    using HarmonyLib;
     using JetBrains.Annotations;
     
     [DefOf]
@@ -116,5 +117,12 @@ namespace AlienRace
 
             return racePropsToRaceDict[props];
         }
+
+        public static readonly AccessTools.FieldRef<Pawn_StoryTracker, string> headGraphicPath = AccessTools.FieldRefAccess<Pawn_StoryTracker, string>("headGraphicPath");
+
+        //PawnApparelGenerator)).Field(name: "allApparelPairs"
+
+        public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allApparelPairs = AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnApparelGenerator), "allApparelPairs"));
+        public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allWeaponPairs = AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnWeaponGenerator), "allWeaponPairs"));
     }
 }
