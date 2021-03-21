@@ -168,7 +168,7 @@
             harmony.Patch(AccessTools.Method(typeof(GrammarUtility), nameof(GrammarUtility.RulesForPawn), new[] { typeof(string), typeof(Pawn), typeof(Dictionary<string, string>), typeof(bool), typeof(bool) }), prefix: null,
                 new HarmonyMethod(patchType, nameof(RulesForPawnPostfix)));
             harmony.Patch(AccessTools.Method(typeof(RaceProperties), nameof(RaceProperties.CanEverEat), new[] { typeof(ThingDef) }), prefix: null,
-                new HarmonyMethod(patchType, nameof(CanEverEat)));
+                new HarmonyMethod(patchType, nameof(CanEverEatPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Verb_MeleeAttackDamage), name: "DamageInfosToApply"), prefix: null,
                 new HarmonyMethod(patchType, nameof(DamageInfosToApplyPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnWeaponGenerator), nameof(PawnWeaponGenerator.TryGenerateWeaponFor)),
@@ -858,13 +858,10 @@
                         hitPart: di.HitPart, weapon: di.Weapon, category: di.Category));
         }
 
-        public static void CanEverEat(ref bool __result, RaceProperties __instance, ThingDef t)
+        public static void CanEverEatPostfix(ref bool __result, RaceProperties __instance, ThingDef t)
         {
-            if (!__instance.Humanlike) return;
-            ThingDef eater = new List<ThingDef>(DefDatabase<ThingDef>.AllDefsListForReading).Concat(
-                new List<ThingDef_AlienRace>(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)).First(predicate: td => td.race == __instance);
-
-            __result = __result && RaceRestrictionSettings.CanEat(t, eater);
+            if (!__instance.Humanlike || !__result) return;
+            __result = RaceRestrictionSettings.CanEat(t, CachedData.GetRaceFromRaceProps(__instance));
         }
         
         public static IEnumerable<Rule> RulesForPawnPostfix(IEnumerable<Rule> __result, Pawn pawn, string pawnSymbol) =>
@@ -1325,13 +1322,13 @@
 
         }
 
-        public static bool TryCreateThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance)
+        public static bool TryCreateThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance, ref HashSet<ThoughtDef> ___tmpCachedThoughts)
         {
             Pawn pawn = __instance.pawn;
             if (pawn.def is ThingDef_AlienRace race)
                 def = race.alienRace.thoughtSettings.ReplaceIfApplicable(def);
 
-            return !Traverse.Create(__instance).Field(name: "tmpCachedThoughts").GetValue<HashSet<ThoughtDef>>().Contains(def);
+            return !___tmpCachedThoughts.Contains(def);
         }
 
         public static void CanBingeNowPostfix(Pawn pawn, ChemicalDef chemical, ref bool __result)
