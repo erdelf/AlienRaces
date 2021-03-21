@@ -230,119 +230,58 @@
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.apparelList)
                 {
-                    if (!RaceRestrictionSettings.apparelRestrictionDict.ContainsKey(thingDef))
-                        RaceRestrictionSettings.apparelRestrictionDict.Add(thingDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.apparelRestrictionDict[thingDef].Add(ar);
+                    if (!RaceRestrictionSettings.apparelRestricted.Contains(thingDef))
+                        RaceRestrictionSettings.apparelRestricted.Add(thingDef);
+                    ar.alienRace.raceRestriction.whiteApparelList.Add(thingDef);
                 }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteApparelList)
-                {
-                    if (!RaceRestrictionSettings.apparelWhiteDict.ContainsKey(thingDef))
-                        RaceRestrictionSettings.apparelWhiteDict.Add(thingDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.apparelWhiteDict[thingDef].Add(ar);
-                }
-
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.weaponList)
                 {
-                    if (!RaceRestrictionSettings.weaponRestrictionDict.ContainsKey(thingDef))
-                        RaceRestrictionSettings.weaponRestrictionDict.Add(thingDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.weaponRestrictionDict[thingDef].Add(ar);
-                }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteWeaponList)
-                {
-                    if (!RaceRestrictionSettings.weaponWhiteDict.ContainsKey(thingDef))
-                        RaceRestrictionSettings.weaponWhiteDict.Add(thingDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.weaponWhiteDict[thingDef].Add(ar);
+                    if (!RaceRestrictionSettings.weaponRestricted.Contains(thingDef))
+                        RaceRestrictionSettings.weaponRestricted.Add(thingDef);
+                    ar.alienRace.raceRestriction.whiteWeaponList.Add(thingDef);
                 }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.buildingList)
                 {
-                    if (!RaceRestrictionSettings.buildingRestrictionDict.ContainsKey(thingDef))
-                        RaceRestrictionSettings.buildingRestrictionDict.Add(thingDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.buildingRestrictionDict[thingDef].Add(ar);
-                }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteBuildingList)
-                {
-                    if (!RaceRestrictionSettings.buildingWhiteDict.ContainsKey(thingDef))
-                        RaceRestrictionSettings.buildingWhiteDict.Add(thingDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.buildingWhiteDict[thingDef].Add(ar);
+                    if (!RaceRestrictionSettings.buildingRestricted.Contains(thingDef))
+                        RaceRestrictionSettings.buildingRestricted.Add(thingDef);
+                    ar.alienRace.raceRestriction.whiteBuildingList.Add(thingDef);
                 }
 
                 foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.recipeList)
                 {
-                    if (!RaceRestrictionSettings.recipeRestrictionDict.ContainsKey(recipeDef))
-                        RaceRestrictionSettings.recipeRestrictionDict.Add(recipeDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.recipeRestrictionDict[recipeDef].Add(ar);
+                    if (!RaceRestrictionSettings.recipeRestricted.Contains(recipeDef))
+                        RaceRestrictionSettings.recipeRestricted.Add(recipeDef);
+                    ar.alienRace.raceRestriction.whiteRecipeList.Add(recipeDef);
                 }
-
-                foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.whiteRecipeList)
-                {
-                    if (!RaceRestrictionSettings.recipeWhiteDict.ContainsKey(recipeDef))
-                        RaceRestrictionSettings.recipeWhiteDict.Add(recipeDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.recipeWhiteDict[recipeDef].Add(ar);
-                }
-
-
+                
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.plantList)
                 {
-                    if (!RaceRestrictionSettings.plantRestrictionDict.ContainsKey(thingDef))
-                        RaceRestrictionSettings.plantRestrictionDict.Add(thingDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.plantRestrictionDict[thingDef].Add(ar);
+                    if (!RaceRestrictionSettings.plantRestricted.Contains(thingDef))
+                        RaceRestrictionSettings.plantRestricted.Add(thingDef);
+                    ar.alienRace.raceRestriction.whitePlantList.Add(thingDef);
                 }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whitePlantList)
-                {
-                    if (!RaceRestrictionSettings.plantWhiteDict.ContainsKey(thingDef))
-                        RaceRestrictionSettings.plantWhiteDict.Add(thingDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.plantWhiteDict[thingDef].Add(ar);
-                }
-
-
+                
                 foreach (TraitDef traitDef in ar.alienRace.raceRestriction.traitList)
                 {
-                    if (!RaceRestrictionSettings.traitRestrictionDict.ContainsKey(traitDef))
-                        RaceRestrictionSettings.traitRestrictionDict.Add(traitDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.traitRestrictionDict[traitDef].Add(ar);
+                    if (!RaceRestrictionSettings.traitRestricted.Contains(traitDef))
+                        RaceRestrictionSettings.traitRestricted.Add(traitDef);
+                    ar.alienRace.raceRestriction.whiteTraitList.Add(traitDef);
                 }
-
-                foreach (TraitDef traitDef in ar.alienRace.raceRestriction.whiteTraitList)
-                {
-                    if (!RaceRestrictionSettings.traitWhiteDict.ContainsKey(traitDef))
-                        RaceRestrictionSettings.traitWhiteDict.Add(traitDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.traitWhiteDict[traitDef].Add(ar);
-                }
-
-
+                
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.foodList)
                 {
-                    if (!RaceRestrictionSettings.foodRestrictionDict.ContainsKey(thingDef))
-                        RaceRestrictionSettings.foodRestrictionDict.Add(thingDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.foodRestrictionDict[thingDef].Add(ar);
+                    if (!RaceRestrictionSettings.foodRestricted.Contains(thingDef))
+                        RaceRestrictionSettings.foodRestricted.Add(thingDef);
+                    ar.alienRace.raceRestriction.whiteFoodList.Add(thingDef);
                 }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteFoodList)
-                {
-                    if (!RaceRestrictionSettings.foodWhiteDict.ContainsKey(thingDef))
-                        RaceRestrictionSettings.foodWhiteDict.Add(thingDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.foodWhiteDict[thingDef].Add(ar);
-                }
-
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.petList)
                 {
-                    if (!RaceRestrictionSettings.tameRestrictionDict.ContainsKey(thingDef))
-                        RaceRestrictionSettings.tameRestrictionDict.Add(thingDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.tameRestrictionDict[thingDef].Add(ar);
-                }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whitePetList)
-                {
-                    if (!RaceRestrictionSettings.tameWhiteDict.ContainsKey(thingDef))
-                        RaceRestrictionSettings.tameWhiteDict.Add(thingDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.tameWhiteDict[thingDef].Add(ar);
+                    if (!RaceRestrictionSettings.petRestricted.Contains(thingDef))
+                        RaceRestrictionSettings.petRestricted.Add(thingDef);
+                    ar.alienRace.raceRestriction.whitePetList.Add(thingDef);
                 }
 
                 foreach (ResearchProjectDef projectDef in ar.alienRace.raceRestriction.researchList.SelectMany(selector: rl => rl?.projects))
