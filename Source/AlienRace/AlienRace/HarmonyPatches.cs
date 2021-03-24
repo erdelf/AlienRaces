@@ -776,7 +776,7 @@
             foreach (ThingStuffPair pair in CachedData.allWeaponPairs().ListFullCopy())
             {
                 ThingDef equipment = pair.thing;
-                if (!RaceRestrictionSettings.CanEquip(equipment, pawn.def))
+                if (equipment && !RaceRestrictionSettings.CanEquip(equipment, pawn.def))
                     weaponList.Add(pair);
             }
 
