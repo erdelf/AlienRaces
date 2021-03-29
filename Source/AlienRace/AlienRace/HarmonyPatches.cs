@@ -1431,11 +1431,18 @@
         public static void UpdateColonistRaces()
         {
             if (Find.TickManager.TicksAbs > colonistRacesTick + COLONIST_RACES_TICK_TIMER || Find.TickManager.TicksAbs < colonistRacesTick)
-                if ((colonistRaces = new HashSet<ThingDef>(PawnsFinder.AllMaps_FreeColonistsSpawned.Select(selector: p => p.def))).Count > 0)
-                {
+            {
+                List<Pawn> pawns = PawnsFinder.AllMaps_FreeColonistsSpawned;
+                colonistRaces.Clear();
+                if (pawns.Count > 0)
+                { 
+                    colonistRaces     = new HashSet<ThingDef>(pawns.Select(selector: p => p.def));
                     colonistRacesTick = Find.TickManager.TicksAbs;
                     //Log.Message(string.Join(" | ", colonistRaces.Select(td => td.defName)));
                 }
+                else
+                    colonistRacesTick = Find.TickManager.TicksAbs - COLONIST_RACES_TICK_TIMER + GenTicks.TicksPerRealSecond / 2;
+            }
         }
 
         public static void DesignatorAllowedPostfix(Designator d, ref bool __result)
