@@ -779,8 +779,7 @@
                 if (!RaceRestrictionSettings.CanEquip(equipment, pawn.def))
                     weaponList.Add(pair);
             }
-
-            CachedData.allWeaponPairs().RemoveAll(match: tsp => weaponList.Contains(tsp));
+            CachedData.allWeaponPairs().RemoveAll(match: tsp => float.IsNaN(tsp.commonalityMultiplier) ? weaponList.Any(pair => pair.thing == tsp.thing && pair.stuff == tsp.stuff && float.IsNaN(pair.commonalityMultiplier)) : weaponList.Contains(tsp));
         }
 
         public static void DamageInfosToApplyPostfix(Verb __instance, ref IEnumerable<DamageInfo> __result)
