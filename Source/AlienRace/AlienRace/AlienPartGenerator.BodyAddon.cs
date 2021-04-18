@@ -225,8 +225,9 @@ namespace AlienRace
 
         public class RotationOffset
         {
-            public List<BodyTypeOffset> portraitBodyTypes;
-            public List<BodyTypeOffset> bodyTypes;
+            public float layerOffset = float.NaN;
+            public List<BodyTypeOffset>  portraitBodyTypes;
+            public List<BodyTypeOffset>  bodyTypes;
             public List<CrownTypeOffset> portraitCrownTypes;
             public List<CrownTypeOffset> crownTypes;
         }
