@@ -2250,7 +2250,10 @@
 
                 float moffsetX = 0.42f;
                 float moffsetZ = -0.22f;
-                float moffsetY = ba.inFrontOfBody ? 0.3f + ba.layerOffset : -0.3f - ba.layerOffset;
+
+                float layerOffset = offset?.layerOffset ?? ba.layerOffset;
+
+                float moffsetY = ba.inFrontOfBody ? 0.3f + layerOffset : -0.3f - layerOffset;
                 float num      = ba.angle;
 
                 if (rotation == Rot4.North)

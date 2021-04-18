@@ -46,8 +46,19 @@ namespace AlienRace
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
 
             foreach (AlienPartGenerator.BodyAddon bodyAddon in this.alienRace.generalSettings.alienPartGenerator.bodyAddons)
+            {
                 if (bodyAddon.offsets.west == null)
                     bodyAddon.offsets.west = bodyAddon.offsets.east;
+
+                if (float.IsNaN(bodyAddon.offsets.north.layerOffset))
+                    bodyAddon.offsets.north.layerOffset = bodyAddon.layerOffset;
+                if (float.IsNaN(bodyAddon.offsets.west.layerOffset))
+                    bodyAddon.offsets.west.layerOffset = bodyAddon.layerOffset;
+                if (float.IsNaN(bodyAddon.offsets.south.layerOffset))
+                    bodyAddon.offsets.south.layerOffset = bodyAddon.layerOffset;
+                if (float.IsNaN(bodyAddon.offsets.east.layerOffset))
+                    bodyAddon.offsets.east.layerOffset = bodyAddon.layerOffset;
+            }
 
             if (this.alienRace.generalSettings.minAgeForAdulthood < 0)
                 this.alienRace.generalSettings.minAgeForAdulthood = (float) AccessTools.Field(typeof(PawnBioAndNameGenerator), name: "MinAgeForAdulthood").GetValue(obj: null);
