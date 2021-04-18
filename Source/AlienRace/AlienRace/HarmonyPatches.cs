@@ -219,6 +219,8 @@
                           new HarmonyMethod(patchType, nameof(MinAgeForAdulthood)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnTranspiler)));
 
+            harmony.Patch(AccessTools.Method(typeof(CompRottable), "StageChanged"), new HarmonyMethod(patchType, nameof(RottableCompStageChangedPostfix)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -365,6 +367,13 @@
                 BackstoryDef.UpdateTranslateableFields(bd);
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static void RottableCompStageChangedPostfix(ThingWithComps ___parent)
+        {
+            Pawn pawn = ___parent as Pawn ?? (___parent as Corpse)?.InnerPawn;
+            pawn?.Drawer.renderer.graphics.ResolveAllGraphics();
+
         }
 
         public static IEnumerable<CodeInstruction> TryGenerateNewPawnTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -2026,7 +2035,11 @@
                                                                 PawnGraphicSet.RottingColor) :
                                                             null;
 
-                alienComp.ColorChannels[key: "hair"].first = alien.story.hairColor;
+                alienComp.OverwriteColorChannel("hair", alien.story.hairColor);
+                if(alien.Corpse?.GetRotStage() == RotStage.Rotting)
+                    alienComp.OverwriteColorChannel("skin", PawnGraphicSet.RottingColor);
+
+                alienComp.RegenerateColorChannelLinks();
 
                 alienComp.addonGraphics = new List<Graphic>();
                 if (alienComp.addonVariants == null)
