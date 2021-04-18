@@ -23,11 +23,15 @@ namespace AlienRace
             public bool inFrontOfBody = false;
             public float layerOffset = 0;
             public bool layerInvert = true;
+            
+            
             public bool drawnOnGround = true;
             public bool drawnInBed = true;
             public bool drawnDesiccated = true;
             public bool drawForMale = true;
             public bool drawForFemale = true;
+
+            public bool alignWithHead = false;
 
             public Vector2 drawSize = Vector2.one;
             public Vector2 drawSizePortrait = Vector2.zero;

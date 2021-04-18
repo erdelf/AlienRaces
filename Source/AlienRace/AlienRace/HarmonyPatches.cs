@@ -2183,6 +2183,7 @@
                 {
                     yield return instruction; // portrait
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, 11); //b (aka headoffset)
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
                     yield return new CodeInstruction(OpCodes.Ldloc_0);             // quat
@@ -2217,7 +2218,7 @@
                           alienComp.alienHeadGraphics.hairSetAverage).MeshAt(headFacing) :
                 graphics.HairMeshSet.MeshAt(headFacing);
 
-        public static void DrawAddons(bool portrait, Vector3 vector, Pawn pawn, Quaternion quat, Rot4 rotation, bool invisible)
+        public static void DrawAddons(bool portrait, Vector3 vector, Vector3 headOffset, Pawn pawn, Quaternion quat, Rot4 rotation, bool invisible)
         {
             if (!(pawn.def is ThingDef_AlienRace alienProps) || invisible) return;
 
@@ -2274,8 +2275,8 @@
 
                 Graphic addonGraphic = alienComp.addonGraphics[i];
                 addonGraphic.drawSize = (portrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) * (ba.scaleWithPawnDrawsize ? alienComp.customDrawSize : Vector2.one) * 1.5f;
-                //                                                                                        Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
-                GenDraw.DrawMeshNowOrLater(addonGraphic.MeshAt(rotation), vector + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
+                //                                                                                                                                  Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
+                GenDraw.DrawMeshNowOrLater(addonGraphic.MeshAt(rotation), vector + (ba.alignWithHead ? headOffset : Vector3.zero) + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
                                            Quaternion.AngleAxis(num, Vector3.up) * quat, addonGraphic.MatAt(rotation), portrait);
             }
         }
