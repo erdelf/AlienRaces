@@ -25,6 +25,7 @@ namespace AlienRace
             public bool layerInvert = true;
             public bool drawnOnGround = true;
             public bool drawnInBed = true;
+            public bool drawnDesiccated = true;
             public bool drawForMale = true;
             public bool drawForFemale = true;
 
@@ -65,6 +66,7 @@ namespace AlienRace
                 !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
                 ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(s))))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && ((pawn.CurrentBed()?.def.building.bed_showSleeperBody ?? true) || this.drawnInBed) &&
                     (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
+                    (this.drawnDesiccated || pawn.Corpse.GetRotStage() != RotStage.Dessicated) &&
                     (this.bodyPart.NullOrEmpty() || 
                      (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
                      (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
