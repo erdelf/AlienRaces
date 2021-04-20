@@ -263,6 +263,10 @@ namespace AlienRace
                 Scribe_Collections.Look(ref this.addonVariants, label: "addonVariants");
                 Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
                 Scribe_NestedCollections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Undefined, LookMode.Undefined);
+
+                if(this.colorChannelLinks == null)
+                    this.colorChannelLinks = new Dictionary<string, HashSet<string>>();
+                    
             }
 
             public ExposableValueTuple<Color, Color> GetChannel(string channel)
