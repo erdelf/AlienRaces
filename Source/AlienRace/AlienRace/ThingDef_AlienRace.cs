@@ -114,12 +114,13 @@ namespace AlienRace
         public bool canLayDown = true;
         public float minAgeForAdulthood = -1f;
 
-        public List<ThingDef> validBeds;
+        public List<ThingDef>         validBeds;
         public List<ChemicalSettings> chemicalSettings;
-        public List<AlienTraitEntry> forcedRaceTraitEntries;
-        public List<AlienTraitEntry> disallowedTraits;
-        public IntRange additionalTraits = IntRange.zero;
-        public AlienPartGenerator alienPartGenerator = new AlienPartGenerator();
+        public List<AlienTraitEntry>  forcedRaceTraitEntries;
+        public List<AlienTraitEntry>  disallowedTraits;
+        public IntRange               traitCount         = new IntRange(2, 3);
+        public IntRange               additionalTraits   = IntRange.zero;
+        public AlienPartGenerator     alienPartGenerator = new AlienPartGenerator();
 
         public List<FactionRelationSettings> factionRelations;
         public int maxDamageForSocialfight = int.MaxValue;
