@@ -7,6 +7,7 @@ using Verse;
 
 namespace AlienRace
 {
+    using System;
     using System.Text;
 
     public partial class AlienPartGenerator
@@ -165,7 +166,7 @@ namespace AlienRace
             public List<int>           addonVariants;
 
             private Dictionary<string, ExposableValueTuple<Color, Color>> colorChannels;
-            private Dictionary<string, HashSet<string>>                   colorChannelLinks = new Dictionary<string, HashSet<string>>();
+            private Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>   colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>();
 
             public Dictionary<string, ExposableValueTuple<Color, Color>> ColorChannels
             {
@@ -174,7 +175,7 @@ namespace AlienRace
                     if (this.colorChannels == null || !this.colorChannels.Any())
                     {
                         this.colorChannels     = new Dictionary<string, ExposableValueTuple<Color, Color>>();
-                        this.colorChannelLinks = new Dictionary<string, HashSet<string>>();
+                        this.colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>();
                         Pawn               pawn       = (Pawn) this.parent;
                         ThingDef_AlienRace alienProps = ((ThingDef_AlienRace) this.parent.def);
                         AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
@@ -182,6 +183,7 @@ namespace AlienRace
                         this.colorChannels.Add(key: "base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
                         this.colorChannels.Add(key: "hair", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
                         Color skinColor = PawnSkinColors.GetSkinColor(pawn.story.melanin);
+
                         this.colorChannels.Add(key: "skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
 
                         foreach (ColorChannelGenerator channel in apg.colorChannels)
@@ -208,7 +210,7 @@ namespace AlienRace
                         pawn.story.hairColor = hairColors.first;
 
                         this.RegenerateColorChannelLink("skin");
-
+                        
                         if (alienProps.alienRace.hairSettings.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                         {
                             if (Rand.Value < GenMath.SmootherStep(alienProps.alienRace.hairSettings.getsGreyAt,
@@ -234,12 +236,17 @@ namespace AlienRace
                 {
                     case ColorGenerator_CustomAlienChannel ac:
                         string[] split = ac.colorChannel.Split('_');
-                        
-                        if(!this.colorChannelLinks.ContainsKey(split[0]))
-                            this.colorChannelLinks.Add(split[0], new HashSet<string>());
-                        this.colorChannelLinks[split[0]].Add(channel.name);
+                        if (!this.colorChannelLinks.ContainsKey(split[0]))
+                            this.colorChannelLinks.Add(split[0], new HashSet<ExposableValueTuple<string, bool>>());
 
-                        return split[1] == "1" ? this.ColorChannels[split[0]].first : this.ColorChannels[split[0]].second;
+                        bool first = split[1] == "1";
+
+                        this.colorChannelLinks[split[0]].Add(new ExposableValueTuple<string, bool>(channel.name, first));
+                        return first ? this.ColorChannels[split[0]].first : this.ColorChannels[split[0]].second;
+                    case ColorGenerator_SkinColorMelanin cm:
+                        return cm.naturalMelanin ? 
+                                   PawnSkinColors.GetSkinColor(((Pawn) this.parent).story.melanin) : 
+                                   gen.NewRandomizedColor();
                     default:
                         return gen.NewRandomizedColor();
                 }
@@ -265,7 +272,7 @@ namespace AlienRace
                 Scribe_NestedCollections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Undefined, LookMode.Undefined);
 
                 if(this.colorChannelLinks == null)
-                    this.colorChannelLinks = new Dictionary<string, HashSet<string>>();
+                    this.colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>();
                     
             }
 
@@ -302,18 +309,30 @@ namespace AlienRace
 
             public void RegenerateColorChannelLinks()
             {
-                foreach (KeyValuePair<string, HashSet<string>> kvp in this.colorChannelLinks)
-                {
-                    foreach (string link in kvp.Value) 
-                        this.ColorChannels.Remove(link);
-                }
+                foreach (KeyValuePair<string, HashSet<ExposableValueTuple<string, bool>>> kvp in this.colorChannelLinks) 
+                    this.RegenerateColorChannelLink(kvp.Key);
             }
 
             public void RegenerateColorChannelLink(string channel)
             {
+                ThingDef_AlienRace alienProps = ((ThingDef_AlienRace)this.parent.def);
+                AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
+
                 if (this.colorChannelLinks.ContainsKey(channel))
-                    foreach (string link in this.colorChannelLinks[channel])
-                        this.ColorChannels.Remove(link);
+                    foreach (ExposableValueTuple<string, bool> link in this.colorChannelLinks[channel])
+                    {
+                        foreach (ColorChannelGenerator apgChannel in apg.colorChannels)
+                        {
+                            if (apgChannel.name == link.first)
+                            {
+                                if (link.second)
+                                    this.ColorChannels[link.first].first = this.GenerateColor(apgChannel, apgChannel.first);
+                                else
+                                    this.ColorChannels[link.first].second = this.GenerateColor(apgChannel, apgChannel.second);
+                                
+                            }
+                        }
+                    }
             }
 
             public void OverwriteColorChannel(string channel, Color? first = null, Color? second = null)
@@ -339,7 +358,7 @@ namespace AlienRace
             }
         }
 
-        public class ExposableValueTuple<K, V> : IExposable
+        public class ExposableValueTuple<K, V> : IExposable, IEquatable<ExposableValueTuple<K,V>>
         {
             public K first;
             public V second;
@@ -353,6 +372,11 @@ namespace AlienRace
                 this.first = first;
                 this.second = second;
             }
+
+            public bool Equals(ExposableValueTuple<K, V> other) => 
+                other != null && this.first.Equals(other.first) && this.second.Equals(other.second);
+
+            public override int GetHashCode() => this.first.GetHashCode() + this.second.GetHashCode();
 
             public void ExposeData()
             {
