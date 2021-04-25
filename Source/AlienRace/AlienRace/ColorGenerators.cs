@@ -6,8 +6,9 @@
 
     public class ColorGenerator_SkinColorMelanin : ColorGenerator
     {
-        public float minMelanin = 0f;
-        public float maxMelanin = 1f;
+        public float minMelanin     = 0f;
+        public float maxMelanin     = 1f;
+        public bool  naturalMelanin = false;
 
         public override Color NewRandomizedColor() => 
             PawnSkinColors.GetSkinColor(Rand.Range(this.minMelanin, this.maxMelanin));

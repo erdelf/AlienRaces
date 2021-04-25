@@ -2013,9 +2013,10 @@
                                                              ShaderDatabase.CutoutComplex, Vector2.one, alien.story.SkinColor,
                                                  apg.SkinColor(alien, first: false)) :
                                              null;
+
                 __instance.desiccatedHeadGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
                                                        GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one,
-                                                           PawnGraphicSet.RottingColor) :
+                                                                                          PawnGraphicSet.RottingColor) :
                                                        null;
                 __instance.skullGraphic = alien.health.hediffSet.HasHead && !graphicPaths.skull.NullOrEmpty() ?
                                               GraphicDatabase.Get<Graphic_Multi>(graphicPaths.skull, ShaderDatabase.Cutout, Vector2.one, Color.white) :
@@ -2067,7 +2068,7 @@
         public static void GenerateTraitsPostfix(Pawn pawn, PawnGenerationRequest request)
         {
             if (!request.Newborn && request.CanGeneratePawnRelations)
-                CachedData.generatePawnsRelations(pawn, request);
+                CachedData.generatePawnsRelations(pawn, ref request);
 
             if (pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
                 alienProps.alienRace.generalSettings.forcedRaceTraitEntries.ForEach(action: ate =>

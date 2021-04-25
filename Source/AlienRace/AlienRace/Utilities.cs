@@ -123,7 +123,7 @@ namespace AlienRace
         public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allApparelPairs = AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnApparelGenerator), "allApparelPairs"));
         public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allWeaponPairs = AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnWeaponGenerator), "allWeaponPairs"));
 
-        public delegate bool PawnGeneratorPawnRelations(Pawn pawn, PawnGenerationRequest request);
+        public delegate void PawnGeneratorPawnRelations(Pawn pawn, ref PawnGenerationRequest request);
 
         public static readonly  PawnGeneratorPawnRelations generatePawnsRelations = AccessTools.MethodDelegate<PawnGeneratorPawnRelations>(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"));
     }
