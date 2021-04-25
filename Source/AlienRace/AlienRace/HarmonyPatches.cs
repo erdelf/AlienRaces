@@ -2067,7 +2067,7 @@
         public static void GenerateTraitsPostfix(Pawn pawn, PawnGenerationRequest request)
         {
             if (!request.Newborn && request.CanGeneratePawnRelations)
-                AccessTools.Method(typeof(PawnGenerator), name: "GeneratePawnRelations").Invoke(obj: null, new object[] {pawn, request});
+                CachedData.generatePawnsRelations(pawn, request);
 
             if (pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
                 alienProps.alienRace.generalSettings.forcedRaceTraitEntries.ForEach(action: ate =>
