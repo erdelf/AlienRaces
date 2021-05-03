@@ -29,33 +29,9 @@
                                 <colorChannels>
                                     <li>
                                         <name>skin</name>
-                                        <first Class="ColorGenerator_Options">
-                                            <options>
-                                                <li>
-                                                    <weight>5</weight>
-                                                    <only>RGBA(0.81,0.74,0.57,1)</only>
-                                                </li>
-                                                <li>
-                                                    <weight>5</weight>
-                                                    <only>RGBA(0.72,0.72,0.72,1)</only>
-                                                </li>
-                                                <li>
-                                                    <weight>5</weight>
-                                                    <only>RGBA(0.52,0.32,0.25,1)</only>
-                                                </li>
-                                                <li>
-                                                    <weight>5</weight>
-                                                    <only>RGBA(0.29,0.24,0.13,1)</only>
-                                                </li>
-                                                <li>
-                                                    <weight>5</weight>
-                                                    <only>RGBA(0.73,0.63,0.40,1)</only>
-                                                </li>
-                                                <li>
-                                                    <weight>5</weight>
-                                                    <only>RGBA(0.74,0.53,0.37,1)</only>
-                                                </li>
-                                            </options>
+                                        <first Class="AlienRace.ColorGenerator_SkinColorMelanin">
+                                            <minMelanin>0</minMelanin>
+                                            <maxMelanin>1</maxMelanin>
                                         </first>
                                         <second Class="AlienRace.ColorGenerator_CustomAlienChannel">
                                             <colorChannel>skin_1</colorChannel>

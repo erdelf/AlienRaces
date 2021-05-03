@@ -192,9 +192,9 @@ namespace AlienRace
                                 this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color>(Color.white, Color.white));
                             ExposableValueTuple<Color, Color> colors = this.colorChannels[channel.name];
                             if (channel.first != null)
-                                colors.first = this.GenerateColor(channel, channel.first);
+                                colors.first = this.GenerateColor(channel, true);
                             if (channel.second != null)
-                                colors.second = this.GenerateColor(channel, channel.second);
+                                colors.second = this.GenerateColor(channel, false);
                         }
 
                         ExposableValueTuple<Color, Color> hairColors = this.colorChannels[key: "hair"];
@@ -230,8 +230,10 @@ namespace AlienRace
                 }
             }
 
-            public Color GenerateColor(ColorChannelGenerator channel, ColorGenerator gen)
+            public Color GenerateColor(ColorChannelGenerator channel, bool first)
             {
+                ColorGenerator gen = first ? channel.first : channel.second;
+
                 switch (gen)
                 {
                     case ColorGenerator_CustomAlienChannel ac:
@@ -239,10 +241,8 @@ namespace AlienRace
                         if (!this.colorChannelLinks.ContainsKey(split[0]))
                             this.colorChannelLinks.Add(split[0], new HashSet<ExposableValueTuple<string, bool>>());
 
-                        bool first = split[1] == "1";
-
                         this.colorChannelLinks[split[0]].Add(new ExposableValueTuple<string, bool>(channel.name, first));
-                        return first ? this.ColorChannels[split[0]].first : this.ColorChannels[split[0]].second;
+                        return split[1] == "1" ? this.ColorChannels[split[0]].first : this.ColorChannels[split[0]].second;
                     case ColorGenerator_SkinColorMelanin cm:
                         return cm.naturalMelanin ? 
                                    PawnSkinColors.GetSkinColor(((Pawn) this.parent).story.melanin) : 
@@ -289,9 +289,9 @@ namespace AlienRace
                     {
                         this.ColorChannels.Add(channel, new ExposableValueTuple<Color, Color>());
                         if (apgChannel.first != null)
-                            this.ColorChannels[channel].first = this.GenerateColor(apgChannel, apgChannel.first);
+                            this.ColorChannels[channel].first = this.GenerateColor(apgChannel, true);
                         if (apgChannel.second != null)
-                            this.ColorChannels[channel].second = this.GenerateColor(apgChannel, apgChannel.second);
+                            this.ColorChannels[channel].second = this.GenerateColor(apgChannel, false);
 
                         return this.ColorChannels[channel];
                     }
@@ -325,10 +325,11 @@ namespace AlienRace
                         {
                             if (apgChannel.name == link.first)
                             {
+                                Log.Message(link.first + ": " + link.second);
                                 if (link.second)
-                                    this.ColorChannels[link.first].first = this.GenerateColor(apgChannel, apgChannel.first);
+                                    this.ColorChannels[link.first].first = this.GenerateColor(apgChannel, true);
                                 else
-                                    this.ColorChannels[link.first].second = this.GenerateColor(apgChannel, apgChannel.second);
+                                    this.ColorChannels[link.first].second = this.GenerateColor(apgChannel, false);
                                 
                             }
                         }
