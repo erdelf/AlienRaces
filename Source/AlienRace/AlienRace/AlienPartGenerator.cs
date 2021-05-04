@@ -325,7 +325,6 @@ namespace AlienRace
                         {
                             if (apgChannel.name == link.first)
                             {
-                                Log.Message(link.first + ": " + link.second);
                                 if (link.second)
                                     this.ColorChannels[link.first].first = this.GenerateColor(apgChannel, true);
                                 else
