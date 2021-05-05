@@ -836,7 +836,11 @@
         {
             if (!(pawn.def is ThingDef_AlienRace alienProps)) return count;
 
-            return alienProps.alienRace.generalSettings.traitCount.RandomInRange + alienProps.alienRace.generalSettings.additionalTraits.RandomInRange;
+            IntRange traitCount = alienProps.alienRace.generalSettings.traitCount;
+
+            if (traitCount.min != 2 || traitCount.max != 3)
+                count = traitCount.RandomInRange;
+            return count + alienProps.alienRace.generalSettings.additionalTraits.RandomInRange;
         }
 
         public static IEnumerable<TraitDef> GenerateTraitsValidator(Pawn p) => DefDatabase<TraitDef>.AllDefs.Where(predicate: tr => 
