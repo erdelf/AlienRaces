@@ -26,6 +26,13 @@
                                     <li>Narrow_Pointy</li>
                                     <li>Narrow_Wide</li>
                                 </aliencrowntypes>
+								<alienbodytypes>
+									<li>Male</li>
+									<li>Female</li>
+									<li>Thin</li>
+									<li>Hulk</li>
+									<li>Fat</li>
+								</alienbodytypes>
                                 <colorChannels>
                                     <li>
                                         <name>skin</name>
