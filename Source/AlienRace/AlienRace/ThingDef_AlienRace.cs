@@ -49,15 +49,6 @@ namespace AlienRace
             {
                 if (bodyAddon.offsets.west == null)
                     bodyAddon.offsets.west = bodyAddon.offsets.east;
-
-                if (float.IsNaN(bodyAddon.offsets.north.layerOffset))
-                    bodyAddon.offsets.north.layerOffset = bodyAddon.layerOffset;
-                if (float.IsNaN(bodyAddon.offsets.west.layerOffset))
-                    bodyAddon.offsets.west.layerOffset = bodyAddon.layerOffset;
-                if (float.IsNaN(bodyAddon.offsets.south.layerOffset))
-                    bodyAddon.offsets.south.layerOffset = bodyAddon.layerOffset;
-                if (float.IsNaN(bodyAddon.offsets.east.layerOffset))
-                    bodyAddon.offsets.east.layerOffset = bodyAddon.layerOffset;
             }
 
             if (this.alienRace.generalSettings.minAgeForAdulthood < 0)

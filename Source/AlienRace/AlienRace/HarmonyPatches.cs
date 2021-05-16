@@ -2269,7 +2269,7 @@
                 float moffsetX = 0.42f;
                 float moffsetZ = -0.22f;
 
-                float layerOffset = offset?.layerOffset ?? ba.layerOffset;
+                float layerOffset = float.IsNaN(offset?.layerOffset ?? float.NaN) ? ba.layerOffset : offset?.layerOffset ?? 0f;
 
                 float moffsetY = ba.inFrontOfBody ? 0.3f + layerOffset : -0.3f - layerOffset;
                 float num      = ba.angle;
@@ -2295,7 +2295,19 @@
                 Vector3 offsetVector = new Vector3(moffsetX, moffsetY, moffsetZ);
 
                 Graphic addonGraphic = alienComp.addonGraphics[i];
-                addonGraphic.drawSize = (portrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) * (ba.scaleWithPawnDrawsize ? alienComp.customDrawSize : Vector2.one) * 1.5f;
+                addonGraphic.drawSize = (portrait && ba.drawSizePortrait != Vector2.zero ?
+                                             ba.drawSizePortrait : 
+                                             ba.drawSize) * 
+                                        (ba.scaleWithPawnDrawsize ? 
+                                             ba.alignWithHead ?
+                                                 portrait ? 
+                                                    alienComp.customPortraitHeadDrawSize :
+                                                    alienComp.customHeadDrawSize :
+                                                 portrait ?
+                                                    alienComp.customPortraitDrawSize :
+                                                    alienComp.customDrawSize : 
+                                             Vector2.one) * 
+                                        1.5f;
                 //                                                                                                                                  Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
                 GenDraw.DrawMeshNowOrLater(addonGraphic.MeshAt(rotation), vector + (ba.alignWithHead ? headOffset : Vector3.zero) + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
                                            Quaternion.AngleAxis(num, Vector3.up) * quat, addonGraphic.MatAt(rotation), portrait);
