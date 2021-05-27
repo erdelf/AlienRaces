@@ -7,10 +7,10 @@ Desktop.ini
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
-Assemblies/AlienRace.dll.config
-Source/AlienRace/.vs
-Source/AlienRace/AlienRace/bin
-Source/AlienRace/AlienRace/obj
+*.dll.config
+**/.vs
+**/bin
+**/obj
 # Windows Installer files
 *.cab
 *.msi
@@ -48,9 +48,8 @@ Source/AlienRace/AlienRace/obj
 Network Trash Folder
 Temporary Items
 .apdisk
-AlienRace.zip
+*.zip
 *.ruleset
-/Source/AlienRace/AlienRace/AlienRace.pfx
-/Source/AlienRace/RuleSet2.ruleset
-/Source/AlienRace/AlienRace.sln.DotSettings
-/Source/AlienRace/packages/*
+*.pfx
+*.DotSettings
+**/packages/*
