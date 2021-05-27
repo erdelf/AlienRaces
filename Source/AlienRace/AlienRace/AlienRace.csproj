@@ -45,7 +45,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Lib.Harmony.2.0.2\lib\net472\0Harmony.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\Users\simon\OneDrive\modfiles\Harmony\Harmony\bin\Debug\net472\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
@@ -312,6 +313,7 @@
     <Compile Include="AlienRaceMod.cs" />
     <Compile Include="BackstoryDef.cs" />
     <Compile Include="ColorGenerators.cs" />
+    <Compile Include="Scribe_NestedCollections.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="PawnBioDef.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -319,9 +321,6 @@
     <Compile Include="ScenPart_StartingHumanlikes.cs" />
     <Compile Include="ThingDef_AlienRace.cs" />
     <Compile Include="Utilities.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
