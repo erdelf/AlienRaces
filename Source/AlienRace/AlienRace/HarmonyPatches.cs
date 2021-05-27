@@ -1541,7 +1541,7 @@
 
                 if (thoughtDef == ThoughtDefOf.AteHumanlikeMeatAsIngredient || thoughtDef == ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal)
                 {
-                    ThingDef race = foodSource?.TryGetComp<CompIngredients>()?.ingredients.FirstOrDefault(predicate: td => td.ingestible?.sourceDef?.race?.Humanlike ?? false);
+                    ThingDef race = foodSource?.TryGetComp<CompIngredients>()?.ingredients.FirstOrDefault(predicate: td => td.ingestible?.sourceDef?.race?.Humanlike ?? false)?.ingestible?.sourceDef;
                     if(race != null)
                         thoughtDef = settings.GetAteThought(race, cannibal, ingredient: true);
                 }
