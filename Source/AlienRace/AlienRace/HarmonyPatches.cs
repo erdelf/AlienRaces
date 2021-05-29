@@ -2139,7 +2139,7 @@
         public static void GeneratePawnPrefix(ref PawnGenerationRequest request)
         {
             PawnKindDef kindDef = request.KindDef;
-            if (Faction.OfPlayerSilentFail != null && kindDef == PawnKindDefOf.Villager && request.Faction.IsPlayer && kindDef.race != Faction.OfPlayer?.def.basicMemberKind.race)
+            if (Faction.OfPlayerSilentFail != null && kindDef == PawnKindDefOf.Villager && (request.Faction?.IsPlayer ?? false) && kindDef.race != Faction.OfPlayer?.def.basicMemberKind.race)
                 kindDef = Faction.OfPlayer?.def.basicMemberKind;
 
 
