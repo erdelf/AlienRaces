@@ -187,10 +187,11 @@
                 new HarmonyMethod(patchType, nameof(RecalculateLifeStageIndexPostfix)));
             harmony.Patch(
                 AccessTools.GetDeclaredMethods(typeof(FactionGenerator).GetNestedTypes(AccessTools.all)
-                                                                                    .OrderBy(keySelector: t => t.GetMethods(AccessTools.all).Length).Skip(count: 1).First()).Where(predicate: mi => mi.GetParameters()[0].ParameterType == typeof(Faction))
+                                                                                    .OrderByDescending(keySelector: t => t.GetMethods(AccessTools.all).Length).Skip(count: 1).First()).Where(predicate: mi => mi.GetParameters()[0].ParameterType == typeof(Faction))
                                                .MaxBy(selector: mi => mi.GetMethodBody()?.GetILAsByteArray().Length ?? -1), prefix: null, new HarmonyMethod(patchType, nameof(EnsureRequiredEnemiesPostfix)));
+
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.FactionTick)), prefix: null, postfix: null,
-                new HarmonyMethod(patchType, nameof(FactionTickTranspiler)));
+                          new HarmonyMethod(patchType, nameof(FactionTickTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Designator), nameof(Designator.CanDesignateThing)), prefix: null,
                 new HarmonyMethod(patchType, nameof(CanDesignateThingTamePostfix)));
 
@@ -704,19 +705,32 @@
 
         public static IEnumerable<CodeInstruction> FactionTickTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            foreach (CodeInstruction instruction in instructions)
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            MethodInfo isPlayerInfo = AccessTools.PropertyGetter(typeof(Faction), nameof(Faction.IsPlayer));
+
+            for (int i = 0; i < instructionList.Count; i++)
             {
+                CodeInstruction instruction = instructionList[i];
+
                 yield return instruction;
-                if (instruction.opcode != OpCodes.Beq) continue;
-                yield return new CodeInstruction(OpCodes.Ldarg_0);
-                yield return new CodeInstruction(OpCodes.Call,    AccessTools.Method(patchType, nameof(FactionTickFactionRelationCheck)));
-                yield return new CodeInstruction(OpCodes.Brfalse, instruction.operand);
+
+                if (instruction.opcode == OpCodes.Brfalse && instructionList[i - 1].Calls(isPlayerInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Call,    AccessTools.Method(patchType, nameof(FactionTickFactionRelationCheck)));
+                    yield return new CodeInstruction(OpCodes.Brfalse, instruction.operand);
+                }
             }
         }
 
         private static bool FactionTickFactionRelationCheck(Faction f)
         {
-            FactionDef player = Faction.OfPlayerSilentFail?.def ?? Find.GameInitData.playerFaction.def;
+            FactionDef player = Faction.OfPlayerSilentFail?.def ?? Find.GameInitData?.playerFaction?.def;
+
+            if (player == null)
+                return false;
+
             return !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(predicate: ar =>
                        f.def?.basicMemberKind?.race == ar &&
                        (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(player) ?? false) ?? false) ||
@@ -724,8 +738,8 @@
                        (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(f.def) ?? false) ?? false));
         }
 
-        public static void EnsureRequiredEnemiesPostfix(ref bool __result, Faction f) => __result = __result ||
-                                                                                                    !FactionTickFactionRelationCheck(f);
+        public static void EnsureRequiredEnemiesPostfix(ref bool __result, Faction f) => 
+            __result = __result || !FactionTickFactionRelationCheck(f);
 
         public static void RecalculateLifeStageIndexPostfix(Pawn ___pawn)
         {
