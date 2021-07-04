@@ -271,22 +271,6 @@
 
     public class RaceRestrictionSettings
     {
-        // Just here for compatibility's sake
-        public static Dictionary<ThingDef, List<ThingDef_AlienRace>>     apparelRestrictionDict  = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<ThingDef, List<ThingDef_AlienRace>>     apparelWhiteDict        = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<ThingDef, List<ThingDef_AlienRace>>     weaponRestrictionDict   = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<ThingDef, List<ThingDef_AlienRace>>     weaponWhiteDict         = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<BuildableDef, List<ThingDef_AlienRace>> buildingRestrictionDict = new Dictionary<BuildableDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<BuildableDef, List<ThingDef_AlienRace>> buildingWhiteDict       = new Dictionary<BuildableDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<RecipeDef, List<ThingDef_AlienRace>>    recipeRestrictionDict   = new Dictionary<RecipeDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<RecipeDef, List<ThingDef_AlienRace>>    recipeWhiteDict         = new Dictionary<RecipeDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<ThingDef, List<ThingDef_AlienRace>>     plantRestrictionDict    = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<ThingDef, List<ThingDef_AlienRace>>     plantWhiteDict          = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<TraitDef, List<ThingDef_AlienRace>>     traitRestrictionDict    = new Dictionary<TraitDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<TraitDef, List<ThingDef_AlienRace>>     traitWhiteDict          = new Dictionary<TraitDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<ThingDef, List<ThingDef_AlienRace>>     foodRestrictionDict           = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
-        public static Dictionary<ThingDef, List<ThingDef_AlienRace>>     foodWhiteDict           = new Dictionary<ThingDef, List<ThingDef_AlienRace>>();
-
         public bool           onlyUseRaceRestrictedApparel = false;
         public List<ThingDef> apparelList                  = new List<ThingDef>();
         public List<ThingDef> whiteApparelList             = new List<ThingDef>();
