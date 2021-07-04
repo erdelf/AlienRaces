@@ -15,16 +15,20 @@ namespace AlienRace
     {
         public class BodyAddon
         {
-            public string path;
-            public string bodyPart;
-            public BodyAddonOffsets offsets;
-            public bool linkVariantIndexWithPrevious = false;
-            public float angle = 0f;
-            public bool inFrontOfBody = false;
-            public float layerOffset = 0;
-            public bool layerInvert = true;
+            public string           path;
+            public string           bodyPart;
             
-            
+            public string           defaultOffset = "Center";
+            [Unsaved]
+            public BodyAddonOffsets defaultOffsets;
+
+            public BodyAddonOffsets offsets = new BodyAddonOffsets();
+            public bool             linkVariantIndexWithPrevious = false;
+            public float            angle                        = 0f;
+            public bool             inFrontOfBody                = false;
+            public bool             layerInvert                  = true;
+
+
             public bool drawnOnGround = true;
             public bool drawnInBed = true;
             public bool drawnDesiccated = true;
@@ -217,15 +221,29 @@ namespace AlienRace
 
         public class BodyAddonOffsets
         {
-            public RotationOffset south;
-            public RotationOffset north;
-            public RotationOffset east;
+            public RotationOffset GetOffset(Rot4 rotation) =>
+                rotation == Rot4.South ? this.south :
+                rotation == Rot4.North ? this.north :
+                rotation == Rot4.East  ? this.east : this.west;
+
+            public RotationOffset south = new RotationOffset();
+            public RotationOffset north = new RotationOffset();
+            public RotationOffset east = new RotationOffset();
             public RotationOffset west;
         }
 
         public class RotationOffset
         {
-            public float layerOffset = float.NaN;
+            public Vector3 GetOffset(bool portrait, BodyTypeDef bodyType, string crownType)
+            {
+                Vector2 bodyOffset  = (portrait ? this.portraitBodyTypes  ?? this.bodyTypes : this.bodyTypes)?.FirstOrDefault(predicate: to => to.bodyType == bodyType)?.offset  ?? Vector2.zero;
+                Vector2 crownOffset = (portrait ? this.portraitCrownTypes ?? this.crownTypes : this.crownTypes)?.FirstOrDefault(predicate: to => to.crownType == crownType)?.offset ?? Vector2.zero;
+
+                return new Vector3(this.offset.x + bodyOffset.x + crownOffset.x, this.layerOffset, this.offset.y + bodyOffset.y + crownOffset.y);
+            }
+
+            public float                 layerOffset;
+            public Vector2               offset;
             public List<BodyTypeOffset>  portraitBodyTypes;
             public List<BodyTypeOffset>  bodyTypes;
             public List<CrownTypeOffset> portraitCrownTypes;
