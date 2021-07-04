@@ -2073,6 +2073,7 @@
                 __instance.ResolveApparelGraphics();
 
                 PortraitsCache.SetDirty(alien);
+                GlobalTextureAtlasManager.TryMarkPawnFrameSetDirty(alien);
 
                 return false;
             }
@@ -2237,6 +2238,8 @@
         public static IEnumerable<CodeInstruction> RenderPawnInternalTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             FieldInfo  humanlikeHeadInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeHeadSet));
+            MethodInfo drawHeadHairInfo      = AccessTools.Method(typeof(PawnRenderer), "DrawHeadHair");
+            MethodInfo flagSetInfo       = AccessTools.Method(typeof(PawnRenderFlagsExtension), nameof(PawnRenderFlagsExtension.FlagSet));
 
             List<CodeInstruction> instructionList = instructions.ToList();
 
@@ -2244,7 +2247,7 @@
             {
                 CodeInstruction instruction = instructionList[i];
 
-                
+
                 if (instruction.OperandIs(humanlikeHeadInfo))
                 {
                     instructionList.RemoveRange(i, count: 2);
@@ -2255,9 +2258,9 @@
                     yield return new CodeInstruction(OpCodes.Ldc_I4_0);
                     instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnMesh)));
                 }
-                else if (i > 1 && instructionList[i -1].OperandIs(AccessTools.Method(typeof(Graphics), nameof(Graphics.DrawMesh), new []{typeof(Mesh), typeof(Vector3), typeof(Quaternion), typeof(Material), typeof(Int32)})))
+                else if (i > 6 && instructionList[i - 4].OperandIs(drawHeadHairInfo) && instructionList[i+1].OperandIs(flagSetInfo))
                 {
-                    yield return instruction; // portrait
+                    yield return new CodeInstruction(OpCodes.Dup); // renderFlags
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
                     yield return new CodeInstruction(OpCodes.Ldloc_S, 6); //b (aka headoffset)
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
@@ -2265,8 +2268,6 @@
                     yield return new CodeInstruction(OpCodes.Ldloc_0);             // quat
                     yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 4); // bodyfacing
                     yield return new CodeInstruction(OpCodes.Call,    AccessTools.Method(patchType, nameof(DrawAddons)));
-
-                    instruction = new CodeInstruction(OpCodes.Ldarg_S, operand: 7);
                 }
 
                 yield return instruction;
@@ -2276,6 +2277,8 @@
         public static void DrawAddons(PawnRenderFlags renderFlags, Vector3 vector, Vector3 headOffset, Pawn pawn, Quaternion quat, Rot4 rotation)
         {
             if (!(pawn.def is ThingDef_AlienRace alienProps) || renderFlags.FlagSet(PawnRenderFlags.Invisible)) return;
+
+            Log.Message("DRAWING ADDONS FOR: " + pawn.NameFullColored + " | " + renderFlags.ToString() + " | " + (!(pawn.def is ThingDef_AlienRace) || renderFlags.FlagSet(PawnRenderFlags.Invisible)) + " | " + renderFlags.FlagSet(PawnRenderFlags.Invisible) + " | " + !(pawn.def is ThingDef_AlienRace));
 
             List<AlienPartGenerator.BodyAddon> addons    = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
             AlienPartGenerator.AlienComp       alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
@@ -2345,9 +2348,10 @@
                                                     alienComp.customDrawSize : 
                                              Vector2.one) * 
                                         1.5f;
+
                 //                                                                                                                                  Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
                 GenDraw.DrawMeshNowOrLater(addonGraphic.MeshAt(rotation), vector + (ba.alignWithHead ? headOffset : Vector3.zero) + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
-                                           Quaternion.AngleAxis(num, Vector3.up) * quat, addonGraphic.MatAt(rotation), renderFlags.FlagSet(PawnRenderFlags.Portrait));
+                                           Quaternion.AngleAxis(num, Vector3.up) * quat, addonGraphic.MatAt(rotation), renderFlags.FlagSet(PawnRenderFlags.DrawNow));
             }
         }
     }
