@@ -134,11 +134,15 @@
                 new HarmonyMethod(patchType, nameof(GeneratePawnPrefix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), nameof(PawnGraphicSet.ResolveAllGraphics)),
                 new HarmonyMethod(patchType, nameof(ResolveAllGraphicsPrefix)));
-            Log.Message("-1");
+
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer), name: "RenderPawnInternal",
                                              new[] { typeof(Vector3), typeof(float), typeof(bool), typeof(Rot4), typeof(RotDrawMode), typeof(PawnRenderFlags)}), transpiler:
                           new HarmonyMethod(patchType, nameof(RenderPawnInternalTranspiler)));
-            Log.Message("0");
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), name: "DrawPawnBody"), transpiler:
+                          new HarmonyMethod(patchType, nameof(DrawPawnBodyTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderer), name: "DrawHeadHair"), transpiler:
+                          new HarmonyMethod(patchType, nameof(DrawHeadHairTranspiler)));
+
             harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), nameof(StartingPawnUtility.NewGeneratedStartingPawn)),
                 transpiler: new HarmonyMethod(patchType, nameof(NewGeneratedStartingPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo)), 
@@ -182,11 +186,6 @@
                 new HarmonyMethod(patchType, nameof(HasHeadPrefix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), name: "RecalculateLifeStageIndex"), 
                 postfix: new HarmonyMethod(patchType, nameof(RecalculateLifeStageIndexPostfix)));
-            Log.Message("3");
-            harmony.Patch(
-                AccessTools.GetDeclaredMethods(typeof(FactionGenerator).GetNestedTypes(AccessTools.all)
-                                                                                    .OrderByDescending(keySelector: t => t.GetMethods(AccessTools.all).Length).Skip(count: 1).First()).Where(predicate: mi => mi.GetParameters()[0].ParameterType == typeof(Faction))
-                                               .MaxBy(selector: mi => mi.GetMethodBody()?.GetILAsByteArray().Length ?? -1), postfix: new HarmonyMethod(patchType, nameof(EnsureRequiredEnemiesPostfix)));
             Log.Message("4");
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.FactionTick)), transpiler:
                           new HarmonyMethod(patchType, nameof(FactionTickTranspiler)));
@@ -735,10 +734,7 @@
                        player.basicMemberKind?.race == ar &&
                        (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(f.def) ?? false) ?? false));
         }
-
-        public static void EnsureRequiredEnemiesPostfix(ref bool __result, Faction f) => 
-            __result = __result || !FactionTickFactionRelationCheck(f);
-
+        
         public static void RecalculateLifeStageIndexPostfix(Pawn ___pawn)
         {
             if (Current.ProgramState == ProgramState.Playing && (___pawn).def is ThingDef_AlienRace &&
@@ -2172,11 +2168,9 @@
             request.KindDef = kindDef;
         }
 
-        public static IEnumerable<CodeInstruction> RenderPawnInternalTranspiler(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> DrawPawnBodyTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            FieldInfo  humanlikeBodyInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeBodySet));
-            FieldInfo  humanlikeHeadInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeHeadSet));
-            MethodInfo hairInfo          = AccessTools.Property(typeof(PawnGraphicSet), nameof(PawnGraphicSet.HairMeshSet)).GetGetMethod();
+            FieldInfo humanlikeBodyInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeBodySet));
 
             List<CodeInstruction> instructionList = instructions.ToList();
 
@@ -2186,48 +2180,13 @@
                 if (instruction.OperandIs(humanlikeBodyInfo))
                 {
                     instructionList.RemoveRange(i, count: 2);
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: "'flags'"); // renderFlags
+                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 5); // renderFlags
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Ldfld,   AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: "bodyFacing"); // bodyfacing
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
+                    yield return new CodeInstruction(OpCodes.Ldarg_3); // facing
                     yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                     instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnMesh)));
                 }
-                else if (instruction.OperandIs(humanlikeHeadInfo))
-                {
-                    instructionList.RemoveRange(i, count: 2);
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: "'flags'"); // renderFlags
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Ldfld,   AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
-                    yield return new CodeInstruction(OpCodes.Ldloc_S, operand: 7); //headfacing
-                    yield return new CodeInstruction(OpCodes.Ldc_I4_0);
-                    instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnMesh)));
-                }
-                else if (i + 4 < instructionList.Count && instructionList[i + 2].OperandIs(hairInfo))
-                {
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: "'flags'") {labels = instruction.labels}; // renderFlags
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Ldfld,   AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
-                    yield return new CodeInstruction(OpCodes.Ldloc_S, operand: 7); //headfacing
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), nameof(PawnRenderer.graphics)));
-                    instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnHairMesh)));
-                    instructionList.RemoveRange(i, count: 4);
-                }
-                else if (i > 1 && instructionList[i -1].OperandIs(AccessTools.Method(typeof(Graphics), nameof(Graphics.DrawMesh), new []{typeof(Mesh), typeof(Vector3), typeof(Quaternion), typeof(Material), typeof(Int32)})))
-                {
-                    yield return instruction; // portrait
-                    yield return new CodeInstruction(OpCodes.Ldarg_1);
-                    yield return new CodeInstruction(OpCodes.Ldloc_S, 6); //b (aka headoffset)
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
-                    yield return new CodeInstruction(OpCodes.Ldloc_0);             // quat
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: "bodyFacing"); // bodyfacing
-                    yield return new CodeInstruction(OpCodes.Call,    AccessTools.Method(patchType, nameof(DrawAddons)));
-
-                    instruction = new CodeInstruction(OpCodes.Ldarg_S, operand: 7);
-                }
-
                 yield return instruction;
             }
         }
@@ -2245,12 +2204,77 @@
                     MeshPool.humanlikeBodySet.MeshAt(facing) :
                     MeshPool.humanlikeHeadSet.MeshAt(facing);
 
+        public static IEnumerable<CodeInstruction> DrawHeadHairTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo hairInfo          = AccessTools.Property(typeof(PawnGraphicSet), nameof(PawnGraphicSet.HairMeshSet)).GetGetMethod();
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                if (i + 4 < instructionList.Count && instructionList[i + 2].OperandIs(hairInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_S, 7) { labels = instruction.ExtractLabels() }; // renderFlags
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Ldfld,   AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
+                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 5); //headfacing
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), nameof(PawnRenderer.graphics)));
+                    instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnHairMesh)));
+                    instructionList.RemoveRange(i, count: 4);
+                }
+
+                yield return instruction;
+            }
+        }
+
         public static Mesh GetPawnHairMesh(PawnRenderFlags renderFlags, Pawn pawn, Rot4 headFacing, PawnGraphicSet graphics) =>
             pawn.GetComp<AlienPartGenerator.AlienComp>() is AlienPartGenerator.AlienComp alienComp ?
-                     (renderFlags.FlagSet(PawnRenderFlags.Portrait) ?
-                          alienComp.alienPortraitHeadGraphics.hairSetAverage :
-                          alienComp.alienHeadGraphics.hairSetAverage).MeshAt(headFacing) :
+                (renderFlags.FlagSet(PawnRenderFlags.Portrait) ?
+                     alienComp.alienPortraitHeadGraphics.hairSetAverage :
+                     alienComp.alienHeadGraphics.hairSetAverage).MeshAt(headFacing) :
                 graphics.HairMeshSet.MeshAt(headFacing);
+
+        public static IEnumerable<CodeInstruction> RenderPawnInternalTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo  humanlikeHeadInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeHeadSet));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                
+                if (instruction.OperandIs(humanlikeHeadInfo))
+                {
+                    instructionList.RemoveRange(i, count: 2);
+                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 6); // renderFlags
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Ldfld,   AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, operand: 7); //headfacing
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_0);
+                    instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnMesh)));
+                }
+                else if (i > 1 && instructionList[i -1].OperandIs(AccessTools.Method(typeof(Graphics), nameof(Graphics.DrawMesh), new []{typeof(Mesh), typeof(Vector3), typeof(Quaternion), typeof(Material), typeof(Int32)})))
+                {
+                    yield return instruction; // portrait
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, 6); //b (aka headoffset)
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
+                    yield return new CodeInstruction(OpCodes.Ldloc_0);             // quat
+                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 4); // bodyfacing
+                    yield return new CodeInstruction(OpCodes.Call,    AccessTools.Method(patchType, nameof(DrawAddons)));
+
+                    instruction = new CodeInstruction(OpCodes.Ldarg_S, operand: 7);
+                }
+
+                yield return instruction;
+            }
+        }
 
         public static void DrawAddons(PawnRenderFlags renderFlags, Vector3 vector, Vector3 headOffset, Pawn pawn, Quaternion quat, Rot4 rotation)
         {
