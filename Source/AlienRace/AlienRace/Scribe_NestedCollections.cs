@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace AlienRace
+﻿namespace AlienRace
 {
     using System;
+    using System.Collections.Generic;
     using System.Xml;
-    using RimWorld.Planet;
     using Verse;
 
     public class Scribe_NestedCollections

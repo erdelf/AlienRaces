@@ -1,10 +1,10 @@
-﻿using RimWorld;
-using System.Collections.Generic;
-using System.Linq;
-using Verse;
-
-namespace AlienRace
+﻿namespace AlienRace
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using RimWorld;
+    using Verse;
+
     public class PawnBioDef : Def
     {
         public string childhoodDef;
@@ -30,19 +30,19 @@ namespace AlienRace
             if (this.resolvedAdulthood.slot != BackstorySlot.Adulthood || this.resolvedChildhood.slot != BackstorySlot.Childhood)
                 return;
 
-            PawnBio bio = new PawnBio()
-            {
-                gender = this.gender,
-                name = this.name,
-                childhood = this.resolvedChildhood,
-                adulthood = this.resolvedAdulthood,
-                pirateKing = this.factionLeader
-            };
+            PawnBio bio = new PawnBio
+                          {
+                              gender     = this.gender,
+                              name       = this.name,
+                              childhood  = this.resolvedChildhood,
+                              adulthood  = this.resolvedAdulthood,
+                              pirateKing = this.factionLeader
+                          };
 
             if (this.resolvedAdulthood.spawnCategories.Count == 1 && this.resolvedAdulthood.spawnCategories[index: 0] == "Trader")
                 this.resolvedAdulthood.spawnCategories.Add(item: "Civil");
 
-            if(!bio.ConfigErrors().Any())
+            if (!bio.ConfigErrors().Any())
                 SolidBioDatabase.allBios.Add(bio);
             else
                 Log.Error(this.defName + " has errors");

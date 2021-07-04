@@ -1,15 +1,14 @@
-﻿using RimWorld;
-using System.Collections.Generic;
-using System.Linq;
-using Verse;
-using UnityEngine;
-
-namespace AlienRace
+﻿namespace AlienRace
 {
     using System;
     using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
     using HarmonyLib;
+    using RimWorld;
+    using UnityEngine;
+    using Verse;
 
     public class ThingDef_AlienRace : ThingDef
     {

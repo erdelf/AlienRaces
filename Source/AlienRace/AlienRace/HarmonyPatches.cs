@@ -8,13 +8,13 @@
     using System.Reflection;
     using System.Reflection.Emit;
     using System.Runtime.CompilerServices;
+    using System.Runtime.InteropServices;
     using HarmonyLib;
     using RimWorld;
     using UnityEngine;
     using Verse;
     using Verse.AI;
     using Verse.Grammar;
-    using OpCodes = System.Reflection.Emit.OpCodes;
 
     /// <summary>
     /// "More useful than the Harmony wiki" ~ Mehni
@@ -336,7 +336,7 @@
                     //SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
                     Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(t) && !t.IsGenericType && !t.HasAttribute<CompilerGeneratedAttribute>()).SelectMany(selector: t =>
                        t.GetMethods(AccessTools.all).Concat(t.GetProperties(AccessTools.all).SelectMany(selector: pi => pi.GetAccessors(nonPublic: true)))
-                        .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<System.Runtime.InteropServices.DllImportAttribute>()))// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
+                        .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<DllImportAttribute>()))// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
                 ) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
                 {
                     IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
@@ -469,7 +469,7 @@
                 {
                     yield return new CodeInstruction(OpCodes.Ldc_I4, DefDatabase<ThingDef_AlienRace>.AllDefs.SelectMany(selector: ar =>
                             ar.alienRace.generalSettings.alienPartGenerator.bodyAddons).Sum(selector: ba =>
-                                                                                                          new List<AlienPartGenerator.RotationOffset>()
+                                                                                                          new List<AlienPartGenerator.RotationOffset>
                                                                                                           {
                                                                                                               ba.offsets.east,
                                                                                                               ba.offsets.west,
@@ -552,16 +552,16 @@
 
 
                     List<AlienPartGenerator.RotationOffset> rotationOffsets = new List<AlienPartGenerator.RotationOffset>
-                    {
-                        ba.offsets.north,
-                        ba.offsets.south,
-                        ba.offsets.west,
-                        ba.offsets.east                        
-                    };
+                                                                              {
+                                                                                  ba.offsets.north,
+                                                                                  ba.offsets.south,
+                                                                                  ba.offsets.west,
+                                                                                  ba.offsets.east                        
+                                                                              };
 
                     for (int i = 0; i < rotationOffsets.Count; i++)
                     {
-                        string label3Rotation;
+                        string                            label3Rotation;
                         AlienPartGenerator.RotationOffset ro = rotationOffsets[i];
                         switch (i)
                         {
@@ -1009,14 +1009,7 @@
             enumerable.ForEach(action: current =>
             {
                 if (current.Discarded)
-                    Log.Warning(string.Concat(new object[]
-                    {
-                        "Warning during generating pawn relations for ",
-                        pawn,
-                        ": Pawn ",
-                        current,
-                        " is discarded, yet he was yielded by PawnUtility. Discarding a pawn means that he is no longer managed by anything."
-                    }));
+                    Log.Warning(string.Concat("Warning during generating pawn relations for ", pawn, ": Pawn ", current, " is discarded, yet he was yielded by PawnUtility. Discarding a pawn means that he is no longer managed by anything."));
                 else
                     allDefsListForReading.ForEach(action: relationDef =>
                     {
@@ -1591,7 +1584,7 @@
                         thoughtDef = settings.GetAteThought(race, cannibal, ingredient: true);
                 }
 
-                resultingThoughts.Add(new FoodUtility.ThoughtFromIngesting() { fromPrecept = __result[i].fromPrecept, thought = thoughtDef });
+                resultingThoughts.Add(new FoodUtility.ThoughtFromIngesting { fromPrecept = __result[i].fromPrecept, thought = thoughtDef });
             }
 
             __result = resultingThoughts;
@@ -1789,7 +1782,7 @@
 
                 p.needs.mood.thoughts.memories.TryGainMemory(thought ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse);
             });
-            TaleRecorder.RecordTale(TaleDefOf.ButcheredHumanlikeCorpse, new object[] {butcher});
+            TaleRecorder.RecordTale(TaleDefOf.ButcheredHumanlikeCorpse, butcher);
             __result = things;
             return false;
         }
@@ -1809,7 +1802,6 @@
                 {
                     __result   = false;
                     cantReason = $"{pawn.def.LabelCap} can't equip this";
-                    return;
                 }
             }
         }
@@ -1909,7 +1901,7 @@
         public static PawnKindDef NewGeneratedStartingPawnHelper(PawnKindDef basicMember) =>
             DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.startingColonists.NullOrEmpty())
                                   .SelectMany(selector: tdar => tdar.pawnKindSettings.startingColonists).Where(predicate: sce => sce.factionDefs.Contains(Faction.OfPlayer.def))
-                                  .SelectMany(selector: sce => sce.pawnKindEntries).AddItem(new PawnKindEntry {chance = 100f, kindDefs = new List<PawnKindDef>() {basicMember}})
+                                  .SelectMany(selector: sce => sce.pawnKindEntries).AddItem(new PawnKindEntry {chance = 100f, kindDefs = new List<PawnKindDef> {basicMember}})
                                   .TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk)
                 ? pk.kindDefs.RandomElement()
                 : basicMember;

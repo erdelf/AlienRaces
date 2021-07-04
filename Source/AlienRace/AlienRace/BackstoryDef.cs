@@ -1,12 +1,11 @@
-﻿using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Verse;
-
-namespace AlienRace
+﻿namespace AlienRace
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using HarmonyLib;
+    using RimWorld;
+    using Verse;
 
     public class BackstoryDef : Def
     {

@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
-using RimWorld;
-using Verse;
-using Verse.AI;
-
-namespace AlienRace
+﻿namespace AlienRace
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using HarmonyLib;
     using JetBrains.Annotations;
-    
+    using RimWorld;
+    using Verse;
+    using Verse.AI;
+
     [DefOf]
     public static class AlienDefOf
     {
@@ -112,19 +111,25 @@ namespace AlienRace
 
         public static ThingDef GetRaceFromRaceProps(RaceProperties props)
         {
-            if (!racePropsToRaceDict.ContainsKey(props)) 
-                racePropsToRaceDict.Add(props, new List<ThingDef>(DefDatabase<ThingDef>.AllDefsListForReading).Concat(new List<ThingDef_AlienRace>(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)).First(predicate: td => td.race == props));
+            if (!racePropsToRaceDict.ContainsKey(props))
+                racePropsToRaceDict.Add(props,
+                                        new List<ThingDef>(DefDatabase<ThingDef>.AllDefsListForReading).Concat(new List<ThingDef_AlienRace>(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading))
+                                                                                                    .First(predicate: td => td.race == props));
 
             return racePropsToRaceDict[props];
         }
 
         public static readonly AccessTools.FieldRef<Pawn_StoryTracker, string> headGraphicPath = AccessTools.FieldRefAccess<Pawn_StoryTracker, string>("headGraphicPath");
 
-        public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allApparelPairs = AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnApparelGenerator), "allApparelPairs"));
-        public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allWeaponPairs = AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnWeaponGenerator), "allWeaponPairs"));
+        public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allApparelPairs =
+            AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnApparelGenerator), "allApparelPairs"));
+
+        public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allWeaponPairs =
+            AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnWeaponGenerator), "allWeaponPairs"));
 
         public delegate void PawnGeneratorPawnRelations(Pawn pawn, ref PawnGenerationRequest request);
 
-        public static readonly  PawnGeneratorPawnRelations generatePawnsRelations = AccessTools.MethodDelegate<PawnGeneratorPawnRelations>(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"));
+        public static readonly PawnGeneratorPawnRelations generatePawnsRelations =
+            AccessTools.MethodDelegate<PawnGeneratorPawnRelations>(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"));
     }
 }
