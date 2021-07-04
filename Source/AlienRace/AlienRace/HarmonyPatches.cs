@@ -2278,8 +2278,6 @@
         {
             if (!(pawn.def is ThingDef_AlienRace alienProps) || renderFlags.FlagSet(PawnRenderFlags.Invisible)) return;
 
-            Log.Message("DRAWING ADDONS FOR: " + pawn.NameFullColored + " | " + renderFlags.ToString() + " | " + (!(pawn.def is ThingDef_AlienRace) || renderFlags.FlagSet(PawnRenderFlags.Invisible)) + " | " + renderFlags.FlagSet(PawnRenderFlags.Invisible) + " | " + !(pawn.def is ThingDef_AlienRace));
-
             List<AlienPartGenerator.BodyAddon> addons    = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
             AlienPartGenerator.AlienComp       alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
 
