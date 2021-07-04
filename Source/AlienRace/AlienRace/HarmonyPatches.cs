@@ -520,12 +520,14 @@
 
                         GUI.color = Color.red;
                         string savedS = tweakValuesSaved[raceAddonLabel].ToString(CultureInfo.InvariantCulture) + " -> ";
-                        float  width  = Mathf.Abs(tweakValuesSaved[raceAddonLabel] - value) > float.Epsilon ? Text.CalcSize(savedS).x : 0f;
+                        bool   changed      = Mathf.Abs(tweakValuesSaved[raceAddonLabel] - value) > float.Epsilon;
+                        float  width  = changed ? Text.CalcSize(savedS).x : 0f;
 
                         Rect savedRect = rect4.LeftPartPixels(width);
                         Widgets.Label(savedRect, savedS);
                         GUI.color      = Color.white;
-                        valueFieldRect = rect4.RightPartPixels(rect4.width - width);
+                        if(changed)
+                            valueFieldRect = rect4.RightPartPixels(rect4.width - width);
 
                         if (Widgets.ButtonInvisible(savedRect))
                         {
