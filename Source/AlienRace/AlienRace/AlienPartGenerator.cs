@@ -206,7 +206,7 @@ namespace AlienRace
                         }
 
                         if (pawn.Corpse?.GetRotStage() == RotStage.Rotting)
-                            this.colorChannels["skin"].first = PawnGraphicSet.RottingColor;
+                            this.colorChannels["skin"].first = PawnGraphicSet.RottingColorDefault;
                         pawn.story.hairColor = hairColors.first;
 
                         this.RegenerateColorChannelLink("skin");

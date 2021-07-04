@@ -42,7 +42,7 @@
                 postfix: new HarmonyMethod(patchType, nameof(GenerationChanceLoverPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Parent), nameof(PawnRelationWorker_Parent.GenerationChance)), 
-                postfix: new HarmonyMethod(patchType, nameof(GenerationChanceParentPostfix)));
+                          postfix: new HarmonyMethod(patchType, nameof(GenerationChanceParentPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Sibling), nameof(PawnRelationWorker_Sibling.GenerationChance)), 
                 postfix: new HarmonyMethod(patchType, nameof(GenerationChanceSiblingPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Spouse), nameof(PawnRelationWorker_Spouse.GenerationChance)), 
@@ -64,7 +64,7 @@
                 new HarmonyMethod(patchType, nameof(ResearchScreenTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), name: "DrawRightRect"), transpiler:
                 new HarmonyMethod(patchType, nameof(ResearchScreenTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.CanConstruct)), 
+            harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.CanConstruct), new Type[]{typeof(Thing), typeof(Pawn), typeof(bool), typeof(bool)}), 
                 postfix: new HarmonyMethod(patchType, nameof(CanConstructPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GameRules), nameof(GameRules.DesignatorAllowed)), 
                 postfix: new HarmonyMethod(patchType, nameof(DesignatorAllowedPostfix)));
@@ -77,9 +77,9 @@
             harmony.Patch(AccessTools.Method(typeof(Pawn), nameof(Pawn.SetFaction)), postfix: new HarmonyMethod(patchType, nameof(SetFactionPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Thing), nameof(Pawn.SetFactionDirect)), 
                 postfix: new HarmonyMethod(patchType, nameof(SetFactionDirectPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(JobGiver_OptimizeApparel), nameof(JobGiver_OptimizeApparel.ApparelScoreGain_NewTmp)), 
+            harmony.Patch(AccessTools.Method(typeof(JobGiver_OptimizeApparel), nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), 
                 postfix: new HarmonyMethod(patchType, nameof(ApparelScoreGainPostFix)));
-            harmony.Patch(AccessTools.Method(typeof(ThoughtUtility), nameof(ThoughtUtility.CanGetThought_NewTemp)), 
+            harmony.Patch(AccessTools.Method(typeof(ThoughtUtility), nameof(ThoughtUtility.CanGetThought)),
                 postfix: new HarmonyMethod(patchType, nameof(CanGetThoughtPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Corpse), nameof(Corpse.ButcherProducts)), new HarmonyMethod(patchType, nameof(ButcherProductsPrefix)));
             harmony.Patch(AccessTools.Method(typeof(FoodUtility), nameof(FoodUtility.ThoughtsFromIngesting)), 
@@ -100,9 +100,8 @@
                           new HarmonyMethod(patchType, nameof(ThoughtReplacementPrefix)));
             harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), nameof(MemoryThoughtHandler.GetFirstMemoryOfDef)),
                           new HarmonyMethod(patchType, nameof(ThoughtReplacementPrefix)));
-
             harmony.Patch(AccessTools.Method(GenTypes.GetTypeInAnyAssembly(typeName: "AgeInjuryUtility"), name: "GenerateRandomOldAgeInjuries"),
-                new HarmonyMethod(patchType, nameof(GenerateRandomOldAgeInjuriesPrefix)));
+                          new HarmonyMethod(patchType, nameof(GenerateRandomOldAgeInjuriesPrefix)));
             harmony.Patch(
                 AccessTools.Method(GenTypes.GetTypeInAnyAssembly(typeName: "AgeInjuryUtility"), name: "RandomHediffsToGainOnBirthday", new[] { typeof(ThingDef), typeof(int) }),
                 postfix: new HarmonyMethod(patchType, nameof(RandomHediffsToGainOnBirthdayPostfix)));
@@ -123,24 +122,23 @@
             harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), 
                 postfix: new HarmonyMethod(patchType, nameof(CanBingeNowPostfix)));
                 
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateBodyType_NewTemp"), 
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateBodyType"), 
                 postfix: new HarmonyMethod(patchType, nameof(GenerateBodyTypePostfix)));
             harmony.Patch(AccessTools.Property(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.SkinColor)).GetGetMethod(), 
                 postfix: new HarmonyMethod(patchType, nameof(SkinColorPostfix)));
                 
-            harmony.Patch(AccessTools.Method(typeof(PawnHairChooser), nameof(PawnHairChooser.RandomHairDefFor)),
-                new HarmonyMethod(patchType, nameof(RandomHairDefForPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.RandomHairFor)),
+                new HarmonyMethod(patchType, nameof(RandomHairForPrefix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), name: "BirthdayBiological"), new HarmonyMethod(patchType, nameof(BirthdayBiologicalPrefix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), nameof(PawnGenerator.GeneratePawn), new[] { typeof(PawnGenerationRequest) }),
                 new HarmonyMethod(patchType, nameof(GeneratePawnPrefix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), nameof(PawnGraphicSet.ResolveAllGraphics)),
                 new HarmonyMethod(patchType, nameof(ResolveAllGraphicsPrefix)));
-            
-                            
+            Log.Message("-1");
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer), name: "RenderPawnInternal",
-                                             new[] { typeof(Vector3), typeof(float), typeof(bool), typeof(Rot4), typeof(Rot4), typeof(RotDrawMode), typeof(bool), typeof(bool), typeof(bool) }), transpiler:
+                                             new[] { typeof(Vector3), typeof(float), typeof(bool), typeof(Rot4), typeof(RotDrawMode), typeof(PawnRenderFlags)}), transpiler:
                           new HarmonyMethod(patchType, nameof(RenderPawnInternalTranspiler)));
-            
+            Log.Message("0");
             harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), nameof(StartingPawnUtility.NewGeneratedStartingPawn)),
                 transpiler: new HarmonyMethod(patchType, nameof(NewGeneratedStartingPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo)), 
@@ -184,11 +182,12 @@
                 new HarmonyMethod(patchType, nameof(HasHeadPrefix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), name: "RecalculateLifeStageIndex"), 
                 postfix: new HarmonyMethod(patchType, nameof(RecalculateLifeStageIndexPostfix)));
+            Log.Message("3");
             harmony.Patch(
                 AccessTools.GetDeclaredMethods(typeof(FactionGenerator).GetNestedTypes(AccessTools.all)
                                                                                     .OrderByDescending(keySelector: t => t.GetMethods(AccessTools.all).Length).Skip(count: 1).First()).Where(predicate: mi => mi.GetParameters()[0].ParameterType == typeof(Faction))
                                                .MaxBy(selector: mi => mi.GetMethodBody()?.GetILAsByteArray().Length ?? -1), postfix: new HarmonyMethod(patchType, nameof(EnsureRequiredEnemiesPostfix)));
-
+            Log.Message("4");
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.FactionTick)), transpiler:
                           new HarmonyMethod(patchType, nameof(FactionTickTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Designator), nameof(Designator.CanDesignateThing)), 
@@ -211,7 +210,7 @@
             harmony.Patch(AccessTools.Method(typeof(ThoughtWorker_Woman), name: "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
             harmony.Patch(AccessTools.Method(typeof(ThoughtWorker_Man), name: "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
 
-            harmony.Patch(AccessTools.Method(typeof(EquipmentUtility), nameof(EquipmentUtility.CanEquip_NewTmp), new []{typeof(Thing), typeof(Pawn), typeof(string).MakeByRefType(), typeof(bool)}), postfix: new HarmonyMethod(patchType, nameof(CanEquipPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(EquipmentUtility), nameof(EquipmentUtility.CanEquip), new []{typeof(Thing), typeof(Pawn), typeof(string).MakeByRefType(), typeof(bool)}), postfix: new HarmonyMethod(patchType, nameof(CanEquipPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), name: "GiveShuffledBioTo"), transpiler: 
                           new HarmonyMethod(patchType, nameof(MinAgeForAdulthood)));
@@ -220,7 +219,7 @@
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(CompRottable), "StageChanged"), new HarmonyMethod(patchType, nameof(RottableCompStageChangedPostfix)));
-
+            Log.Message("3");
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -361,7 +360,7 @@
             }
 
             Log.Message($"Alien race successfully completed {harmony.GetPatchedMethods().Select(Harmony.GetPatchInfo).SelectMany(selector: p => p.Prefixes.Concat(p.Postfixes).Concat(p.Transpilers)).Count(predicate: p => p.owner == harmony.Id)} patches with harmony.");
-            DefDatabase<HairDef>.GetNamed(defName: "Shaved").hairTags.Add(item: "alienNoHair");
+            HairDefOf.Shaved.styleTags.Add(item: "alienNoHair");
 
             foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs)
                 BackstoryDef.UpdateTranslateableFields(bd);
@@ -1247,13 +1246,12 @@
                                                        FactionRelationKind.Neutral;
 
                     FactionRelation relation = other.RelationWith(__instance);
-                    relation.goodwill = offset;
+                    relation.baseGoodwill = offset;
                     relation.kind = kind;
 
-                    relation = __instance.RelationWith(other);
-                    relation.goodwill = offset;
-                    relation.goodwill = offset;
-                    relation.kind = kind;
+                    relation              = __instance.RelationWith(other);
+                    relation.baseGoodwill = offset;
+                    relation.kind         = kind;
                 });
 
             alienRace = GetRaceOfFaction(__instance.def);
@@ -1270,11 +1268,11 @@
                                                    FactionRelationKind.Neutral;
 
                 FactionRelation relation = other.RelationWith(__instance);
-                relation.goodwill = offset;
+                relation.baseGoodwill = offset;
                 relation.kind     = kind;
 
                 relation          = __instance.RelationWith(other);
-                relation.goodwill = offset;
+                relation.baseGoodwill = offset;
                 relation.kind     = kind;
             });
 
@@ -1529,22 +1527,23 @@
             }
         }
 
-        public static void ThoughtsFromIngestingPostfix(Pawn ingester, Thing foodSource, ThingDef foodDef, ref List<ThoughtDef> __result)
+        public static void ThoughtsFromIngestingPostfix(Pawn ingester, Thing foodSource, ThingDef foodDef, ref List<FoodUtility.ThoughtFromIngesting> __result)
         {
             if (ingester.story.traits.HasTrait(AlienDefOf.Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1)
-                if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatDirect) && foodDef.ingestible.sourceDef != ingester.def)
-                    __result.Remove(ThoughtDefOf.AteHumanlikeMeatDirect);
-                else if (__result.Contains(ThoughtDefOf.AteHumanlikeMeatAsIngredient) &&
-                         (foodSource?.TryGetComp<CompIngredients>()?.ingredients.Any(predicate: td => FoodUtility.IsHumanlikeMeat(td) && td.ingestible.sourceDef != ingester.def) ?? false))
-                    __result.Remove(ThoughtDefOf.AteHumanlikeMeatAsIngredient);
+                if (__result.Any(tfi => tfi.thought == ThoughtDefOf.AteHumanlikeMeatDirect) && foodDef.ingestible.sourceDef != ingester.def)
+                    __result.RemoveAll(tfi => tfi.thought == ThoughtDefOf.AteHumanlikeMeatDirect);
+                else if (__result.Any(tfi => tfi.thought == ThoughtDefOf.AteHumanlikeMeatAsIngredient) &&
+                         (foodSource?.TryGetComp<CompIngredients>()?.ingredients.Any(predicate: td => FoodUtility.GetMeatSourceCategory(td) == MeatSourceCategory.Humanlike && td.ingestible.sourceDef != ingester.def) ?? false))
+                    __result.RemoveAll(tfi => tfi.thought == ThoughtDefOf.AteHumanlikeMeatAsIngredient);
 
             if (!(ingester.def is ThingDef_AlienRace alienProps)) return;
 
             bool cannibal = ingester.story.traits.HasTrait(TraitDefOf.Cannibal);
 
+            List<FoodUtility.ThoughtFromIngesting> resultingThoughts = new List<FoodUtility.ThoughtFromIngesting>();
             for (int i = 0; i < __result.Count; i++)
             {
-                ThoughtDef thoughtDef = __result[i];
+                ThoughtDef thoughtDef = __result[i].thought;
                 ThoughtSettings settings = alienProps.alienRace.thoughtSettings;
 
                 thoughtDef = settings.ReplaceIfApplicable(thoughtDef);
@@ -1559,8 +1558,10 @@
                         thoughtDef = settings.GetAteThought(race, cannibal, ingredient: true);
                 }
 
-                __result[i] = thoughtDef;
+                resultingThoughts.Add(new FoodUtility.ThoughtFromIngesting() { fromPrecept = __result[i].fromPrecept, thought = thoughtDef });
             }
+
+            __result = resultingThoughts;
         }
 
         public static void GenerationChanceSpousePostfix(ref float __result, Pawn generated, Pawn other)
@@ -2019,7 +2020,7 @@
                                               null;
                 __instance.rottingGraphic = !graphicPaths.body.NullOrEmpty() ?
                                                 apg.GetNakedGraphic(alien.story.bodyType, graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout,
-                                                                                                  PawnGraphicSet.RottingColor, PawnGraphicSet.RottingColor, graphicPaths.body,
+                                                                                                  PawnGraphicSet.RottingColorDefault, PawnGraphicSet.RottingColorDefault, graphicPaths.body,
                                                                                                   alien.gender.ToString()) :
                                                 null;
                 __instance.dessicatedGraphic = !graphicPaths.skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>((graphicPaths.skeleton == GraphicPaths.VANILLA_SKELETON_PATH ? alien.story.bodyType.bodyDessicatedGraphicPath : graphicPaths.skeleton), ShaderDatabase.Cutout) : null;
@@ -2033,7 +2034,7 @@
 
                 __instance.desiccatedHeadGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
                                                        GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one,
-                                                                                          PawnGraphicSet.RottingColor) :
+                                                                                          PawnGraphicSet.RottingColorDefault) :
                                                        null;
                 __instance.skullGraphic = alien.health.hediffSet.HasHead && !graphicPaths.skull.NullOrEmpty() ?
                                               GraphicDatabase.Get<Graphic_Multi>(graphicPaths.skull, ShaderDatabase.Cutout, Vector2.one, Color.white) :
@@ -2050,12 +2051,12 @@
                 __instance.desiccatedHeadStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
                                                             GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,
                                                                 ShaderDatabase.Cutout, Vector2.one,
-                                                                PawnGraphicSet.RottingColor) :
+                                                                PawnGraphicSet.RottingColorDefault) :
                                                             null;
 
                 alienComp.OverwriteColorChannel("hair", alien.story.hairColor);
                 if(alien.Corpse?.GetRotStage() == RotStage.Rotting)
-                    alienComp.OverwriteColorChannel("skin", PawnGraphicSet.RottingColor);
+                    alienComp.OverwriteColorChannel("skin", PawnGraphicSet.RottingColorDefault);
 
                 alienComp.RegenerateColorChannelLinks();
 
@@ -2117,22 +2118,25 @@
         }
 
         // ReSharper disable InconsistentNaming
-        private static readonly FactionDef noHairFaction = new FactionDef {hairTags = new List<string> {"alienNoHair"}};
         private static readonly FactionDef hairFaction   = new FactionDef();
         // ReSharper restore InconsistentNaming
 
-        public static void RandomHairDefForPrefix(Pawn pawn, ref FactionDef factionType)
+        public static bool RandomHairForPrefix(Pawn pawn, ref HairDef __result)
         {
-            if (!(pawn.def is ThingDef_AlienRace alienProps)) return;
+            if (!(pawn.def is ThingDef_AlienRace alienProps)) return true;
             if (!alienProps.alienRace.hairSettings.hasHair)
             {
-                factionType = noHairFaction;
+                __result    = HairDefOf.Shaved;
+                return false;
             }
-            else if (!alienProps.alienRace.hairSettings.hairTags.NullOrEmpty())
+
+            if (!alienProps.alienRace.hairSettings.hairTags.NullOrEmpty())
             {
-                hairFaction.hairTags = alienProps.alienRace.hairSettings.hairTags;
-                factionType          = hairFaction;
+                __result = DefDatabase<HairDef>.AllDefsListForReading.Where(hd => alienProps.alienRace.hairSettings.hairTags.Any(ht => hd.styleTags.Contains(ht))).RandomElement();
+                return false;
             }
+
+            return true;
         }
 
         public static void GeneratePawnPrefix(ref PawnGenerationRequest request)
@@ -2182,29 +2186,29 @@
                 if (instruction.OperandIs(humanlikeBodyInfo))
                 {
                     instructionList.RemoveRange(i, count: 2);
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 7); // portrait
+                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: "'flags'"); // renderFlags
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldfld,   AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 4); // bodyfacing
+                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: "bodyFacing"); // bodyfacing
                     yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                     instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnMesh)));
                 }
                 else if (instruction.OperandIs(humanlikeHeadInfo))
                 {
                     instructionList.RemoveRange(i, count: 2);
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 7); // portrait
+                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: "'flags'"); // renderFlags
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldfld,   AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 5); //headfacing
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, operand: 7); //headfacing
                     yield return new CodeInstruction(OpCodes.Ldc_I4_0);
                     instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnMesh)));
                 }
                 else if (i + 4 < instructionList.Count && instructionList[i + 2].OperandIs(hairInfo))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 7) {labels = instruction.labels}; // portrait
+                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: "'flags'") {labels = instruction.labels}; // renderFlags
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldfld,   AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 5); //headfacing
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, operand: 7); //headfacing
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), nameof(PawnRenderer.graphics)));
                     instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnHairMesh)));
@@ -2214,12 +2218,11 @@
                 {
                     yield return instruction; // portrait
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
-                    yield return new CodeInstruction(OpCodes.Ldloc_S, 11); //b (aka headoffset)
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, 6); //b (aka headoffset)
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
                     yield return new CodeInstruction(OpCodes.Ldloc_0);             // quat
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 4); // bodyfacing
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: 9); //invisible
+                    yield return new CodeInstruction(OpCodes.Ldarg_S, operand: "bodyFacing"); // bodyfacing
                     yield return new CodeInstruction(OpCodes.Call,    AccessTools.Method(patchType, nameof(DrawAddons)));
 
                     instruction = new CodeInstruction(OpCodes.Ldarg_S, operand: 7);
@@ -2229,9 +2232,9 @@
             }
         }
 
-        public static Mesh GetPawnMesh(bool portrait, Pawn pawn, Rot4 facing, bool wantsBody) =>
+        public static Mesh GetPawnMesh(PawnRenderFlags renderFlags, Pawn pawn, Rot4 facing, bool wantsBody) =>
             pawn.GetComp<AlienPartGenerator.AlienComp>() is AlienPartGenerator.AlienComp alienComp ?
-                portrait ?
+                renderFlags.FlagSet(PawnRenderFlags.Portrait) ?
                     wantsBody ?
                         alienComp.alienPortraitGraphics.bodySet.MeshAt(facing) :
                         alienComp.alienPortraitHeadGraphics.headSet.MeshAt(facing) :
@@ -2242,16 +2245,16 @@
                     MeshPool.humanlikeBodySet.MeshAt(facing) :
                     MeshPool.humanlikeHeadSet.MeshAt(facing);
 
-        public static Mesh GetPawnHairMesh(bool portrait, Pawn pawn, Rot4 headFacing, PawnGraphicSet graphics) =>
+        public static Mesh GetPawnHairMesh(PawnRenderFlags renderFlags, Pawn pawn, Rot4 headFacing, PawnGraphicSet graphics) =>
             pawn.GetComp<AlienPartGenerator.AlienComp>() is AlienPartGenerator.AlienComp alienComp ?
-                     (portrait ?
+                     (renderFlags.FlagSet(PawnRenderFlags.Portrait) ?
                           alienComp.alienPortraitHeadGraphics.hairSetAverage :
                           alienComp.alienHeadGraphics.hairSetAverage).MeshAt(headFacing) :
                 graphics.HairMeshSet.MeshAt(headFacing);
 
-        public static void DrawAddons(bool portrait, Vector3 vector, Vector3 headOffset, Pawn pawn, Quaternion quat, Rot4 rotation, bool invisible)
+        public static void DrawAddons(PawnRenderFlags renderFlags, Vector3 vector, Vector3 headOffset, Pawn pawn, Quaternion quat, Rot4 rotation)
         {
-            if (!(pawn.def is ThingDef_AlienRace alienProps) || invisible) return;
+            if (!(pawn.def is ThingDef_AlienRace alienProps) || renderFlags.FlagSet(PawnRenderFlags.Invisible)) return;
 
             List<AlienPartGenerator.BodyAddon> addons    = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
             AlienPartGenerator.AlienComp       alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
@@ -2269,9 +2272,9 @@
                                                                     ba.offsets.east : 
                                                                     ba.offsets.west;
 
-                Vector2 bodyOffset = (portrait ? offset?.portraitBodyTypes ?? offset?.bodyTypes : offset?.bodyTypes)?.FirstOrDefault(predicate: to => to.bodyType == pawn.story.bodyType)
+                Vector2 bodyOffset = (renderFlags.FlagSet(PawnRenderFlags.Portrait) ? offset?.portraitBodyTypes ?? offset?.bodyTypes : offset?.bodyTypes)?.FirstOrDefault(predicate: to => to.bodyType == pawn.story.bodyType)
                                    ?.offset ?? Vector2.zero;
-                Vector2 crownOffset = (portrait ? offset?.portraitCrownTypes ?? offset?.crownTypes : offset?.crownTypes)?.FirstOrDefault(predicate: to => to.crownType == alienComp.crownType)
+                Vector2 crownOffset = (renderFlags.FlagSet(PawnRenderFlags.Portrait) ? offset?.portraitCrownTypes ?? offset?.crownTypes : offset?.crownTypes)?.FirstOrDefault(predicate: to => to.crownType == alienComp.crownType)
                                     ?.offset ?? Vector2.zero;
 
                 //Defaults for tails 
@@ -2308,22 +2311,22 @@
                 Vector3 offsetVector = new Vector3(moffsetX, moffsetY, moffsetZ);
 
                 Graphic addonGraphic = alienComp.addonGraphics[i];
-                addonGraphic.drawSize = (portrait && ba.drawSizePortrait != Vector2.zero ?
+                addonGraphic.drawSize = (renderFlags.FlagSet(PawnRenderFlags.Portrait) && ba.drawSizePortrait != Vector2.zero ?
                                              ba.drawSizePortrait : 
                                              ba.drawSize) * 
                                         (ba.scaleWithPawnDrawsize ? 
                                              ba.alignWithHead ?
-                                                 portrait ? 
+                                                 renderFlags.FlagSet(PawnRenderFlags.Portrait) ? 
                                                     alienComp.customPortraitHeadDrawSize :
                                                     alienComp.customHeadDrawSize :
-                                                 portrait ?
+                                                 renderFlags.FlagSet(PawnRenderFlags.Portrait) ?
                                                     alienComp.customPortraitDrawSize :
                                                     alienComp.customDrawSize : 
                                              Vector2.one) * 
                                         1.5f;
                 //                                                                                                                                  Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
                 GenDraw.DrawMeshNowOrLater(addonGraphic.MeshAt(rotation), vector + (ba.alignWithHead ? headOffset : Vector3.zero) + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
-                                           Quaternion.AngleAxis(num, Vector3.up) * quat, addonGraphic.MatAt(rotation), portrait);
+                                           Quaternion.AngleAxis(num, Vector3.up) * quat, addonGraphic.MatAt(rotation), renderFlags.FlagSet(PawnRenderFlags.Portrait));
             }
         }
     }
