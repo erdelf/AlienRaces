@@ -115,6 +115,29 @@
                                                              }
                                         }
                                     });
+            this.offsetDefaults.Add(new OffsetNamed
+                                    {
+                                        name = "Head",
+                                        offsets = new BodyAddonOffsets
+                                                  {
+                                                      south = new RotationOffset
+                                                              {
+                                                                  offset = new Vector2(0, 0.5f)
+                                                              },
+                                                      north = new RotationOffset
+                                                              {
+                                                                  offset = new Vector2(0f, 0.35f)
+                                                              },
+                                                      east = new RotationOffset
+                                                             {
+                                                                 offset = new Vector2(-0.07f, 0.5f)
+                                                             },
+                                                      west = new RotationOffset
+                                                             {
+                                                                offset = new Vector2(-0.07f, 0.5f)
+                                                             }
+                                                  }
+                                    });
 
 
 
