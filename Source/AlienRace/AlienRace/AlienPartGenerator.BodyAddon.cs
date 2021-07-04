@@ -1,15 +1,14 @@
-﻿using RimWorld;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using Verse;
-using System.Xml;
-
-namespace AlienRace
+﻿namespace AlienRace
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Xml;
     using HarmonyLib;
     using JetBrains.Annotations;
+    using RimWorld;
+    using UnityEngine;
+    using Verse;
 
     public partial class AlienPartGenerator
     {

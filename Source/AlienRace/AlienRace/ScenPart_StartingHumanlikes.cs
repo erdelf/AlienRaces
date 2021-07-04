@@ -1,26 +1,26 @@
-﻿using RimWorld;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using Verse;
-
-namespace AlienRace
+﻿namespace AlienRace
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using RimWorld;
+    using UnityEngine;
+    using Verse;
+
     [StaticConstructorOnStartup]
     public class ScenPart_StartingHumanlikes : ScenPart
     {
-        
+
         static ScenPart_StartingHumanlikes()
         {
-            ScenPartDef scenPart = new ScenPartDef()
-            {
-                defName = "StartingHumanlikes",
-                label = "Start with humanlikes",
-                scenPartClass = typeof(ScenPart_StartingHumanlikes),
-                category = ScenPartCategory.StartingImportant,
-                selectionWeight = 1.0f,
-                summaryPriority = 10
-            };
+            ScenPartDef scenPart = new ScenPartDef
+                                   {
+                                       defName         = "StartingHumanlikes",
+                                       label           = "Start with humanlikes",
+                                       scenPartClass   = typeof(ScenPart_StartingHumanlikes),
+                                       category        = ScenPartCategory.StartingImportant,
+                                       selectionWeight = 1.0f,
+                                       summaryPriority = 10
+                                   };
             scenPart.ResolveReferences();
             scenPart.PostLoad();
             DefDatabase<ScenPartDef>.Add(scenPart);

@@ -1,14 +1,13 @@
-﻿using HarmonyLib;
-using RimWorld;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using Verse;
-
-namespace AlienRace
+﻿namespace AlienRace
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
+    using HarmonyLib;
+    using RimWorld;
+    using UnityEngine;
+    using Verse;
 
     public partial class AlienPartGenerator
     {
@@ -63,7 +62,7 @@ namespace AlienRace
             {
                 if (!meshPools.Keys.Any(predicate: v => v.Equals(drawSize)))
                 {
-                    meshPools.Add(drawSize, new AlienGraphicMeshSet()
+                    meshPools.Add(drawSize, new AlienGraphicMeshSet
                                             {
                                                 bodySet        = new GraphicMeshSet(1.5f * drawSize.x,     1.5f * drawSize.y),     // bodySet
                                                 headSet        = new GraphicMeshSet(1.5f * headDrawSize.x, 1.5f * headDrawSize.y), // headSet
@@ -73,7 +72,7 @@ namespace AlienRace
             }
 
             foreach (GraphicPaths graphicsPath in this.alienProps.alienRace.graphicPaths.Concat(
-                                                                                                new GraphicPaths()
+                                                                                                new GraphicPaths
                                                                                                 {
                                                                                                     customDrawSize             = this.customDrawSize,
                                                                                                     customHeadDrawSize         = this.customHeadDrawSize,
@@ -88,32 +87,29 @@ namespace AlienRace
             }
 
 
-            this.offsetDefaults.Add(new OffsetNamed()
+            this.offsetDefaults.Add(new OffsetNamed
                                     {
                                         name = "Center",
                                         offsets = new BodyAddonOffsets()
-                                                  {
-                                                    
-                                                  }
                                     });
-            this.offsetDefaults.Add(new OffsetNamed()
+            this.offsetDefaults.Add(new OffsetNamed
                                     {
                                         name = "Tail",
-                                        offsets = new BodyAddonOffsets()
+                                        offsets = new BodyAddonOffsets
                                                   {
-                                                      south = new RotationOffset()
+                                                      south = new RotationOffset
                                                               {
                                                                   offset      = new Vector2(0.42f, -0.22f)
                                                               },
-                                                      north = new RotationOffset()
+                                                      north = new RotationOffset
                                                               {
                                                                   offset      = new Vector2(0f, -0.55f)
                                                               },
-                                                      east = new RotationOffset()
+                                                      east = new RotationOffset
                                                              {
                                                                  offset      = new Vector2(0.42f, -0.22f)
                                                              },
-                                                      west = new RotationOffset()
+                                                      west = new RotationOffset
                                                              {
                                                                  offset = new Vector2(0.42f, -0.22f)
                                                              }
