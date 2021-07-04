@@ -476,7 +476,7 @@
                                                                                                               ba.offsets.north,
                                                                                                               ba.offsets.south,
                                                                                                           }.Sum(selector: ro => (ro.bodyTypes?.Count ?? 0) * 2 + (ro.crownTypes?.Count ?? 0) * 2 + 3/* + (ro.portraitBodyTypes?.Count ?? 0) * 2 + 
-                                                   (ro.crownTypes?.Count ?? 0) * 2 + (ro.portraitCrownTypes?.Count ?? 0) * 2*/) + 1) + 1);
+                                                   (ro.crownTypes?.Count ?? 0) * 2 + (ro.portraitCrownTypes?.Count ?? 0) * 2*/) + 2) + 1);
                     yield return new CodeInstruction(OpCodes.Add);
                 }
             }
@@ -550,6 +550,41 @@
                         return Mathf.Clamp(num, min: -1, max: 1);
                     }
 
+                    {
+                        Widgets.Label(rect2, label2);
+                        string offsetLabel   = label3Addons + "DefaultOffsets";
+                        string offsetDictKey = label2       + "." + offsetLabel;
+                        Widgets.Label(rect3, offsetLabel);
+
+                        if (!tweakValuesSaved.ContainsKey(offsetDictKey))
+                            tweakValuesSaved.Add(offsetDictKey, ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.FirstIndexOf(on => on.name == ba.defaultOffset));
+
+                        int offsetNew = (int) Widgets.HorizontalSlider(rect5, ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.FirstIndexOf(on => on.name == ba.defaultOffset), leftValue: 0,
+                                                                       rightValue: ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.Count - 1, roundTo: 1);
+
+                        Rect valueFieldRect = rect4;
+
+                        GUI.color = Color.red;
+                        string savedS  = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[(int)tweakValuesSaved[offsetDictKey]].name + " -> ";
+                        bool   changed = Math.Abs(offsetNew - tweakValuesSaved[offsetDictKey]) > float.Epsilon;
+                        float  width   = changed ? Text.CalcSize(savedS).x : 0f;
+
+                        Rect savedRect = rect4.LeftPartPixels(width);
+                        Widgets.Label(savedRect, savedS);
+                        GUI.color = Color.white;
+                        if (changed)
+                        {
+                            valueFieldRect = rect4.RightPartPixels(rect4.width - width);
+                            GlobalTextureAtlasManager.FreeAllRuntimeAtlases();
+                        }
+
+                        AlienPartGenerator.OffsetNamed newOffsets = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[offsetNew];
+                        Widgets.Label(valueFieldRect, newOffsets.name);
+                        ba.defaultOffset  = newOffsets.name;
+                        ba.defaultOffsets = newOffsets.offsets;
+
+                        NextLine();
+                    }
 
                     List<AlienPartGenerator.RotationOffset> rotationOffsets = new List<AlienPartGenerator.RotationOffset>
                                                                               {
