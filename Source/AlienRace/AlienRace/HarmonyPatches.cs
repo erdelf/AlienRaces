@@ -64,7 +64,7 @@
                 new HarmonyMethod(patchType, nameof(ResearchScreenTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), name: "DrawRightRect"), transpiler:
                 new HarmonyMethod(patchType, nameof(ResearchScreenTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.CanConstruct), new Type[]{typeof(Thing), typeof(Pawn), typeof(bool), typeof(bool)}), 
+            harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.CanConstruct), new[]{typeof(Thing), typeof(Pawn), typeof(bool), typeof(bool)}), 
                 postfix: new HarmonyMethod(patchType, nameof(CanConstructPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GameRules), nameof(GameRules.DesignatorAllowed)), 
                 postfix: new HarmonyMethod(patchType, nameof(DesignatorAllowedPostfix)));
@@ -2113,10 +2113,6 @@
                     !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.Contains(pawn.story.bodyType))
                     pawn.story.bodyType = alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.RandomElement();
         }
-
-        // ReSharper disable InconsistentNaming
-        private static readonly FactionDef hairFaction   = new FactionDef();
-        // ReSharper restore InconsistentNaming
 
         public static bool RandomHairForPrefix(Pawn pawn, ref HairDef __result)
         {
