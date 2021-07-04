@@ -186,13 +186,13 @@
                 new HarmonyMethod(patchType, nameof(HasHeadPrefix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), name: "RecalculateLifeStageIndex"), 
                 postfix: new HarmonyMethod(patchType, nameof(RecalculateLifeStageIndexPostfix)));
-            Log.Message("4");
+            
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.FactionTick)), transpiler:
                           new HarmonyMethod(patchType, nameof(FactionTickTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Designator), nameof(Designator.CanDesignateThing)), 
                 postfix: new HarmonyMethod(patchType, nameof(CanDesignateThingTamePostfix)));
 
-            harmony.Patch(AccessTools.Method(typeof(WorkGiver_InteractAnimal), name: "CanInteractWithAnimal"), 
+            harmony.Patch(AccessTools.Method(typeof(WorkGiver_InteractAnimal), name: "CanInteractWithAnimal", new []{typeof(Pawn), typeof(Pawn), typeof(string).MakeByRefType(), typeof(bool), typeof(bool), typeof(bool)}), 
                 postfix: new HarmonyMethod(patchType, nameof(CanInteractWithAnimalPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer), nameof(PawnRenderer.BaseHeadOffsetAt)), 
                           postfix: new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtPostfix)),
@@ -218,7 +218,7 @@
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(CompRottable), "StageChanged"), new HarmonyMethod(patchType, nameof(RottableCompStageChangedPostfix)));
-            Log.Message("3");
+            
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -387,7 +387,8 @@
                 if (!done && instructionList[i + 1].OperandIs(newbornInfo))
                 {
                     done = true;
-                    i += 8;
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_0);
+                    i ++;
                 } else 
                     yield return instruction;
             }
