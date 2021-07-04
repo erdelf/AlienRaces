@@ -454,11 +454,11 @@
             {
                 if (instruction.OperandIs(endScrollInfo))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldloc_1) { labels = instruction.labels.ListFullCopy() };
+                    yield return new CodeInstruction(OpCodes.Ldloc_2) { labels = instruction.labels.ListFullCopy() };
                     instruction.labels.Clear();
-                    yield return new CodeInstruction(OpCodes.Ldloc_2);
                     yield return new CodeInstruction(OpCodes.Ldloc_3);
                     yield return new CodeInstruction(OpCodes.Ldloc_S, operand: 4);
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, operand: 5);
                     yield return new CodeInstruction(OpCodes.Call, 
                         AccessTools.Method(patchType, nameof(TweakValuesInstanceBased)));
                 }
@@ -475,13 +475,15 @@
                                                                                                               ba.offsets.west,
                                                                                                               ba.offsets.north,
                                                                                                               ba.offsets.south,
-                                                                                                          }.Sum(selector: ro => (ro.bodyTypes?.Count ?? 0) * 2 + (ro.crownTypes?.Count ?? 0) * 2/* + (ro.portraitBodyTypes?.Count ?? 0) * 2 + 
+                                                                                                          }.Sum(selector: ro => (ro.bodyTypes?.Count ?? 0) * 2 + (ro.crownTypes?.Count ?? 0) * 2 + 3/* + (ro.portraitBodyTypes?.Count ?? 0) * 2 + 
                                                    (ro.crownTypes?.Count ?? 0) * 2 + (ro.portraitCrownTypes?.Count ?? 0) * 2*/) + 1) + 1);
                     yield return new CodeInstruction(OpCodes.Add);
                 }
             }
         }
-        
+
+        private static Dictionary<string, float> tweakValuesSaved = new Dictionary<string, float>();
+
         public static void TweakValuesInstanceBased(Rect rect2, Rect rect3, Rect rect4, Rect rect5)
         {
             void NextLine()
@@ -504,18 +506,43 @@
 
                     float WriteLine(float value, string label)
                     {
-                        Widgets.Label(rect2, label2);
-                        Widgets.Label(rect3, label3Addons + label);
+                        string addonLabel     = label3Addons + label;
+                        string raceAddonLabel = label2       + "." + addonLabel;
+                        if(!tweakValuesSaved.ContainsKey(raceAddonLabel))
+                            tweakValuesSaved.Add(raceAddonLabel, value);
 
+                        Widgets.Label(rect2, label2);
+                        Widgets.Label(rect3, addonLabel);
 
                         float num = Widgets.HorizontalSlider(rect5, value, leftValue: -1, rightValue: 1);
 
+                        Rect valueFieldRect = rect4;
+
+                        GUI.color = Color.red;
+                        string savedS = tweakValuesSaved[raceAddonLabel].ToString(CultureInfo.InvariantCulture) + " -> ";
+                        float  width  = Mathf.Abs(tweakValuesSaved[raceAddonLabel] - value) > float.Epsilon ? Text.CalcSize(savedS).x : 0f;
+
+                        Rect savedRect = rect4.LeftPartPixels(width);
+                        Widgets.Label(savedRect, savedS);
+                        GUI.color      = Color.white;
+                        valueFieldRect = rect4.RightPartPixels(rect4.width - width);
+
+                        if (Widgets.ButtonInvisible(savedRect))
+                        {
+                            GlobalTextureAtlasManager.FreeAllRuntimeAtlases();
+                            return num = tweakValuesSaved[raceAddonLabel];
+                        }
+
                         string valueS = value.ToString(CultureInfo.InvariantCulture);
-                        string num2 = Widgets.TextField(rect4.ContractedBy(margin: 2).LeftPartPixels(Text.CalcSize(valueS).x + 6*3), valueS);
-                        
+
+                        string num2 = Widgets.TextField(valueFieldRect.ContractedBy(margin: 2).LeftPartPixels(Text.CalcSize(valueS).x + 6), valueS);
+
                         if (Mathf.Abs(num-value)<float.Epsilon)
                             if (float.TryParse(num2, out float num3))
                                 num = num3;
+
+                        if(Mathf.Abs(num - value) > float.Epsilon)
+                            GlobalTextureAtlasManager.FreeAllRuntimeAtlases();
 
                         //Widgets.Label(rect: rect4, label: value.ToString(provider: CultureInfo.InvariantCulture));
                         return Mathf.Clamp(num, min: -1, max: 1);
@@ -529,6 +556,7 @@
                         ba.offsets.west,
                         ba.offsets.east                        
                     };
+
                     for (int i = 0; i < rotationOffsets.Count; i++)
                     {
                         string label3Rotation;
@@ -548,7 +576,15 @@
                                 label3Rotation = "east.";
                                 break;
                         }
-                        if(!ro.bodyTypes.NullOrEmpty())
+
+                        ro.layerOffset = WriteLine(ro.layerOffset, label3Rotation + "layerOffset");
+                        NextLine();
+                        ro.offset.x = WriteLine(ro.offset.x, label3Rotation + "offset.x");
+                        NextLine();
+                        ro.offset.y = WriteLine(ro.offset.y, label3Rotation + "offset.y");
+                        NextLine();
+
+                        if (!ro.bodyTypes.NullOrEmpty())
                             foreach (AlienPartGenerator.BodyTypeOffset bodyTypeOffset in ro.bodyTypes)
                             {
                                 string label3Type = bodyTypeOffset.bodyType.defName + ".";
@@ -584,8 +620,6 @@
                                 NextLine();
                             }
                     }
-
-                    ba.layerOffset = WriteLine(ba.layerOffset, label: "layerOffset");
                     NextLine();
                 }
             }
@@ -2286,51 +2320,30 @@
                 AlienPartGenerator.BodyAddon ba = addons[i];
                 if (!ba.CanDrawAddon(pawn)) continue;
 
-                AlienPartGenerator.RotationOffset offset = rotation == Rot4.South ?
-                                                               ba.offsets.south :
-                                                               rotation == Rot4.North ?
-                                                                   ba.offsets.north :
-                                                                   rotation == Rot4.East ?
-                                                                    ba.offsets.east : 
-                                                                    ba.offsets.west;
-
-                Vector2 bodyOffset = (renderFlags.FlagSet(PawnRenderFlags.Portrait) ? offset?.portraitBodyTypes ?? offset?.bodyTypes : offset?.bodyTypes)?.FirstOrDefault(predicate: to => to.bodyType == pawn.story.bodyType)
-                                   ?.offset ?? Vector2.zero;
-                Vector2 crownOffset = (renderFlags.FlagSet(PawnRenderFlags.Portrait) ? offset?.portraitCrownTypes ?? offset?.crownTypes : offset?.crownTypes)?.FirstOrDefault(predicate: to => to.crownType == alienComp.crownType)
-                                    ?.offset ?? Vector2.zero;
+                Vector3 offsetVector = (ba.defaultOffsets.GetOffset(rotation)?.GetOffset(renderFlags.FlagSet(PawnRenderFlags.Portrait), pawn.story.bodyType, alienComp.crownType) ?? Vector3.zero) + 
+                                  (ba.offsets.GetOffset(rotation)?.GetOffset(renderFlags.FlagSet(PawnRenderFlags.Portrait), pawn.story.bodyType, alienComp.crownType) ?? Vector3.zero);
 
                 //Defaults for tails 
                 //south 0.42f, -0.3f, -0.22f
                 //north     0f,  0.3f, -0.55f
                 //east -0.42f, -0.3f, -0.22f   
+                
+                offsetVector.y = ba.inFrontOfBody ? 0.3f + offsetVector.y : -0.3f - offsetVector.y;
 
-                float moffsetX = 0.42f;
-                float moffsetZ = -0.22f;
-
-                float layerOffset = float.IsNaN(offset?.layerOffset ?? float.NaN) ? ba.layerOffset : offset?.layerOffset ?? 0f;
-
-                float moffsetY = ba.inFrontOfBody ? 0.3f + layerOffset : -0.3f - layerOffset;
                 float num      = ba.angle;
 
                 if (rotation == Rot4.North)
                 {
-                    moffsetX = 0f;
-                    if(ba.layerInvert)
-                        moffsetY = -moffsetY;
-                    moffsetZ = -0.55f;
-                    num      = 0;
+                    if (ba.layerInvert)
+                        offsetVector.y = -offsetVector.y;
+                    num = 0;
                 }
-
-                moffsetX += bodyOffset.x + crownOffset.x;
-                moffsetZ += bodyOffset.y + crownOffset.y;
 
                 if (rotation == Rot4.East)
                 {
-                    moffsetX = -moffsetX;
-                    num      = -num; //Angle
+                    num            = -num; //Angle
+                    offsetVector.x = -offsetVector.x;
                 }
-                
-                Vector3 offsetVector = new Vector3(moffsetX, moffsetY, moffsetZ);
 
                 Graphic addonGraphic = alienComp.addonGraphics[i];
                 addonGraphic.drawSize = (renderFlags.FlagSet(PawnRenderFlags.Portrait) && ba.drawSizePortrait != Vector2.zero ?

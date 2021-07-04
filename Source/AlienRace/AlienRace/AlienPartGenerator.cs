@@ -19,7 +19,8 @@ namespace AlienRace
         public bool useGenderedHeads = true;
         public bool useGenderedBodies = false;
 
-        public List<ColorChannelGenerator> colorChannels = new List<ColorChannelGenerator>();
+        public List<ColorChannelGenerator> colorChannels  = new List<ColorChannelGenerator>();
+        public List<OffsetNamed>      offsetDefaults = new List<OffsetNamed>();
 
         public Vector2 headOffset = Vector2.zero;
         public DirectionOffset headOffsetDirectional = new DirectionOffset();
@@ -63,27 +64,68 @@ namespace AlienRace
                 if (!meshPools.Keys.Any(predicate: v => v.Equals(drawSize)))
                 {
                     meshPools.Add(drawSize, new AlienGraphicMeshSet()
-                    {
-                        bodySet = new GraphicMeshSet(1.5f * drawSize.x, 1.5f * drawSize.y), // bodySet
-                        headSet = new GraphicMeshSet(1.5f * headDrawSize.x, 1.5f * headDrawSize.y), // headSet
-                        hairSetAverage = new GraphicMeshSet(1.5f * headDrawSize.x, 1.5f * headDrawSize.y), // hairSetAverage
-                    });
+                                            {
+                                                bodySet        = new GraphicMeshSet(1.5f * drawSize.x,     1.5f * drawSize.y),     // bodySet
+                                                headSet        = new GraphicMeshSet(1.5f * headDrawSize.x, 1.5f * headDrawSize.y), // headSet
+                                                hairSetAverage = new GraphicMeshSet(1.5f * headDrawSize.x, 1.5f * headDrawSize.y), // hairSetAverage
+                                            });
                 }
             }
 
             foreach (GraphicPaths graphicsPath in this.alienProps.alienRace.graphicPaths.Concat(
-                    new GraphicPaths() { customDrawSize = this.customDrawSize, customHeadDrawSize = this.customHeadDrawSize, customPortraitDrawSize = this.customPortraitDrawSize, customPortraitHeadDrawSize = this.customPortraitHeadDrawSize }))
+                                                                                                new GraphicPaths()
+                                                                                                {
+                                                                                                    customDrawSize             = this.customDrawSize,
+                                                                                                    customHeadDrawSize         = this.customHeadDrawSize,
+                                                                                                    customPortraitDrawSize     = this.customPortraitDrawSize,
+                                                                                                    customPortraitHeadDrawSize = this.customPortraitHeadDrawSize
+                                                                                                }))
             {
-                AddMeshSet(graphicsPath.customDrawSize, graphicsPath.customDrawSize);
-                AddMeshSet(graphicsPath.customHeadDrawSize, graphicsPath.customHeadDrawSize);
-                AddMeshSet(graphicsPath.customPortraitDrawSize, graphicsPath.customPortraitDrawSize);
+                AddMeshSet(graphicsPath.customDrawSize,             graphicsPath.customDrawSize);
+                AddMeshSet(graphicsPath.customHeadDrawSize,         graphicsPath.customHeadDrawSize);
+                AddMeshSet(graphicsPath.customPortraitDrawSize,     graphicsPath.customPortraitDrawSize);
                 AddMeshSet(graphicsPath.customPortraitHeadDrawSize, graphicsPath.customPortraitHeadDrawSize);
             }
 
 
+            this.offsetDefaults.Add(new OffsetNamed()
+                                    {
+                                        name = "Center",
+                                        offsets = new BodyAddonOffsets()
+                                                  {
+                                                    
+                                                  }
+                                    });
+            this.offsetDefaults.Add(new OffsetNamed()
+                                    {
+                                        name = "Tail",
+                                        offsets = new BodyAddonOffsets()
+                                                  {
+                                                      south = new RotationOffset()
+                                                              {
+                                                                  offset      = new Vector2(0.42f, -0.22f)
+                                                              },
+                                                      north = new RotationOffset()
+                                                              {
+                                                                  offset      = new Vector2(0f, -0.55f)
+                                                              },
+                                                      east = new RotationOffset()
+                                                             {
+                                                                 offset      = new Vector2(0.42f, -0.22f)
+                                                             },
+                                                      west = new RotationOffset()
+                                                             {
+                                                                 offset = new Vector2(0.42f, -0.22f)
+                                                             }
+                                        }
+                                    });
+
+
+
             StringBuilder logBuilder = new StringBuilder();
             this.bodyAddons.Do(action: ba =>
-            {
+            { 
+                ba.defaultOffsets = this.offsetDefaults.Find(on => on.name == ba.defaultOffset).offsets;
 
                 void AddToStringBuilder(string s)
                 {
@@ -135,11 +177,15 @@ namespace AlienRace
                             Log.Warning($"no backstory graphics found at {babg.path} for backstory {babg.backstory} in {this.alienProps.defName}");
                     }
                 }
-
-
             });
             if (logBuilder.Length > 0)
                  Log.Message($"Loaded body addon variants for {this.alienProps.defName}\n{logBuilder}"); 
+        }
+
+        public class OffsetNamed
+        {
+            public string           name = "";
+            public BodyAddonOffsets offsets;
         }
 
         public class ColorChannelGenerator
