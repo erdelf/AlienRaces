@@ -2143,10 +2143,20 @@
             if (BackstoryDef.checkBodyType.Contains(pawn.story.GetBackstory(BackstorySlot.Adulthood)))
                 pawn.story.bodyType = DefDatabase<BodyTypeDef>.GetRandom();
 
-            if (pawn.def is ThingDef_AlienRace alienProps && 
+            if (pawn.def is ThingDef_AlienRace alienProps                                             &&
                 !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.NullOrEmpty() &&
-                    !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.Contains(pawn.story.bodyType))
-                    pawn.story.bodyType = alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.RandomElement();
+                !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.Contains(pawn.story.bodyType))
+            {
+                List<BodyTypeDef> bodyTypeDefs = alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.ListFullCopy();
+
+                if (pawn.gender == Gender.Male && bodyTypeDefs.Contains(BodyTypeDefOf.Female) && bodyTypeDefs.Count > 1)
+                    bodyTypeDefs.Remove(BodyTypeDefOf.Female);
+
+                if (pawn.gender == Gender.Female && bodyTypeDefs.Contains(BodyTypeDefOf.Male) && bodyTypeDefs.Count > 1)
+                    bodyTypeDefs.Remove(BodyTypeDefOf.Male);
+                
+                pawn.story.bodyType = bodyTypeDefs.RandomElement();
+            }
         }
 
         public static bool RandomHairForPrefix(Pawn pawn, ref HairDef __result)
