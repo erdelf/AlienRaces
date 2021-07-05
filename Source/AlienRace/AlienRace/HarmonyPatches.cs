@@ -2331,7 +2331,7 @@
                     yield return new CodeInstruction(OpCodes.Ldc_I4_0);
                     instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetPawnMesh)));
                 }
-                else if (i > 6 && instructionList[i - 4].OperandIs(drawHeadHairInfo) && instructionList[i+1].OperandIs(flagSetInfo))
+                else if (i > 6 && instructionList[i - 2].OperandIs(drawHeadHairInfo) && instructionList[i+1].OperandIs(flagSetInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Dup); // renderFlags
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
