@@ -218,7 +218,12 @@
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(CompRottable), "StageChanged"), new HarmonyMethod(patchType, nameof(RottableCompStageChangedPostfix)));
-            
+
+            harmony.Patch(AccessTools.GetDeclaredMethods(typeof(PawnWoundDrawer)).First(mi => mi.Name.Contains("FindAnchors")), postfix: new HarmonyMethod(patchType, nameof(FindAnchorsPostfix)));
+
+            harmony.Patch(AccessTools.GetDeclaredMethods(typeof(PawnWoundDrawer)).First(mi => mi.Name.Contains("CalcAnchorData")), postfix: new HarmonyMethod(patchType, nameof(CalcAnchorDataPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnWoundDrawer), nameof(PawnWoundDrawer.RenderOverBody)), new HarmonyMethod(patchType, nameof(RenderOverBodyPrefix)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -365,6 +370,49 @@
                 BackstoryDef.UpdateTranslateableFields(bd);
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static bool drawNow;
+
+        public static void RenderOverBodyPrefix(bool drawNow) => 
+            HarmonyPatches.drawNow = drawNow;
+
+        public static void CalcAnchorDataPostfix(Pawn ___pawn, BodyTypeDef.WoundAnchor anchor, ref Vector3 anchorOffset)
+        {
+            if (___pawn.def is ThingDef_AlienRace alienRace)
+            {
+                List<AlienPartGenerator.WoundAnchorReplacement> anchorReplacements = alienRace.alienRace.generalSettings.alienPartGenerator.anchorReplacements;
+
+                foreach (AlienPartGenerator.WoundAnchorReplacement anchorReplacement in anchorReplacements)
+                {
+                    if (anchor == anchorReplacement.replacement && anchorReplacement.offsets != null)
+                    {
+                        AlienPartGenerator.AlienComp alienComp = ___pawn.GetComp<AlienPartGenerator.AlienComp>();
+                        anchorOffset = anchorReplacement.offsets.GetOffset(anchor.rotation.Value).GetOffset(drawNow, ___pawn.story.bodyType, alienComp.crownType);
+                        return;
+                    }
+                }
+            }
+        }
+
+        public static List<BodyTypeDef.WoundAnchor> FindAnchorsPostfix(List<BodyTypeDef.WoundAnchor> __result, Pawn ___pawn)
+        {
+            if (___pawn.def is ThingDef_AlienRace alienRace)
+            {
+                List<AlienPartGenerator.WoundAnchorReplacement> anchorReplacements = alienRace.alienRace.generalSettings.alienPartGenerator.anchorReplacements;
+
+                List<BodyTypeDef.WoundAnchor> result = new List<BodyTypeDef.WoundAnchor>();
+
+                foreach (BodyTypeDef.WoundAnchor anchor in __result)
+                {
+                    AlienPartGenerator.WoundAnchorReplacement replacement = anchorReplacements.FirstOrDefault(war => war.ValidReplacement(anchor));
+                    result.Add(replacement != null ? replacement.replacement : anchor);
+                }
+
+                return result;
+            }
+
+            return __result;
         }
 
         public static void RottableCompStageChangedPostfix(ThingWithComps ___parent)
