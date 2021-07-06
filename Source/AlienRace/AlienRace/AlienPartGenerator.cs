@@ -21,6 +21,8 @@
         public List<ColorChannelGenerator> colorChannels  = new List<ColorChannelGenerator>();
         public List<OffsetNamed>      offsetDefaults = new List<OffsetNamed>();
 
+        public List<WoundAnchorReplacement> anchorReplacements = new List<WoundAnchorReplacement>();
+
         public Vector2 headOffset = Vector2.zero;
         public DirectionOffset headOffsetDirectional = new DirectionOffset();
 
@@ -199,6 +201,27 @@
             });
             if (logBuilder.Length > 0)
                  Log.Message($"Loaded body addon variants for {this.alienProps.defName}\n{logBuilder}"); 
+        }
+
+        public class WoundAnchorReplacement
+        {
+            public string originalTag = string.Empty;
+            public BodyPartGroupDef originalGroup;
+
+            public BodyTypeDef.WoundAnchor replacement;
+            public BodyAddonOffsets        offsets;
+
+            public bool ValidReplacement(BodyTypeDef.WoundAnchor original)
+            {
+                if (original.rotation != this.replacement.rotation) 
+                    return false;
+
+                if (!this.originalTag.NullOrEmpty() && !original.tag.NullOrEmpty() && this.originalTag == original.tag)
+                    return true;
+                if (this.originalGroup != null && original.@group != null && this.originalGroup == original.@group)
+                    return true;
+                return false;
+            }
         }
 
         public class OffsetNamed
