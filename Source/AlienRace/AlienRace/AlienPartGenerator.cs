@@ -18,6 +18,7 @@
         public bool useGenderedHeads = true;
         public bool useGenderedBodies = false;
 
+
         public List<ColorChannelGenerator> colorChannels  = new List<ColorChannelGenerator>();
         public List<OffsetNamed>      offsetDefaults = new List<OffsetNamed>();
 
@@ -26,10 +27,14 @@
         public Vector2 headOffset = Vector2.zero;
         public DirectionOffset headOffsetDirectional = new DirectionOffset();
 
+        public float borderScale = 1f;
+
         public Vector2 customDrawSize = Vector2.one;
         public Vector2 customPortraitDrawSize = Vector2.one;
         public Vector2 customHeadDrawSize = Vector2.zero;
         public Vector2 customPortraitHeadDrawSize = Vector2.zero;
+
+        
 
         public BodyPartDef headBodyPartDef;
 
