@@ -223,6 +223,13 @@
             harmony.Patch(AccessTools.GetDeclaredMethods(typeof(PawnWoundDrawer)).First(mi => mi.Name.Contains("CalcAnchorData")), postfix: new HarmonyMethod(patchType, nameof(CalcAnchorDataPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnWoundDrawer), nameof(PawnWoundDrawer.RenderOverBody)), new HarmonyMethod(patchType, nameof(RenderOverBodyPrefix)));
 
+            harmony.Patch(AccessTools.Method(typeof(PawnCacheRenderer), nameof(PawnCacheRenderer.RenderPawn)), new HarmonyMethod(patchType, nameof(CacheRenderPawnPrefix)));
+            
+            harmony.Patch(AccessTools.Constructor(typeof(PawnTextureAtlas)), transpiler: new HarmonyMethod(patchType, nameof(PawnTextureAtlasConstructorTranspiler)));
+
+            harmony.Patch(AccessTools.Method(typeof(PawnTextureAtlas), nameof(PawnTextureAtlas.TryGetFrameSet)), postfix: new HarmonyMethod(patchType, nameof(PawnTextureAtlasGetFrameSetPostfix)));
+            
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -369,6 +376,40 @@
                 BackstoryDef.UpdateTranslateableFields(bd);
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static void CacheRenderPawnPrefix(Pawn pawn, ref float cameraZoom, bool portrait)
+        {
+            if(!portrait)
+                cameraZoom = 1f / ((pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.borderScale ?? 1f);
+        }
+
+        public static void PawnTextureAtlasGetFrameSetPostfix(Pawn pawn, ref PawnTextureAtlasFrameSet frameSet, ref bool createdNew)
+        {
+            if (createdNew && pawn.def is ThingDef_AlienRace alienProps)
+            {
+                frameSet.meshes = frameSet.uvRects.Select((Rect u) => TextureAtlasHelper.CreateMeshForUV(u, alienProps.alienRace.generalSettings.alienPartGenerator.borderScale)).ToArray();
+            }
+        }
+
+        public static IEnumerable<CodeInstruction> PawnTextureAtlasConstructorTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            int size = 2048 * 1;
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.OperandIs(2048) || instruction.OperandIs(2048f))
+                {
+                    if (instruction.opcode == OpCodes.Ldc_I4)
+                        yield return new CodeInstruction(OpCodes.Ldc_I4, size);
+                    else if (instruction.opcode == OpCodes.Ldc_R4)
+                        yield return new CodeInstruction(OpCodes.Ldc_R4, (float) size);
+                } else if (instruction.OperandIs(128))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldc_I4, size / 16);
+                } else
+                    yield return instruction;
+            }
         }
 
         public static bool drawNow;
