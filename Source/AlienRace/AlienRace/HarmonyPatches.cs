@@ -389,10 +389,8 @@
 
         public static Pawn createPawnAtlasPawn = null;
 
-        public static void GlobalTextureAtlasGetFrameSetPrefix(Pawn pawn)
-        {
+        public static void GlobalTextureAtlasGetFrameSetPrefix(Pawn pawn) => 
             createPawnAtlasPawn = pawn;
-        }
 
         public static IEnumerable<CodeInstruction> PawnTextureAtlasGetFrameSetTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
@@ -438,10 +436,8 @@
             }
         }
 
-        public static int GetAtlasSizeForPawn()
-        {
-            return (createPawnAtlasPawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1;
-        }
+        public static int GetAtlasSizeForPawn() => 
+            (createPawnAtlasPawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1;
 
         public static IEnumerable<CodeInstruction> PawnTextureAtlasConstructorTranspiler(IEnumerable<CodeInstruction> instructions)
         {
