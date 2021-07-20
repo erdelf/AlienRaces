@@ -305,11 +305,12 @@
 
                         this.RegenerateColorChannelLink("skin");
                         
-                        if (alienProps.alienRace.hairSettings.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
+                        /*
+                        if (alienProps.alienRace.styleSettings.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                         {
-                            if (Rand.Value < GenMath.SmootherStep(alienProps.alienRace.hairSettings.getsGreyAt,
+                            if (Rand.Value < GenMath.SmootherStep(alienProps.alienRace.styleSettings.getsGreyAt,
                                                                   pawn.RaceProps.ageGenerationCurve.Points.Count < 3
-                                                                             ? alienProps.alienRace.hairSettings.getsGreyAt + 35
+                                                                             ? alienProps.alienRace.styleSettings.getsGreyAt + 35
                                                                              : pawn.RaceProps.ageGenerationCurve.Points.Skip(pawn.RaceProps.ageGenerationCurve.Points.Count - 3).First().x,
                                                                   pawn.ageTracker.AgeBiologicalYears))
                             {
@@ -317,7 +318,7 @@
                                 pawn.story.hairColor = new Color(grey, grey, grey);
                                 hairColors.first     = pawn.story.hairColor;
                             }
-                        }
+                        }*/
                     }
 
                     return this.colorChannels;

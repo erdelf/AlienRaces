@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Security.Permissions;
     using HarmonyLib;
     using RimWorld;
     using UnityEngine;
@@ -43,6 +44,13 @@
                     gp.headOffsetDirectional = this.alienRace.generalSettings.alienPartGenerator.headOffsetDirectional;
             });
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
+
+            if(!this.alienRace.styleSettings.ContainsKey(typeof(HairDef)))
+                this.alienRace.styleSettings.Add(typeof(HairDef), new StyleSettings());
+            if (!this.alienRace.styleSettings.ContainsKey(typeof(TattooDef)))
+                this.alienRace.styleSettings.Add(typeof(TattooDef), new StyleSettings());
+            if (!this.alienRace.styleSettings.ContainsKey(typeof(BeardDef)))
+                this.alienRace.styleSettings.Add(typeof(BeardDef), new StyleSettings());
 
             foreach (AlienPartGenerator.BodyAddon bodyAddon in this.alienRace.generalSettings.alienPartGenerator.bodyAddons)
             {
@@ -87,13 +95,13 @@
 
         public class AlienSettings
         {
-            public GeneralSettings generalSettings = new GeneralSettings();
-            public List<GraphicPaths> graphicPaths = new List<GraphicPaths>();
-            public HairSettings hairSettings = new HairSettings();
-            public ThoughtSettings thoughtSettings = new ThoughtSettings();
-            public RelationSettings relationSettings = new RelationSettings();
-            public RaceRestrictionSettings raceRestriction = new RaceRestrictionSettings();
-            public CompatibilityInfo compatibility = new CompatibilityInfo();
+            public GeneralSettings                 generalSettings  = new GeneralSettings();
+            public List<GraphicPaths>              graphicPaths     = new List<GraphicPaths>();
+            public Dictionary<Type, StyleSettings> styleSettings    = new Dictionary<Type, StyleSettings>();
+            public ThoughtSettings                 thoughtSettings  = new ThoughtSettings();
+            public RelationSettings                relationSettings = new RelationSettings();
+            public RaceRestrictionSettings         raceRestriction  = new RaceRestrictionSettings();
+            public CompatibilityInfo               compatibility    = new CompatibilityInfo();
         }
     }
 
@@ -178,11 +186,11 @@
             rot == Rot4.North ? this.north : rot == Rot4.East ? this.east : rot == Rot4.West ? this.west : this.south;
     }
 
-    public class HairSettings
+    public class StyleSettings
     {
-        public bool hasHair = true;
-        public List<string> hairTags;
-        public int getsGreyAt = 40;
+        public bool          hasStyle = true;
+        public List<string>  styleTags;
+        //public int           getsGreyAt = 40;
         public ShaderTypeDef shader;
     }
 

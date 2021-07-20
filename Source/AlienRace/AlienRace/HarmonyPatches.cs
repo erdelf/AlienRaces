@@ -2243,7 +2243,7 @@
                                               null;
                 __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath,
                     ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
-                                (alienProps.alienRace.hairSettings.shader?.Shader ?? ShaderDatabase.Cutout) :
+                                (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Cutout) :
                                 ShaderDatabase.CutoutComplex, Vector2.one, alien.story.hairColor, alienComp.GetChannel(channel: "hair").second);
                 __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
                                                   GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,
@@ -2261,19 +2261,22 @@
                     Color skinColor = alien.story.SkinColor;
                     skinColor.a *= 0.8f;
                     if (alien.style.FaceTattoo != null && alien.style.FaceTattoo != TattooDefOf.NoTattoo_Face)
-                        __instance.faceTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.FaceTattoo.texPath, ShaderDatabase.CutoutSkinOverlay, Vector2.one, skinColor, Color.white, null,
-                                                                                          alien.story.HeadGraphicPath);
+                        __instance.faceTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.FaceTattoo.texPath,
+                                                                                          (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ?? ShaderDatabase.CutoutSkinOverlay),
+                                                                                          Vector2.one, skinColor, Color.white, null, alien.story.HeadGraphicPath);
                     else
                         __instance.faceTattooGraphic = null;
 
                     if (alien.style.BodyTattoo != null && alien.style.BodyTattoo != TattooDefOf.NoTattoo_Body)
-                        __instance.bodyTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.BodyTattoo.texPath, ShaderDatabase.CutoutSkinOverlay, Vector2.one, skinColor, Color.white, null,
-                                                                                          alien.story.bodyType.bodyNakedGraphicPath);
+                        __instance.bodyTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.BodyTattoo.texPath,
+                                                                                          (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ?? ShaderDatabase.CutoutSkinOverlay), 
+                                                                                          Vector2.one, skinColor, Color.white, null, alien.story.bodyType.bodyNakedGraphicPath);
                     else
                         __instance.bodyTattooGraphic = null;
                 }
                 if (alien.style != null && alien.style.beardDef != null)
-                    __instance.beardGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.beardDef.texPath, ShaderDatabase.Transparent, Vector2.one, alien.story.hairColor);
+                    __instance.beardGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.beardDef.texPath, 
+                                                                                 (alienProps.alienRace.styleSettings[typeof(BeardDef)].shader?.Shader ?? ShaderDatabase.Transparent), Vector2.one, alien.story.hairColor);
 
                 alienComp.OverwriteColorChannel("hair", alien.story.hairColor);
                 if(alien.Corpse?.GetRotStage() == RotStage.Rotting)
@@ -2352,15 +2355,15 @@
         public static bool RandomHairForPrefix(Pawn pawn, ref HairDef __result)
         {
             if (!(pawn.def is ThingDef_AlienRace alienProps)) return true;
-            if (!alienProps.alienRace.hairSettings.hasHair)
+            if (!alienProps.alienRace.styleSettings[typeof(HairDef)].hasStyle)
             {
                 __result    = HairDefOf.Shaved;
                 return false;
             }
 
-            if (!alienProps.alienRace.hairSettings.hairTags.NullOrEmpty())
+            if (!alienProps.alienRace.styleSettings[typeof(HairDef)].styleTags.NullOrEmpty())
             {
-                __result = DefDatabase<HairDef>.AllDefsListForReading.Where(hd => alienProps.alienRace.hairSettings.hairTags.Any(ht => hd.styleTags.Contains(ht))).RandomElement();
+                __result = DefDatabase<HairDef>.AllDefsListForReading.Where(hd => alienProps.alienRace.styleSettings[typeof(HairDef)].styleTags.Any(ht => hd.styleTags.Contains(ht))).RandomElement();
                 return false;
             }
 
