@@ -227,7 +227,10 @@
             
             harmony.Patch(AccessTools.Constructor(typeof(PawnTextureAtlas)), transpiler: new HarmonyMethod(patchType, nameof(PawnTextureAtlasConstructorTranspiler)));
 
-            harmony.Patch(AccessTools.Method(typeof(PawnTextureAtlas), nameof(PawnTextureAtlas.TryGetFrameSet)), postfix: new HarmonyMethod(patchType, nameof(PawnTextureAtlasGetFrameSetPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnTextureAtlas), nameof(PawnTextureAtlas.TryGetFrameSet)), postfix: new HarmonyMethod(patchType, nameof(PawnTextureAtlasGetFrameSetPostfix)), 
+                          transpiler: new HarmonyMethod(patchType, nameof(PawnTextureAtlasGetFrameSetTranspiler)));
+
+            harmony.Patch(AccessTools.Method(typeof(GlobalTextureAtlasManager), nameof(GlobalTextureAtlasManager.TryGetPawnFrameSet)), new HarmonyMethod(patchType, nameof(GlobalTextureAtlasGetFrameSetPrefix)));
             
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
@@ -384,31 +387,84 @@
                 cameraZoom = 1f / ((pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.borderScale ?? 1f);
         }
 
-        public static void PawnTextureAtlasGetFrameSetPostfix(Pawn pawn, ref PawnTextureAtlasFrameSet frameSet, ref bool createdNew)
+        public static Pawn createPawnAtlasPawn = null;
+
+        public static void GlobalTextureAtlasGetFrameSetPrefix(Pawn pawn)
+        {
+            createPawnAtlasPawn = pawn;
+        }
+
+        public static IEnumerable<CodeInstruction> PawnTextureAtlasGetFrameSetTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            bool done = false;
+
+            Label jumpLabel = ilg.DefineLabel();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                if (!done && i > 2 && instructionList[i-1].opcode == OpCodes.Ret)
+                {
+                    done = true;
+                    yield return new CodeInstruction(OpCodes.Ldarg_0) {labels = instruction.ExtractLabels()};
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return CodeInstruction.Call(patchType, nameof(TextureAtlasSameRace));
+                    yield return new CodeInstruction(OpCodes.Brtrue_S, jumpLabel);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_0);
+                    yield return new CodeInstruction(OpCodes.Ret);
+                    instruction = instruction.WithLabels(jumpLabel);
+                }
+
+                yield return instruction;
+            }
+        }
+
+        public static bool TextureAtlasSameRace(PawnTextureAtlas atlas, Pawn pawn)
+        {
+            Dictionary<Pawn, PawnTextureAtlasFrameSet>.KeyCollection keys = CachedData.PawnTextureAtlasFrameAssignments(atlas).Keys;
+            return keys.Count == 0 || keys.Any(p => p.def == pawn.def);
+        }
+
+        public static void PawnTextureAtlasGetFrameSetPostfix(PawnTextureAtlas __instance, Pawn pawn, ref PawnTextureAtlasFrameSet frameSet, ref bool createdNew)
         {
             if (createdNew && pawn.def is ThingDef_AlienRace alienProps)
             {
-                frameSet.meshes = frameSet.uvRects.Select((Rect u) => TextureAtlasHelper.CreateMeshForUV(u, alienProps.alienRace.generalSettings.alienPartGenerator.borderScale)).ToArray();
+                frameSet.meshes = frameSet.uvRects.Select(u => TextureAtlasHelper.CreateMeshForUV(u, alienProps.alienRace.generalSettings.alienPartGenerator.borderScale)).ToArray();
             }
+        }
+
+        public static int GetAtlasSizeForPawn()
+        {
+            return (createPawnAtlasPawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1;
         }
 
         public static IEnumerable<CodeInstruction> PawnTextureAtlasConstructorTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            int size = 2048 * 1;
-
             foreach (CodeInstruction instruction in instructions)
             {
+                yield return instruction;
+
                 if (instruction.OperandIs(2048) || instruction.OperandIs(2048f))
                 {
                     if (instruction.opcode == OpCodes.Ldc_I4)
-                        yield return new CodeInstruction(OpCodes.Ldc_I4, size);
+                    {
+                        yield return CodeInstruction.Call(patchType, nameof(GetAtlasSizeForPawn));
+                        yield return new CodeInstruction(OpCodes.Mul);
+                    }
                     else if (instruction.opcode == OpCodes.Ldc_R4)
-                        yield return new CodeInstruction(OpCodes.Ldc_R4, (float) size);
+                    {
+                        yield return CodeInstruction.Call(patchType, nameof(GetAtlasSizeForPawn));
+                        yield return new CodeInstruction(OpCodes.Conv_R4);
+                        yield return new CodeInstruction(OpCodes.Mul);
+                    }
                 } else if (instruction.OperandIs(128))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldc_I4, size / 16);
-                } else
-                    yield return instruction;
+                    yield return CodeInstruction.Call(patchType, nameof(GetAtlasSizeForPawn));
+                    yield return new CodeInstruction(OpCodes.Mul);
+                }
             }
         }
 
