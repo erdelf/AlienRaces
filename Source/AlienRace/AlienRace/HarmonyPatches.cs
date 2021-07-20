@@ -425,7 +425,9 @@
         public static bool TextureAtlasSameRace(PawnTextureAtlas atlas, Pawn pawn)
         {
             Dictionary<Pawn, PawnTextureAtlasFrameSet>.KeyCollection keys = CachedData.PawnTextureAtlasFrameAssignments(atlas).Keys;
-            return keys.Count == 0 || keys.Any(p => p.def == pawn.def);
+
+            int atlasScale = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1;
+            return keys.Count == 0 || keys.Any(p => p.def == pawn.def || ((p.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1) == atlasScale);
         }
 
         public static void PawnTextureAtlasGetFrameSetPostfix(PawnTextureAtlas __instance, Pawn pawn, ref PawnTextureAtlasFrameSet frameSet, ref bool createdNew)
