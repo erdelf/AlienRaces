@@ -2256,6 +2256,25 @@
                                                                 PawnGraphicSet.RottingColorDefault) :
                                                             null;
 
+                if (alien.style != null && ModsConfig.IdeologyActive)
+                {
+                    Color skinColor = alien.story.SkinColor;
+                    skinColor.a *= 0.8f;
+                    if (alien.style.FaceTattoo != null && alien.style.FaceTattoo != TattooDefOf.NoTattoo_Face)
+                        __instance.faceTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.FaceTattoo.texPath, ShaderDatabase.CutoutSkinOverlay, Vector2.one, skinColor, Color.white, null,
+                                                                                          alien.story.HeadGraphicPath);
+                    else
+                        __instance.faceTattooGraphic = null;
+
+                    if (alien.style.BodyTattoo != null && alien.style.BodyTattoo != TattooDefOf.NoTattoo_Body)
+                        __instance.bodyTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.BodyTattoo.texPath, ShaderDatabase.CutoutSkinOverlay, Vector2.one, skinColor, Color.white, null,
+                                                                                          alien.story.bodyType.bodyNakedGraphicPath);
+                    else
+                        __instance.bodyTattooGraphic = null;
+                }
+                if (alien.style != null && alien.style.beardDef != null)
+                    __instance.beardGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.beardDef.texPath, ShaderDatabase.Transparent, Vector2.one, alien.story.hairColor);
+
                 alienComp.OverwriteColorChannel("hair", alien.story.hairColor);
                 if(alien.Corpse?.GetRotStage() == RotStage.Rotting)
                     alienComp.OverwriteColorChannel("skin", PawnGraphicSet.RottingColorDefault);
