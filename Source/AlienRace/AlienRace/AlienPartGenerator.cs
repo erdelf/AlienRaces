@@ -28,6 +28,7 @@
         public DirectionOffset headOffsetDirectional = new DirectionOffset();
 
         public float borderScale = 1f;
+        public int atlasScale = 1;
 
         public Vector2 customDrawSize = Vector2.one;
         public Vector2 customPortraitDrawSize = Vector2.one;

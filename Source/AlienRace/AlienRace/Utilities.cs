@@ -131,5 +131,8 @@
 
         public static readonly PawnGeneratorPawnRelations generatePawnsRelations =
             AccessTools.MethodDelegate<PawnGeneratorPawnRelations>(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"));
+
+        public static readonly AccessTools.FieldRef<PawnTextureAtlas, Dictionary<Pawn, PawnTextureAtlasFrameSet>> PawnTextureAtlasFrameAssignments =
+            AccessTools.FieldRefAccess<PawnTextureAtlas, Dictionary<Pawn, PawnTextureAtlasFrameSet>>("frameAssignments");
     }
 }
