@@ -231,7 +231,14 @@
                           transpiler: new HarmonyMethod(patchType, nameof(PawnTextureAtlasGetFrameSetTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(GlobalTextureAtlasManager), nameof(GlobalTextureAtlasManager.TryGetPawnFrameSet)), new HarmonyMethod(patchType, nameof(GlobalTextureAtlasGetFrameSetPrefix)));
-            
+
+            harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.WantsToUseStyle)), postfix: new HarmonyMethod(patchType, nameof(WantsToUseStylePostfix)));
+
+            MethodInfo    chooseStyleInfo       = AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.ChooseStyleItem));
+            HarmonyMethod chooseStylePrefixInfo = new HarmonyMethod(patchType, nameof(ChooseStyleItemPrefix));
+            foreach (Type ty in typeof(StyleItemDef).AllSubclassesNonAbstract())
+                harmony.Patch(chooseStyleInfo.MakeGenericMethod(ty), chooseStylePrefixInfo);
+
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -373,12 +380,53 @@
             }
 
             Log.Message($"Alien race successfully completed {harmony.GetPatchedMethods().Select(Harmony.GetPatchInfo).SelectMany(selector: p => p.Prefixes.Concat(p.Postfixes).Concat(p.Transpilers)).Count(predicate: p => p.owner == harmony.Id)} patches with harmony.");
-            HairDefOf.Shaved.styleTags.Add(item: "alienNoHair");
+            HairDefOf.Shaved.styleTags.Add(item: "alienNoStyle");
+            BeardDefOf.NoBeard.styleTags.Add(item: "alienNoStyle");
+            TattooDefOf.NoTattoo_Body.styleTags.Add(item: "alienNoStyle");
+            TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             foreach (BackstoryDef bd in DefDatabase<BackstoryDef>.AllDefs)
                 BackstoryDef.UpdateTranslateableFields(bd);
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static bool ChooseStyleItemPrefix(Pawn pawn, TattooType? tattooType, MethodBase __originalMethod, ref object __result)
+        {
+            if (pawn.def is ThingDef_AlienRace alienProps)
+            {
+                Type argument = __originalMethod.GetGenericArguments()[0];
+                if (!alienProps.alienRace.styleSettings[argument].hasStyle)
+                {
+                    switch (argument.Name)
+                    {
+                        case nameof(HairDef):
+                            __result = HairDefOf.Shaved;
+                            break;
+                        case nameof(BeardDef):
+                            __result = BeardDefOf.NoBeard;
+                            break;
+                        case nameof(TattooDef):
+                            __result = tattooType == TattooType.Face ? TattooDefOf.NoTattoo_Face : TattooDefOf.NoTattoo_Body;
+                            break;
+                    }
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static void WantsToUseStylePostfix(Pawn pawn, StyleItemDef styleItemDef, ref bool __result)
+        {
+            if (__result && pawn.def is ThingDef_AlienRace alienProps)
+            {
+                StyleSettings styleSettings = alienProps.alienRace.styleSettings[styleItemDef.GetType()];
+                List<string>  styleTags             = styleSettings.hasStyle ? styleSettings.styleTags : new List<string> {"alienNoStyle"};
+                
+                __result = styleTags.NullOrEmpty() || styleTags.Any(s => styleItemDef.styleTags.Contains(s));
+            }
         }
 
         public static void CacheRenderPawnPrefix(Pawn pawn, ref float cameraZoom, bool portrait)
@@ -2361,11 +2409,12 @@
                 return false;
             }
 
+            /*
             if (!alienProps.alienRace.styleSettings[typeof(HairDef)].styleTags.NullOrEmpty())
             {
                 __result = DefDatabase<HairDef>.AllDefsListForReading.Where(hd => alienProps.alienRace.styleSettings[typeof(HairDef)].styleTags.Any(ht => hd.styleTags.Contains(ht))).RandomElement();
                 return false;
-            }
+            }*/
 
             return true;
         }
