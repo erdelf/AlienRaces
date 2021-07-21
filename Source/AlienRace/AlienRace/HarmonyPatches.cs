@@ -10,6 +10,7 @@
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using HarmonyLib;
+    using JetBrains.Annotations;
     using RimWorld;
     using UnityEngine;
     using Verse;
@@ -234,10 +235,7 @@
 
             harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.WantsToUseStyle)), postfix: new HarmonyMethod(patchType, nameof(WantsToUseStylePostfix)));
 
-            MethodInfo    chooseStyleInfo       = AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.ChooseStyleItem));
-            HarmonyMethod chooseStylePrefixInfo = new HarmonyMethod(patchType, nameof(ChooseStyleItemPrefix));
-            foreach (Type ty in typeof(StyleItemDef).AllSubclassesNonAbstract())
-                harmony.Patch(chooseStyleInfo.MakeGenericMethod(ty), chooseStylePrefixInfo);
+            harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.ChooseStyleItem)).MakeGenericMethod(typeof(StyleItemDef)), postfix: new HarmonyMethod(patchType, nameof(ChooseStyleItemPostfix)));
 
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
@@ -391,31 +389,25 @@
             AlienRaceMod.settings.UpdateSettings();
         }
 
-        public static bool ChooseStyleItemPrefix(Pawn pawn, TattooType? tattooType, MethodBase __originalMethod, ref object __result)
+        public static void ChooseStyleItemPostfix(Pawn pawn, TattooType? tattooType, ref object __result)
         {
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
-                Type argument = __originalMethod.GetGenericArguments()[0];
+                Type argument = __result.GetType();
+
                 if (!alienProps.alienRace.styleSettings[argument].hasStyle)
                 {
-                    switch (argument.Name)
-                    {
-                        case nameof(HairDef):
-                            __result = HairDefOf.Shaved;
-                            break;
-                        case nameof(BeardDef):
-                            __result = BeardDefOf.NoBeard;
-                            break;
-                        case nameof(TattooDef):
-                            __result = tattooType == TattooType.Face ? TattooDefOf.NoTattoo_Face : TattooDefOf.NoTattoo_Body;
-                            break;
-                    }
+                    Log.Message(pawn.NameShortColored + ": no hair");
 
-                    return false;
+                    __result = argument.Name switch
+                    {
+                        nameof(HairDef) => HairDefOf.Shaved,
+                        nameof(BeardDef) => BeardDefOf.NoBeard,
+                        nameof(TattooDef) => tattooType == TattooType.Face ? TattooDefOf.NoTattoo_Face : TattooDefOf.NoTattoo_Body,
+                        _ => __result
+                    };
                 }
             }
-
-            return true;
         }
 
         public static void WantsToUseStylePostfix(Pawn pawn, StyleItemDef styleItemDef, ref bool __result)
@@ -424,7 +416,7 @@
             {
                 StyleSettings styleSettings = alienProps.alienRace.styleSettings[styleItemDef.GetType()];
                 List<string>  styleTags             = styleSettings.hasStyle ? styleSettings.styleTags : new List<string> {"alienNoStyle"};
-                
+
                 __result = styleTags.NullOrEmpty() || styleTags.Any(s => styleItemDef.styleTags.Contains(s));
             }
         }
