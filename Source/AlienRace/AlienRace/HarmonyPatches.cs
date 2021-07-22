@@ -124,9 +124,7 @@
                           postfix: new HarmonyMethod(patchType, nameof(GenerateBodyTypePostfix)));
             harmony.Patch(AccessTools.Property(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.SkinColor)).GetGetMethod(), 
                 postfix: new HarmonyMethod(patchType, nameof(SkinColorPostfix)));
-            
-            harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.RandomHairFor)),
-                new HarmonyMethod(patchType, nameof(RandomHairForPrefix)));
+
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), name: "BirthdayBiological"), new HarmonyMethod(patchType, nameof(BirthdayBiologicalPrefix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), nameof(PawnGenerator.GeneratePawn), new[] { typeof(PawnGenerationRequest) }),
                 new HarmonyMethod(patchType, nameof(GeneratePawnPrefix)));
@@ -235,7 +233,7 @@
 
             harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.WantsToUseStyle)), postfix: new HarmonyMethod(patchType, nameof(WantsToUseStylePostfix)));
 
-            harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.ChooseStyleItem)).MakeGenericMethod(typeof(StyleItemDef)), postfix: new HarmonyMethod(patchType, nameof(ChooseStyleItemPostfix)));
+            //harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.ChooseStyleItem)).MakeGenericMethod(typeof(StyleItemDef)), postfix: new HarmonyMethod(patchType, nameof(ChooseStyleItemPostfix)));
 
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
@@ -389,16 +387,15 @@
             AlienRaceMod.settings.UpdateSettings();
         }
 
-        public static void ChooseStyleItemPostfix(Pawn pawn, TattooType? tattooType, ref object __result)
+        public static void ChooseStyleItemPostfix(Pawn pawn, TattooType? tattooType, ref StyleItemDef __result)
         {
+            return;
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
                 Type argument = __result.GetType();
-
+                Log.Message(argument.FullName + ": " + __result.defName);
                 if (!alienProps.alienRace.styleSettings[argument].hasStyle)
                 {
-                    Log.Message(pawn.NameShortColored + ": no hair");
-
                     __result = argument.Name switch
                     {
                         nameof(HairDef) => HairDefOf.Shaved,
@@ -415,7 +412,7 @@
             if (__result && pawn.def is ThingDef_AlienRace alienProps)
             {
                 StyleSettings styleSettings = alienProps.alienRace.styleSettings[styleItemDef.GetType()];
-                List<string>  styleTags             = styleSettings.hasStyle ? styleSettings.styleTags : new List<string> {"alienNoStyle"};
+                List<string>  styleTags     = styleSettings.hasStyle ? styleSettings.styleTags : new List<string> {"alienNoStyle"};
 
                 __result = styleTags.NullOrEmpty() || styleTags.Any(s => styleItemDef.styleTags.Contains(s));
             }
@@ -2283,7 +2280,7 @@
                                               null;
                 __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath,
                     ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
-                                (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Cutout) :
+                                (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Transparent) :
                                 ShaderDatabase.CutoutComplex, Vector2.one, alien.story.hairColor, alienComp.GetChannel(channel: "hair").second);
                 __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
                                                   GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,
@@ -2310,7 +2307,7 @@
                     if (alien.style.BodyTattoo != null && alien.style.BodyTattoo != TattooDefOf.NoTattoo_Body)
                         __instance.bodyTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.BodyTattoo.texPath,
                                                                                           (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ?? ShaderDatabase.CutoutSkinOverlay), 
-                                                                                          Vector2.one, skinColor, Color.white, null, alien.story.bodyType.bodyNakedGraphicPath);
+                                                                                          Vector2.one, skinColor, Color.white, null, __instance.nakedGraphic.path);
                     else
                         __instance.bodyTattooGraphic = null;
                 }
@@ -2390,25 +2387,6 @@
                 
                 pawn.story.bodyType = bodyTypeDefs.RandomElement();
             }
-        }
-
-        public static bool RandomHairForPrefix(Pawn pawn, ref HairDef __result)
-        {
-            if (!(pawn.def is ThingDef_AlienRace alienProps)) return true;
-            if (!alienProps.alienRace.styleSettings[typeof(HairDef)].hasStyle)
-            {
-                __result    = HairDefOf.Shaved;
-                return false;
-            }
-
-            /*
-            if (!alienProps.alienRace.styleSettings[typeof(HairDef)].styleTags.NullOrEmpty())
-            {
-                __result = DefDatabase<HairDef>.AllDefsListForReading.Where(hd => alienProps.alienRace.styleSettings[typeof(HairDef)].styleTags.Any(ht => hd.styleTags.Contains(ht))).RandomElement();
-                return false;
-            }*/
-
-            return true;
         }
 
         public static void GeneratePawnPrefix(ref PawnGenerationRequest request)
