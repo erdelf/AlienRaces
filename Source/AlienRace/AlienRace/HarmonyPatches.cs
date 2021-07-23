@@ -226,8 +226,11 @@
             
             harmony.Patch(AccessTools.Constructor(typeof(PawnTextureAtlas)), transpiler: new HarmonyMethod(patchType, nameof(PawnTextureAtlasConstructorTranspiler)));
 
-            harmony.Patch(AccessTools.Method(typeof(PawnTextureAtlas), nameof(PawnTextureAtlas.TryGetFrameSet)), postfix: new HarmonyMethod(patchType, nameof(PawnTextureAtlasGetFrameSetPostfix)), 
+            harmony.Patch(AccessTools.Method(typeof(PawnTextureAtlas), nameof(PawnTextureAtlas.TryGetFrameSet)), 
                           transpiler: new HarmonyMethod(patchType, nameof(PawnTextureAtlasGetFrameSetTranspiler)));
+
+            harmony.Patch(typeof(PawnTextureAtlas).GetNestedTypes(AccessTools.all)[0].GetMethods(AccessTools.all).First(mi => mi.GetParameters().Any()), 
+                          transpiler: new HarmonyMethod(patchType, nameof(PawnTextureAtlasConstructorFuncTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(GlobalTextureAtlasManager), nameof(GlobalTextureAtlasManager.TryGetPawnFrameSet)), new HarmonyMethod(patchType, nameof(GlobalTextureAtlasGetFrameSetPrefix)));
 
@@ -387,26 +390,6 @@
             AlienRaceMod.settings.UpdateSettings();
         }
 
-        public static void ChooseStyleItemPostfix(Pawn pawn, TattooType? tattooType, ref StyleItemDef __result)
-        {
-            return;
-            if (pawn.def is ThingDef_AlienRace alienProps)
-            {
-                Type argument = __result.GetType();
-                Log.Message(argument.FullName + ": " + __result.defName);
-                if (!alienProps.alienRace.styleSettings[argument].hasStyle)
-                {
-                    __result = argument.Name switch
-                    {
-                        nameof(HairDef) => HairDefOf.Shaved,
-                        nameof(BeardDef) => BeardDefOf.NoBeard,
-                        nameof(TattooDef) => tattooType == TattooType.Face ? TattooDefOf.NoTattoo_Face : TattooDefOf.NoTattoo_Body,
-                        _ => __result
-                    };
-                }
-            }
-        }
-
         public static void WantsToUseStylePostfix(Pawn pawn, StyleItemDef styleItemDef, ref bool __result)
         {
             if (__result && pawn.def is ThingDef_AlienRace alienProps)
@@ -464,12 +447,20 @@
             int atlasScale = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1;
             return keys.Count == 0 || keys.Any(p => p.def == pawn.def || ((p.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1) == atlasScale);
         }
+        
+        public static float GetBorderSizeForPawn() =>
+            (createPawnAtlasPawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.borderScale ?? 1f;
 
-        public static void PawnTextureAtlasGetFrameSetPostfix(PawnTextureAtlas __instance, Pawn pawn, ref PawnTextureAtlasFrameSet frameSet, ref bool createdNew)
+        public static IEnumerable<CodeInstruction> PawnTextureAtlasConstructorFuncTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            if (createdNew && pawn.def is ThingDef_AlienRace alienProps)
+            foreach (CodeInstruction instruction in instructions)
             {
-                frameSet.meshes = frameSet.uvRects.Select(u => TextureAtlasHelper.CreateMeshForUV(u, alienProps.alienRace.generalSettings.alienPartGenerator.borderScale)).ToArray();
+                if (instruction.opcode == OpCodes.Ldc_R4)
+                {
+                    yield return CodeInstruction.Call(patchType, nameof(GetBorderSizeForPawn));
+                }
+                else
+                    yield return instruction;
             }
         }
 
