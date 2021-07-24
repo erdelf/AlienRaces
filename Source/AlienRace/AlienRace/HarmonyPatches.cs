@@ -233,7 +233,7 @@
 
             harmony.Patch(AccessTools.Method(typeof(GlobalTextureAtlasManager), nameof(GlobalTextureAtlasManager.TryGetPawnFrameSet)), new HarmonyMethod(patchType, nameof(GlobalTextureAtlasGetFrameSetPrefix)));
 
-            harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.WantsToUseStyle)), postfix: new HarmonyMethod(patchType, nameof(WantsToUseStylePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.WantsToUseStyle)), prefix: new HarmonyMethod(patchType, nameof(WantsToUseStylePrefix)), postfix: new HarmonyMethod(patchType, nameof(WantsToUseStylePostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PreceptComp_SelfTookMemoryThought), nameof(PreceptComp_SelfTookMemoryThought.Notify_MemberTookAction)),
                           transpiler: new HarmonyMethod(patchType, nameof(SelfTookMemoryThoughtTranspiler)));
@@ -482,6 +482,21 @@
 
 
             return result;
+        }
+
+        public static bool WantsToUseStylePrefix(Pawn pawn, StyleItemDef styleItemDef, ref bool __result)
+        {
+            if (pawn.def is ThingDef_AlienRace alienProps)
+            {
+                StyleSettings styleSettings = alienProps.alienRace.styleSettings[styleItemDef.GetType()];
+                List<string>  styleTags     = styleSettings.hasStyle ? styleSettings.styleTagsOverride : new List<string> { "alienNoStyle" };
+
+                if (styleTags.NullOrEmpty())
+                    return true;
+                __result = styleItemDef.styleTags.Any(s => styleTags.Contains(s));
+                return false;
+            }
+            return true;
         }
 
         public static void WantsToUseStylePostfix(Pawn pawn, StyleItemDef styleItemDef, ref bool __result)
