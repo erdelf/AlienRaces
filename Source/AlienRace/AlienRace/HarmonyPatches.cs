@@ -82,9 +82,8 @@
                 postfix: new HarmonyMethod(patchType, nameof(ApparelScoreGainPostFix)));
             harmony.Patch(AccessTools.Method(typeof(ThoughtUtility), nameof(ThoughtUtility.CanGetThought)),
                 postfix: new HarmonyMethod(patchType, nameof(CanGetThoughtPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(Corpse), nameof(Corpse.ButcherProducts)), new HarmonyMethod(patchType, nameof(ButcherProductsPrefix)));
             harmony.Patch(AccessTools.Method(typeof(FoodUtility), nameof(FoodUtility.ThoughtsFromIngesting)), 
-                postfix: new HarmonyMethod(patchType, nameof(ThoughtsFromIngestingPostfix)));
+                          postfix: new HarmonyMethod(patchType, nameof(ThoughtsFromIngestingPostfix)));
             harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), nameof(MemoryThoughtHandler.TryGainMemory), new[] { typeof(Thought_Memory), typeof(Pawn) }),
                 new HarmonyMethod(patchType, nameof(TryGainMemoryPrefix)));
             harmony.Patch(AccessTools.Method(typeof(SituationalThoughtHandler), name: "TryCreateThought"),
@@ -236,9 +235,12 @@
 
             harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.WantsToUseStyle)), postfix: new HarmonyMethod(patchType, nameof(WantsToUseStylePostfix)));
 
-            //harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.ChooseStyleItem)).MakeGenericMethod(typeof(StyleItemDef)), postfix: new HarmonyMethod(patchType, nameof(ChooseStyleItemPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PreceptComp_SelfTookMemoryThought), nameof(PreceptComp_SelfTookMemoryThought.Notify_MemberTookAction)),
+                          transpiler: new HarmonyMethod(patchType, nameof(SelfTookMemoryThoughtTranspiler)));
 
-
+            harmony.Patch(AccessTools.Method(typeof(PreceptComp_KnowsMemoryThought), nameof(PreceptComp_KnowsMemoryThought.Notify_MemberWitnessedAction)),
+                          transpiler: new HarmonyMethod(patchType, nameof(KnowsMemoryThoughtTranspiler)));
+            
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -388,6 +390,98 @@
                 BackstoryDef.UpdateTranslateableFields(bd);
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> KnowsMemoryThoughtTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            FieldInfo    thoughtInfo  = AccessTools.Field(typeof(PreceptComp_Thought), nameof(PreceptComp_Thought.thought));
+            LocalBuilder thoughtLocal = ilg.DeclareLocal(typeof(ThoughtDef));
+            
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+
+                if (instruction.opcode == OpCodes.Stloc_0)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Ldfld, thoughtInfo);
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldarg_2);
+                    yield return CodeInstruction.Call(patchType, nameof(KnowsGetHistoryEventThoughtDefReplacer));
+                    yield return new CodeInstruction(OpCodes.Stloc, thoughtLocal.LocalIndex);
+                }
+
+                if (instruction.LoadsField(thoughtInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Pop);
+                    yield return new CodeInstruction(OpCodes.Ldloc, thoughtLocal.LocalIndex);
+                }
+            }
+        }
+
+        public static ThoughtDef KnowsGetHistoryEventThoughtDefReplacer(ThoughtDef thought, PreceptComp_KnowsMemoryThought comp, HistoryEvent ev, Precept precept)
+        {
+            ThoughtDef result = thought;
+
+            Pawn doer = ev.args.GetArg<Pawn>(HistoryEventArgsNames.Doer);
+            ev.args.TryGetArg(HistoryEventArgsNames.Victim, out Pawn victim);
+
+            if (thought == ThoughtDefOf.KnowButcheredHumanlikeCorpse)
+                if (doer.def is ThingDef_AlienRace alienPropsPawn)
+                    result = alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific
+                                        ?.FirstOrDefault(predicate: bt => bt.raceList?.Contains(victim.def) ?? false)?.knowThought ??
+                             alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.knowThought;
+
+            return result;
+        }
+
+        public static IEnumerable<CodeInstruction> SelfTookMemoryThoughtTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            FieldInfo    thoughtInfo  = AccessTools.Field(typeof(PreceptComp_Thought), nameof(PreceptComp_Thought.thought));
+            LocalBuilder thoughtLocal = ilg.DeclareLocal(typeof(ThoughtDef));
+
+            bool first = true;
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+                if (instruction.LoadsField(thoughtInfo))
+                {
+                    if (first)
+                    {
+                        first = false;
+                        yield return new CodeInstruction(OpCodes.Ldarg_0);
+                        yield return new CodeInstruction(OpCodes.Ldarg_1);
+                        yield return new CodeInstruction(OpCodes.Ldarg_2);
+                        yield return CodeInstruction.Call(patchType, nameof(SelfTookGetHistoryEventThoughtDefReplacer));
+                        yield return new CodeInstruction(OpCodes.Stloc, thoughtLocal.LocalIndex);
+                    }
+                    else
+                        yield return new CodeInstruction(OpCodes.Pop);
+
+                    yield return new CodeInstruction(OpCodes.Ldloc, thoughtLocal.LocalIndex);
+                }
+            }
+        }
+
+        public static ThoughtDef SelfTookGetHistoryEventThoughtDefReplacer(ThoughtDef thought, PreceptComp_SelfTookMemoryThought comp, HistoryEvent ev, Precept precept)
+        {
+            ThoughtDef result = thought;
+
+            Pawn doer = ev.args.GetArg<Pawn>(HistoryEventArgsNames.Doer);
+            ev.args.TryGetArg(HistoryEventArgsNames.Victim, out Pawn victim);
+
+            if (thought == ThoughtDefOf.ButcheredHumanlikeCorpse)
+            {
+                if(doer.def is ThingDef_AlienRace alienPropsButcher)
+                    result = alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific
+                                           ?.FirstOrDefault(predicate: bt => bt.raceList?.Contains(victim.def) ?? false)?.thought ??
+                             alienPropsButcher.alienRace.thoughtSettings.butcherThoughtGeneral.thought;
+            }
+
+
+            return result;
         }
 
         public static void WantsToUseStylePostfix(Pawn pawn, StyleItemDef styleItemDef, ref bool __result)
@@ -1954,42 +2048,6 @@
                 string path = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(___pawn.ageTracker.CurLifeStageRace.def).head;
                 CachedData.headGraphicPath(___pawn.story) = alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(path, ___pawn);
             }
-        }
-
-        // ReSharper disable once RedundantAssignment
-        public static bool ButcherProductsPrefix(Pawn butcher, float efficiency, ref IEnumerable<Thing> __result, Corpse __instance)
-        {
-            Pawn               corpse = __instance.InnerPawn;
-            IEnumerable<Thing> things = corpse.ButcherProducts(butcher, efficiency);
-            if (corpse.RaceProps.BloodDef != null) FilthMaker.TryMakeFilth(butcher.Position, butcher.Map, corpse.RaceProps.BloodDef, corpse.LabelIndefinite());
-            if (!corpse.RaceProps.Humanlike)
-            {
-                __result = things;
-                return false;
-            }
-
-            ThoughtDef thought = !(butcher.def is ThingDef_AlienRace alienPropsButcher) ?
-                                     ThoughtDefOf.ButcheredHumanlikeCorpse :
-                                     alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific
-                                                    ?.FirstOrDefault(predicate: bt => bt.raceList?.Contains(corpse.def) ?? false)?.thought ??
-                                                  alienPropsButcher.alienRace.thoughtSettings.butcherThoughtGeneral.thought;
-
-            butcher.needs?.mood?.thoughts?.memories?.TryGainMemory(thought ?? ThoughtDefOf.ButcheredHumanlikeCorpse);
-
-            butcher.Map.mapPawns.SpawnedPawnsInFaction(butcher.Faction).ForEach(action: p =>
-            {
-                if (p == butcher || p.needs?.mood?.thoughts == null) return;
-                thought = !(p.def is ThingDef_AlienRace alienPropsPawn) ?
-                              ThoughtDefOf.KnowButcheredHumanlikeCorpse :
-                              alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific
-                                             ?.FirstOrDefault(predicate: bt => bt.raceList?.Contains(corpse.def) ?? false)?.knowThought ??
-                                           alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.knowThought;
-
-                p.needs.mood.thoughts.memories.TryGainMemory(thought ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse);
-            });
-            TaleRecorder.RecordTale(TaleDefOf.ButcheredHumanlikeCorpse, butcher);
-            __result = things;
-            return false;
         }
 
         public static void CanEquipPostfix(ref bool __result, Thing thing, Pawn pawn, ref string cantReason)
