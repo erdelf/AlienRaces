@@ -240,7 +240,10 @@
 
             harmony.Patch(AccessTools.Method(typeof(PreceptComp_KnowsMemoryThought), nameof(PreceptComp_KnowsMemoryThought.Notify_MemberWitnessedAction)),
                           transpiler: new HarmonyMethod(patchType, nameof(KnowsMemoryThoughtTranspiler)));
-            
+
+            harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.TotalStyleItemLikelihood)),
+                          postfix: new HarmonyMethod(patchType, nameof(TotalStyleItemLikelihoodPostfix)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -392,6 +395,11 @@
             AlienRaceMod.settings.UpdateSettings();
         }
 
+        public static void TotalStyleItemLikelihoodPostfix(ref float __result)
+        {
+            __result += float.Epsilon;
+        }
+
         public static IEnumerable<CodeInstruction> KnowsMemoryThoughtTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
             FieldInfo    thoughtInfo  = AccessTools.Field(typeof(PreceptComp_Thought), nameof(PreceptComp_Thought.thought));
@@ -490,11 +498,12 @@
             {
                 StyleSettings styleSettings = alienProps.alienRace.styleSettings[styleItemDef.GetType()];
                 List<string>  styleTags     = styleSettings.hasStyle ? styleSettings.styleTagsOverride : new List<string> { "alienNoStyle" };
-
+                
                 if (styleTags.NullOrEmpty())
                     return true;
-
+                
                 __result = styleItemDef.styleTags.Any(s => styleTags.Contains(s));
+
                 return false;
             }
             return true;
