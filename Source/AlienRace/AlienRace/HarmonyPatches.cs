@@ -502,7 +502,12 @@
                 if (styleTags.NullOrEmpty())
                     return true;
                 
-                __result = styleItemDef.styleTags.Any(s => styleTags.Contains(s));
+                __result = styleItemDef.styleTags.Any(s => styleTags.Contains(s)) && 
+                           (styleItemDef.styleGender == StyleGender.Any                                  || 
+                            styleItemDef.styleGender == StyleGender.MaleUsually                          ||
+                            styleItemDef.styleGender == StyleGender.FemaleUsually                        ||
+                            (styleItemDef.styleGender == StyleGender.Male && pawn.gender == Gender.Male) ||
+                            (styleItemDef.styleGender == StyleGender.Female && pawn.gender == Gender.Female));
 
                 return false;
             }
@@ -516,7 +521,12 @@
                 StyleSettings styleSettings = alienProps.alienRace.styleSettings[styleItemDef.GetType()];
                 List<string>  styleTags     = styleSettings.hasStyle ? styleSettings.styleTags : new List<string> {"alienNoStyle"};
 
-                __result = styleTags.NullOrEmpty() || styleTags.Any(s => styleItemDef.styleTags.Contains(s));
+                __result = (styleTags.NullOrEmpty() || styleTags.Any(s => styleItemDef.styleTags.Contains(s))) &&
+                           (styleItemDef.styleGender == StyleGender.Any                                    ||
+                            styleItemDef.styleGender == StyleGender.MaleUsually                            ||
+                            styleItemDef.styleGender == StyleGender.FemaleUsually                          ||
+                            (styleItemDef.styleGender == StyleGender.Male   && pawn.gender == Gender.Male) ||
+                            (styleItemDef.styleGender == StyleGender.Female && pawn.gender == Gender.Female));
             }
         }
 
