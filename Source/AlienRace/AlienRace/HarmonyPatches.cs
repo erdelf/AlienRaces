@@ -493,6 +493,7 @@
 
                 if (styleTags.NullOrEmpty())
                     return true;
+
                 __result = styleItemDef.styleTags.Any(s => styleTags.Contains(s));
                 return false;
             }
@@ -2342,10 +2343,12 @@
                 __instance.skullGraphic = alien.health.hediffSet.HasHead && !graphicPaths.skull.NullOrEmpty() ?
                                               GraphicDatabase.Get<Graphic_Multi>(graphicPaths.skull, ShaderDatabase.Cutout, Vector2.one, Color.white) :
                                               null;
-                __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath,
-                    ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
-                                (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Transparent) :
-                                ShaderDatabase.CutoutComplex, Vector2.one, alien.story.hairColor, alienComp.GetChannel(channel: "hair").second);
+
+                if(__instance.pawn.story.hairDef != null && alienProps.alienRace.styleSettings[typeof(HairDef)].hasStyle)
+                    __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath,
+                                                                                ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
+                                                                                    (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Transparent) :
+                                                                                    ShaderDatabase.CutoutComplex, Vector2.one, alien.story.hairColor, alienComp.GetChannel(channel: "hair").second);
                 __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
                                                   GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,
                                                       alien.story.SkinColor == apg.SkinColor(alien, first: false) ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, Vector2.one,
@@ -2375,7 +2378,7 @@
                     else
                         __instance.bodyTattooGraphic = null;
                 }
-                if (alien.style != null && alien.style.beardDef != null)
+                if (alien.style?.beardDef != null)
                     __instance.beardGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.beardDef.texPath, 
                                                                                  (alienProps.alienRace.styleSettings[typeof(BeardDef)].shader?.Shader ?? ShaderDatabase.Transparent), Vector2.one, alien.story.hairColor);
 
