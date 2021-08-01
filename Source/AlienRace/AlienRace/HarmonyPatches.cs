@@ -356,18 +356,31 @@
                 HarmonyMethod bodyTranspiler = new HarmonyMethod(patchType, nameof(BodyReferenceTranspiler));
 
 
+                // IMPORTANT! To find all methods which should be patched you can uncomment this code and Log.Warning in BodyReferenceTranspiler method.
+                // Result will be displayed in game log, for example:
+                // BodyReferenceTranspiler1 cls: Verse.DamageWorker_Blunt method: Void ApplySpecialEffectsToPart(Verse.Pawn, Single, Verse.DamageInfo, DamageResult)
+
                 //Full assemblies scan
-                foreach (MethodInfo mi in typeof(LogEntry).Assembly.GetTypes().
-                    //SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
-                    Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(t) && !t.IsGenericType && !t.HasAttribute<CompilerGeneratedAttribute>()).SelectMany(selector: t =>
-                       t.GetMethods(AccessTools.all).Concat(t.GetProperties(AccessTools.all).SelectMany(selector: pi => pi.GetAccessors(nonPublic: true)))
-                        .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<DllImportAttribute>()))// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
-                ) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
-                {
-                    IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
-                    if (mi != bodyCheck && instructions.Any(predicate: il => il.Value?.Equals(bodyInfo) ?? false))
-                        harmony.Patch(mi, transpiler: bodyTranspiler);
-                }
+                //foreach (MethodInfo mi in typeof(LogEntry).Assembly.GetTypes().
+                //    //SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
+                //    Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(t) && !t.IsGenericType && !t.HasAttribute<CompilerGeneratedAttribute>()).SelectMany(selector: t =>
+                //       t.GetMethods(AccessTools.all).Concat(t.GetProperties(AccessTools.all).SelectMany(selector: pi => pi.GetAccessors(nonPublic: true)))
+                //        .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<DllImportAttribute>()))// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
+                //) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
+                //{
+                //    IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
+                //    if (mi != bodyCheck && instructions.Any(predicate: il => il.Value?.Equals(bodyInfo) ?? false))
+                //        harmony.Patch(mi, transpiler: bodyTranspiler);
+                //}
+
+                MethodInfo ApplySpecialEffectsToPart = AccessTools.Method(type: typeof(DamageWorker_Blunt), name: "ApplySpecialEffectsToPart");
+                harmony.Patch(ApplySpecialEffectsToPart, transpiler: bodyTranspiler);
+
+                MethodInfo CacheMissingPartsCommonAncestors = AccessTools.Method(type: typeof(HediffSet), name: "CacheMissingPartsCommonAncestors");
+                harmony.Patch(CacheMissingPartsCommonAncestors, transpiler: bodyTranspiler);
+
+                MethodInfo WoundDebug = AccessTools.Method(type: typeof(PawnWoundDrawer), name: "WoundDebug");
+                harmony.Patch(WoundDebug, transpiler: bodyTranspiler);
 
                 //PawnRenderer Posture scan
                 MethodInfo postureInfo = AccessTools.Method(typeof(PawnUtility), nameof(PawnUtility.GetPosture));
@@ -983,7 +996,7 @@
             return posture;
         }
 
-        public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions, MethodBase method)
         {
             FieldInfo bodyInfo  = AccessTools.Field(typeof(RaceProperties), nameof(RaceProperties.body));
             FieldInfo propsInfo = AccessTools.Field(typeof(ThingDef),       nameof(ThingDef.race));
@@ -996,12 +1009,16 @@
 
                     if (i < instructionList.Count - 2 && instructionList[i + 2].OperandIs(bodyInfo) && instructionList[i + 1].OperandIs(propsInfo) && instruction.OperandIs(defInfo))
                     {
+                        //Log.Warning($"BodyReferenceTranspiler1 cls: {method.DeclaringType} method: {method}");
+
                         instruction =  new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(ReplacedBody)));
                         i           += 2;
                     }
 
                     if (i < instructionList.Count - 1 && instructionList[i + 1].OperandIs(bodyInfo) && instruction.OperandIs(defInfo))
                     {
+                        //Log.Warning($"BodyReferenceTranspiler2 cls: {method.DeclaringType} method: {method}");
+
                         instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(ReplacedBody)));
                         i++;
                     }
