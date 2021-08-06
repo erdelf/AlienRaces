@@ -1,6 +1,7 @@
 ﻿namespace AlienRace
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
@@ -16,6 +17,7 @@
     using Verse;
     using Verse.AI;
     using Verse.Grammar;
+    using Object = UnityEngine.Object;
 
     /// <summary>
     /// "More useful than the Harmony wiki" ~ Mehni
@@ -2381,19 +2383,19 @@
 
                 if (alien.style != null && ModsConfig.IdeologyActive)
                 {
-                    Color skinColor = alien.story.SkinColor;
-                    skinColor.a *= 0.8f;
+                    AlienPartGenerator.ExposableValueTuple<Color, Color> tattooColor = alienComp.GetChannel("tattoo");
+
                     if (alien.style.FaceTattoo != null && alien.style.FaceTattoo != TattooDefOf.NoTattoo_Face)
                         __instance.faceTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.FaceTattoo.texPath,
                                                                                           (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ?? ShaderDatabase.CutoutSkinOverlay),
-                                                                                          Vector2.one, skinColor, Color.white, null, alien.story.HeadGraphicPath);
+                                                                                          Vector2.one, tattooColor.first, tattooColor.second, null, alien.story.HeadGraphicPath);
                     else
                         __instance.faceTattooGraphic = null;
 
                     if (alien.style.BodyTattoo != null && alien.style.BodyTattoo != TattooDefOf.NoTattoo_Body)
                         __instance.bodyTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.BodyTattoo.texPath,
                                                                                           (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ?? ShaderDatabase.CutoutSkinOverlay), 
-                                                                                          Vector2.one, skinColor, Color.white, null, __instance.nakedGraphic.path);
+                                                                                          Vector2.one, tattooColor.first, tattooColor.second, null, __instance.nakedGraphic.path);
                     else
                         __instance.bodyTattooGraphic = null;
                 }
