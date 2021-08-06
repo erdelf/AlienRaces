@@ -280,6 +280,10 @@
 
                         this.colorChannels.Add(key: "skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
 
+                        Color tattooColor = skinColor;
+                        tattooColor.a *= 0.8f;
+                        this.colorChannels.Add(key: "tattoo", new ExposableValueTuple<Color, Color>(tattooColor, tattooColor));
+
                         foreach (ColorChannelGenerator channel in apg.colorChannels)
                         {
                             if (!this.colorChannels.ContainsKey(channel.name))
@@ -292,6 +296,7 @@
                         }
 
                         ExposableValueTuple<Color, Color> hairColors = this.colorChannels[key: "hair"];
+
                         if (hairColors.first == Color.clear)
                         {
                             Color color = PawnHairColors.RandomHairColor(pawn.story.SkinColor, pawn.ageTracker.AgeBiologicalYears);
