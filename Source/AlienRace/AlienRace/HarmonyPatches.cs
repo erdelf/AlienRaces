@@ -455,7 +455,7 @@
         {
             ThoughtDef result = thought;
 
-            Pawn doer = ev.args.GetArg<Pawn>(HistoryEventArgsNames.Doer);
+            ev.args.TryGetArg(HistoryEventArgsNames.Doer, out Pawn doer);
             ev.args.TryGetArg(HistoryEventArgsNames.Victim, out Pawn victim);
 
             if (thought == ThoughtDefOf.KnowButcheredHumanlikeCorpse)
