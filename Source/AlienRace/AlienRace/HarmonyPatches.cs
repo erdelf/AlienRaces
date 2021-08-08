@@ -221,7 +221,8 @@
             harmony.Patch(AccessTools.GetDeclaredMethods(typeof(PawnWoundDrawer)).First(mi => mi.Name.Contains("FindAnchors")), postfix: new HarmonyMethod(patchType, nameof(FindAnchorsPostfix)));
 
             harmony.Patch(AccessTools.GetDeclaredMethods(typeof(PawnWoundDrawer)).First(mi => mi.Name.Contains("CalcAnchorData")), postfix: new HarmonyMethod(patchType, nameof(CalcAnchorDataPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnWoundDrawer), nameof(PawnWoundDrawer.RenderOverBody)), new HarmonyMethod(patchType, nameof(RenderOverBodyPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnWoundDrawer), nameof(PawnWoundDrawer.RenderOverBody)), new HarmonyMethod(patchType, nameof(RenderOverBodyPrefix)), 
+                          transpiler: new HarmonyMethod(patchType, nameof(RenderOverBodyTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnCacheRenderer), nameof(PawnCacheRenderer.RenderPawn)), new HarmonyMethod(patchType, nameof(CacheRenderPawnPrefix)));
             
@@ -245,7 +246,7 @@
 
             harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.TotalStyleItemLikelihood)),
                           postfix: new HarmonyMethod(patchType, nameof(TotalStyleItemLikelihoodPostfix)));
-
+            
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -395,6 +396,26 @@
                 BackstoryDef.UpdateTranslateableFields(bd);
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> RenderOverBodyTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            MethodInfo defaultAnchorInfo = AccessTools.GetDeclaredMethods(typeof(PawnWoundDrawer)).First(mi => mi.HasAttribute<CompilerGeneratedAttribute>() && mi.Name.Contains("GetDefaultAnchor"));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                if (instruction.opcode == OpCodes.Ldarg_0 && instructionList[i + 4].Calls(defaultAnchorInfo))
+                {
+                    i           += 4;
+                    instruction =  new CodeInstruction(OpCodes.Nop).MoveLabelsFrom(instruction);
+                }
+
+                yield return instruction;
+            }
         }
 
         public static void TotalStyleItemLikelihoodPostfix(ref float __result)
