@@ -404,14 +404,17 @@
 
             List<CodeInstruction> instructionList = instructions.ToList();
 
+            Label label = ilg.DefineLabel();
+
             for (int i = 0; i < instructionList.Count; i++)
             {
                 CodeInstruction instruction = instructionList[i];
 
                 if (instruction.opcode == OpCodes.Ldarg_0 && instructionList[i + 4].Calls(defaultAnchorInfo))
                 {
-                    i           += 4;
-                    instruction =  new CodeInstruction(OpCodes.Nop).MoveLabelsFrom(instruction);
+                    yield return new CodeInstruction(OpCodes.Ldarg_2).MoveLabelsFrom(instruction);
+                    yield return new CodeInstruction(OpCodes.Brfalse, label);
+                    instructionList[i + 5].WithLabels(label);
                 }
 
                 yield return instruction;
