@@ -28,6 +28,13 @@
     {
         public List<ThingDef> races;
 
+        public override ThinkNode DeepCopy(bool resolve = true)
+        {
+            ThinkNode_ConditionalIsMemberOfRace obj = (ThinkNode_ConditionalIsMemberOfRace)base.DeepCopy(resolve);
+            obj.races = new List<ThingDef>(this.races);
+            return obj;
+        }
+
         protected override bool Satisfied(Pawn pawn) => 
             this.races.Contains(pawn.def);
     }
