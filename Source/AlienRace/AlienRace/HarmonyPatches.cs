@@ -358,13 +358,12 @@
                 MethodInfo bodyCheck = AccessTools.Method(patchType, nameof(ReplacedBody));
                 HarmonyMethod bodyTranspiler = new HarmonyMethod(patchType, nameof(BodyReferenceTranspiler));
 
-
                 //Full assemblies scan
                 foreach (MethodInfo mi in typeof(LogEntry).Assembly.GetTypes().
-                    //SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
-                    Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(t) && !t.IsGenericType && !t.HasAttribute<CompilerGeneratedAttribute>()).SelectMany(selector: t =>
-                       t.GetMethods(AccessTools.all).Concat(t.GetProperties(AccessTools.all).SelectMany(selector: pi => pi.GetAccessors(nonPublic: true)))
-                        .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<DllImportAttribute>()))// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
+                    SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
+                    Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(t) && !t.IsGenericType).SelectMany(selector: t =>
+                        t.GetMethods(AccessTools.all).Concat(t.GetProperties(AccessTools.all).SelectMany(selector: pi => pi.GetAccessors(nonPublic: true)))
+                      .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<DllImportAttribute>())).Distinct()// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
                 ) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
                 {
                     IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
