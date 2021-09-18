@@ -6,21 +6,30 @@
     using HarmonyLib;
     using JetBrains.Annotations;
     using RimWorld;
+    using RimWorld.Planet;
+    using UnityEngine;
     using Verse;
     using Verse.AI;
+    using Verse.AI.Group;
 
     [DefOf]
     public static class AlienDefOf
     {
-#pragma warning disable IDE1006 // Benennungsstile
         // ReSharper disable InconsistentNaming
-        // ReSharper disable UnusedMember.Global
         public static TraitDef Xenophobia;
         public static ThoughtDef XenophobiaVsAlien;
         public static ThingCategoryDef alienCorpseCategory;
-        // ReSharper restore UnusedMember.Global
+
+        public static HistoryEventDef HAR_AteAlienMeat;
+        public static HistoryEventDef HAR_AteNonAlienFood;
+        public static HistoryEventDef HAR_ButcheredAlien;
+
+        public static HistoryEventDef HAR_AlienDating_Dating;
+        public static HistoryEventDef HAR_AlienDating_BeginRomance;
+        public static HistoryEventDef HAR_AlienDating_SharedBed;
+
+        public static HistoryEventDef HAR_Alien_SoldSlave;
         // ReSharper restore InconsistentNaming
-#pragma warning restore IDE1006 // Benennungsstile
     }
 
     [UsedImplicitly]
@@ -92,6 +101,132 @@
                 false;
     }
 
+    [UsedImplicitly]
+    public class ThoughtWorker_Precept_AlienRaces : ThoughtWorker_Precept
+    {
+        protected override ThoughtState ShouldHaveThought(Pawn p)
+        {
+            Lord lord = p.GetLord();
+            if (lord != null)
+                if (lord.ownedPawns.Any(c => c.def != p.def))
+                    return true;
+
+            Caravan car = p.GetCaravan();
+            if (car != null)
+            {
+                if (car.PawnsListForReading.Any(c => c.def != p.def))
+                    return true;
+            }
+
+            Map map = p.MapHeld;
+            if (map != null)
+            {
+                Faction fac = p.Faction;
+                if (fac != null)
+                {
+                    if (map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => c.def != p.def))
+                        return true;
+                } else if (map.mapPawns.AllPawnsSpawned.Any(c => c.def != p.def && !p.HostileTo(c)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    [UsedImplicitly]
+    public class ThoughtWorker_Precept_AlienRaces_Social : ThoughtWorker_Precept_Social
+    {
+        protected override ThoughtState ShouldHaveThought(Pawn p, Pawn otherPawn) => 
+            p.def != otherPawn.def;
+    }
+
+    public class ThoughtWorker_Precept_SlavesInColony : ThoughtWorker_Precept
+    {
+        protected override ThoughtState ShouldHaveThought(Pawn p)
+        {
+            Lord lord = p.GetLord();
+            if (lord != null)
+                if (lord.ownedPawns.Any(c => c.def != p.def && c.IsSlave))
+                    return true;
+
+            Caravan car = p.GetCaravan();
+            if (car != null)
+            {
+                if (car.PawnsListForReading.Any(c => c.def != p.def && c.IsSlave))
+                    return true;
+            }
+
+            Map map = p.MapHeld;
+            if (map != null)
+            {
+                Faction fac = p.Faction;
+                if (fac != null)
+                {
+                    if (map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => c.def != p.def && c.IsSlave))
+                        return true;
+                }
+                else if (map.mapPawns.AllPawnsSpawned.Any(c => c.def != p.def && !p.HostileTo(c) && c.IsSlave))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    public class ThoughtWorker_Precept_Slavery_NoSlavesInColony : ThoughtWorker_Precept
+    {
+        protected override ThoughtState ShouldHaveThought(Pawn p)
+        {
+            Lord lord = p.GetLord();
+            if (lord != null)
+                if (!lord.ownedPawns.Any(c => c.def != p.def && c.IsSlave))
+                    return true;
+
+            Caravan car = p.GetCaravan();
+            if (car != null)
+            {
+                if (!car.PawnsListForReading.Any(c => c.def != p.def && c.IsSlave))
+                    return true;
+            }
+
+            Map map = p.MapHeld;
+            if (map != null)
+            {
+                Faction fac = p.Faction;
+                if (fac != null)
+                {
+                    if (!map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => c.def != p.def && c.IsSlave))
+                        return true;
+                }
+                else if (!map.mapPawns.AllPawnsSpawned.Any(c => c.def != p.def && !p.HostileTo(c) && c.IsSlave))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    public class ThoughtWorker_Precept_NoRecentAlienMeat : ThoughtWorker_Precept
+    {
+        protected override ThoughtState ShouldHaveThought(Pawn p)
+        {
+            int num = Mathf.Max(0, p.GetComp<AlienPartGenerator.AlienComp>()?.lastAlienMeatIngestedTick ?? GenTicks.TicksGame);
+            return Find.TickManager.TicksGame - num > 8 * GenDate.TicksPerDay;
+        }
+
+        public IEnumerable<NamedArgument> GetDescriptionArgs()
+        {
+            yield return 8.Named("HUMANMEATREQUIREDINTERVAL");
+        }
+    }
+
     [AttributeUsage(AttributeTargets.Field)]
     public class LoadDefFromField : Attribute
     {
@@ -139,7 +274,15 @@
         public static readonly PawnGeneratorPawnRelations generatePawnsRelations =
             AccessTools.MethodDelegate<PawnGeneratorPawnRelations>(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"));
 
+        public delegate void FoodUtilityAddThoughtsFromIdeo(HistoryEventDef eventDef, Pawn ingester, ThingDef foodDef, MeatSourceCategory meatSourceCategory);
+
+        public static readonly FoodUtilityAddThoughtsFromIdeo foodUtilityAddThoughtsFromIdeo =
+            AccessTools.MethodDelegate<FoodUtilityAddThoughtsFromIdeo>(AccessTools.Method(typeof(FoodUtility), "AddThoughtsFromIdeo"));
+
         public static readonly AccessTools.FieldRef<PawnTextureAtlas, Dictionary<Pawn, PawnTextureAtlasFrameSet>> PawnTextureAtlasFrameAssignments =
             AccessTools.FieldRefAccess<PawnTextureAtlas, Dictionary<Pawn, PawnTextureAtlasFrameSet>>("frameAssignments");
+
+        public static readonly AccessTools.FieldRef<List<FoodUtility.ThoughtFromIngesting>> ingestThoughts =
+            AccessTools.StaticFieldRefAccess<List<FoodUtility.ThoughtFromIngesting>>(AccessTools.Field(typeof(FoodUtility), "ingestThoughts"));
     }
 }

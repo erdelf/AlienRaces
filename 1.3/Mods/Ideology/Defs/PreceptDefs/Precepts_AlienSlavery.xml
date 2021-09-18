@@ -71,7 +71,6 @@
 
 	<ThoughtDef>
 		<defName>HAR_Alien_Slavery_Abhorrent_SlavesInColony</defName>
-		<thoughtClass>AlienRace.Thought_Situational_Precept_SlavesInColony</thoughtClass>
 		<workerClass>AlienRace.ThoughtWorker_Precept_SlavesInColony</workerClass>
 		<stages>
 			<li>
@@ -179,7 +178,6 @@
 
 	<ThoughtDef>
 		<defName>HAR_Alien_Slavery_Horrible_SlavesInColony</defName>
-		<thoughtClass>AlienRace.Thought_Situational_Precept_SlavesInColony</thoughtClass>
 		<workerClass>AlienRace.ThoughtWorker_Precept_SlavesInColony</workerClass>
 		<stages>
 			<li>
@@ -327,7 +325,6 @@
 
 	<ThoughtDef>
 		<defName>HAR_Alien_Slavery_Disapproved_SlavesInColony</defName>
-		<thoughtClass>AlienRace.Thought_Situational_Precept_SlavesInColony</thoughtClass>
 		<workerClass>AlienRace.ThoughtWorker_Precept_SlavesInColony</workerClass>
 		<stages>
 			<li>
@@ -497,7 +494,6 @@
 
 	<ThoughtDef>
 		<defName>HAR_Alien_Slavery_Honorable_SlavesInColony</defName>
-		<thoughtClass>AlienRace.Thought_Situational_Precept_SlavesInColony</thoughtClass>
 		<workerClass>AlienRace.ThoughtWorker_Precept_SlavesInColony</workerClass>
 		<stages>
 			<li>

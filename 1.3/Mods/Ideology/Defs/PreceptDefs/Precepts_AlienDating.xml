@@ -20,7 +20,7 @@
 	
 	<HistoryEventDef>
 		<defName>HAR_AlienDating_Dating</defName>
-		<label>in a relationwhip with alien</label>
+		<label>in a relationship with alien</label>
 	</HistoryEventDef>
 
 	<!-- Forbidden -->
