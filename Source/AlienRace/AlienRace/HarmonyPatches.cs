@@ -1169,6 +1169,7 @@
             FieldInfo bodyInfo  = AccessTools.Field(typeof(RaceProperties), nameof(RaceProperties.body));
             FieldInfo propsInfo = AccessTools.Field(typeof(ThingDef),       nameof(ThingDef.race));
             FieldInfo defInfo = AccessTools.Field(typeof(Thing), nameof(Thing.def));
+            MethodInfo raceprops = AccessTools.Property(typeof(Pawn), nameof(Pawn.RaceProps)).GetGetMethod();
             {
                 List<CodeInstruction> instructionList = instructions.ToList();
                 for (int i = 0; i < instructionList.Count; i++)
@@ -1183,6 +1184,13 @@
 
                     if (i < instructionList.Count - 1 && instructionList[i + 1].OperandIs(bodyInfo) && instruction.OperandIs(defInfo))
                     {
+                        instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(ReplacedBody)));
+                        i++;
+                    }
+
+                    if (i < instructionList.Count - 1 && instructionList[i + 1].OperandIs(bodyInfo) && instruction.OperandIs(raceprops))
+                    {
+
                         instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(ReplacedBody)));
                         i++;
                     }
