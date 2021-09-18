@@ -259,6 +259,8 @@
             public List<Graphic>       addonGraphics;
             public List<int>           addonVariants;
 
+            public int lastAlienMeatIngestedTick = 0;
+
             private Dictionary<string, ExposableValueTuple<Color, Color>> colorChannels;
             private Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>   colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>();
 

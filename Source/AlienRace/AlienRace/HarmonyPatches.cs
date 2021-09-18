@@ -13,6 +13,7 @@
     using HarmonyLib;
     using JetBrains.Annotations;
     using RimWorld;
+    using RimWorld.Planet;
     using UnityEngine;
     using Verse;
     using Verse.AI;
@@ -152,8 +153,8 @@
                 postfix: new HarmonyMethod(patchType, nameof(CanDoNextStartPawnPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GameInitData), nameof(GameInitData.PrepForMapGen)),
                 new HarmonyMethod(patchType, nameof(PrepForMapGenPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.SecondaryLovinChanceFactor)), transpiler:
-                new HarmonyMethod(patchType, nameof(SecondaryLovinChanceFactorTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.SecondaryLovinChanceFactor)), postfix: new HarmonyMethod(patchType, nameof(SecondaryLovinChanceFactorPostfix)),
+                          transpiler: new HarmonyMethod(patchType, nameof(SecondaryLovinChanceFactorTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.CompatibilityWith)), 
                 postfix: new HarmonyMethod(patchType, nameof(CompatibilityWithPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.TryMakeInitialRelationsWith)), 
@@ -246,7 +247,23 @@
 
             harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.TotalStyleItemLikelihood)),
                           postfix: new HarmonyMethod(patchType, nameof(TotalStyleItemLikelihoodPostfix)));
-            
+
+            harmony.Patch(AccessTools.Method(typeof(Thing), nameof(Thing.Ingested)), new HarmonyMethod(patchType, nameof(IngestedPrefix)));
+
+            harmony.Patch(AccessTools.Method(typeof(InteractionWorker_RomanceAttempt), nameof(InteractionWorker.Interacted)),
+                          transpiler: new HarmonyMethod(patchType, nameof(RomanceAttemptInteractTranspiler)));
+
+            harmony.Patch(AccessTools.Method(typeof(InteractionWorker_RomanceAttempt), nameof(InteractionWorker_RomanceAttempt.SuccessChance)),
+                          postfix: new HarmonyMethod(patchType, nameof(RomanceAttemptSuccessChancePostfix)));
+
+            harmony.Patch(AccessTools.Method(typeof(BedUtility), nameof(BedUtility.WillingToShareBed)), postfix: new HarmonyMethod(patchType, nameof(WillingToShareBedPostfix)));
+
+            harmony.Patch(AccessTools.Method(typeof(Tradeable_Pawn), nameof(Tradeable_Pawn.ResolveTrade)), transpiler: new HarmonyMethod(patchType, nameof(TradeablePawnResolveTranspiler)));
+
+            harmony.Patch(AccessTools.Method(typeof(TradeUI), nameof(TradeUI.DrawTradeableRow)), transpiler: new HarmonyMethod(patchType, nameof(DrawTradeableRowTranspiler)));
+
+            harmony.Patch(AccessTools.Method(typeof(Pawn_MindState), nameof(Pawn_MindState.SetupLastHumanMeatTick)), new HarmonyMethod(patchType, nameof(SetupLastHumanMeatTickPrefix)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -395,6 +412,145 @@
                 BackstoryDef.UpdateTranslateableFields(bd);
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static void SetupLastHumanMeatTickPrefix(Pawn ___pawn)
+        {
+            AlienPartGenerator.AlienComp alienComp = ___pawn.GetComp<AlienPartGenerator.AlienComp>();
+            if (alienComp != null)
+            {
+                alienComp.lastAlienMeatIngestedTick = Find.TickManager.TicksGame;
+                alienComp.lastAlienMeatIngestedTick -= new IntRange(0, 60000).RandomInRange;
+            }
+        }
+
+        public static IEnumerable<CodeInstruction> DrawTradeableRowTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo doerWillingInfo = AccessTools.Method(typeof(IdeoUtility), nameof(IdeoUtility.DoerWillingToDo), new []{typeof(HistoryEvent)});
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                yield return instruction;
+
+                if (i > 5 && instructionList[i - 1].Calls(doerWillingInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(TradeSession), nameof(TradeSession.playerNegotiator)));
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return CodeInstruction.Call(patchType, nameof(DrawTransferableRowIsWilling));
+                    yield return new CodeInstruction(instruction);
+                }
+            }
+        }
+
+        public static bool DrawTransferableRowIsWilling(Pawn doer, Tradeable trad) => 
+            trad is Tradeable_Pawn {AnyThing: Pawn _} && IdeoUtility.DoerWillingToDo(AlienDefOf.HAR_Alien_SoldSlave, doer);
+
+        public static IEnumerable<CodeInstruction> TradeablePawnResolveTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo sellingSlaveryInfo = AccessTools.Method(typeof(GuestUtility), nameof(GuestUtility.IsSellingToSlavery));
+            MethodInfo buyingSlaveryInfo = AccessTools.Method(typeof(ITrader), nameof(ITrader.GiveSoldThingToPlayer));
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+
+                if (instruction.Calls(sellingSlaveryInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(TradeSession), nameof(TradeSession.playerNegotiator)));
+                    yield return new CodeInstruction(OpCodes.Ldloc_0);
+                    yield return new CodeInstruction(OpCodes.Ldloc_1);
+                    yield return CodeInstruction.Call(typeof(List<>).MakeGenericType(typeof(Pawn)), "get_Item");
+                    yield return CodeInstruction.Call(patchType, nameof(SoldSlave));
+                }
+
+                if (instruction.Calls(buyingSlaveryInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldsfld,    AccessTools.Field(typeof(TradeSession), nameof(TradeSession.trader)));
+                    yield return new CodeInstruction(OpCodes.Castclass, typeof(Pawn));
+                    yield return new CodeInstruction(OpCodes.Ldloc_2);
+                    yield return new CodeInstruction(OpCodes.Ldloc_3);
+                    yield return CodeInstruction.Call(typeof(List<>).MakeGenericType(typeof(Pawn)), "get_Item");
+                    yield return CodeInstruction.Call(patchType, nameof(SoldSlave));
+                }
+            }
+        }
+
+        public static void SoldSlave(Pawn pawn, Pawn slave)
+        {
+            if(pawn.def != slave.def)
+                Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_Alien_SoldSlave, pawn.Named(HistoryEventArgsNames.Doer), slave.Named(HistoryEventArgsNames.Victim)));
+        }
+
+        public static void WillingToShareBedPostfix(Pawn pawn1, Pawn pawn2, ref bool __result)
+        {
+            if (pawn1.def != pawn2.def)
+                if (!IdeoUtility.DoerWillingToDo(AlienDefOf.HAR_AlienDating_SharedBed, pawn1) || !IdeoUtility.DoerWillingToDo(AlienDefOf.HAR_AlienDating_SharedBed, pawn2))
+                    __result = false;
+        }
+
+        public static void RomanceAttemptSuccessChancePostfix(Pawn initiator, Pawn recipient, ref float __result)
+        {
+            if (initiator.def != recipient.def)
+                if (!IdeoUtility.DoerWillingToDo(AlienDefOf.HAR_AlienDating_BeginRomance, initiator) || !IdeoUtility.DoerWillingToDo(AlienDefOf.HAR_AlienDating_BeginRomance, recipient))
+                    __result = -1f;
+        }
+
+        public static IEnumerable<CodeInstruction> RomanceAttemptInteractTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo becameLoverInfo = AccessTools.Field(typeof(TaleDefOf), nameof(TaleDefOf.BecameLover));
+
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.LoadsField(becameLoverInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldarg_2);
+                    yield return CodeInstruction.Call(patchType, nameof(NewLoverHelper));
+                }
+
+                yield return instruction;
+            }
+        }
+
+        public static void NewLoverHelper(Pawn initiator, Pawn recipient)
+        {
+            if (initiator.def != recipient.def)
+            {
+                Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_AlienDating_Dating, initiator.Named(HistoryEventArgsNames.Doer), recipient.Named(HistoryEventArgsNames.Victim)));
+                Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_AlienDating_Dating, recipient.Named(HistoryEventArgsNames.Doer), initiator.Named(HistoryEventArgsNames.Victim)));
+            }
+        }
+
+
+        public static void IngestedPrefix(Pawn ingester, Thing __instance)
+        {
+            if (__instance.Destroyed || !__instance.IngestibleNow)
+                return;
+
+            if (FoodUtility.IsHumanlikeCorpseOrHumanlikeMeatOrIngredient(__instance))
+            {
+                bool alienMeat = (__instance.def.IsCorpse     && ingester.def                                                 != (__instance as Corpse).InnerPawn.def) ||
+                                 (__instance.def.IsIngestible && __instance.def.IsMeat && __instance.def.ingestible.sourceDef != ingester.def);
+
+                CompIngredients compIngredients = __instance.TryGetComp<CompIngredients>();
+                if (compIngredients != null)
+                    foreach (ThingDef ingredient in compIngredients.ingredients)
+                        if (ingredient.IsMeat && ingredient.ingestible.sourceDef != ingester.def)
+                            alienMeat = true;
+
+                Find.HistoryEventsManager.RecordEvent(new HistoryEvent(alienMeat ? AlienDefOf.HAR_AteAlienMeat : AlienDefOf.HAR_AteNonAlienFood, ingester.Named(HistoryEventArgsNames.Doer)));
+                if (alienMeat)
+                {
+                    AlienPartGenerator.AlienComp alienComp = ingester.GetComp<AlienPartGenerator.AlienComp>();
+                    if (alienComp != null)
+                        alienComp.lastAlienMeatIngestedTick = Find.TickManager.TicksGame;
+                }
+            }
         }
 
         public static IEnumerable<CodeInstruction> RenderOverBodyTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
@@ -1715,6 +1871,11 @@
             __result = num + num2;
         }
 
+        public static void SecondaryLovinChanceFactorPostfix(Pawn ___pawn, Pawn otherPawn, ref float __result)
+        {
+            
+        }
+
         public static IEnumerable<CodeInstruction> SecondaryLovinChanceFactorTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             FieldInfo  defField          = AccessTools.Field(typeof(Thing), nameof(Pawn.def));
@@ -1944,6 +2105,24 @@
                 }
 
                 resultingThoughts.Add(new FoodUtility.ThoughtFromIngesting { fromPrecept = __result[i].fromPrecept, thought = thoughtDef });
+            }
+
+            if (foodSource != null && FoodUtility.IsHumanlikeCorpseOrHumanlikeMeatOrIngredient(foodSource))
+            {
+                bool alienMeat = (foodSource.def.IsCorpse     && ingester.def                                                 != (foodSource as Corpse).InnerPawn.def) ||
+                                 (foodSource.def.IsIngestible && foodSource.def.IsMeat && foodSource.def.ingestible.sourceDef != ingester.def);
+
+                CompIngredients compIngredients = foodSource.TryGetComp<CompIngredients>();
+                if (compIngredients != null)
+                    foreach (ThingDef ingredient in compIngredients.ingredients)
+                        if (ingredient.IsMeat && ingredient.ingestible.sourceDef != ingester.def)
+                            alienMeat = true;
+
+
+                CachedData.ingestThoughts().Clear();
+                CachedData.foodUtilityAddThoughtsFromIdeo(alienMeat ? AlienDefOf.HAR_AteAlienMeat : AlienDefOf.HAR_AteNonAlienFood, ingester, foodDef,
+                                                          alienMeat ? MeatSourceCategory.Humanlike : MeatSourceCategory.NotMeat);
+                resultingThoughts.AddRange(CachedData.ingestThoughts());
             }
 
             __result = resultingThoughts;
