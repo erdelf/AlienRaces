@@ -57,10 +57,10 @@
 				<eventDef>HAR_ButcheredAlien</eventDef>
 				<thought>HAR_ButcheredAlien_Abhorrent</thought>
 			</li>
-			<li Class="PreceptComp_KnowsMemoryThought">
+			<!-->li Class="PreceptComp_KnowsMemoryThought">
 				<eventDef>HAR_ButcheredAlien</eventDef>
 				<thought/>
-			</li>
+			</li-->
 			<li Class="PreceptComp_KnowsMemoryThought">
 				<eventDef>HAR_ButcheredAlien</eventDef>
 				<thought>HAR_ButcheredAlien_Know_Abhorrent_Opinion</thought>

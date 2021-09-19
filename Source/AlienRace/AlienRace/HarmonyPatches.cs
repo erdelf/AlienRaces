@@ -264,6 +264,8 @@
 
             harmony.Patch(AccessTools.Method(typeof(Pawn_MindState), nameof(Pawn_MindState.SetupLastHumanMeatTick)), new HarmonyMethod(patchType, nameof(SetupLastHumanMeatTickPrefix)));
 
+            harmony.Patch(AccessTools.Method(typeof(FoodUtility), "AddThoughtsFromIdeo"), new HarmonyMethod(patchType, nameof(FoodUtilityAddThoughtsFromIdeoPrefix)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -412,6 +414,17 @@
                 BackstoryDef.UpdateTranslateableFields(bd);
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static void FoodUtilityAddThoughtsFromIdeoPrefix(ref HistoryEventDef eventDef, Pawn ingester, ThingDef foodDef, MeatSourceCategory meatSourceCategory)
+        {
+            if (meatSourceCategory == MeatSourceCategory.Humanlike)
+            {
+                bool alienMeat = (foodDef.IsCorpse     && ingester.def != foodDef.ingestible.sourceDef) ||
+                                 (foodDef.IsMeat && foodDef.ingestible.sourceDef != ingester.def);
+                if(alienMeat)
+                    eventDef = AlienDefOf.HAR_AteAlienMeat;
+            }
         }
 
         public static void SetupLastHumanMeatTickPrefix(Pawn ___pawn)
@@ -617,10 +630,15 @@
             ev.args.TryGetArg(HistoryEventArgsNames.Victim, out Pawn victim);
 
             if (thought == ThoughtDefOf.KnowButcheredHumanlikeCorpse)
+            {
+                if(doer.def != victim.def)
+                    Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_ButcheredAlien, doer.Named(HistoryEventArgsNames.Doer), victim.Named(HistoryEventArgsNames.Victim)));
+
                 if (doer.def is ThingDef_AlienRace alienPropsPawn)
                     result = alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific
                                         ?.FirstOrDefault(predicate: bt => bt.raceList?.Contains(victim.def) ?? false)?.knowThought ??
                              alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.knowThought;
+            }
 
             return result;
         }
@@ -2115,10 +2133,11 @@
                 resultingThoughts.Add(new FoodUtility.ThoughtFromIngesting { fromPrecept = __result[i].fromPrecept, thought = thoughtDef });
             }
 
+            __result = resultingThoughts;
+
             if (foodSource != null && FoodUtility.IsHumanlikeCorpseOrHumanlikeMeatOrIngredient(foodSource))
             {
-                bool alienMeat = (foodSource.def.IsCorpse     && ingester.def                                                 != (foodSource as Corpse).InnerPawn.def) ||
-                                 (foodSource.def.IsIngestible && foodSource.def.IsMeat && foodSource.def.ingestible.sourceDef != ingester.def);
+                bool alienMeat = false;
 
                 CompIngredients compIngredients = foodSource.TryGetComp<CompIngredients>();
                 if (compIngredients != null)
