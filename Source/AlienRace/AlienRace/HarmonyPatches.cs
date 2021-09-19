@@ -1,7 +1,6 @@
 ﻿namespace AlienRace
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
@@ -11,14 +10,11 @@
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using HarmonyLib;
-    using JetBrains.Annotations;
     using RimWorld;
-    using RimWorld.Planet;
     using UnityEngine;
     using Verse;
     using Verse.AI;
     using Verse.Grammar;
-    using Object = UnityEngine.Object;
 
     /// <summary>
     /// "More useful than the Harmony wiki" ~ Mehni
