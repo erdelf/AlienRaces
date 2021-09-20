@@ -17,14 +17,21 @@
         public static ThoughtDef XenophobiaVsAlien;
         public static ThingCategoryDef alienCorpseCategory;
 
+        [MayRequireIdeology]
         public static HistoryEventDef HAR_AteAlienMeat;
+        [MayRequireIdeology]
         public static HistoryEventDef HAR_AteNonAlienFood;
+        [MayRequireIdeology]
         public static HistoryEventDef HAR_ButcheredAlien;
 
+        [MayRequireIdeology]
         public static HistoryEventDef HAR_AlienDating_Dating;
+        [MayRequireIdeology]
         public static HistoryEventDef HAR_AlienDating_BeginRomance;
+        [MayRequireIdeology]
         public static HistoryEventDef HAR_AlienDating_SharedBed;
 
+        [MayRequireIdeology]
         public static HistoryEventDef HAR_Alien_SoldSlave;
         // ReSharper restore InconsistentNaming
     }
