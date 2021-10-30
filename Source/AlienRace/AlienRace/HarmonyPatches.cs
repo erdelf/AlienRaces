@@ -459,10 +459,12 @@ namespace AlienRace
         public static bool DrawTransferableRowIsWilling(Pawn doer, Tradeable trad) => 
             trad is Tradeable_Pawn {AnyThing: Pawn _} && IdeoUtility.DoerWillingToDo(AlienDefOf.HAR_Alien_SoldSlave, doer);
 
-        public static IEnumerable<CodeInstruction> TradeablePawnResolveTranspiler(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> TradeablePawnResolveTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
             MethodInfo sellingSlaveryInfo = AccessTools.Method(typeof(GuestUtility), nameof(GuestUtility.IsSellingToSlavery));
             MethodInfo buyingSlaveryInfo = AccessTools.Method(typeof(ITrader), nameof(ITrader.GiveSoldThingToPlayer));
+
+            Label orbitalTradeLabel = ilg.DefineLabel();
 
             foreach (CodeInstruction instruction in instructions)
             {
@@ -480,11 +482,15 @@ namespace AlienRace
                 if (instruction.Calls(buyingSlaveryInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Ldsfld,    AccessTools.Field(typeof(TradeSession), nameof(TradeSession.trader)));
+                    yield return new CodeInstruction(OpCodes.Isinst,    typeof(Pawn));
+                    yield return new CodeInstruction(OpCodes.Brfalse,   orbitalTradeLabel);
+                    yield return new CodeInstruction(OpCodes.Ldsfld,    AccessTools.Field(typeof(TradeSession), nameof(TradeSession.trader)));
                     yield return new CodeInstruction(OpCodes.Castclass, typeof(Pawn));
                     yield return new CodeInstruction(OpCodes.Ldloc_2);
                     yield return new CodeInstruction(OpCodes.Ldloc_3);
                     yield return CodeInstruction.Call(typeof(List<>).MakeGenericType(typeof(Pawn)), "get_Item");
                     yield return CodeInstruction.Call(patchType, nameof(SoldSlave));
+                    yield return new CodeInstruction(OpCodes.Nop).WithLabels(orbitalTradeLabel);
                 }
             }
         }
