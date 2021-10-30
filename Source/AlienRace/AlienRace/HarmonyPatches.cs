@@ -1,4 +1,4 @@
-﻿namespace AlienRace
+namespace AlienRace
 {
     using System;
     using System.Collections.Generic;
@@ -2875,18 +2875,21 @@
 
         public static void DrawAddons(PawnRenderFlags renderFlags, Vector3 vector, Vector3 headOffset, Pawn pawn, Quaternion quat, Rot4 rotation)
         {
-            if (!(pawn.def is ThingDef_AlienRace alienProps) || renderFlags.FlagSet(PawnRenderFlags.Invisible)) return;
+            if (!(pawn.def is ThingDef_AlienRace alienProps)) return;
 
             List<AlienPartGenerator.BodyAddon> addons    = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
             AlienPartGenerator.AlienComp       alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
+
+            bool isPortrait = renderFlags.FlagSet(PawnRenderFlags.Portrait);
+            bool isInvisible = renderFlags.FlagSet(PawnRenderFlags.Invisible);
 
             for (int i = 0; i < addons.Count; i++)
             {
                 AlienPartGenerator.BodyAddon ba = addons[i];
                 if (!ba.CanDrawAddon(pawn)) continue;
 
-                Vector3 offsetVector = (ba.defaultOffsets.GetOffset(rotation)?.GetOffset(renderFlags.FlagSet(PawnRenderFlags.Portrait), pawn.story.bodyType, alienComp.crownType) ?? Vector3.zero) + 
-                                  (ba.offsets.GetOffset(rotation)?.GetOffset(renderFlags.FlagSet(PawnRenderFlags.Portrait), pawn.story.bodyType, alienComp.crownType) ?? Vector3.zero);
+                Vector3 offsetVector = (ba.defaultOffsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story.bodyType, alienComp.crownType) ?? Vector3.zero) + 
+                                  (ba.offsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story.bodyType, alienComp.crownType) ?? Vector3.zero);
 
                 //Defaults for tails 
                 //south 0.42f, -0.3f, -0.22f
@@ -2911,23 +2914,31 @@
                 }
 
                 Graphic addonGraphic = alienComp.addonGraphics[i];
-                addonGraphic.drawSize = (renderFlags.FlagSet(PawnRenderFlags.Portrait) && ba.drawSizePortrait != Vector2.zero ?
+                addonGraphic.drawSize = (isPortrait && ba.drawSizePortrait != Vector2.zero ?
                                              ba.drawSizePortrait : 
                                              ba.drawSize) * 
                                         (ba.scaleWithPawnDrawsize ? 
                                              ba.alignWithHead ?
-                                                 renderFlags.FlagSet(PawnRenderFlags.Portrait) ? 
+                                                 isPortrait ? 
                                                     alienComp.customPortraitHeadDrawSize :
                                                     alienComp.customHeadDrawSize :
-                                                 renderFlags.FlagSet(PawnRenderFlags.Portrait) ?
+                                                 isPortrait ?
                                                     alienComp.customPortraitDrawSize :
                                                     alienComp.customDrawSize : 
                                              Vector2.one) * 
                                         1.5f;
 
+                Material mat = addonGraphic.MatAt(rotation);
+                if (!isPortrait && isInvisible)
+                    mat = InvisibilityMatPool.GetInvisibleMat(mat);
+
                 //                                                                                                                                  Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
-                GenDraw.DrawMeshNowOrLater(addonGraphic.MeshAt(rotation), vector + (ba.alignWithHead ? headOffset : Vector3.zero) + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
-                                           Quaternion.AngleAxis(num, Vector3.up) * quat, addonGraphic.MatAt(rotation), renderFlags.FlagSet(PawnRenderFlags.DrawNow));
+                GenDraw.DrawMeshNowOrLater(
+                    addonGraphic.MeshAt(rotation), 
+                    vector + (ba.alignWithHead ? headOffset : Vector3.zero) + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
+                    Quaternion.AngleAxis(num, Vector3.up) * quat, 
+                    mat, 
+                    renderFlags.FlagSet(PawnRenderFlags.DrawNow));
             }
         }
     }
