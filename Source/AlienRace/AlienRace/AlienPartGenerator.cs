@@ -209,7 +209,7 @@
                 }
             });
             if (logBuilder.Length > 0)
-                 Log.Message($"Loaded body addon variants for {this.alienProps.defName}\n{logBuilder}"); 
+                 Log.Message($"Loaded body addon variants for {this.alienProps.defName}\n{logBuilder}");
         }
 
         public class WoundAnchorReplacement
@@ -259,6 +259,7 @@
             public AlienGraphicMeshSet alienHeadGraphics;
             public AlienGraphicMeshSet alienPortraitGraphics;
             public AlienGraphicMeshSet alienPortraitHeadGraphics;
+            public int                 headMaskVariant = -1;
             public List<Graphic>       addonGraphics;
             public List<int>           addonVariants;
 
@@ -375,6 +376,7 @@
                 Scribe_Collections.Look(ref this.addonVariants, label: "addonVariants");
                 Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
                 Scribe_NestedCollections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Undefined, LookMode.Undefined);
+                Scribe_Values.Look(ref this.headMaskVariant, nameof(this.headMaskVariant), -1);
 
                 if(this.colorChannelLinks == null)
                     this.colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>();
