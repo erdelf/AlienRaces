@@ -58,8 +58,11 @@
 
         public Color SkinColor(Pawn alien, bool first = true)
         {
-            
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
+
+            if (alienComp == null) 
+                return PawnSkinColors.GetSkinColor(alien.story.melanin);
+
             ExposableValueTuple<Color, Color> skinColors = alienComp.GetChannel(channel: "skin");
             return first ? skinColors.first : skinColors.second;
         }

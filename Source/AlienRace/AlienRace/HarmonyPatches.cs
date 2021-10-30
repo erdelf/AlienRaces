@@ -1221,8 +1221,8 @@ namespace AlienRace
             }
         }
 
-        public static BodyDef ReplacedBody(Pawn pawn) =>
-            pawn.def is ThingDef_AlienRace ? (pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien)?.body ?? pawn.RaceProps.body : pawn.RaceProps.body;
+        public static BodyDef ReplacedBody(Pawn pawn) => 
+            pawn.def is ThingDef_AlienRace ? (pawn.ageTracker?.CurLifeStageRace as LifeStageAgeAlien)?.body ?? pawn.RaceProps.body : pawn.RaceProps.body;
 
         public static bool ChangeKindPrefix(Pawn __instance, PawnKindDef newKindDef) =>
             __instance.kindDef == PawnKindDefOf.WildMan || newKindDef == PawnKindDefOf.WildMan;
@@ -1263,11 +1263,11 @@ namespace AlienRace
         }
 
         public static Vector2 BaseHeadOffsetAtHelper(Vector2 offset, Pawn pawn) => 
-            offset + ((pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).headOffset ?? Vector2.zero);
+            offset + ((pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker?.CurLifeStage ?? pawn.def.race.lifeStageAges.Last().def).headOffset ?? Vector2.zero);
 
         public static void BaseHeadOffsetAtPostfix(ref Vector3 __result, Rot4 rotation, Pawn ___pawn)
         {
-            Vector2 offset = (___pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(___pawn.ageTracker.CurLifeStage).headOffsetDirectional?.GetOffset(rotation) ?? Vector2.zero;
+            Vector2 offset = (___pawn.def as ThingDef_AlienRace)?.alienRace.graphicPaths.GetCurrentGraphicPath(___pawn.ageTracker?.CurLifeStage ?? ___pawn.def.race.lifeStageAges.Last().def).headOffsetDirectional?.GetOffset(rotation) ?? Vector2.zero;
             __result += new Vector3(offset.x, y: 0, offset.y);
         }
 
@@ -2538,32 +2538,36 @@ namespace AlienRace
             {
                 AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
 
-                AlienPartGenerator apg = alienProps.alienRace.generalSettings.alienPartGenerator;
-
-                if (alienComp.fixGenderPostSpawn)
+                if (alienComp != null)
                 {
-                    float? maleGenderProbability = alien.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? alienProps.alienRace.generalSettings.maleGenderProbability;
-                    __instance.pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
-                    __instance.pawn.Name   = PawnBioAndNameGenerator.GeneratePawnName(__instance.pawn);
+                    AlienPartGenerator apg = alienProps.alienRace.generalSettings.alienPartGenerator;
 
-                    CachedData.headGraphicPath(__instance.pawn.story) = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty() ?
-                                                                            "" :
-                                                                            apg.RandomAlienHead(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head, __instance.pawn);
+                    if (alienComp.fixGenderPostSpawn)
+                    {
+                        float? maleGenderProbability = alien.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? alienProps.alienRace.generalSettings.maleGenderProbability;
+                        __instance.pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
+                        __instance.pawn.Name   = PawnBioAndNameGenerator.GeneratePawnName(__instance.pawn);
 
-                    alienComp.fixGenderPostSpawn = false;
-                }
+                        CachedData.headGraphicPath(__instance.pawn.story) = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty()
+                                                                                ? ""
+                                                                                : apg.RandomAlienHead(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head,
+                                                                                                      __instance.pawn);
 
-                GraphicPaths graphicPaths = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage);
+                        alienComp.fixGenderPostSpawn = false;
+                    }
 
-                alienComp.customDrawSize             = graphicPaths.customDrawSize;
-                alienComp.customHeadDrawSize         = graphicPaths.customHeadDrawSize;
-                alienComp.customPortraitDrawSize     = graphicPaths.customPortraitDrawSize;
-                alienComp.customPortraitHeadDrawSize = graphicPaths.customPortraitHeadDrawSize;
+                    GraphicPaths graphicPaths = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker?.CurLifeStage ?? alienProps.race.lifeStageAges.Last().def);
 
-                alienComp.AssignProperMeshs();
+                    alienComp.customDrawSize             = graphicPaths.customDrawSize;
+                    alienComp.customHeadDrawSize         = graphicPaths.customHeadDrawSize;
+                    alienComp.customPortraitDrawSize     = graphicPaths.customPortraitDrawSize;
+                    alienComp.customPortraitHeadDrawSize = graphicPaths.customPortraitHeadDrawSize;
 
-                CachedData.headGraphicPath(alien.story) = alienComp.crownType.NullOrEmpty() ? apg.RandomAlienHead(graphicPaths.head, alien) : 
-                                                              AlienPartGenerator.GetAlienHead(graphicPaths.head, apg.useGenderedHeads ? alien.gender.ToString() : "", alienComp.crownType);
+                    alienComp.AssignProperMeshs();
+
+                    CachedData.headGraphicPath(alien.story) = alienComp.crownType.NullOrEmpty()
+                                                                  ? apg.RandomAlienHead(graphicPaths.head, alien)
+                                                                  : AlienPartGenerator.GetAlienHead(graphicPaths.head, apg.useGenderedHeads ? alien.gender.ToString() : "", alienComp.crownType);
 
                     __instance.nakedGraphic = !graphicPaths.body.NullOrEmpty()
                                                   ? apg.GetNakedGraphic(alien.story.bodyType, ContentFinder<Texture2D>.Get(
@@ -2597,77 +2601,85 @@ namespace AlienRace
                                                                                       graphicPaths.headMasks.NullOrEmpty() ? string.Empty : graphicPaths.headMasks + (alienComp.headMaskVariant >= 0 ? alienComp.headMaskVariant : (alienComp.headMaskVariant = Rand.Range(min: 0, graphicPaths.HeadMaskCount))))
                                                  : null;
 
-                __instance.desiccatedHeadGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
-                                                       GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one,
-                                                                                          PawnGraphicSet.RottingColorDefault) :
-                                                       null;
-                __instance.skullGraphic = alien.health.hediffSet.HasHead && !graphicPaths.skull.NullOrEmpty() ?
-                                              GraphicDatabase.Get<Graphic_Multi>(graphicPaths.skull, ShaderDatabase.Cutout, Vector2.one, Color.white) :
-                                              null;
+                    __instance.desiccatedHeadGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty()
+                                                           ? GraphicDatabase.Get<Graphic_Multi>(alien.story.HeadGraphicPath, ShaderDatabase.Cutout, Vector2.one,
+                                                                                                PawnGraphicSet.RottingColorDefault)
+                                                           : null;
+                    __instance.skullGraphic = alien.health.hediffSet.HasHead && !graphicPaths.skull.NullOrEmpty()
+                                                  ? GraphicDatabase.Get<Graphic_Multi>(graphicPaths.skull, ShaderDatabase.Cutout, Vector2.one, Color.white)
+                                                  : null;
 
-                if(__instance.pawn.story.hairDef != null && alienProps.alienRace.styleSettings[typeof(HairDef)].hasStyle)
-                    __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath,
-                                                                                ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
-                                                                                    (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Transparent) :
-                                                                                    ShaderDatabase.CutoutComplex, Vector2.one, alien.story.hairColor, alienComp.GetChannel(channel: "hair").second);
-                __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
-                                                  GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,
-                                                      alien.story.SkinColor == apg.SkinColor(alien, first: false) ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, Vector2.one,
-                                                      alien.story.SkinColor, apg.SkinColor(alien, first: false)) :
-                                                  null;
-                __instance.desiccatedHeadStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
-                                                            GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,
-                                                                ShaderDatabase.Cutout, Vector2.one,
-                                                                PawnGraphicSet.RottingColorDefault) :
-                                                            null;
+                    if (__instance.pawn.story.hairDef != null && alienProps.alienRace.styleSettings[typeof(HairDef)].hasStyle)
+                        __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath,
+                                                                                    ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null
+                                                                                        ? (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Transparent)
+                                                                                        : ShaderDatabase.CutoutComplex, Vector2.one, alien.story.hairColor,
+                                                                                    alienComp.GetChannel(channel: "hair").second);
+                    __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty()
+                                                      ? GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,
+                                                                                           alien.story.SkinColor == apg.SkinColor(alien, first: false)
+                                                                                               ? ShaderDatabase.Cutout
+                                                                                               : ShaderDatabase.CutoutComplex, Vector2.one,
+                                                                                           alien.story.SkinColor, apg.SkinColor(alien, first: false))
+                                                      : null;
+                    __instance.desiccatedHeadStumpGraphic = !graphicPaths.stump.NullOrEmpty()
+                                                                ? GraphicDatabase.Get<Graphic_Multi>(graphicPaths.stump,
+                                                                                                     ShaderDatabase.Cutout, Vector2.one,
+                                                                                                     PawnGraphicSet.RottingColorDefault)
+                                                                : null;
 
-                if (alien.style != null && ModsConfig.IdeologyActive)
-                {
-                    AlienPartGenerator.ExposableValueTuple<Color, Color> tattooColor = alienComp.GetChannel("tattoo");
+                    if (alien.style != null && ModsConfig.IdeologyActive)
+                    {
+                        AlienPartGenerator.ExposableValueTuple<Color, Color> tattooColor = alienComp.GetChannel("tattoo");
 
-                    if (alien.style.FaceTattoo != null && alien.style.FaceTattoo != TattooDefOf.NoTattoo_Face)
-                        __instance.faceTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.FaceTattoo.texPath,
-                                                                                          (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ?? ShaderDatabase.CutoutSkinOverlay),
-                                                                                          Vector2.one, tattooColor.first, tattooColor.second, null, alien.story.HeadGraphicPath);
-                    else
-                        __instance.faceTattooGraphic = null;
+                        if (alien.style.FaceTattoo != null && alien.style.FaceTattoo != TattooDefOf.NoTattoo_Face)
+                            __instance.faceTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.FaceTattoo.texPath,
+                                                                                              (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ??
+                                                                                               ShaderDatabase.CutoutSkinOverlay),
+                                                                                              Vector2.one, tattooColor.first, tattooColor.second, null, alien.story.HeadGraphicPath);
+                        else
+                            __instance.faceTattooGraphic = null;
 
-                    if (alien.style.BodyTattoo != null && alien.style.BodyTattoo != TattooDefOf.NoTattoo_Body)
-                        __instance.bodyTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.BodyTattoo.texPath,
-                                                                                          (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ?? ShaderDatabase.CutoutSkinOverlay), 
-                                                                                          Vector2.one, tattooColor.first, tattooColor.second, null, __instance.nakedGraphic.path);
-                    else
-                        __instance.bodyTattooGraphic = null;
+                        if (alien.style.BodyTattoo != null && alien.style.BodyTattoo != TattooDefOf.NoTattoo_Body)
+                            __instance.bodyTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.BodyTattoo.texPath,
+                                                                                              (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ??
+                                                                                               ShaderDatabase.CutoutSkinOverlay),
+                                                                                              Vector2.one, tattooColor.first, tattooColor.second, null, __instance.nakedGraphic.path);
+                        else
+                            __instance.bodyTattooGraphic = null;
+                    }
+
+                    if (alien.style?.beardDef != null)
+                        __instance.beardGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.beardDef.texPath,
+                                                                                     (alienProps.alienRace.styleSettings[typeof(BeardDef)].shader?.Shader ?? ShaderDatabase.Transparent), Vector2.one,
+                                                                                     alien.story.hairColor);
+
+                    alienComp.OverwriteColorChannel("hair", alien.story.hairColor);
+                    if (alien.Corpse?.GetRotStage() == RotStage.Rotting)
+                        alienComp.OverwriteColorChannel("skin", PawnGraphicSet.RottingColorDefault);
+
+                    alienComp.RegenerateColorChannelLinks();
+
+                    alienComp.addonGraphics = new List<Graphic>();
+                    if (alienComp.addonVariants == null)
+                        alienComp.addonVariants = new List<int>();
+                    int sharedIndex = 0;
+                    for (int i = 0; i < apg.bodyAddons.Count; i++)
+                    {
+                        Graphic g = apg.bodyAddons[i].GetPath(alien, ref sharedIndex,
+                                                              alienComp.addonVariants.Count > i ? (int?) alienComp.addonVariants[i] : null);
+                        alienComp.addonGraphics.Add(g);
+                        if (alienComp.addonVariants.Count <= i)
+                            alienComp.addonVariants.Add(sharedIndex);
+                    }
+
+                    __instance.ResolveApparelGraphics();
+
+                    PortraitsCache.SetDirty(alien);
+                    GlobalTextureAtlasManager.TryMarkPawnFrameSetDirty(alien);
+
+                    return false;
                 }
-                if (alien.style?.beardDef != null)
-                    __instance.beardGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.beardDef.texPath, 
-                                                                                 (alienProps.alienRace.styleSettings[typeof(BeardDef)].shader?.Shader ?? ShaderDatabase.Transparent), Vector2.one, alien.story.hairColor);
-
-                alienComp.OverwriteColorChannel("hair", alien.story.hairColor);
-                if(alien.Corpse?.GetRotStage() == RotStage.Rotting)
-                    alienComp.OverwriteColorChannel("skin", PawnGraphicSet.RottingColorDefault);
-
-                alienComp.RegenerateColorChannelLinks();
-
-                alienComp.addonGraphics = new List<Graphic>();
-                if (alienComp.addonVariants == null)
-                    alienComp.addonVariants = new List<int>();
-                int sharedIndex = 0;
-                for (int i = 0; i < apg.bodyAddons.Count; i++)
-                {
-                    Graphic g = apg.bodyAddons[i].GetPath(alien, ref sharedIndex,
-                        alienComp.addonVariants.Count > i ? (int?) alienComp.addonVariants[i] : null);
-                    alienComp.addonGraphics.Add(g);
-                    if (alienComp.addonVariants.Count <= i)
-                        alienComp.addonVariants.Add(sharedIndex);
-                }
-
-                __instance.ResolveApparelGraphics();
-
-                PortraitsCache.SetDirty(alien);
-                GlobalTextureAtlasManager.TryMarkPawnFrameSetDirty(alien);
-
-                return false;
             }
 
             return true;
@@ -2895,65 +2907,54 @@ namespace AlienRace
             List<AlienPartGenerator.BodyAddon> addons    = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
             AlienPartGenerator.AlienComp       alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
 
-            bool isPortrait = renderFlags.FlagSet(PawnRenderFlags.Portrait);
-            bool isInvisible = renderFlags.FlagSet(PawnRenderFlags.Invisible);
-
-            for (int i = 0; i < addons.Count; i++)
+            if (alienComp != null)
             {
-                AlienPartGenerator.BodyAddon ba = addons[i];
-                if (!ba.CanDrawAddon(pawn)) continue;
 
-                Vector3 offsetVector = (ba.defaultOffsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story.bodyType, alienComp.crownType) ?? Vector3.zero) + 
-                                  (ba.offsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story.bodyType, alienComp.crownType) ?? Vector3.zero);
-
-                //Defaults for tails 
-                //south 0.42f, -0.3f, -0.22f
-                //north     0f,  0.3f, -0.55f
-                //east -0.42f, -0.3f, -0.22f   
-                
-                offsetVector.y = ba.inFrontOfBody ? 0.3f + offsetVector.y : -0.3f - offsetVector.y;
-
-                float num      = ba.angle;
-
-                if (rotation == Rot4.North)
+                for (int i = 0; i < addons.Count; i++)
                 {
-                    if (ba.layerInvert)
-                        offsetVector.y = -offsetVector.y;
-                    num = 0;
+                    AlienPartGenerator.BodyAddon ba = addons[i];
+                    if (!ba.CanDrawAddon(pawn)) continue;
+
+                    Vector3 offsetVector = (ba.defaultOffsets.GetOffset(rotation)?.GetOffset(renderFlags.FlagSet(PawnRenderFlags.Portrait), pawn.story.bodyType, alienComp.crownType) ?? Vector3.zero) +
+                                           (ba.offsets.GetOffset(rotation)?.GetOffset(renderFlags.FlagSet(PawnRenderFlags.Portrait), pawn.story.bodyType, alienComp.crownType)        ?? Vector3.zero);
+
+                    //Defaults for tails 
+                    //south 0.42f, -0.3f, -0.22f
+                    //north     0f,  0.3f, -0.55f
+                    //east -0.42f, -0.3f, -0.22f   
+
+                    offsetVector.y = ba.inFrontOfBody ? 0.3f + offsetVector.y : -0.3f - offsetVector.y;
+
+                    float num = ba.angle;
+
+                    if (rotation == Rot4.North)
+                    {
+                        if (ba.layerInvert)
+                            offsetVector.y = -offsetVector.y;
+                        num = 0;
+                    }
+
+                    if (rotation == Rot4.East)
+                    {
+                        num            = -num; //Angle
+                        offsetVector.x = -offsetVector.x;
+                    }
+
+                    Graphic addonGraphic = alienComp.addonGraphics[i];
+                    addonGraphic.drawSize = (renderFlags.FlagSet(PawnRenderFlags.Portrait) && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) *
+                                            (ba.scaleWithPawnDrawsize
+                                                 ? ba.alignWithHead ? renderFlags.FlagSet(PawnRenderFlags.Portrait) ? alienComp.customPortraitHeadDrawSize :
+                                                                                                                      alienComp.customHeadDrawSize :
+                                                   renderFlags.FlagSet(PawnRenderFlags.Portrait) ? alienComp.customPortraitDrawSize :
+                                                                                                   alienComp.customDrawSize
+                                                 : Vector2.one) *
+                                            1.5f;
+
+                    //                                                                                                                                  Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
+                    GenDraw.DrawMeshNowOrLater(addonGraphic.MeshAt(rotation),
+                                               vector + (ba.alignWithHead ? headOffset : Vector3.zero) + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
+                                               Quaternion.AngleAxis(num, Vector3.up) * quat, addonGraphic.MatAt(rotation), renderFlags.FlagSet(PawnRenderFlags.DrawNow));
                 }
-
-                if (rotation == Rot4.East)
-                {
-                    num            = -num; //Angle
-                    offsetVector.x = -offsetVector.x;
-                }
-
-                Graphic addonGraphic = alienComp.addonGraphics[i];
-                addonGraphic.drawSize = (isPortrait && ba.drawSizePortrait != Vector2.zero ?
-                                             ba.drawSizePortrait : 
-                                             ba.drawSize) * 
-                                        (ba.scaleWithPawnDrawsize ? 
-                                             ba.alignWithHead ?
-                                                 isPortrait ? 
-                                                    alienComp.customPortraitHeadDrawSize :
-                                                    alienComp.customHeadDrawSize :
-                                                 isPortrait ?
-                                                    alienComp.customPortraitDrawSize :
-                                                    alienComp.customDrawSize : 
-                                             Vector2.one) * 
-                                        1.5f;
-
-                Material mat = addonGraphic.MatAt(rotation);
-                if (!isPortrait && isInvisible)
-                    mat = InvisibilityMatPool.GetInvisibleMat(mat);
-
-                //                                                                                                                                  Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
-                GenDraw.DrawMeshNowOrLater(
-                    addonGraphic.MeshAt(rotation), 
-                    vector + (ba.alignWithHead ? headOffset : Vector3.zero) + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
-                    Quaternion.AngleAxis(num, Vector3.up) * quat, 
-                    mat, 
-                    renderFlags.FlagSet(PawnRenderFlags.DrawNow));
             }
         }
     }
