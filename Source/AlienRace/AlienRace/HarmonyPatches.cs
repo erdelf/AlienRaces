@@ -490,7 +490,7 @@ namespace AlienRace
 
         public static void SoldSlave(Pawn pawn, Pawn slave)
         {
-            if(pawn.def != slave.def)
+            if(pawn.def != slave.def && ModsConfig.IdeologyActive)
                 Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_Alien_SoldSlave, pawn.Named(HistoryEventArgsNames.Doer), slave.Named(HistoryEventArgsNames.Victim)));
         }
 
@@ -528,7 +528,7 @@ namespace AlienRace
 
         public static void NewLoverHelper(Pawn initiator, Pawn recipient)
         {
-            if (initiator.def != recipient.def)
+            if (initiator.def != recipient.def && ModsConfig.IdeologyActive)
             {
                 Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_AlienDating_Dating, initiator.Named(HistoryEventArgsNames.Doer), recipient.Named(HistoryEventArgsNames.Victim)));
                 Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_AlienDating_Dating, recipient.Named(HistoryEventArgsNames.Doer), initiator.Named(HistoryEventArgsNames.Victim)));
@@ -551,8 +551,8 @@ namespace AlienRace
                     foreach (ThingDef ingredient in compIngredients.ingredients)
                         if (ingredient.IsMeat && ingredient.ingestible.sourceDef != ingester.def)
                             alienMeat = true;
-
-                Find.HistoryEventsManager.RecordEvent(new HistoryEvent(alienMeat ? AlienDefOf.HAR_AteAlienMeat : AlienDefOf.HAR_AteNonAlienFood, ingester.Named(HistoryEventArgsNames.Doer)));
+                if (ModsConfig.IdeologyActive)
+                    Find.HistoryEventsManager.RecordEvent(new HistoryEvent(alienMeat ? AlienDefOf.HAR_AteAlienMeat : AlienDefOf.HAR_AteNonAlienFood, ingester.Named(HistoryEventArgsNames.Doer)));
                 if (alienMeat)
                 {
                     AlienPartGenerator.AlienComp alienComp = ingester.GetComp<AlienPartGenerator.AlienComp>();
@@ -627,7 +627,7 @@ namespace AlienRace
 
             if (thought == ThoughtDefOf.KnowButcheredHumanlikeCorpse)
             {
-                if(doer.def != victim.def)
+                if(doer.def != victim.def && ModsConfig.IdeologyActive)
                     Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_ButcheredAlien, doer.Named(HistoryEventArgsNames.Doer), victim.Named(HistoryEventArgsNames.Victim)));
 
                 if (doer.def is ThingDef_AlienRace alienPropsPawn)
