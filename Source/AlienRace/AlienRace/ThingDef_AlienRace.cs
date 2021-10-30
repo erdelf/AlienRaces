@@ -165,13 +165,31 @@
         public const string VANILLA_HEAD_PATH = "Things/Pawn/Humanlike/Heads/";
         public const string VANILLA_SKELETON_PATH = "Things/Pawn/Humanlike/HumanoidDessicated";
 
-        public string body = "Things/Pawn/Humanlike/Bodies/";
-        public string head = "Things/Pawn/Humanlike/Heads/";
+        public string body      = "Things/Pawn/Humanlike/Bodies/";
+        public string head      = "Things/Pawn/Humanlike/Heads/";
+        public string headMasks = string.Empty;
+        private int  headMaskCount = -1;
+
         public string skeleton = "Things/Pawn/Humanlike/HumanoidDessicated";
-        public string skull = "Things/Pawn/Humanlike/Heads/None_Average_Skull";
-        public string stump = "Things/Pawn/Humanlike/Heads/None_Average_Stump";
+        public string skull    = "Things/Pawn/Humanlike/Heads/None_Average_Skull";
+        public string stump    = "Things/Pawn/Humanlike/Heads/None_Average_Stump";
 
         public ShaderTypeDef skinShader;
+
+        public int HeadMaskCount
+        {
+            get
+            {
+                if (this.headMaskCount >= 0 || this.headMasks.NullOrEmpty())
+                    return this.headMaskCount;
+
+                this.headMaskCount = 0;
+                while (ContentFinder<Texture2D>.Get($"{this.headMasks}{(this.headMaskCount == 0 ? string.Empty : this.headMaskCount.ToString())}_north", reportFailure: false) != null)
+                    this.headMaskCount++;
+
+                return this.headMaskCount;
+            }
+        }
     }
 
     public class DirectionOffset
