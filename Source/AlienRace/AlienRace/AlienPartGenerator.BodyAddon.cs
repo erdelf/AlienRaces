@@ -70,7 +70,7 @@
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 (pawn.Drawer.renderer.graphics.apparelGraphics.NullOrEmpty() || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
-                !pawn.apparel.WornApparel.Any(predicate: ap => ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
+                !pawn.apparel.WornApparel.Any(predicate: ap => !ap.def.apparel.hatRenderedFrontOfFace && ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
                 ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(s))))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && ((pawn.CurrentBed()?.def.building.bed_showSleeperBody ?? true) || this.drawnInBed) &&
                     (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
                     (this.drawnDesiccated || pawn.Corpse?.GetRotStage() != RotStage.Dessicated) &&
