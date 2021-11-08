@@ -67,7 +67,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.CanConstruct), new[]{typeof(Thing), typeof(Pawn), typeof(bool), typeof(bool)}), 
                 postfix: new HarmonyMethod(patchType, nameof(CanConstructPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GameRules), nameof(GameRules.DesignatorAllowed)), 
-                postfix: new HarmonyMethod(patchType, nameof(DesignatorAllowedPostfix)));
+                transpiler: new HarmonyMethod(patchType, nameof(DesignatorAllowedTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Bill), nameof(Bill.PawnAllowedToStartAnew)), 
                 postfix: new HarmonyMethod(patchType, nameof(PawnAllowedToStartAnewPostfix)));
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_GrowerHarvest), nameof(WorkGiver_GrowerHarvest.HasJobOnCell)), 
@@ -2032,23 +2032,63 @@ namespace AlienRace
             {
                 List<Pawn> pawns = PawnsFinder.AllMaps_FreeColonistsSpawned;
                 colonistRaces.Clear();
+                RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Clear();
+
                 if (pawns.Count > 0)
-                { 
-                    colonistRaces     = new HashSet<ThingDef>(pawns.Select(selector: p => p.def));
+                {
+                    HashSet<ThingDef> newColonistRaces = new HashSet<ThingDef>(pawns.Select(selector: p => p.def));
                     colonistRacesTick = Find.TickManager.TicksAbs;
                     //Log.Message(string.Join(" | ", colonistRaces.Select(td => td.defName)));
+
+                    if (newColonistRaces.Count != colonistRaces.Count || newColonistRaces.Any(td => !colonistRaces.Contains(td)))
+                    {
+                        foreach (ThingDef td in RaceRestrictionSettings.buildingRestricted)
+                        {
+                            foreach (ThingDef race in colonistRaces)
+                            {
+                                if (!RaceRestrictionSettings.CanBuild(td, race))
+                                    RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Add(td);
+                            }
+                        }
+                        colonistRaces = newColonistRaces;
+                    }
                 }
                 else
-                    colonistRacesTick = Find.TickManager.TicksAbs - COLONIST_RACES_TICK_TIMER + GenTicks.TicksPerRealSecond / 2;
+                {
+                    colonistRacesTick = Find.TickManager.TicksAbs - COLONIST_RACES_TICK_TIMER + GenTicks.TicksPerRealSecond;
+                    RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.AddRange(RaceRestrictionSettings.buildingRestricted);
+                }
             }
         }
 
-        public static void DesignatorAllowedPostfix(Designator d, ref bool __result)
+        public static IEnumerable<CodeInstruction> DesignatorAllowedTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
-            if (!__result || !(d is Designator_Build build)) 
-                return;
+            Label gotoReturn = ilg.DefineLabel();
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.opcode == OpCodes.Ret)
+                {
+                    yield return new CodeInstruction(OpCodes.Dup).MoveLabelsFrom(instruction);
+                    yield return new CodeInstruction(OpCodes.Brfalse, gotoReturn);
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Isinst,  typeof(Designator_Build));
+                    yield return new CodeInstruction(OpCodes.Brfalse, gotoReturn);
+                    yield return new CodeInstruction(OpCodes.Pop);
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Castclass, typeof(Designator_Build));
+                    yield return CodeInstruction.Call(patchType, nameof(DesignatorAllowedHelper));
+                    instruction.labels.Add(gotoReturn);
+                }
+
+                yield return instruction;
+            }
+        }
+
+        public static bool DesignatorAllowedHelper(Designator_Build d)
+        {
             UpdateColonistRaces();
-            __result = colonistRaces.Any(predicate: ar => RaceRestrictionSettings.CanBuild(build.PlacingDef, ar));
+            return RaceRestrictionSettings.CanColonyBuild(d.PlacingDef);
         }
 
         public static void CanConstructPostfix(Thing t, Pawn p, ref bool __result)

@@ -348,6 +348,11 @@
 
         public static HashSet<ThingDef> buildingRestricted = new HashSet<ThingDef>();
 
+        public static HashSet<ThingDef> buildingsRestrictedWithCurrentColony = new HashSet<ThingDef>();
+
+        public static bool CanColonyBuild(BuildableDef building) => 
+            !buildingsRestrictedWithCurrentColony.Contains(building);
+
         public static bool CanBuild(BuildableDef building, ThingDef race)
         {
             RaceRestrictionSettings raceRestriction = (race as ThingDef_AlienRace)?.alienRace.raceRestriction;
@@ -358,7 +363,10 @@
 
             return result && !(raceRestriction?.blackBuildingList.Contains(building) ?? false);
         }
-        
+
+
+
+
         public bool            onlyDoRaceRestrictedRecipes = false;
         public List<RecipeDef> recipeList                  = new List<RecipeDef>();
         public List<RecipeDef> whiteRecipeList             = new List<RecipeDef>();
