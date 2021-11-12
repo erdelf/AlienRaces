@@ -262,6 +262,8 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(FoodUtility), "AddThoughtsFromIdeo"), new HarmonyMethod(patchType, nameof(FoodUtilityAddThoughtsFromIdeoPrefix)));
 
+            harmony.Patch(AccessTools.Method(typeof(PreceptComp_UnwillingToDo_Gendered), nameof(PreceptComp.MemberWillingToDo)), transpiler: new HarmonyMethod(patchType, nameof(UnwillingWillingToDoGenderedTranspiler)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -411,6 +413,26 @@ namespace AlienRace
                 BackstoryDef.UpdateTranslateableFields(bd);
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> UnwillingWillingToDoGenderedTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+                yield return instruction;
+
+                if (instruction.opcode == OpCodes.Ldloc_0)
+                {
+                    yield return CodeInstruction.LoadField(typeof(Pawn),           nameof(Pawn.def));
+                    yield return CodeInstruction.LoadField(typeof(ThingDef),       nameof(ThingDef.race));
+                    yield return CodeInstruction.LoadField(typeof(RaceProperties), nameof(RaceProperties.hasGenders));
+                    yield return new CodeInstruction(OpCodes.Brfalse, instructionList[i + 4].operand);
+                    yield return new CodeInstruction(instruction);
+                }
+            }
         }
 
         public static void FoodUtilityAddThoughtsFromIdeoPrefix(ref HistoryEventDef eventDef, Pawn ingester, ThingDef foodDef, MeatSourceCategory meatSourceCategory)
@@ -1586,12 +1608,12 @@ namespace AlienRace
             }
             else if (relationDef == PawnRelationDefOf.ExLover)
             {
-                generationChance = 0.5f;
+                generationChance = 0.2f;
                 GenerationChanceExLoverPostfix(ref generationChance, pawn, current);
             }
             else if (relationDef == PawnRelationDefOf.ExSpouse)
             {
-                generationChance = 0.5f;
+                generationChance = 0.2f;
                 GenerationChanceExSpousePostfix(ref generationChance, pawn, current);
             }
             else if (relationDef == PawnRelationDefOf.Fiance)
@@ -1601,11 +1623,17 @@ namespace AlienRace
                         max: 1f) *
                     Mathf.Clamp(GenMath.LerpDouble(lifeExpectancy / 1.6f, lifeExpectancy, outFrom: 1f, outTo: 0.01f, current.ageTracker.AgeBiologicalYearsFloat), min: 0.01f,
                         max: 1f);
+
+                if (LovePartnerRelationUtility.HasAnyLovePartner(pawn) || LovePartnerRelationUtility.HasAnyLovePartner(current))
+                    generationChance = 0;
                 GenerationChanceFiancePostfix(ref generationChance, pawn, current);
             }
             else if (relationDef == PawnRelationDefOf.Lover)
             {
                 generationChance = 0.5f;
+
+                if (LovePartnerRelationUtility.HasAnyLovePartner(pawn) || LovePartnerRelationUtility.HasAnyLovePartner(current))
+                    generationChance = 0;
                 GenerationChanceLoverPostfix(ref generationChance, pawn, current);
             }
             else if (relationDef == PawnRelationDefOf.Parent)
@@ -1624,6 +1652,9 @@ namespace AlienRace
             else if (relationDef == PawnRelationDefOf.Spouse)
             {
                 generationChance = 0.5f;
+
+                if (LovePartnerRelationUtility.HasAnyLovePartner(pawn) || LovePartnerRelationUtility.HasAnyLovePartner(current))
+                    generationChance = 0;
                 GenerationChanceSpousePostfix(ref generationChance, pawn, current);
             }
 
