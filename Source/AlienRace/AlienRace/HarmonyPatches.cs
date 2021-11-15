@@ -519,7 +519,7 @@ namespace AlienRace
 
         public static void SoldSlave(Pawn pawn, Pawn slave)
         {
-            if(pawn.def != slave.def && ModsConfig.IdeologyActive)
+            if(pawn.def != slave.def && pawn.RaceProps.Humanlike && ModsConfig.IdeologyActive)
                 Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_Alien_SoldSlave, pawn.Named(HistoryEventArgsNames.Doer), slave.Named(HistoryEventArgsNames.Victim)));
         }
 
