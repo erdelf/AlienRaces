@@ -2062,8 +2062,6 @@ namespace AlienRace
             if (Find.TickManager.TicksAbs > colonistRacesTick + COLONIST_RACES_TICK_TIMER || Find.TickManager.TicksAbs < colonistRacesTick)
             {
                 List<Pawn> pawns = PawnsFinder.AllMaps_FreeColonistsSpawned;
-                colonistRaces.Clear();
-                RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Clear();
 
                 if (pawns.Count > 0)
                 {
@@ -2073,20 +2071,28 @@ namespace AlienRace
 
                     if (newColonistRaces.Count != colonistRaces.Count || newColonistRaces.Any(td => !colonistRaces.Contains(td)))
                     {
-                        foreach (ThingDef td in RaceRestrictionSettings.buildingRestricted)
+                        RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Clear();
+                        HashSet<ThingDef> buildingsRestrictedTemp = new HashSet<ThingDef>(RaceRestrictionSettings.buildingRestricted);
+                        buildingsRestrictedTemp.AddRange(newColonistRaces.SelectMany(ar => (ar as ThingDef_AlienRace)?.alienRace.raceRestriction.blackBuildingList));
+                        foreach (ThingDef td in buildingsRestrictedTemp)
                         {
-                            foreach (ThingDef race in colonistRaces)
+                            bool canBuild = false;
+                            foreach (ThingDef race in newColonistRaces)
                             {
-                                if (!RaceRestrictionSettings.CanBuild(td, race))
-                                    RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Add(td);
+                                if (RaceRestrictionSettings.CanBuild(td, race))
+                                    canBuild = true;
                             }
+                            if(!canBuild)
+                                RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Add(td);
                         }
                         colonistRaces = newColonistRaces;
                     }
                 }
                 else
                 {
+                    colonistRaces.Clear();
                     colonistRacesTick = Find.TickManager.TicksAbs - COLONIST_RACES_TICK_TIMER + GenTicks.TicksPerRealSecond;
+                    RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Clear();
                     RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.AddRange(RaceRestrictionSettings.buildingRestricted);
                 }
             }
