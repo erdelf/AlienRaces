@@ -2182,10 +2182,10 @@ namespace AlienRace
         public static void ThoughtsFromIngestingPostfix(Pawn ingester, Thing foodSource, ThingDef foodDef, ref List<FoodUtility.ThoughtFromIngesting> __result)
         {
             if (ingester.story.traits.HasTrait(AlienDefOf.Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1)
-                if (__result.Any(tfi => tfi.thought == ThoughtDefOf.AteHumanlikeMeatDirect) && foodDef.ingestible.sourceDef != ingester.def)
+                if (__result.Any(tfi => tfi.thought == ThoughtDefOf.AteHumanlikeMeatDirect) && foodDef.ingestible?.sourceDef != ingester.def)
                     __result.RemoveAll(tfi => tfi.thought == ThoughtDefOf.AteHumanlikeMeatDirect);
                 else if (__result.Any(tfi => tfi.thought == ThoughtDefOf.AteHumanlikeMeatAsIngredient) &&
-                         (foodSource?.TryGetComp<CompIngredients>()?.ingredients.Any(predicate: td => FoodUtility.GetMeatSourceCategory(td) == MeatSourceCategory.Humanlike && td.ingestible.sourceDef != ingester.def) ?? false))
+                         (foodSource?.TryGetComp<CompIngredients>()?.ingredients?.Any(predicate: td => FoodUtility.GetMeatSourceCategory(td) == MeatSourceCategory.Humanlike && td.ingestible?.sourceDef != ingester.def) ?? false))
                     __result.RemoveAll(tfi => tfi.thought == ThoughtDefOf.AteHumanlikeMeatAsIngredient);
 
             if (!(ingester.def is ThingDef_AlienRace alienProps)) return;
@@ -2201,11 +2201,11 @@ namespace AlienRace
                 thoughtDef = settings.ReplaceIfApplicable(thoughtDef);
 
                 if(thoughtDef == ThoughtDefOf.AteHumanlikeMeatDirect || thoughtDef == ThoughtDefOf.AteHumanlikeMeatDirectCannibal)
-                    thoughtDef = settings.GetAteThought(foodDef.ingestible.sourceDef, cannibal, ingredient: false);
+                    thoughtDef = settings.GetAteThought(foodDef.ingestible?.sourceDef, cannibal, ingredient: false);
 
                 if (thoughtDef == ThoughtDefOf.AteHumanlikeMeatAsIngredient || thoughtDef == ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal)
                 {
-                    ThingDef race = foodSource?.TryGetComp<CompIngredients>()?.ingredients.FirstOrDefault(predicate: td => td.ingestible?.sourceDef?.race?.Humanlike ?? false)?.ingestible?.sourceDef;
+                    ThingDef race = foodSource?.TryGetComp<CompIngredients>()?.ingredients?.FirstOrDefault(predicate: td => td.ingestible?.sourceDef?.race?.Humanlike ?? false)?.ingestible?.sourceDef;
                     if(race != null)
                         thoughtDef = settings.GetAteThought(race, cannibal, ingredient: true);
                 }
@@ -2220,7 +2220,7 @@ namespace AlienRace
                 bool alienMeat = false;
 
                 CompIngredients compIngredients = foodSource.TryGetComp<CompIngredients>();
-                if (compIngredients != null)
+                if (compIngredients?.ingredients != null)
                     foreach (ThingDef ingredient in compIngredients.ingredients)
                         if (ingredient.IsMeat && ingredient.ingestible.sourceDef != ingester.def)
                             alienMeat = true;
