@@ -2463,7 +2463,7 @@ namespace AlienRace
 
         public static void GenerateRandomAgePrefix(Pawn pawn, PawnGenerationRequest request)
         {
-            if (request.FixedGender.HasValue || !pawn.RaceProps.hasGenders) return;
+            if (request.FixedGender.HasValue || pawn.kindDef.fixedGender.HasValue || !pawn.RaceProps.hasGenders) return;
             float? maleGenderProbability = pawn.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.maleGenderProbability;
 
             if (!maleGenderProbability.HasValue) return;
