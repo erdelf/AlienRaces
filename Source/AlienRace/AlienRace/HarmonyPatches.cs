@@ -2446,7 +2446,7 @@ namespace AlienRace
 
         public static bool GeneratePawnNamePrefix(ref Name __result, Pawn pawn, NameStyle style = NameStyle.Full, string forcedLastName = null)
         {
-            if (!(pawn.def is ThingDef_AlienRace alienProps) || alienProps.race.GetNameGenerator(pawn.gender) == null || style != NameStyle.Full) return true;
+            if (!(pawn.def is ThingDef_AlienRace alienProps) || alienProps.race.GetNameGenerator(pawn.gender) == null || style != NameStyle.Full || pawn.kindDef.GetNameMaker(pawn.gender) != null) return true;
 
             NameTriple nameTriple = NameTriple.FromString(NameGenerator.GenerateName(alienProps.race.GetNameGenerator(pawn.gender)));
 
