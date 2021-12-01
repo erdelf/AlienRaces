@@ -2463,17 +2463,24 @@ namespace AlienRace
 
         public static void GenerateRandomAgePrefix(Pawn pawn, PawnGenerationRequest request)
         {
-            if (request.FixedGender.HasValue || pawn.kindDef.fixedGender.HasValue || !pawn.RaceProps.hasGenders) return;
-            float? maleGenderProbability = pawn.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.maleGenderProbability;
-
-            if (!maleGenderProbability.HasValue) return;
-
-            pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
-
             AlienPartGenerator.AlienComp alienComp = pawn.TryGetComp<AlienPartGenerator.AlienComp>();
-            if ((alienComp == null || !(Math.Abs(maleGenderProbability.Value) < 0.001f)) && !(Math.Abs(maleGenderProbability.Value - 1f) < 0.001f)) return;
-            if (alienComp != null)
-                alienComp.fixGenderPostSpawn = true;
+            if (!request.FixedGender.HasValue && !pawn.kindDef.fixedGender.HasValue && pawn.RaceProps.hasGenders)
+            {
+                float? maleGenderProbability = pawn.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.maleGenderProbability;
+
+                if (!maleGenderProbability.HasValue) return;
+
+                pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
+
+                if ((alienComp == null || !(Math.Abs(maleGenderProbability.Value) < 0.001f)) && !(Math.Abs(maleGenderProbability.Value - 1f) < 0.001f)) return;
+                if (alienComp != null)
+                    alienComp.fixGenderPostSpawn = true;
+            }
+            if(alienComp != null && pawn.kindDef.forcedHairColor.HasValue)
+                alienComp.OverwriteColorChannel("hair", pawn.kindDef.forcedHairColor.Value);
+            if (alienComp != null && pawn.kindDef.skinColorOverride.HasValue)
+                alienComp.OverwriteColorChannel("skin", pawn.kindDef.skinColorOverride.Value);
+
         }
 
         public static void GiveAppropriateBioAndNameToPostfix(Pawn pawn)
