@@ -18,6 +18,8 @@
         public bool useGenderedHeads = true;
         public bool useGenderedBodies = false;
 
+        public int getsGreyAt = 40;
+
 
         public List<ColorChannelGenerator> colorChannels  = new List<ColorChannelGenerator>();
         public List<OffsetNamed>      offsetDefaults = new List<OffsetNamed>();
@@ -317,12 +319,12 @@
 
                         this.RegenerateColorChannelLink("skin");
                         
-                        /*
-                        if (alienProps.alienRace.styleSettings.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
+                        
+                        if (alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                         {
-                            if (Rand.Value < GenMath.SmootherStep(alienProps.alienRace.styleSettings.getsGreyAt,
+                            if (Rand.Value < GenMath.SmootherStep(alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt,
                                                                   pawn.RaceProps.ageGenerationCurve.Points.Count < 3
-                                                                             ? alienProps.alienRace.styleSettings.getsGreyAt + 35
+                                                                             ? alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt + alienProps.race.lifeExpectancy / 3f
                                                                              : pawn.RaceProps.ageGenerationCurve.Points.Skip(pawn.RaceProps.ageGenerationCurve.Points.Count - 3).First().x,
                                                                   pawn.ageTracker.AgeBiologicalYears))
                             {
@@ -330,7 +332,7 @@
                                 pawn.story.hairColor = new Color(grey, grey, grey);
                                 hairColors.first     = pawn.story.hairColor;
                             }
-                        }*/
+                        }
                     }
 
                     return this.colorChannels;
