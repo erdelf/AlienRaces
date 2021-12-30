@@ -165,10 +165,12 @@
         public const string VANILLA_HEAD_PATH = "Things/Pawn/Humanlike/Heads/";
         public const string VANILLA_SKELETON_PATH = "Things/Pawn/Humanlike/HumanoidDessicated";
 
-        public string body      = "Things/Pawn/Humanlike/Bodies/";
-        public string head      = "Things/Pawn/Humanlike/Heads/";
-        public string headMasks = string.Empty;
-        private int  headMaskCount = -1;
+        public  string body          = "Things/Pawn/Humanlike/Bodies/";
+        public  string bodyMasks     = string.Empty;
+        private int    bodyMaskCount = -1;
+        public  string head          = "Things/Pawn/Humanlike/Heads/";
+        public  string headMasks     = string.Empty;
+        private int    headMaskCount = -1;
 
         public string skeleton = "Things/Pawn/Humanlike/HumanoidDessicated";
         public string skull    = "Things/Pawn/Humanlike/Heads/None_Average_Skull";
@@ -188,6 +190,21 @@
                     this.headMaskCount++;
 
                 return this.headMaskCount;
+            }
+        }
+
+        public int BodyMaskCount
+        {
+            get
+            {
+                if (this.bodyMaskCount >= 0 || this.bodyMasks.NullOrEmpty())
+                    return this.bodyMaskCount;
+
+                this.bodyMaskCount = 0;
+                while (ContentFinder<Texture2D>.Get($"{this.bodyMasks}{(this.bodyMaskCount == 0 ? string.Empty : this.bodyMaskCount.ToString())}_north", reportFailure: false) != null)
+                    this.bodyMaskCount++;
+
+                return this.bodyMaskCount;
             }
         }
     }
