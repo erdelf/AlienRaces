@@ -28,17 +28,17 @@ namespace AlienRace
     public class Thought_XenophobiaVsAlien : Thought_SituationalSocial
     {
         public override float OpinionOffset() =>
-            this.pawn.def != this.OtherPawn().def ? this.pawn.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1 ? -30 :
-            this.OtherPawn().story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1 ? -15 : 0 : 0;
+            Utilities.DifferentRace(this.pawn.def, this.OtherPawn().def)
+                ? this.pawn.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia)        == 1 ? -30 :
+                  this.OtherPawn().story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1 ? -15 : 0
+                : 0;
     }
 
     [UsedImplicitly]
     public class ThoughtWorker_XenophobiaVsAlien : ThoughtWorker
     {
         protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) =>
-            p.def != otherPawn.def && p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && RelationsUtility.PawnsKnowEachOther(p, otherPawn) &&
-            !(p.def is ThingDef_AlienRace par && par.alienRace.generalSettings.notXenophobistTowards.Contains(otherPawn.def)) &&
-            !(otherPawn.def is ThingDef_AlienRace oar && oar.alienRace.generalSettings.immuneToXenophobia) ?
+            Utilities.DifferentRace(p.def, otherPawn.def) && RelationsUtility.PawnsKnowEachOther(p, otherPawn)?
                 p.story.traits.HasTrait(AlienDefOf.Xenophobia) ?
                     p.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == -1 ?
                         ThoughtState.ActiveAtStage(stageIndex: 0) :
@@ -51,9 +51,7 @@ namespace AlienRace
     public class ThoughtWorker_AlienVsXenophobia : ThoughtWorker
     {
         protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) =>
-            p.def != otherPawn.def && p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && RelationsUtility.PawnsKnowEachOther(p, otherPawn) &&
-            !(otherPawn.def is ThingDef_AlienRace par && par.alienRace.generalSettings.notXenophobistTowards.Contains(p.def)) &&
-            !(p.def is ThingDef_AlienRace oar && oar.alienRace.generalSettings.immuneToXenophobia) ?
+            Utilities.DifferentRace(p.def, otherPawn.def) && RelationsUtility.PawnsKnowEachOther(p, otherPawn) ?
                 otherPawn.story.traits.HasTrait(AlienDefOf.Xenophobia) ?
                     otherPawn.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == -1 ?
                         ThoughtState.ActiveAtStage(stageIndex: 0) :
@@ -69,13 +67,13 @@ namespace AlienRace
         {
             Lord lord = p.GetLord();
             if (lord != null)
-                if (lord.ownedPawns.Any(c => c.def != p.def))
+                if (lord.ownedPawns.Any(c => Utilities.DifferentRace(c.def, p.def)))
                     return true;
 
             Caravan car = p.GetCaravan();
             if (car != null)
             {
-                if (car.PawnsListForReading.Any(c => c.def != p.def))
+                if (car.PawnsListForReading.Any(c => Utilities.DifferentRace(c.def, p.def)))
                     return true;
             }
 
@@ -85,10 +83,10 @@ namespace AlienRace
                 Faction fac = p.Faction;
                 if (fac != null)
                 {
-                    if (map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => c.def != p.def))
+                    if (map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => Utilities.DifferentRace(c.def, p.def)))
                         return true;
                 }
-                else if (map.mapPawns.AllPawnsSpawned.Any(c => c.def != p.def && !p.HostileTo(c)))
+                else if (map.mapPawns.AllPawnsSpawned.Any(c => Utilities.DifferentRace(c.def, p.def) && !p.HostileTo(c)))
                 {
                     return true;
                 }
@@ -102,7 +100,7 @@ namespace AlienRace
     public class ThoughtWorker_Precept_AlienRaces_Social : ThoughtWorker_Precept_Social
     {
         protected override ThoughtState ShouldHaveThought(Pawn p, Pawn otherPawn) =>
-            p.def != otherPawn.def;
+            Utilities.DifferentRace(p.def, otherPawn.def);
     }
 
     public class ThoughtWorker_Precept_SlavesInColony : ThoughtWorker_Precept
@@ -111,13 +109,13 @@ namespace AlienRace
         {
             Lord lord = p.GetLord();
             if (lord != null)
-                if (lord.ownedPawns.Any(c => c.def != p.def && c.IsSlave))
+                if (lord.ownedPawns.Any(c => Utilities.DifferentRace(c.def, p.def) && c.IsSlave))
                     return true;
 
             Caravan car = p.GetCaravan();
             if (car != null)
             {
-                if (car.PawnsListForReading.Any(c => c.def != p.def && c.IsSlave))
+                if (car.PawnsListForReading.Any(c => Utilities.DifferentRace(c.def, p.def) && c.IsSlave))
                     return true;
             }
 
@@ -127,10 +125,10 @@ namespace AlienRace
                 Faction fac = p.Faction;
                 if (fac != null)
                 {
-                    if (map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => c.def != p.def && c.IsSlave))
+                    if (map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => Utilities.DifferentRace(c.def, p.def) && c.IsSlave))
                         return true;
                 }
-                else if (map.mapPawns.AllPawnsSpawned.Any(c => c.def != p.def && !p.HostileTo(c) && c.IsSlave))
+                else if (map.mapPawns.AllPawnsSpawned.Any(c => Utilities.DifferentRace(c.def, p.def) && !p.HostileTo(c) && c.IsSlave))
                 {
                     return true;
                 }
@@ -146,13 +144,13 @@ namespace AlienRace
         {
             Lord lord = p.GetLord();
             if (lord != null)
-                if (!lord.ownedPawns.Any(c => c.def != p.def && c.IsSlave))
+                if (!lord.ownedPawns.Any(c => Utilities.DifferentRace(c.def, p.def) && c.IsSlave))
                     return true;
 
             Caravan car = p.GetCaravan();
             if (car != null)
             {
-                if (!car.PawnsListForReading.Any(c => c.def != p.def && c.IsSlave))
+                if (!car.PawnsListForReading.Any(c => Utilities.DifferentRace(c.def, p.def) && c.IsSlave))
                     return true;
             }
 
@@ -162,10 +160,10 @@ namespace AlienRace
                 Faction fac = p.Faction;
                 if (fac != null)
                 {
-                    if (!map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => c.def != p.def && c.IsSlave))
+                    if (!map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => Utilities.DifferentRace(c.def, p.def) && c.IsSlave))
                         return true;
                 }
-                else if (!map.mapPawns.AllPawnsSpawned.Any(c => c.def != p.def && !p.HostileTo(c) && c.IsSlave))
+                else if (!map.mapPawns.AllPawnsSpawned.Any(c => Utilities.DifferentRace(c.def, p.def) && !p.HostileTo(c) && c.IsSlave))
                 {
                     return true;
                 }

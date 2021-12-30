@@ -36,6 +36,16 @@
         // ReSharper restore InconsistentNaming
     }
 
+    public static class Utilities
+    {
+        public static bool DifferentRace(ThingDef one, ThingDef two)
+        {
+            return one != two                                                                                                && one.race.Humanlike && two.race.Humanlike &&
+                   !(one is ThingDef_AlienRace oneAr && oneAr.alienRace.generalSettings.notXenophobistTowards.Contains(two)) &&
+                   !(two is ThingDef_AlienRace twoAr && twoAr.alienRace.generalSettings.immuneToXenophobia);
+        }
+    }
+
     [UsedImplicitly]
     public class ThinkNode_ConditionalIsMemberOfRace : ThinkNode_Conditional
     {
