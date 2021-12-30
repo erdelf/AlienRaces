@@ -439,8 +439,7 @@ namespace AlienRace
         {
             if (meatSourceCategory == MeatSourceCategory.Humanlike)
             {
-                bool alienMeat = (foodDef.IsCorpse     && ingester.def != foodDef.ingestible.sourceDef) ||
-                                 (foodDef.IsMeat && foodDef.ingestible.sourceDef != ingester.def);
+                bool alienMeat = (foodDef.IsCorpse || foodDef.IsMeat) && Utilities.DifferentRace(ingester.def, foodDef.ingestible.sourceDef);
                 if(alienMeat)
                     eventDef = AlienDefOf.HAR_AteAlienMeat;
             }
@@ -519,20 +518,20 @@ namespace AlienRace
 
         public static void SoldSlave(Pawn pawn, Pawn slave)
         {
-            if(pawn.def != slave.def && slave.RaceProps.Humanlike && ModsConfig.IdeologyActive)
+            if(Utilities.DifferentRace(pawn.def, slave.def) && ModsConfig.IdeologyActive)
                 Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_Alien_SoldSlave, pawn.Named(HistoryEventArgsNames.Doer), slave.Named(HistoryEventArgsNames.Victim)));
         }
 
         public static void WillingToShareBedPostfix(Pawn pawn1, Pawn pawn2, ref bool __result)
         {
-            if (pawn1.def != pawn2.def)
+            if (Utilities.DifferentRace(pawn1.def, pawn2.def))
                 if (!IdeoUtility.DoerWillingToDo(AlienDefOf.HAR_AlienDating_SharedBed, pawn1) || !IdeoUtility.DoerWillingToDo(AlienDefOf.HAR_AlienDating_SharedBed, pawn2))
                     __result = false;
         }
 
         public static void RomanceAttemptSuccessChancePostfix(Pawn initiator, Pawn recipient, ref float __result)
         {
-            if (initiator.def != recipient.def)
+            if (Utilities.DifferentRace(initiator.def, recipient.def))
                 if (!IdeoUtility.DoerWillingToDo(AlienDefOf.HAR_AlienDating_BeginRomance, initiator) || !IdeoUtility.DoerWillingToDo(AlienDefOf.HAR_AlienDating_BeginRomance, recipient))
                     __result = -1f;
         }
@@ -557,7 +556,7 @@ namespace AlienRace
 
         public static void NewLoverHelper(Pawn initiator, Pawn recipient)
         {
-            if (initiator.def != recipient.def && ModsConfig.IdeologyActive)
+            if (Utilities.DifferentRace(initiator.def, recipient.def) && ModsConfig.IdeologyActive)
             {
                 Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_AlienDating_Dating, initiator.Named(HistoryEventArgsNames.Doer), recipient.Named(HistoryEventArgsNames.Victim)));
                 Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_AlienDating_Dating, recipient.Named(HistoryEventArgsNames.Doer), initiator.Named(HistoryEventArgsNames.Victim)));
@@ -572,13 +571,13 @@ namespace AlienRace
 
             if (FoodUtility.IsHumanlikeCorpseOrHumanlikeMeatOrIngredient(__instance))
             {
-                bool alienMeat = (__instance.def.IsCorpse     && ingester.def                                                 != (__instance as Corpse).InnerPawn.def) ||
-                                 (__instance.def.IsIngestible && __instance.def.IsMeat && __instance.def.ingestible.sourceDef != ingester.def);
+                bool alienMeat = (__instance.def.IsCorpse     && Utilities.DifferentRace(ingester.def, (__instance as Corpse).InnerPawn.def)) ||
+                                 (__instance.def.IsIngestible && __instance.def.IsMeat && Utilities.DifferentRace(ingester.def, __instance.def.ingestible.sourceDef));
 
                 CompIngredients compIngredients = __instance.TryGetComp<CompIngredients>();
                 if (compIngredients != null)
                     foreach (ThingDef ingredient in compIngredients.ingredients)
-                        if (ingredient.IsMeat && ingredient.ingestible.sourceDef != ingester.def)
+                        if (ingredient.IsMeat && Utilities.DifferentRace(ingester.def, ingredient.ingestible.sourceDef))
                             alienMeat = true;
                 if (ModsConfig.IdeologyActive)
                     Find.HistoryEventsManager.RecordEvent(new HistoryEvent(alienMeat ? AlienDefOf.HAR_AteAlienMeat : AlienDefOf.HAR_AteNonAlienFood, ingester.Named(HistoryEventArgsNames.Doer)));
@@ -656,7 +655,7 @@ namespace AlienRace
 
             if (thought == ThoughtDefOf.KnowButcheredHumanlikeCorpse)
             {
-                if(doer.def != victim.def && ModsConfig.IdeologyActive)
+                if(Utilities.DifferentRace(doer.def, victim.def) && ModsConfig.IdeologyActive)
                     Find.HistoryEventsManager.RecordEvent(new HistoryEvent(AlienDefOf.HAR_ButcheredAlien, doer.Named(HistoryEventArgsNames.Doer), victim.Named(HistoryEventArgsNames.Victim)));
 
                 if (doer.def is ThingDef_AlienRace alienPropsPawn)
@@ -1962,7 +1961,7 @@ namespace AlienRace
             // ReSharper disable once ImplicitlyCapturedClosure
             __result = ((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd => wgd.giverClass == __instance.GetType()) ?? false) ||
                        !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(predicate: d => pawn.def != d && (d.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd =>
-                                                 wgd.giverClass == __instance.GetType()) ?? false));
+                                                 wgd == __instance.def) ?? false));
         }
 
         public static void GenericJobOnThingPostfix(WorkGiver __instance, Pawn pawn, ref Job __result)
@@ -1971,7 +1970,7 @@ namespace AlienRace
             // ReSharper disable once ImplicitlyCapturedClosure
             if (!(((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd => wgd.giverClass == __instance.GetType()) ?? false) ||
                   !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(predicate: d => pawn.def != d && 
-                                                                            (d.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd => wgd.giverClass == __instance.GetType()) ?? false))))
+                                                                            (d.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd => wgd == __instance.def) ?? false))))
                 __result = null;
         }
 
