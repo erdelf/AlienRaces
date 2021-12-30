@@ -222,10 +222,9 @@
 
     public class StyleSettings
     {
-        public bool         hasStyle = true;
-        public List<string> styleTags;
-        public List<string> styleTagsOverride;
-        //public int           getsGreyAt = 40;
+        public bool          hasStyle = true;
+        public List<string>  styleTags;
+        public List<string>  styleTagsOverride;
         public ShaderTypeDef shader;
     }
 
