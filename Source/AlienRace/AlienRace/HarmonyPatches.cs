@@ -2653,6 +2653,15 @@ namespace AlienRace
                                                                   ? apg.RandomAlienHead(graphicPaths.head, alien)
                                                                   : AlienPartGenerator.GetAlienHead(graphicPaths.head, apg.useGenderedHeads ? alien.gender.ToString() : "", alienComp.crownType);
 
+                    string bodyMask = graphicPaths.bodyMasks.NullOrEmpty()
+                                          ? string.Empty
+                                          : graphicPaths.bodyMasks + ((alienComp.bodyMaskVariant >= 0
+                                                                           ? alienComp.bodyMaskVariant
+                                                                           : (alienComp.bodyMaskVariant =
+                                                                                  Rand.Range(min: 0, graphicPaths.BodyMaskCount))) > 0
+                                                                          ? alienComp.bodyMaskVariant.ToString()
+                                                                          : string.Empty);
+
                     __instance.nakedGraphic = !graphicPaths.body.NullOrEmpty()
                                                   ? apg.GetNakedGraphic(alien.story.bodyType, ContentFinder<Texture2D>.Get(
                                                                                                                            AlienPartGenerator.GetNakedPath(alien.story.bodyType, graphicPaths.body,
@@ -2661,13 +2670,13 @@ namespace AlienRace
                                                                                                   ? graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout
                                                                                                   : ShaderDatabase.CutoutComplex, __instance.pawn.story.SkinColor,
                                                                         apg.SkinColor(alien, first: false), graphicPaths.body,
-                                                                        alien.gender.ToString())
+                                                                        alien.gender.ToString(), bodyMask)
                                                   : null;
 
                     __instance.rottingGraphic = !graphicPaths.body.NullOrEmpty()
                                                     ? apg.GetNakedGraphic(alien.story.bodyType, graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout,
                                                                           PawnGraphicSet.RottingColorDefault, PawnGraphicSet.RottingColorDefault, graphicPaths.body,
-                                                                          alien.gender.ToString())
+                                                                          alien.gender.ToString(), bodyMask)
                                                     : null;
                     __instance.dessicatedGraphic = !graphicPaths.skeleton.NullOrEmpty()
                                                        ? GraphicDatabase
