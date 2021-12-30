@@ -49,9 +49,9 @@
 
         public static string GetAlienHead(string userpath, string gender, string crowntype) => userpath.NullOrEmpty() ? "" : userpath + (userpath == GraphicPaths.VANILLA_HEAD_PATH ? gender + "/" : "") + (!gender.NullOrEmpty() ? gender + "_" : "") + crowntype;
 
-        public Graphic GetNakedGraphic(BodyTypeDef bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender) =>
+        public Graphic GetNakedGraphic(BodyTypeDef bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender, string maskPath) =>
             GraphicDatabase.Get(typeof(Graphic_Multi), GetNakedPath(bodyType, userpath, this.useGenderedBodies ? gender : ""), shader, Vector2.one, 
-                                skinColor, skinColorSecond, data: null, shaderParameters: null);
+                                skinColor, skinColorSecond, data: null, shaderParameters: null, maskPath: maskPath);
             //GraphicDatabase.Get<Graphic_Multi>(path: GetNakedPath(bodyType: bodyType, userpath: userpath, gender: this.useGenderedBodies ? gender : ""), shader: shader, drawSize: Vector2.one, color: skinColor, colorTwo: skinColorSecond);
 
         public static string GetNakedPath(BodyTypeDef bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + bodyType;
@@ -260,6 +260,7 @@
             public AlienGraphicMeshSet alienPortraitGraphics;
             public AlienGraphicMeshSet alienPortraitHeadGraphics;
             public int                 headMaskVariant = -1;
+            public int                 bodyMaskVariant = -1;
             public List<Graphic>       addonGraphics;
             public List<int>           addonVariants;
 
@@ -377,8 +378,9 @@
                 Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
                 Scribe_NestedCollections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Undefined, LookMode.Undefined);
                 Scribe_Values.Look(ref this.headMaskVariant, nameof(this.headMaskVariant), -1);
+                Scribe_Values.Look(ref this.bodyMaskVariant, nameof(this.bodyMaskVariant), -1);
 
-                if(this.colorChannelLinks == null)
+                if (this.colorChannelLinks == null)
                     this.colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>();
                     
             }
