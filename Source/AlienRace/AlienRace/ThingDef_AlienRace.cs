@@ -125,6 +125,8 @@
         public bool immuneToXenophobia = false;
         public List<ThingDef> notXenophobistTowards = new List<ThingDef>();
         public bool humanRecipeImport = false;
+
+        public SimpleCurve lovinIntervalHoursFromAge;
     }
 
     public class FactionRelationSettings

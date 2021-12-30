@@ -264,6 +264,8 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(PreceptComp_UnwillingToDo_Gendered), nameof(PreceptComp.MemberWillingToDo)), transpiler: new HarmonyMethod(patchType, nameof(UnwillingWillingToDoGenderedTranspiler)));
 
+            harmony.Patch(AccessTools.Method(typeof(JobDriver_Lovin), "GenerateRandomMinTicksToNextLovin"), transpiler: new HarmonyMethod(patchType, nameof(GenerateRandomMinTicksToNextLovinTranspiler)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -414,6 +416,24 @@ namespace AlienRace
 
             AlienRaceMod.settings.UpdateSettings();
         }
+
+        public static IEnumerable<CodeInstruction> GenerateRandomMinTicksToNextLovinTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo ageCurveInfo = AccessTools.Field(typeof(JobDriver_Lovin), "LovinIntervalHoursFromAgeCurve");
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+                if (instruction.LoadsField(ageCurveInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return CodeInstruction.Call(patchType, nameof(LovinInterval));
+                }
+            }
+        }
+
+        public static SimpleCurve LovinInterval(SimpleCurve humanDefault, Pawn pawn) => 
+            pawn.def is ThingDef_AlienRace alienProps ? alienProps.alienRace.generalSettings.lovinIntervalHoursFromAge ?? humanDefault : humanDefault;
 
         public static IEnumerable<CodeInstruction> UnwillingWillingToDoGenderedTranspiler(IEnumerable<CodeInstruction> instructions)
         {
