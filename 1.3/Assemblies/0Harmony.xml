@@ -1210,7 +1210,7 @@
             
         </member>
         <member name="T:HarmonyLib.PatchInfoSerialization">
-            <summary>Patch serialization</summary>
+             <summary>Patch serialization</summary>
             
         </member>
         <member name="M:HarmonyLib.PatchInfoSerialization.Binder.BindToType(System.String,System.String)">
@@ -1241,27 +1241,27 @@
             
         </member>
         <member name="T:HarmonyLib.PatchInfo">
-            <summary>Serializable patch information</summary>
+             <summary>Serializable patch information</summary>
             
         </member>
         <member name="F:HarmonyLib.PatchInfo.prefixes">
-            <summary>Prefixes as an array of <see cref="T:HarmonyLib.Patch"/></summary>
+             <summary>Prefixes as an array of <see cref="T:HarmonyLib.Patch"/></summary>
             
         </member>
         <member name="F:HarmonyLib.PatchInfo.postfixes">
-            <summary>Postfixes as an array of <see cref="T:HarmonyLib.Patch"/></summary>
+             <summary>Postfixes as an array of <see cref="T:HarmonyLib.Patch"/></summary>
             
         </member>
         <member name="F:HarmonyLib.PatchInfo.transpilers">
-            <summary>Transpilers as an array of <see cref="T:HarmonyLib.Patch"/></summary>
+             <summary>Transpilers as an array of <see cref="T:HarmonyLib.Patch"/></summary>
             
         </member>
         <member name="F:HarmonyLib.PatchInfo.finalizers">
-            <summary>Finalizers as an array of <see cref="T:HarmonyLib.Patch"/></summary>
+             <summary>Finalizers as an array of <see cref="T:HarmonyLib.Patch"/></summary>
             
         </member>
         <member name="P:HarmonyLib.PatchInfo.Debugging">
-            <summary>Returns if any of the patches wants debugging turned on</summary>
+             <summary>Returns if any of the patches wants debugging turned on</summary>
             
         </member>
         <member name="M:HarmonyLib.PatchInfo.AddPrefixes(System.String,HarmonyLib.HarmonyMethod[])">
@@ -1339,35 +1339,35 @@
             
         </member>
         <member name="T:HarmonyLib.Patch">
-            <summary>A serializable patch</summary>
+             <summary>A serializable patch</summary>
             
         </member>
         <member name="F:HarmonyLib.Patch.index">
-            <summary>Zero-based index</summary>
+             <summary>Zero-based index</summary>
             
         </member>
         <member name="F:HarmonyLib.Patch.owner">
-            <summary>The owner (Harmony ID)</summary>
+             <summary>The owner (Harmony ID)</summary>
             
         </member>
         <member name="F:HarmonyLib.Patch.priority">
-            <summary>The priority, see <see cref="T:HarmonyLib.Priority"/></summary>
+             <summary>The priority, see <see cref="T:HarmonyLib.Priority"/></summary>
             
         </member>
         <member name="F:HarmonyLib.Patch.before">
-            <summary>Keep this patch before the patches indicated in the list of Harmony IDs</summary>
+             <summary>Keep this patch before the patches indicated in the list of Harmony IDs</summary>
             
         </member>
         <member name="F:HarmonyLib.Patch.after">
-            <summary>Keep this patch after the patches indicated in the list of Harmony IDs</summary>
+             <summary>Keep this patch after the patches indicated in the list of Harmony IDs</summary>
             
         </member>
         <member name="F:HarmonyLib.Patch.debug">
-            <summary>A flag that will log the replacement method via <see cref="T:HarmonyLib.FileLog"/> every time this patch is used to build the replacement, even in the future</summary>
+             <summary>A flag that will log the replacement method via <see cref="T:HarmonyLib.FileLog"/> every time this patch is used to build the replacement, even in the future</summary>
             
         </member>
         <member name="P:HarmonyLib.Patch.PatchMethod">
-            <summary>The method of the static patch method</summary>
+             <summary>The method of the static patch method</summary>
             
         </member>
         <member name="M:HarmonyLib.Patch.#ctor(System.Reflection.MethodInfo,System.Int32,System.String,System.Int32,System.String[],System.String[],System.Boolean)">
