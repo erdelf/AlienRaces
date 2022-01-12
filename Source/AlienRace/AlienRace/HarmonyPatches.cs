@@ -160,7 +160,7 @@ namespace AlienRace
                 new HarmonyMethod(patchType, nameof(GetTraderCaravanRoleTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(RestUtility), nameof(RestUtility.CanUseBedEver)), 
                 postfix: new HarmonyMethod(patchType, nameof(CanUseBedEverPostfix)));
-            harmony.Patch(AccessTools.Property(typeof(CompAssignableToPawn), nameof(CompAssignableToPawn.AssigningCandidates)).GetGetMethod(), 
+            harmony.Patch(AccessTools.Property(typeof(CompAssignableToPawn_Bed), nameof(CompAssignableToPawn.AssigningCandidates)).GetGetMethod(), 
                 postfix: new HarmonyMethod(patchType, nameof(AssigningCandidatesPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GrammarUtility), nameof(GrammarUtility.RulesForPawn), new[] { typeof(string), typeof(Pawn), typeof(Dictionary<string, string>), typeof(bool), typeof(bool) }), 
                 postfix: new HarmonyMethod(patchType, nameof(RulesForPawnPostfix)));
@@ -1477,13 +1477,15 @@ namespace AlienRace
             RaceRestrictionSettings.CanGetTrait(tr, p.def));
 
         public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, CompAssignableToPawn __instance) =>
-            __result = __result.Where(predicate: p => !(__instance is CompAssignableToPawn_Bed) || RestUtility.CanUseBedEver(p, __instance.parent.def));
+            __result = __result.Where(predicate: p => RestUtility.CanUseBedEver(p, __instance.parent.def));
 
         public static void CanUseBedEverPostfix(ref bool __result, Pawn p, ThingDef bedDef)
         {
             if (__result)
-                __result = p.def is ThingDef_AlienRace alienProps && (alienProps.alienRace.generalSettings.validBeds?.Contains(bedDef) ?? false) ||
-                           !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(predicate: td => td.alienRace.generalSettings.validBeds?.Contains(bedDef) ?? false);
+                __result = p.def is ThingDef_AlienRace alienProps &&
+                           ((alienProps.alienRace.generalSettings.validBeds?.Contains(bedDef) ?? false) || 
+                            (alienProps.alienRace.generalSettings.validBeds.NullOrEmpty() &&
+                            !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(predicate: td => td.alienRace.generalSettings.validBeds?.Contains(bedDef) ?? false)));
         }
 
 //        public static void CanWearTogetherPostfix(ThingDef A, ThingDef b, bool __result)
