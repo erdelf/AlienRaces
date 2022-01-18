@@ -40,7 +40,7 @@
     {
         public static bool DifferentRace(ThingDef one, ThingDef two)
         {
-            return one != two                                                                                                && one.race.Humanlike && two.race.Humanlike &&
+            return one != two && one != null && two != null && one.race.Humanlike && two.race.Humanlike && 
                    !(one is ThingDef_AlienRace oneAr && oneAr.alienRace.generalSettings.notXenophobistTowards.Contains(two)) &&
                    !(two is ThingDef_AlienRace twoAr && twoAr.alienRace.generalSettings.immuneToXenophobia);
         }
