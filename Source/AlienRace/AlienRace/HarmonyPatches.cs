@@ -2204,6 +2204,7 @@ namespace AlienRace
         {
             try
             {
+                
 
                 if (ingester.story.traits.HasTrait(AlienDefOf.Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1)
                     if (__result.Any(tfi => tfi.thought       == ThoughtDefOf.AteHumanlikeMeatDirect) && foodDef.ingestible?.sourceDef != ingester.def)
@@ -2259,6 +2260,8 @@ namespace AlienRace
                 }
 
                 __result = resultingThoughts;
+
+                
             }
             catch (Exception ex)
             {
@@ -3090,15 +3093,21 @@ namespace AlienRace
                     if (!isPortrait && isInvisible)
                         mat = InvisibilityMatPool.GetInvisibleMat(mat);
 
+                    DrawAddonsFinalHook(pawn, ba, ref addonGraphic, ref offsetVector, ref num, ref mat);
+
                     //                                                                                   Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
                     GenDraw.DrawMeshNowOrLater(
                                                addonGraphic.MeshAt(rotation),
                                                vector + (ba.alignWithHead ? headOffset : Vector3.zero) + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
-                                               Quaternion.AngleAxis(num, Vector3.up) * quat,
-                                               mat,
-                                               renderFlags.FlagSet(PawnRenderFlags.DrawNow));
+                                               Quaternion.AngleAxis(num, Vector3.up) * quat, mat, renderFlags.FlagSet(PawnRenderFlags.DrawNow));
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void DrawAddonsFinalHook(Pawn pawn, AlienPartGenerator.BodyAddon addon, ref Graphic graphic, ref Vector3 offsetVector, ref float angle, ref Material mat)
+        {
+
         }
     }
 }
