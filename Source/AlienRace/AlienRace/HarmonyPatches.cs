@@ -1483,12 +1483,10 @@ namespace AlienRace
         {
             if (__result)
             {
-                __result = p.def is ThingDef_AlienRace alienProps &&
+                __result = p.def is not ThingDef_AlienRace alienProps ||
                            ((alienProps.alienRace.generalSettings.validBeds?.Contains(bedDef) ?? false) ||
                             (alienProps.alienRace.generalSettings.validBeds.NullOrEmpty() &&
                              !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(predicate: td => td.alienRace.generalSettings.validBeds?.Contains(bedDef) ?? false)));
-
-                Log.Message(p.def.defName + ": " + __result);
             }
         }
 
