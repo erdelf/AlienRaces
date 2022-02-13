@@ -1477,15 +1477,19 @@ namespace AlienRace
             RaceRestrictionSettings.CanGetTrait(tr, p.def));
 
         public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, CompAssignableToPawn __instance) =>
-            __result = __result.Where(predicate: p => RestUtility.CanUseBedEver(p, __instance.parent.def));
+            __result = __instance.parent.def.building.bed_humanlike ? __result.Where(predicate: p => RestUtility.CanUseBedEver(p, __instance.parent.def)) : __result;
 
         public static void CanUseBedEverPostfix(ref bool __result, Pawn p, ThingDef bedDef)
         {
             if (__result)
+            {
                 __result = p.def is ThingDef_AlienRace alienProps &&
-                           ((alienProps.alienRace.generalSettings.validBeds?.Contains(bedDef) ?? false) || 
+                           ((alienProps.alienRace.generalSettings.validBeds?.Contains(bedDef) ?? false) ||
                             (alienProps.alienRace.generalSettings.validBeds.NullOrEmpty() &&
-                            !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(predicate: td => td.alienRace.generalSettings.validBeds?.Contains(bedDef) ?? false)));
+                             !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(predicate: td => td.alienRace.generalSettings.validBeds?.Contains(bedDef) ?? false)));
+
+                Log.Message(p.def.defName + ": " + __result);
+            }
         }
 
 //        public static void CanWearTogetherPostfix(ThingDef A, ThingDef b, bool __result)
