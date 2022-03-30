@@ -1265,7 +1265,8 @@ namespace AlienRace
         public static BodyDef ReplacedBody(Pawn pawn) => 
             pawn.def is ThingDef_AlienRace ? (pawn.ageTracker?.CurLifeStageRace as LifeStageAgeAlien)?.body ?? pawn.RaceProps.body : pawn.RaceProps.body;
 
-        public static bool ChangeKindPrefix(Pawn __instance, PawnKindDef newKindDef) =>
+        public static bool ChangeKindPrefix(Pawn __instance, PawnKindDef newKindDef) => 
+            !__instance.RaceProps.Humanlike || !newKindDef.RaceProps.Humanlike || 
             __instance.kindDef == PawnKindDefOf.WildMan || newKindDef == PawnKindDefOf.WildMan;
 
         public static void GenerateGearForPostfix(Pawn pawn) =>
