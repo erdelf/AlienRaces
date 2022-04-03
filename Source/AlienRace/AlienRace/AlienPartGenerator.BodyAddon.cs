@@ -50,6 +50,7 @@
             public bool debug = true;
 
             public List<BodyAddonHediffGraphic> hediffGraphics;
+            public List<BodyAddonPawnStateGraphic> pawnStateGraphics;
             public List<BodyAddonBackstoryGraphic> backstoryGraphics;
 
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
@@ -64,7 +65,7 @@
 
             private List<BodyAddonPrioritization> prioritization;
             public List<BodyAddonPrioritization> Prioritization => this.prioritization ?? 
-                                                                   (this.prioritization = new List<BodyAddonPrioritization> { BodyAddonPrioritization.Hediff, BodyAddonPrioritization.Backstory });
+                                                                   (this.prioritization = new List<BodyAddonPrioritization> { BodyAddonPrioritization.Hediff, BodyAddonPrioritization.PawnState , BodyAddonPrioritization.Backstory });
 
 
 
@@ -93,6 +94,23 @@
                             {
                                 returnPath      = babg.path;
                                 variantCounting = babg.variantCount;
+                            }
+                            break;
+                       case BodyAddonPrioritization.PawnState:
+                            if (pawn.Downed && pawn.jobs?.posture != PawnPosture.LayingInBed && this.pawnStateGraphics?.FirstOrDefault(predicate: bapsgs => bapsgs.pawnState == "downed") is BodyAddonPawnStateGraphic bapsg_downed)
+                            {
+                                returnPath      = bapsg_downed.path;
+                                variantCounting = bapsg_downed.variantCount;
+                            }
+                            else if (pawn.Dead && this.pawnStateGraphics?.FirstOrDefault(predicate: bapsgs => bapsgs.pawnState == "dead") is BodyAddonPawnStateGraphic bapsg_dead)
+                            {
+                                returnPath = bapsg_dead.path;
+                                variantCounting = bapsg_dead.variantCount;
+                            }
+                            else if (!RestUtility.Awake(pawn) && this.pawnStateGraphics?.FirstOrDefault(predicate: bapsgs => bapsgs.pawnState == "sleeping") is BodyAddonPawnStateGraphic bapsg_sleeping)
+                            {
+                                returnPath      = bapsg_sleeping.path;
+                                variantCounting = bapsg_sleeping.variantCount;
                             }
                             break;
                         case BodyAddonPrioritization.Hediff:
@@ -189,6 +207,21 @@
             }
         }
 
+        public class BodyAddonPawnStateGraphic
+        {
+            public string pawnState;
+            public string path;
+            public int variantCount = 0;
+
+            [UsedImplicitly]
+            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+            {
+                this.pawnState = xmlRoot.Name;
+
+                this.path = xmlRoot.FirstChild.Value;
+            }
+        }
+
         public class BodyAddonHediffSeverityGraphic
         {
             public float severity;
@@ -278,6 +311,7 @@
         public enum BodyAddonPrioritization : byte
         {
             Backstory,
+            PawnState,
             Hediff
         }
     }

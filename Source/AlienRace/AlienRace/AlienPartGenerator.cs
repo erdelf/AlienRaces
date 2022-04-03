@@ -198,6 +198,18 @@
                     }
                 }
 
+                if (ba.pawnStateGraphics != null)
+                {
+                    foreach (BodyAddonPawnStateGraphic bapsg in ba.pawnStateGraphics.Where(predicate: bapsg => bapsg.variantCount == 0))
+                    {
+                        while (ContentFinder<Texture2D>.Get(bapsg.path + (bapsg.variantCount == 0 ? "" : bapsg.variantCount.ToString()) + "_north", reportFailure: false) != null)
+                            bapsg.variantCount++;
+                        AddToStringBuilder($"Variants found for {bapsg.path}: {bapsg.variantCount}");
+                        if (bapsg.variantCount == 0)
+                            Log.Warning($"no pawn state graphics found at {bapsg.path} for pawn state {bapsg.pawnState} in {this.alienProps.defName}");
+                    }
+                }
+
                 if (ba.backstoryGraphics != null)
                 {
                     foreach (BodyAddonBackstoryGraphic babg in ba.backstoryGraphics.Where(predicate: babg => babg.variantCount == 0))
