@@ -740,19 +740,12 @@ namespace AlienRace
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
                 StyleSettings styleSettings = alienProps.alienRace.styleSettings[styleItemDef.GetType()];
-                List<string>  styleTags     = styleSettings.hasStyle ? styleSettings.styleTagsOverride : new List<string> { "alienNoStyle" };
-                
-                if (styleTags.NullOrEmpty())
+                if (styleSettings.hasStyle) // Run as normal
                     return true;
-                
-                __result = styleItemDef.styleTags.Any(s => styleTags.Contains(s)) && 
-                           (styleItemDef.styleGender == StyleGender.Any                                  || 
-                            styleItemDef.styleGender == StyleGender.MaleUsually                          ||
-                            styleItemDef.styleGender == StyleGender.FemaleUsually                        ||
-                            (styleItemDef.styleGender == StyleGender.Male && pawn.gender == Gender.Male) ||
-                            (styleItemDef.styleGender == StyleGender.Female && pawn.gender == Gender.Female));
-
-                return false;
+                else { // Skip to postfix
+                    __result = true;
+                    return false;
+                }
             }
             return true;
         }
@@ -761,16 +754,39 @@ namespace AlienRace
         {
             if (__result && pawn.def is ThingDef_AlienRace alienProps)
             {
-                StyleSettings styleSettings = alienProps.alienRace.styleSettings[styleItemDef.GetType()];
-                List<string>  styleTags     = styleSettings.hasStyle ? styleSettings.styleTags : new List<string> {"alienNoStyle"};
-
-                __result = (styleTags.NullOrEmpty() || styleTags.Any(s => styleItemDef.styleTags.Contains(s))) &&
-                           (styleItemDef.styleGender == StyleGender.Any                                    ||
-                            styleItemDef.styleGender == StyleGender.MaleUsually                            ||
-                            styleItemDef.styleGender == StyleGender.FemaleUsually                          ||
-                            (styleItemDef.styleGender == StyleGender.Male   && pawn.gender == Gender.Male) ||
-                            (styleItemDef.styleGender == StyleGender.Female && pawn.gender == Gender.Female));
+                __result = IsValidStyleItem(alienProps.alienRace.styleSettings[styleItemDef.GetType()], pawn, styleItemDef);
             }
+        }
+
+        // So we will not create this object every time we check IsValidStyleItem
+        private static readonly List<string> noStyleTags = new List<string> {"alienNoStyle"};
+
+        public static bool IsValidStyleItem(StyleSettings styleSettings, Pawn pawn, StyleItemDef styleItemDef)
+        {
+            if (!styleSettings.hasStyle)
+                return HarmonyPatches.noStyleTags.Any(s => styleItemDef.styleTags.Contains(s));
+
+            List<string> styleTags  = styleSettings.styleTags;
+            List<string> bannedTags = styleSettings.bannedTags;
+
+            if(!styleTags.NullOrEmpty() && !styleTags.Any(s => styleItemDef.styleTags.Contains(s))) 
+                return false;
+            if(!bannedTags.NullOrEmpty() && bannedTags.Any(s => styleItemDef.styleTags.Contains(s))) 
+                return false;
+
+            if(styleSettings.checkGender) {
+                if(pawn.gender == Gender.None) return true;
+
+                return (
+                    styleItemDef.styleGender == StyleGender.Any                                  
+                    || styleItemDef.styleGender == StyleGender.MaleUsually
+                    || styleItemDef.styleGender == StyleGender.FemaleUsually
+                    || (styleItemDef.styleGender == StyleGender.Male   && pawn.gender == Gender.Male) 
+                    || (styleItemDef.styleGender == StyleGender.Female && pawn.gender == Gender.Female)
+                );
+            }
+
+            return true;
         }
 
         public static void CacheRenderPawnPrefix(Pawn pawn, ref float cameraZoom, bool portrait)

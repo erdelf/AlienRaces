@@ -225,7 +225,9 @@
     public class StyleSettings
     {
         public bool          hasStyle = true;
+        public bool          checkGender = false;
         public List<string>  styleTags;
+        public List<string>  bannedTags;
         public List<string>  styleTagsOverride;
         public ShaderTypeDef shader;
     }
