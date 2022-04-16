@@ -195,6 +195,8 @@ namespace AlienRace
                 transpiler: new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), name: "CheckForStateChange"), 
                 postfix: new HarmonyMethod(patchType, nameof(CheckForStateChangePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), name: "SetDead"),
+                postfix: new HarmonyMethod(patchType, nameof(SetDeadPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateGearFor"), 
                 postfix:          new HarmonyMethod(patchType, nameof(GenerateGearForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn), nameof(Pawn.ChangeKind)), new HarmonyMethod(patchType, nameof(ChangeKindPrefix)));
@@ -265,6 +267,12 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PreceptComp_UnwillingToDo_Gendered), nameof(PreceptComp.MemberWillingToDo)), transpiler: new HarmonyMethod(patchType, nameof(UnwillingWillingToDoGenderedTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(JobDriver_Lovin), "GenerateRandomMinTicksToNextLovin"), transpiler: new HarmonyMethod(patchType, nameof(GenerateRandomMinTicksToNextLovinTranspiler)));
+
+            harmony.Patch(AccessTools.Method(typeof(Toils_LayDown), nameof(Toils_LayDown.LayDown)), postfix: new HarmonyMethod(patchType, nameof(LayDownPostfix)));
+
+            harmony.Patch(AccessTools.Method(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.CheckForJobOverride)), prefix: new HarmonyMethod(patchType, nameof(CheckForJobOverridePrefix)));
+
+            harmony.Patch(AccessTools.Method(typeof(ResurrectionUtility), nameof(ResurrectionUtility.Resurrect)), postfix: new HarmonyMethod(patchType, nameof(ResurrectPostfix)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -1288,6 +1296,12 @@ namespace AlienRace
         {
             if (Current.ProgramState == ProgramState.Playing && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace)
                 ___pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+        }
+
+        // Resolves pawn graphics when they die (for pawn state-based body addon graphics replacement)
+        public static void SetDeadPostfix(Pawn ___pawn)
+        {
+            ___pawn.Drawer.renderer.graphics.ResolveAllGraphics();
         }
 
         public static IEnumerable<CodeInstruction> BaseHeadOffsetAtTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -3111,6 +3125,36 @@ namespace AlienRace
         public static void DrawAddonsFinalHook(Pawn pawn, AlienPartGenerator.BodyAddon addon, ref Graphic graphic, ref Vector3 offsetVector, ref float angle, ref Material mat)
         {
 
+        }
+
+        // Resolves pawn graphics when they wake up (for pawn state-based body addon graphics replacement)
+        public static void LayDownPostfix(Toil __result)
+        {           
+            __result.AddFinishAction(delegate ()
+            {
+                if (__result.actor != null && __result.actor.Spawned && __result.actor.def is ThingDef_AlienRace && RestUtility.Awake(__result.actor))
+                {
+                    __result.actor.Drawer.renderer.graphics.ResolveAllGraphics();
+                }
+            });
+        }
+
+        // Resolves pawn graphics when they fall asleep (for pawn state-based body addon graphics replacement)
+        public static void CheckForJobOverridePrefix(Pawn ___pawn)
+        {
+            if (___pawn != null && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace && ___pawn.CurJob?.def == JobDefOf.LayDown && !RestUtility.Awake(___pawn))
+            {
+                ___pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+            }
+        }
+
+        // Resolve pawn graphics when they are resurrected (for pawn state-based body addon graphics replacement)
+        public static void ResurrectPostfix(Pawn pawn)
+        {
+            if (pawn != null && pawn.Spawned && pawn.def is ThingDef_AlienRace)
+            {
+                pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+            }
         }
     }
 }

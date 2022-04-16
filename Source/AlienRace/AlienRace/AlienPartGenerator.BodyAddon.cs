@@ -51,6 +51,7 @@
 
             public List<BodyAddonHediffGraphic> hediffGraphics;
             public List<BodyAddonBackstoryGraphic> backstoryGraphics;
+            public List<BodyAddonPawnStateGraphic> pawnStateGraphics;
 
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
             public List<string> hiddenUnderApparelTag = new List<string>();
@@ -189,6 +190,20 @@
             }
         }
 
+        public class BodyAddonPawnStateGraphic
+        {
+            public PawnState pawnState;
+            public string path;
+            public int variantCount = 0;
+
+            [UsedImplicitly]
+            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+            {
+                this.pawnState = ParseHelper.FromString<PawnState>(xmlRoot.Name);
+                this.path = xmlRoot.InnerXml.Trim();
+            }
+        }
+
         public class BodyAddonHediffSeverityGraphic
         {
             public float severity;
@@ -279,6 +294,14 @@
         {
             Backstory,
             Hediff
+        }
+
+        public enum PawnState : byte
+        { 
+            // Excludes the default awake state
+            Sleeping,
+            Downed,
+            Dead
         }
     }
 }
