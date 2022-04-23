@@ -996,11 +996,11 @@ namespace AlienRace
             {
                 if (instruction.OperandIs(endScrollInfo))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldloc_1) { labels = instruction.labels.ListFullCopy() };
+                    yield return new CodeInstruction(OpCodes.Ldloca, 1) { labels = instruction.labels.ListFullCopy() };
                     instruction.labels.Clear();
-                    yield return new CodeInstruction(OpCodes.Ldloc_2);
-                    yield return new CodeInstruction(OpCodes.Ldloc_3);
-                    yield return new CodeInstruction(OpCodes.Ldloc_S, operand: 4);
+                    yield return new CodeInstruction(OpCodes.Ldloca, 2);
+                    yield return new CodeInstruction(OpCodes.Ldloca, 3);
+                    yield return new CodeInstruction(OpCodes.Ldloca_S, operand: 4);
                     yield return new CodeInstruction(OpCodes.Call, 
                         AccessTools.Method(patchType, nameof(TweakValuesInstanceBased)));
                 }
@@ -1026,8 +1026,13 @@ namespace AlienRace
 
         private static Dictionary<string, float> tweakValuesSaved = new Dictionary<string, float>();
 
-        public static void TweakValuesInstanceBased(Rect rect2, Rect rect3, Rect rect4, Rect rect5)
+        public static void TweakValuesInstanceBased(ref Rect refRect2, ref Rect refRect3, ref Rect refRect4, ref Rect refRect5)
         {
+            Rect rect2 = refRect2;
+            Rect rect3 = refRect3;
+            Rect rect4 = refRect4;
+            Rect rect5 = refRect5;
+
             void NextLine()
             {
                 rect2.y += rect2.height;
@@ -1202,6 +1207,11 @@ namespace AlienRace
                     NextLine();
                 }
             }
+
+            refRect2 = rect2;
+            refRect3 = rect3;
+            refRect4 = rect4;
+            refRect5 = rect5;
         }
 
         public static IEnumerable<CodeInstruction> PostureTranspiler(IEnumerable<CodeInstruction> instructions)
