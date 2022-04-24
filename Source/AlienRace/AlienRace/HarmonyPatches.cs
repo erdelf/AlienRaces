@@ -81,6 +81,8 @@ namespace AlienRace
                 postfix: new HarmonyMethod(patchType, nameof(ApparelScoreGainPostFix)));
             harmony.Patch(AccessTools.Method(typeof(ThoughtUtility), nameof(ThoughtUtility.CanGetThought)),
                 postfix: new HarmonyMethod(patchType, nameof(CanGetThoughtPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(ThoughtWorker_Precept), name: "CanHaveThought"),
+                          postfix: new HarmonyMethod(patchType, nameof(CanHaveThoughtPostfix)));
             harmony.Patch(AccessTools.Method(typeof(FoodUtility), nameof(FoodUtility.ThoughtsFromIngesting)), 
                           postfix: new HarmonyMethod(patchType, nameof(ThoughtsFromIngestingPostfix)));
             harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), nameof(MemoryThoughtHandler.TryGainMemory), new[] { typeof(Thought_Memory), typeof(Pawn) }),
@@ -2455,6 +2457,25 @@ namespace AlienRace
         public static void CanGetThoughtPostfix(ref bool __result, ThoughtDef def, Pawn pawn)
         {
             if (!__result) return;
+
+            __result = !(ThoughtSettings.thoughtRestrictionDict.TryGetValue(def, out List<ThingDef_AlienRace> races));
+
+            if(!(pawn.def is ThingDef_AlienRace alienProps)) return;
+
+            __result = races?.Contains(alienProps) ?? true;
+
+            def = alienProps.alienRace.thoughtSettings.ReplaceIfApplicable(def);
+
+            if ((alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && !(alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(def) ?? false)) ||
+                (alienProps.alienRace.thoughtSettings.cannotReceiveThoughts?.Contains(def) ?? false))
+                __result = false;
+        }
+        
+        public static void CanHaveThoughtPostfix(ref bool __result, ThoughtWorker_Precept worker, Pawn pawn)
+        {
+            if (!__result) return;
+
+            ThoughtDef def = worker.def;
 
             __result = !(ThoughtSettings.thoughtRestrictionDict.TryGetValue(def, out List<ThingDef_AlienRace> races));
 
