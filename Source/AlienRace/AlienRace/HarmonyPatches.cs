@@ -2471,7 +2471,7 @@ namespace AlienRace
                 __result = false;
         }
         
-        public static void CanHaveThoughtPostfix(ref bool __result, ThoughtWorker_Precept worker, Pawn pawn)
+        public static void CanHaveThoughtPostfix(ref bool __result, ThoughtWorker_Precept worker, Pawn p)
         {
             if (!__result) return;
 
@@ -2479,7 +2479,7 @@ namespace AlienRace
 
             __result = !(ThoughtSettings.thoughtRestrictionDict.TryGetValue(def, out List<ThingDef_AlienRace> races));
 
-            if(!(pawn.def is ThingDef_AlienRace alienProps)) return;
+            if(!(p.def is ThingDef_AlienRace alienProps)) return;
 
             __result = races?.Contains(alienProps) ?? true;
 
