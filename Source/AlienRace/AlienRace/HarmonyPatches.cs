@@ -2217,7 +2217,7 @@ namespace AlienRace
         {
             try
             {
-                
+                if (ingester.def is not ThingDef_AlienRace alienProps) return;
 
                 if (ingester.story.traits.HasTrait(AlienDefOf.Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1)
                     if (__result.Any(tfi => tfi.thought       == ThoughtDefOf.AteHumanlikeMeatDirect) && foodDef.ingestible?.sourceDef != ingester.def)
@@ -2226,8 +2226,6 @@ namespace AlienRace
                              (foodSource?.TryGetComp<CompIngredients>()?.ingredients
                                       ?.Any(predicate: td => FoodUtility.GetMeatSourceCategory(td) == MeatSourceCategory.Humanlike && td.ingestible?.sourceDef != ingester.def) ?? false))
                         __result.RemoveAll(tfi => tfi.thought == ThoughtDefOf.AteHumanlikeMeatAsIngredient);
-
-                if (!(ingester.def is ThingDef_AlienRace alienProps)) return;
 
                 bool cannibal = ingester.story.traits.HasTrait(TraitDefOf.Cannibal);
 
