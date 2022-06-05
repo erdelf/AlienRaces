@@ -1,4 +1,4 @@
-﻿namespace AlienRace
+namespace AlienRace
 {
     using System;
     using System.Collections.Generic;
@@ -12,20 +12,22 @@
 
     public partial class AlienPartGenerator
     {
+        static string returnPath = string.Empty;
+        static int variantCounting = 0;
         public class BodyAddon
         {
-            public string           path;
-            public string           bodyPart;
-            
-            public string           defaultOffset = "Center";
+            public string path;
+            public string bodyPart;
+
+            public string defaultOffset = "Center";
             [Unsaved]
             public BodyAddonOffsets defaultOffsets;
 
             public BodyAddonOffsets offsets = new BodyAddonOffsets();
-            public bool             linkVariantIndexWithPrevious = false;
-            public float            angle                        = 0f;
-            public bool             inFrontOfBody                = false;
-            public bool             layerInvert                  = true;
+            public bool linkVariantIndexWithPrevious = false;
+            public float angle = 0f;
+            public bool inFrontOfBody = false;
+            public bool layerInvert = true;
 
 
             public bool drawnOnGround = true;
@@ -43,7 +45,7 @@
 
             private string colorChannel;
 
-            public string ColorChannel => 
+            public string ColorChannel =>
                 this.colorChannel = this.colorChannel ?? "skin";
 
             public int variantCount = 0;
@@ -51,6 +53,8 @@
 
             public List<BodyAddonHediffGraphic> hediffGraphics;
             public List<BodyAddonBackstoryGraphic> backstoryGraphics;
+            public List<BodyAddonAgeGraphic> ageGraphics;
+            public List<BodyAddonDamageGraphic> damageGraphics;
 
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
             public List<string> hiddenUnderApparelTag = new List<string>();
@@ -67,68 +71,107 @@
 
 
 
-            public virtual bool CanDrawAddon(Pawn pawn) => 
-                (pawn.Drawer.renderer.graphics.apparelGraphics.NullOrEmpty() || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
-                !pawn.apparel.WornApparel.Any(predicate: ap => !ap.def.apparel.hatRenderedFrontOfFace && ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
+            public virtual bool CanDrawAddon(Pawn pawn) =>
+                (pawn.Drawer.renderer.graphics.apparelGraphics.NullOrEmpty() || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
+                !pawn.apparel.WornApparel.Any(predicate: ap => !ap.def.apparel.hatRenderedFrontOfFace && ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||
                 ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(s))))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && ((pawn.CurrentBed()?.def.building.bed_showSleeperBody ?? true) || this.drawnInBed) &&
                     (this.backstoryRequirement == null || pawn.story.AllBackstories.Contains(this.backstoryRequirement)) &&   
                     (this.drawnDesiccated || pawn.Corpse?.GetRotStage() != RotStage.Dessicated) &&
-                    (this.bodyPart.NullOrEmpty() || 
-                     (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
+                    (this.bodyPart.NullOrEmpty() ||
+                     (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) ||
                      (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
                (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement == null || pawn.story.bodyType == this.bodyTypeRequirement);
 
-            public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
+            public void GraphicCycle(Pawn pawn, string bodyPart)
             {
-                string returnPath = string.Empty;
-                int variantCounting = 0;
-
                 foreach (BodyAddonPrioritization prio in this.Prioritization)
                 {
-                    switch(prio)
+                    switch (prio)
                     {
                         case BodyAddonPrioritization.Backstory:
                             if (this.backstoryGraphics?.FirstOrDefault(predicate: babgs => pawn.story.AllBackstories.Any(predicate: bs => bs == babgs.backstory)) is { } babg)
                             {
-                                returnPath      = babg.path;
+                                returnPath = babg.path;
                                 variantCounting = babg.variantCount;
+                                babg.GraphicCycle(pawn,bodyPart);//check backstory, set path to default path, then check deeper in tree
                             }
                             break;
                         case BodyAddonPrioritization.Hediff:
-                            if(!this.hediffGraphics.NullOrEmpty())
+                            if (!this.hediffGraphics.NullOrEmpty())
                                 foreach (BodyAddonHediffGraphic bahg in this.hediffGraphics)
                                 {
 
                                     foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(predicate: h => h.def == bahg.hediff &&
-                                                                                                             (h.Part == null                                  ||
-                                                                                                              this.bodyPart.NullOrEmpty()                     ||
-                                                                                                              h.Part.untranslatedCustomLabel == this.bodyPart ||
-                                                                                                              h.Part.def.defName             == this.bodyPart)))
+                                                                                                             (h.Part == null ||
+                                                                                                              bodyPart.NullOrEmpty() ||
+                                                                                                              h.Part.untranslatedCustomLabel == bodyPart ||
+                                                                                                              h.Part.def.defName == bodyPart)))
                                     {
-                                        returnPath      = bahg.path;
+                                        returnPath = bahg.path;//set path to default path
                                         variantCounting = bahg.variantCount;
 
-                                        if (!bahg.severity.NullOrEmpty())
+                                        if (!bahg.severity.NullOrEmpty())//is there severity?
+                                        {
                                             foreach (BodyAddonHediffSeverityGraphic bahsg in bahg.severity)
                                             {
                                                 if (h.Severity >= bahsg.severity)
                                                 {
-                                                    returnPath      = bahsg.path;
+                                                    returnPath = bahsg.path;//set path as default severity path
                                                     variantCounting = bahsg.variantCount;
+                                                    bahsg.GraphicCycle(pawn,bodyPart);//check deeper in tree under severity
                                                     break;
                                                 }
                                             }
+                                            break;
+                                        }
+                                        bahg.GraphicCycle(pawn,bodyPart);//check deeper in tree without severity
                                         break;
                                     }
                                 }
-
                             break;
-                        default: 
+                        case BodyAddonPrioritization.Age:
+                            if (!this.ageGraphics.NullOrEmpty())
+                                foreach (BodyAddonAgeGraphic baag in this.ageGraphics)
+                                {
+                                    if (baag.age == pawn.ageTracker.CurLifeStage)//compare current age to age marked under agegraphics
+                                    {
+                                        returnPath = baag.path;//set path as default age path
+                                        variantCounting = baag.variantCount;
+                                        baag.GraphicCycle(pawn,bodyPart);//check deeper into tree
+                                        break;
+                                    }
+                                }
+                            break;
+                        case BodyAddonPrioritization.Damage:
+                            if (!this.damageGraphics.NullOrEmpty())
+                                foreach (BodyAddonDamageGraphic badg in this.damageGraphics)
+                                {
+                                    foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(predicate: h => h.Part.untranslatedCustomLabel == bodyPart ||
+                                                                                                              h.Part.def.defName == bodyPart))//look for part where a given hediff has a part matching defined part
+                                    {
+                                        if (badg.damage >= pawn.health.hediffSet.GetPartHealth(h.Part))//check if part health is less than health texture limit, needs to config ascending
+                                        {
+                                            returnPath = badg.path;//set path to damaged path, dont continue down tree
+                                            variantCounting = badg.variantCount;
+                                            break;
+                                        }
+                                    }
+                                }
+                            break;
+                        default:
                             throw new ArrayTypeMismatchException();
                     }
                     if (!returnPath.NullOrEmpty())
                         break;
                 }
+            }
+
+
+            public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
+            {
+                variantCounting = 0;
+                returnPath = string.Empty;//reset path to empty when method called
+                this.GraphicCycle(pawn,this.bodyPart);
 
                 if (returnPath.NullOrEmpty())
                 {
@@ -152,27 +195,74 @@
                                                               ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
                                                               this.drawSize * 1.5f,
                                                               channel.first, channel.second, new GraphicData
-                                                                                                   {
-                                                                                                       drawRotated = !this.drawRotated
-                                                                                                   }) :
+                                                              {
+                                                                  drawRotated = !this.drawRotated
+                                                              }) :
                            null;
             }
+
+
         }
-
-
-        public class BodyAddonHediffGraphic
+        public class BodyAddonDamageGraphic : BodyAddon
         {
-            public HediffDef hediff;
-            public string path;
-            public int variantCount = 0;
-            public List<BodyAddonHediffSeverityGraphic> severity;
+            public float damage;
+            public new string path;
+            public new int variantCount = 0;
+
+            [UsedImplicitly]
+            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+            {
+                this.damage = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
+                this.path = xmlRoot.InnerXml.Trim();
+            }
+        }
+        public class BodyAddonAgeGraphic : BodyAddon
+        {
+            public LifeStageDef age;
+            public new string path;
+            public new int variantCount = 0;
+            public new List<BodyAddonHediffGraphic> hediffGraphics;
+            public new List<BodyAddonBackstoryGraphic> backstoryGraphics;
+            public new List<BodyAddonAgeGraphic> ageGraphics;
+            public new List<BodyAddonDamageGraphic> damageGraphics;
 
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 XmlAttribute mayRequire = xmlRoot.Attributes[name: "MayRequire"];
                 int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
-                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.hediff),  xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index), mayRequire?.Value.ToLower());
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.age), xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index), mayRequire?.Value.ToLower());
+
+                this.path = xmlRoot.FirstChild.Value?.Trim();
+
+                Traverse traverse = Traverse.Create(this);
+                foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
+                {
+                    Traverse field = traverse.Field(xmlRootChildNode.Name);
+                    if (field.FieldExists())
+                        field.SetValue(field.GetValueType().IsGenericType ?
+                                                  DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, arg2: false) :
+                                                  xmlRootChildNode.InnerXml.Trim());
+                }
+            }
+        }
+        public class BodyAddonHediffGraphic:BodyAddon
+        {
+            public HediffDef hediff;
+            public new string path;
+            public new int variantCount = 0;
+            public List<BodyAddonHediffSeverityGraphic> severity;
+            public new List<BodyAddonHediffGraphic> hediffGraphics;
+            public new List<BodyAddonBackstoryGraphic> backstoryGraphics;
+            public new List<BodyAddonAgeGraphic> ageGraphics;
+            public new List<BodyAddonDamageGraphic> damageGraphics;
+
+            [UsedImplicitly]
+            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+            {
+                XmlAttribute mayRequire = xmlRoot.Attributes[name: "MayRequire"];
+                int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.hediff), xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index), mayRequire?.Value.ToLower());
 
                 this.path = xmlRoot.FirstChild.Value?.Trim();
 
@@ -188,26 +278,33 @@
             }
         }
 
-        public class BodyAddonHediffSeverityGraphic
+        public class BodyAddonHediffSeverityGraphic:BodyAddon
         {
             public float severity;
-            public string path;
-            public int variantCount = 0;
+            public new string path;
+            public new int variantCount = 0;
+            public new List<BodyAddonHediffGraphic> hediffGraphics;
+            public new List<BodyAddonBackstoryGraphic> backstoryGraphics;
+            public new List<BodyAddonAgeGraphic> ageGraphics;
+            public new List<BodyAddonDamageGraphic> damageGraphics;
 
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.severity = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
-                this.path   = xmlRoot.InnerXml.Trim();
+                this.path = xmlRoot.InnerXml.Trim();
             }
         }
 
-        public class BodyAddonBackstoryGraphic
+        public class BodyAddonBackstoryGraphic:BodyAddon
         {
-            public BackstoryDef backstory;
-            public string path;
-            public int variantCount = 0;
-
+            public     BackstoryDef                    backstory;
+            public     string                          path;
+            public     int                             variantCount = 0;
+            public new List<BodyAddonHediffGraphic>    hediffGraphics;
+            public new List<BodyAddonBackstoryGraphic> backstoryGraphics;
+            public new List<BodyAddonAgeGraphic>       ageGraphics;
+            public new List<BodyAddonDamageGraphic>    damageGraphics;
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
@@ -222,7 +319,7 @@
             public RotationOffset GetOffset(Rot4 rotation) =>
                 rotation == Rot4.South ? this.south :
                 rotation == Rot4.North ? this.north :
-                rotation == Rot4.East  ? this.east : this.west;
+                rotation == Rot4.East ? this.east : this.west;
 
             public RotationOffset south = new RotationOffset();
             public RotationOffset north = new RotationOffset();
@@ -234,16 +331,16 @@
         {
             public Vector3 GetOffset(bool portrait, BodyTypeDef bodyType, string crownType)
             {
-                Vector2 bodyOffset  = (portrait ? this.portraitBodyTypes  ?? this.bodyTypes : this.bodyTypes)?.FirstOrDefault(predicate: to => to.bodyType == bodyType)?.offset  ?? Vector2.zero;
+                Vector2 bodyOffset = (portrait ? this.portraitBodyTypes ?? this.bodyTypes : this.bodyTypes)?.FirstOrDefault(predicate: to => to.bodyType == bodyType)?.offset ?? Vector2.zero;
                 Vector2 crownOffset = (portrait ? this.portraitCrownTypes ?? this.crownTypes : this.crownTypes)?.FirstOrDefault(predicate: to => to.crownType == crownType)?.offset ?? Vector2.zero;
 
                 return new Vector3(this.offset.x + bodyOffset.x + crownOffset.x, this.layerOffset, this.offset.y + bodyOffset.y + crownOffset.y);
             }
 
-            public float                 layerOffset;
-            public Vector2               offset;
-            public List<BodyTypeOffset>  portraitBodyTypes;
-            public List<BodyTypeOffset>  bodyTypes;
+            public float layerOffset;
+            public Vector2 offset;
+            public List<BodyTypeOffset> portraitBodyTypes;
+            public List<BodyTypeOffset> bodyTypes;
             public List<CrownTypeOffset> portraitCrownTypes;
             public List<CrownTypeOffset> crownTypes;
         }
@@ -257,7 +354,7 @@
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.bodyType), xmlRoot.Name);
-                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
+                this.offset = (Vector2)ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
             }
         }
 
@@ -270,14 +367,16 @@
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.crownType = xmlRoot.Name;
-                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
+                this.offset = (Vector2)ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
             }
         }
 
         public enum BodyAddonPrioritization : byte
         {
             Backstory,
-            Hediff
+            Hediff,
+            Age,
+            Damage
         }
     }
 }
