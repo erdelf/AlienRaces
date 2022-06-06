@@ -14,6 +14,12 @@ namespace AlienRace
     {
         static string returnPath = string.Empty;
         static int variantCounting = 0;
+
+        public static string ReturnPath => returnPath;
+
+        public static int VariantCounting => variantCounting;
+
+
         public class BodyAddon
         {
             public string path;
@@ -45,8 +51,11 @@ namespace AlienRace
 
             private string colorChannel;
 
-            public string ColorChannel =>
-                this.colorChannel = this.colorChannel ?? "skin";
+            public string ColorChannel
+            {
+                get => this.colorChannel = this.colorChannel ?? "skin";
+                set => this.colorChannel = value             ?? "skin";
+            }
 
             public int variantCount = 0;
             public bool debug = true;
