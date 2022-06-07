@@ -18,6 +18,7 @@
             Mock<HediffDef>    mockCutHediff                  = new Mock<HediffDef>();
             Mock<HediffDef>    mockBurnHediff                 = new Mock<HediffDef>();
 
+
             AlienPartGenerator.BodyAddonHediffGraphic cut = new AlienPartGenerator.BodyAddonHediffGraphic
                                                             {
                                                                 hediff = mockCutHediff.Object,
@@ -49,16 +50,20 @@
                                                                          }
                                                                      },
                                                                  severity =
-                                                                     new List<AlienPartGenerator.BodyAddonHediffSeverityGraphic>
+                                                                     new List<AlienPartGenerator.
+                                                                         BodyAddonHediffSeverityGraphic>
                                                                      {
-                                                                         new AlienPartGenerator.BodyAddonHediffSeverityGraphic
+                                                                         new AlienPartGenerator.
+                                                                         BodyAddonHediffSeverityGraphic
                                                                          {
                                                                              path = "/hediffGraphics/burn/severity/a0",
                                                                              severity = 0f,
                                                                              ageGraphics =
-                                                                                 new List<AlienPartGenerator.BodyAddonAgeGraphic>
+                                                                                 new List<AlienPartGenerator.
+                                                                                     BodyAddonAgeGraphic>
                                                                                  {
-                                                                                     new AlienPartGenerator.BodyAddonAgeGraphic
+                                                                                     new AlienPartGenerator.
+                                                                                     BodyAddonAgeGraphic
                                                                                      {
                                                                                          age =
                                                                                              mockHumanlikeAdultLifestageDef
@@ -164,13 +169,26 @@
                                                                   }
                                                           };
 
-            Mock<Pawn> mockPawn = new Mock<Pawn>();
+            Mock<AlienPartGenerator.BodyAddon.BodyAddonPawnWrapper> mockPawnWrapper =
+                new Mock<AlienPartGenerator.BodyAddon.BodyAddonPawnWrapper>();
+            mockPawnWrapper.SetupGet(p => p.CurrentLifeStageDef).Returns(mockOtherAdultLifestageDef.Object);
+            mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(true);
+            // mockPawnWrapper.Setup(p => p.SeverityOfHediffsOnPart("")).Returns(true);
+
 
             // Resolve
-            addonUnderTest.GraphicCycle(mockPawn.Object, "nose");
+            addonUnderTest.GraphicCycle(mockPawnWrapper.Object, "nose");
 
-            Assert.AreEqual("/backstoryGraphics/ageGraphics/someLifestage/damageGraphics/a1",
+            Assert.AreEqual("/backstoryGraphics/specificBackstory/ageGraphics/someLifestage/damageGraphics/a1",
                             AlienPartGenerator.ReturnPath);
+        }
+
+        private class TestPawn : Pawn
+        {
+            public new RaceProperties RaceProps => new RaceProperties
+                                                   {
+                                                       intelligence = Intelligence.ToolUser
+                                                   };
         }
     }
 }
