@@ -91,7 +91,37 @@ namespace AlienRace
                      (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
                (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement == null || pawn.story.bodyType == this.bodyTypeRequirement);
 
-            public void GraphicCycle(Pawn pawn, string bodyPart)
+            public class BodyAddonPawnWrapper
+            {
+                private Pawn WrappedPawn { get; set; }
+
+                public BodyAddonPawnWrapper(Pawn pawn) => this.WrappedPawn = pawn;
+                public BodyAddonPawnWrapper(){}
+
+                public virtual bool HasBackStoryWithIdentifier(string backstoryId) => this.WrappedPawn.story.AllBackstories.Any(bs => bs.identifier == backstoryId);
+
+                public virtual IEnumerable<float> SeverityOfHediffsOnPart(HediffDef hediffDef, string part) =>
+                    this.WrappedPawn.health.hediffSet.hediffs.Where(h => h.def == hediffDef &&
+                                                                         (h.Part == null                         ||
+                                                                          part.NullOrEmpty()                     ||
+                                                                          h.Part.untranslatedCustomLabel == part ||
+                                                                          h.Part.def.defName             == part))
+                     .Select(h => h.Severity);
+
+                public virtual LifeStageDef CurrentLifeStageDef => this.WrappedPawn.ageTracker.CurLifeStage;
+
+                public virtual bool HasHediffOnPartBelowHealthThreshold(string part, float healthThreshold)
+                {
+                    // look for part where a given hediff has a part matching defined part
+                    return this.WrappedPawn.health.hediffSet.hediffs
+                     .Where(predicate: h => h.Part.untranslatedCustomLabel == part ||
+                                            h.Part.def.defName             == part)
+                         //check if part health is less than health texture limit, needs to config ascending
+                     .Any(h => healthThreshold >= this.WrappedPawn.health.hediffSet.GetPartHealth(h.Part));
+                }
+            }
+
+            public void GraphicCycle(BodyAddonPawnWrapper pawn, string bodyPart)
             {
                 foreach (BodyAddonPrioritization prio in this.Prioritization)
                 {
@@ -109,28 +139,22 @@ namespace AlienRace
                             if (!this.hediffGraphics.NullOrEmpty())
                                 foreach (BodyAddonHediffGraphic bahg in this.hediffGraphics)
                                 {
-
-                                    foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(predicate: h => h.def == bahg.hediff &&
-                                                                                                             (h.Part == null ||
-                                                                                                              bodyPart.NullOrEmpty() ||
-                                                                                                              h.Part.untranslatedCustomLabel == bodyPart ||
-                                                                                                              h.Part.def.defName == bodyPart)))
+                                    foreach (float severity in pawn.SeverityOfHediffsOnPart(bahg.hediff, bodyPart))
                                     {
                                         returnPath = bahg.path;//set path to default path
                                         variantCounting = bahg.variantCount;
 
                                         if (!bahg.severity.NullOrEmpty())//is there severity?
                                         {
-                                            foreach (BodyAddonHediffSeverityGraphic bahsg in bahg.severity)
+                                            foreach (BodyAddonHediffSeverityGraphic bahsg in
+                                                     bahg.severity.Where(bahsg => severity >= bahsg.severity))
                                             {
-                                                if (h.Severity >= bahsg.severity)
-                                                {
-                                                    returnPath = bahsg.path;//set path as default severity path
-                                                    variantCounting = bahsg.variantCount;
-                                                    bahsg.GraphicCycle(pawn,bodyPart);//check deeper in tree under severity
-                                                    break;
-                                                }
+                                                returnPath      = bahsg.path; //set path as default severity path
+                                                variantCounting = bahsg.variantCount;
+                                                bahsg.GraphicCycle(pawn, bodyPart); //check deeper in tree under severity
+                                                break;
                                             }
+
                                             break;
                                         }
                                         bahg.GraphicCycle(pawn,bodyPart);//check deeper in tree without severity
@@ -142,7 +166,7 @@ namespace AlienRace
                             if (!this.ageGraphics.NullOrEmpty())
                                 foreach (BodyAddonAgeGraphic baag in this.ageGraphics)
                                 {
-                                    if (baag.age == pawn.ageTracker.CurLifeStage)//compare current age to age marked under agegraphics
+                                    if (baag.age == pawn.CurrentLifeStageDef)//compare current age to age marked under agegraphics
                                     {
                                         returnPath = baag.path;//set path as default age path
                                         variantCounting = baag.variantCount;
@@ -153,19 +177,16 @@ namespace AlienRace
                             break;
                         case BodyAddonPrioritization.Damage:
                             if (!this.damageGraphics.NullOrEmpty())
-                                foreach (BodyAddonDamageGraphic badg in this.damageGraphics)
+                            {
+                                BodyAddonDamageGraphic matchingBadg = this.damageGraphics.Find(badg =>
+                                                             pawn.HasHediffOnPartBelowHealthThreshold(bodyPart,
+                                                                 badg.damage));
+                                if (matchingBadg != null)
                                 {
-                                    foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(predicate: h => h.Part.untranslatedCustomLabel == bodyPart ||
-                                                                                                              h.Part.def.defName == bodyPart))//look for part where a given hediff has a part matching defined part
-                                    {
-                                        if (badg.damage >= pawn.health.hediffSet.GetPartHealth(h.Part))//check if part health is less than health texture limit, needs to config ascending
-                                        {
-                                            returnPath = badg.path;//set path to damaged path, dont continue down tree
-                                            variantCounting = badg.variantCount;
-                                            break;
-                                        }
-                                    }
+                                    returnPath      = matchingBadg.path; //set path to damaged path, dont continue down tree
+                                    variantCounting = matchingBadg.variantCount;
                                 }
+                            }
                             break;
                         default:
                             throw new ArrayTypeMismatchException();
@@ -180,7 +201,7 @@ namespace AlienRace
             {
                 variantCounting = 0;
                 returnPath = string.Empty;//reset path to empty when method called
-                this.GraphicCycle(pawn,this.bodyPart);
+                this.GraphicCycle(new BodyAddonPawnWrapper(pawn),this.bodyPart);
 
                 if (returnPath.NullOrEmpty())
                 {
