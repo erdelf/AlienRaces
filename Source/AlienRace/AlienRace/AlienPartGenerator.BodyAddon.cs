@@ -1,6 +1,5 @@
 namespace AlienRace
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Xml;
@@ -12,19 +11,10 @@ namespace AlienRace
 
     public partial class AlienPartGenerator
     {
-        static string returnPath = string.Empty;
-        static int variantCounting = 0;
-
-        public static string ReturnPath => returnPath;
-
-        public static int VariantCounting => variantCounting;
-
-
-        public class BodyAddon
+        public class BodyAddon: GenericBodyAddonGraphic
         {
-            public string path;
             public string bodyPart;
-
+            
             public string defaultOffset = "Center";
             [Unsaved]
             public BodyAddonOffsets defaultOffsets;
@@ -57,13 +47,7 @@ namespace AlienRace
                 set => this.colorChannel = value             ?? "skin";
             }
 
-            public int variantCount = 0;
             public bool debug = true;
-
-            public List<BodyAddonHediffGraphic> hediffGraphics;
-            public List<BodyAddonBackstoryGraphic> backstoryGraphics;
-            public List<BodyAddonAgeGraphic> ageGraphics;
-            public List<BodyAddonDamageGraphic> damageGraphics;
 
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
             public List<string> hiddenUnderApparelTag = new List<string>();
@@ -74,12 +58,6 @@ namespace AlienRace
             private ShaderTypeDef shaderType;
 
             public ShaderTypeDef ShaderType => this.shaderType = this.shaderType ?? ShaderTypeDefOf.Cutout;
-
-            private List<BodyAddonPrioritization> prioritization;
-            public List<BodyAddonPrioritization> Prioritization => this.prioritization ??
-                                                                   (this.prioritization = new List<BodyAddonPrioritization> { BodyAddonPrioritization.Hediff, BodyAddonPrioritization.Backstory, BodyAddonPrioritization.Age, BodyAddonPrioritization.Damage});
-
-
 
             public virtual bool CanDrawAddon(Pawn pawn) =>
                 (pawn.Drawer.renderer.graphics.apparelGraphics.NullOrEmpty() || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
@@ -101,14 +79,21 @@ namespace AlienRace
 
                 public virtual bool HasBackStoryWithIdentifier(string backstoryId) => this.WrappedPawn.story.AllBackstories.Any(bs => bs.identifier == backstoryId);
 
+                private bool IsHediffOfDefAndPart(Hediff hediff, HediffDef hediffDef, string part) =>
+                    hediff.def == hediffDef &&
+                    (hediff.Part == null                         ||
+                     part.NullOrEmpty()                          ||
+                     hediff.Part.untranslatedCustomLabel == part ||
+                     hediff.Part.def.defName             == part);
+                
                 public virtual IEnumerable<float> SeverityOfHediffsOnPart(HediffDef hediffDef, string part) =>
-                    this.WrappedPawn.health.hediffSet.hediffs.Where(h => h.def == hediffDef &&
-                                                                         (h.Part == null                         ||
-                                                                          part.NullOrEmpty()                     ||
-                                                                          h.Part.untranslatedCustomLabel == part ||
-                                                                          h.Part.def.defName             == part))
+                    this.WrappedPawn.health.hediffSet.hediffs
+                     .Where(h => IsHediffOfDefAndPart(h, hediffDef, part))
                      .Select(h => h.Severity);
 
+                public virtual bool HasHediffOfDefAndPart(HediffDef hediffDef, string part) => this.WrappedPawn.health.hediffSet.hediffs
+                     .Any(h => IsHediffOfDefAndPart(h, hediffDef, part));
+                
                 public virtual LifeStageDef CurrentLifeStageDef => this.WrappedPawn.ageTracker.CurLifeStage;
 
                 public virtual bool HasHediffOnPartBelowHealthThreshold(string part, float healthThreshold)
@@ -122,93 +107,30 @@ namespace AlienRace
                 }
             }
 
-            public void GraphicCycle(BodyAddonPawnWrapper pawn, string bodyPart)
+            public IBodyAddonGraphic GetBestGraphic(BodyAddonPawnWrapper pawn, string bodyPart)
             {
-                foreach (BodyAddonPrioritization prio in this.Prioritization)
+                IBodyAddonGraphic bestGraphic = this;
+                IEnumerator<IBodyAddonGraphic> currentGraphicSet = this.GetSubGraphics(pawn, bodyPart);
+                while (currentGraphicSet.MoveNext())
                 {
-                    switch (prio)
+                    IBodyAddonGraphic current = currentGraphicSet.Current;
+                    if (current?.IsApplicable(pawn, bodyPart) ?? false)
                     {
-                        case BodyAddonPrioritization.Backstory:
-                            if (this.backstoryGraphics?.FirstOrDefault(predicate: babgs => pawn.HasBackStoryWithIdentifier(babgs.backstory)) is { } babg)
-                            {
-                                returnPath = babg.path;
-                                variantCounting = babg.variantCount;
-                                babg.GraphicCycle(pawn,bodyPart);//check backstory, set path to default path, then check deeper in tree
-                            }
-                            break;
-                        case BodyAddonPrioritization.Hediff:
-                            if (!this.hediffGraphics.NullOrEmpty())
-                                foreach (BodyAddonHediffGraphic bahg in this.hediffGraphics)
-                                {
-                                    foreach (float severity in pawn.SeverityOfHediffsOnPart(bahg.hediff, bodyPart))
-                                    {
-                                        returnPath = bahg.path;//set path to default path
-                                        variantCounting = bahg.variantCount;
-
-                                        if (!bahg.severity.NullOrEmpty())//is there severity?
-                                        {
-                                            foreach (BodyAddonHediffSeverityGraphic bahsg in
-                                                     bahg.severity.Where(bahsg => severity >= bahsg.severity))
-                                            {
-                                                returnPath      = bahsg.path; //set path as default severity path
-                                                variantCounting = bahsg.variantCount;
-                                                bahsg.GraphicCycle(pawn, bodyPart); //check deeper in tree under severity
-                                                break;
-                                            }
-
-                                            break;
-                                        }
-                                        bahg.GraphicCycle(pawn,bodyPart);//check deeper in tree without severity
-                                        break;
-                                    }
-                                }
-                            break;
-                        case BodyAddonPrioritization.Age:
-                            if (!this.ageGraphics.NullOrEmpty())
-                                foreach (BodyAddonAgeGraphic baag in this.ageGraphics)
-                                {
-                                    if (baag.age == pawn.CurrentLifeStageDef)//compare current age to age marked under agegraphics
-                                    {
-                                        returnPath = baag.path;//set path as default age path
-                                        variantCounting = baag.variantCount;
-                                        baag.GraphicCycle(pawn,bodyPart);//check deeper into tree
-                                        break;
-                                    }
-                                }
-                            break;
-                        case BodyAddonPrioritization.Damage:
-                            if (!this.damageGraphics.NullOrEmpty())
-                            {
-                                BodyAddonDamageGraphic matchingBadg = this.damageGraphics.Find(badg =>
-                                                             pawn.HasHediffOnPartBelowHealthThreshold(bodyPart,
-                                                                 badg.damage));
-                                if (matchingBadg != null)
-                                {
-                                    returnPath      = matchingBadg.path; //set path to damaged path, dont continue down tree
-                                    variantCounting = matchingBadg.variantCount;
-                                }
-                            }
-                            break;
-                        default:
-                            throw new ArrayTypeMismatchException();
+                        bestGraphic                = current;
+                        currentGraphicSet          = current.GetSubGraphics(pawn, bodyPart);
                     }
-                    if (!returnPath.NullOrEmpty())
-                        break;
                 }
+
+                return bestGraphic;
             }
 
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
-                variantCounting = 0;
-                returnPath = string.Empty;//reset path to empty when method called
-                this.GraphicCycle(new BodyAddonPawnWrapper(pawn),this.bodyPart);
-
-                if (returnPath.NullOrEmpty())
-                {
-                    returnPath = this.path;
-                    variantCounting = this.variantCount;
-                }
+                IBodyAddonGraphic bestGraphic = this.GetBestGraphic(new BodyAddonPawnWrapper(pawn),this.bodyPart);
+                
+                string returnPath = bestGraphic.GetPath() ?? string.Empty;
+                int    variantCounting = bestGraphic.GetVariantCount();
 
                 if (variantCounting <= 0)
                     variantCounting = 1;
@@ -233,29 +155,70 @@ namespace AlienRace
             }
 
 
+            // Top level so always considered applicable
+            public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) => true;
         }
-        public class BodyAddonDamageGraphic : BodyAddon
+        
+        public interface IBodyAddonGraphic
+        {
+            public string GetPath();
+            public int    GetVariantCount();
+            public int    IncrementVariantCount();
+
+            public IEnumerator<IBodyAddonGraphic> GetSubGraphics(BodyAddon.BodyAddonPawnWrapper pawn, string part);
+            public bool                           IsApplicable(BodyAddon.BodyAddonPawnWrapper             pawn, string part);
+        }
+
+        public abstract class AbstractBodyAddonGraphic: IBodyAddonGraphic
+        {
+            public string path;
+            public int    variantCount;
+            public string GetPath() => this.path;
+
+            public int GetVariantCount()       => this.variantCount;
+            public int IncrementVariantCount() => this.variantCount++;
+
+            public abstract IEnumerator<IBodyAddonGraphic> GetSubGraphics(
+                BodyAddon.BodyAddonPawnWrapper pawn, string part);
+            
+            public abstract bool IsApplicable(BodyAddon.BodyAddonPawnWrapper pawn, string part);
+        }
+
+        public abstract class GenericBodyAddonGraphic : AbstractBodyAddonGraphic
+        {
+            public List<BodyAddonHediffGraphic>    hediffGraphics;
+            public List<BodyAddonBackstoryGraphic> backstoryGraphics;
+            public List<BodyAddonAgeGraphic>       ageGraphics;
+            public List<BodyAddonDamageGraphic>    damageGraphics;
+
+            public override IEnumerator<IBodyAddonGraphic> GetSubGraphics(
+                BodyAddon.BodyAddonPawnWrapper pawn, string part)
+            {
+                foreach (IBodyAddonGraphic graphic in this.backstoryGraphics ?? Enumerable.Empty<IBodyAddonGraphic>()) { yield return graphic; }
+                foreach (IBodyAddonGraphic graphic in this.hediffGraphics ?? Enumerable.Empty<IBodyAddonGraphic>()) { yield return graphic; }
+                foreach (IBodyAddonGraphic graphic in this.ageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>()) { yield return graphic; }
+                foreach (IBodyAddonGraphic graphic in this.damageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>()) { yield return graphic; }
+            }
+        }
+        
+        public class BodyAddonDamageGraphic : AbstractBodyAddonGraphic
         {
             public float damage;
-            public new string path;
-            public new int variantCount = 0;
-
+            
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.damage = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
                 this.path = xmlRoot.InnerXml.Trim();
             }
+
+            public override IEnumerator<IBodyAddonGraphic> GetSubGraphics(
+                BodyAddon.BodyAddonPawnWrapper pawn, string part) => Enumerable.Empty<IBodyAddonGraphic>().GetEnumerator();
+            public override bool                           IsApplicable(BodyAddon.BodyAddonPawnWrapper   pawn, string part) => pawn.HasHediffOnPartBelowHealthThreshold(part, this.damage);
         }
-        public class BodyAddonAgeGraphic : BodyAddon
+        public class BodyAddonAgeGraphic : GenericBodyAddonGraphic
         {
             public LifeStageDef age;
-            public new string path;
-            public new int variantCount = 0;
-            public new List<BodyAddonHediffGraphic> hediffGraphics;
-            public new List<BodyAddonBackstoryGraphic> backstoryGraphics;
-            public new List<BodyAddonAgeGraphic> ageGraphics;
-            public new List<BodyAddonDamageGraphic> damageGraphics;
 
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
@@ -276,17 +239,27 @@ namespace AlienRace
                                                   xmlRootChildNode.InnerXml.Trim());
                 }
             }
+
+            public override bool IsApplicable(BodyAddon.BodyAddonPawnWrapper pawn, string part) => pawn.CurrentLifeStageDef == this.age;
         }
-        public class BodyAddonHediffGraphic:BodyAddon
+        public class BodyAddonHediffGraphic: GenericBodyAddonGraphic
         {
             public HediffDef hediff;
-            public new string path;
-            public new int variantCount = 0;
             public List<BodyAddonHediffSeverityGraphic> severity;
-            public new List<BodyAddonHediffGraphic> hediffGraphics;
-            public new List<BodyAddonBackstoryGraphic> backstoryGraphics;
-            public new List<BodyAddonAgeGraphic> ageGraphics;
-            public new List<BodyAddonDamageGraphic> damageGraphics;
+
+            public override IEnumerator<IBodyAddonGraphic> GetSubGraphics(BodyAddon.BodyAddonPawnWrapper pawn, string part)
+            {
+                float maxSeverityOfHediff = pawn.SeverityOfHediffsOnPart(this.hediff, part).Max();
+                foreach (BodyAddonHediffSeverityGraphic graphic in this.severity?.Where(s => maxSeverityOfHediff >= s.severity) ?? Enumerable.Empty<BodyAddonHediffSeverityGraphic>()) yield return graphic;
+
+                IEnumerator<IBodyAddonGraphic> genericSubGraphics = base.GetSubGraphics(pawn, part);
+                while(genericSubGraphics.MoveNext())
+                {
+                    yield return genericSubGraphics.Current;
+                }
+            }
+
+            public override bool IsApplicable(BodyAddon.BodyAddonPawnWrapper pawn, string part) => pawn.HasHediffOfDefAndPart(this.hediff, part);
 
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
@@ -309,15 +282,9 @@ namespace AlienRace
             }
         }
 
-        public class BodyAddonHediffSeverityGraphic:BodyAddon
+        public class BodyAddonHediffSeverityGraphic:GenericBodyAddonGraphic
         {
             public float severity;
-            public new string path;
-            public new int variantCount = 0;
-            public new List<BodyAddonHediffGraphic> hediffGraphics;
-            public new List<BodyAddonBackstoryGraphic> backstoryGraphics;
-            public new List<BodyAddonAgeGraphic> ageGraphics;
-            public new List<BodyAddonDamageGraphic> damageGraphics;
 
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
@@ -325,17 +292,16 @@ namespace AlienRace
                 this.severity = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
                 this.path = xmlRoot.InnerXml.Trim();
             }
+
+            // In isolation severity graphics must always be considered applicable because we don't have the hediff
+            // As severityGraphics are only valid nested It is expected that the list will only contain applicable instances. 
+            public override bool IsApplicable(BodyAddon.BodyAddonPawnWrapper pawn, string part) => true;
         }
 
-        public class BodyAddonBackstoryGraphic:BodyAddon
+        public class BodyAddonBackstoryGraphic: GenericBodyAddonGraphic
         {
             public string backstory;
-            public new string path;
-            public new int variantCount = 0;
-            public new List<BodyAddonHediffGraphic> hediffGraphics;
-            public new List<BodyAddonBackstoryGraphic> backstoryGraphics;
-            public new List<BodyAddonAgeGraphic> ageGraphics;
-            public new List<BodyAddonDamageGraphic> damageGraphics;
+            
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
@@ -343,6 +309,8 @@ namespace AlienRace
 
                 this.path = xmlRoot.FirstChild.Value;
             }
+
+            public override bool IsApplicable(BodyAddon.BodyAddonPawnWrapper pawn, string part) => pawn.HasBackStoryWithIdentifier(this.backstory);
         }
 
         public class BodyAddonOffsets
@@ -400,14 +368,6 @@ namespace AlienRace
                 this.crownType = xmlRoot.Name;
                 this.offset = (Vector2)ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
             }
-        }
-
-        public enum BodyAddonPrioritization : byte
-        {
-            Backstory,
-            Hediff,
-            Age,
-            Damage
         }
     }
 }
