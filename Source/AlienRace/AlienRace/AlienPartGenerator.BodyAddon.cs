@@ -3,6 +3,7 @@ namespace AlienRace
     using System.Collections.Generic;
     using System.Linq;
     using System.Xml;
+    using BodyAddonSupport;
     using HarmonyLib;
     using JetBrains.Annotations;
     using RimWorld;
@@ -19,7 +20,7 @@ namespace AlienRace
             [Unsaved]
             public BodyAddonOffsets defaultOffsets;
 
-            public BodyAddonOffsets offsets = new BodyAddonOffsets();
+            public BodyAddonOffsets offsets = new ();
             public bool linkVariantIndexWithPrevious = false;
             public float angle = 0f;
             public bool inFrontOfBody = false;
@@ -43,8 +44,8 @@ namespace AlienRace
 
             public string ColorChannel
             {
-                get => this.colorChannel = this.colorChannel ?? "skin";
-                set => this.colorChannel = value             ?? "skin";
+                get => this.colorChannel ??= "skin";
+                set => this.colorChannel = value ?? "skin";
             }
 
             public bool debug = true;
@@ -59,70 +60,56 @@ namespace AlienRace
 
             public ShaderTypeDef ShaderType => this.shaderType ??= ShaderTypeDefOf.Cutout;
 
-            private List<BodyAddonPrioritization> prioritization;
-            public List<BodyAddonPrioritization> Prioritization => this.prioritization ??= new List<BodyAddonPrioritization> { BodyAddonPrioritization.Hediff, BodyAddonPrioritization.Backstory };
+            private bool VisibleForGenderOf(BodyAddonPawnWrapper pawn) =>
+                pawn.GetGender() == Gender.Female ? this.drawForFemale : this.drawForMale;
+
+            private bool VisibleForBodyTypeOf(BodyAddonPawnWrapper pawn) => this.bodyTypeRequirement.NullOrEmpty() ||
+                                                             pawn.GetBodyTypeName() == this.bodyTypeRequirement;
+
+            private bool VisibleUnderApparelOf(BodyAddonPawnWrapper pawn) =>
+                !pawn.HasApparel() ||
+                (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
+                !pawn.GetWornApparel().Any(ap => !ap.hatRenderedFrontOfFace &&
+                                                ap.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||
+                                                ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
+            
+            private bool VisibleForPostureOf(BodyAddonPawnWrapper pawn) =>
+                (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) &&
+                (pawn.VisibleInBed() || this.drawnInBed);
 
 
+            private bool VisibleForBackstoryOf(BodyAddonPawnWrapper pawn) => this.backstoryRequirement.NullOrEmpty() ||
+                                                            pawn.HasBackstory(this.backstoryRequirement);
 
-            public virtual bool CanDrawAddon(Pawn pawn) =>
-                (pawn.Drawer.renderer.graphics.apparelGraphics.NullOrEmpty() || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
-                !pawn.apparel.WornApparel.Any(predicate: ap => !ap.def.apparel.hatRenderedFrontOfFace && ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||
-                ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(s))))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && ((pawn.CurrentBed()?.def.building.bed_showSleeperBody ?? true) || this.drawnInBed) &&
-                    (this.backstoryRequirement == null || pawn.story.AllBackstories.Contains(this.backstoryRequirement)) &&   
-                    (this.drawnDesiccated || pawn.Corpse?.GetRotStage() != RotStage.Dessicated) &&
-                    (this.bodyPart.NullOrEmpty() ||
-                     (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) ||
-                     (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
-               (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement == null || pawn.story.bodyType == this.bodyTypeRequirement);
+            private bool VisibleForRotStageOf(BodyAddonPawnWrapper pawn) =>
+                this.drawnDesiccated || pawn.GetRotStage() != RotStage.Dessicated;
 
-            public class BodyAddonPawnWrapper
-            {
-                private Pawn WrappedPawn { get; set; }
+            private bool RequiredBodyPartExistsFor(BodyAddonPawnWrapper pawn) =>
+                this.bodyPart.NullOrEmpty() ||
+                pawn.HasNamedBodyPart(this.bodyPart) ||
+                (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false);
 
-                public BodyAddonPawnWrapper(Pawn pawn) => this.WrappedPawn = pawn;
-                public BodyAddonPawnWrapper(){}
+            public virtual bool CanDrawAddon(Pawn pawn) => this.CanDrawAddon(new BodyAddonPawnWrapper(pawn));
+            private bool CanDrawAddon(BodyAddonPawnWrapper pawn) =>
+                this.VisibleUnderApparelOf(pawn) &&
+                this.VisibleForPostureOf(pawn) &&
+                this.VisibleForBackstoryOf(pawn) &&
+                this.VisibleForRotStageOf(pawn) &&
+                this.RequiredBodyPartExistsFor(pawn) &&
+                this.VisibleForGenderOf(pawn) &&
+                this.VisibleForBodyTypeOf(pawn);
 
-                public virtual bool HasBackStoryWithIdentifier(string backstoryId) => this.WrappedPawn.story.AllBackstories.Any(bs => bs.identifier == backstoryId);
-
-                private bool IsHediffOfDefAndPart(Hediff hediff, HediffDef hediffDef, string part) =>
-                    hediff.def == hediffDef &&
-                    (hediff.Part == null                         ||
-                     part.NullOrEmpty()                          ||
-                     hediff.Part.untranslatedCustomLabel == part ||
-                     hediff.Part.def.defName             == part);
-                
-                public virtual IEnumerable<float> SeverityOfHediffsOnPart(HediffDef hediffDef, string part) =>
-                    this.WrappedPawn.health.hediffSet.hediffs
-                     .Where(h => IsHediffOfDefAndPart(h, hediffDef, part))
-                     .Select(h => h.Severity);
-
-                public virtual bool HasHediffOfDefAndPart(HediffDef hediffDef, string part) => this.WrappedPawn.health.hediffSet.hediffs
-                     .Any(h => IsHediffOfDefAndPart(h, hediffDef, part));
-                
-                public virtual LifeStageDef CurrentLifeStageDef => this.WrappedPawn.ageTracker.CurLifeStage;
-
-                public virtual bool HasHediffOnPartBelowHealthThreshold(string part, float healthThreshold)
-                {
-                    // look for part where a given hediff has a part matching defined part
-                    return this.WrappedPawn.health.hediffSet.hediffs
-                     .Where(predicate: h => h.Part.untranslatedCustomLabel == part ||
-                                            h.Part.def.defName             == part)
-                         //check if part health is less than health texture limit, needs to config ascending
-                     .Any(h => healthThreshold >= this.WrappedPawn.health.hediffSet.GetPartHealth(h.Part));
-                }
-            }
-
-            public IBodyAddonGraphic GetBestGraphic(BodyAddonPawnWrapper pawn, string bodyPart)
+            public IBodyAddonGraphic GetBestGraphic(BodyAddonPawnWrapper pawn, string part)
             {
                 IBodyAddonGraphic bestGraphic = this;
-                IEnumerator<IBodyAddonGraphic> currentGraphicSet = this.GetSubGraphics(pawn, bodyPart);
+                IEnumerator<IBodyAddonGraphic> currentGraphicSet = this.GetSubGraphics(pawn, part);
                 while (currentGraphicSet.MoveNext())
                 {
                     IBodyAddonGraphic current = currentGraphicSet.Current;
-                    if (current?.IsApplicable(pawn, bodyPart) ?? false)
+                    if (current?.IsApplicable(pawn, part) ?? false)
                     {
                         bestGraphic                = current;
-                        currentGraphicSet          = current.GetSubGraphics(pawn, bodyPart);
+                        currentGraphicSet          = current.GetSubGraphics(pawn, part);
                     }
                 }
 
@@ -132,7 +119,7 @@ namespace AlienRace
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
-                IBodyAddonGraphic bestGraphic = this.GetBestGraphic(new BodyAddonPawnWrapper(pawn),this.bodyPart);
+                IBodyAddonGraphic bestGraphic = this.GetBestGraphic(new BodyAddonPawnWrapper(pawn), this.bodyPart);
                 
                 string returnPath = bestGraphic.GetPath() ?? string.Empty;
                 int    variantCounting = bestGraphic.GetVariantCount();
