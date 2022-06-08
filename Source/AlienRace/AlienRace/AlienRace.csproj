@@ -306,9 +306,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlienPartGenerator.BodyAddon.cs" />
+    <Compile Include="AlienPartGenerator.BodyAddon.Graphics.cs" />
     <Compile Include="AlienPartGenerator.cs" />
+    <Compile Include="AlienPartGenerator.Offsets.cs" />
     <Compile Include="AlienRaceMod.cs" />
     <Compile Include="BackstoryDef.cs" />
+    <Compile Include="BodyAddonSupport\AbstractBodyAddonGraphic.cs" />
+    <Compile Include="BodyAddonSupport\BodyAddonPawnWrapper.cs" />
+    <Compile Include="BodyAddonSupport\GenericBodyAddonGraphic.cs" />
+    <Compile Include="BodyAddonSupport\IBodyAddonGraphic.cs" />
     <Compile Include="ColorGenerators.cs" />
     <Compile Include="Scribe_NestedCollections.cs" />
     <Compile Include="HarmonyPatches.cs" />
