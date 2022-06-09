@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using AlienRace;
+    using AlienRace.BodyAddonSupport;
     using Moq;
     using NUnit.Framework;
     using RimWorld;
@@ -169,15 +170,15 @@
                                                                   }
                                                           };
 
-            Mock<AlienPartGenerator.BodyAddon.BodyAddonPawnWrapper> mockPawnWrapper =
-                new Mock<AlienPartGenerator.BodyAddon.BodyAddonPawnWrapper>();
+            Mock<BodyAddonPawnWrapper> mockPawnWrapper =
+                new Mock<BodyAddonPawnWrapper>();
             mockPawnWrapper.SetupGet(p => p.CurrentLifeStageDef).Returns(mockOtherAdultLifestageDef.Object);
             mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(true);
             mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 1f)).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
             // Resolve
-            AlienPartGenerator.IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
+            IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
 
             Assert.AreEqual("/backstoryGraphics/specificBackstory/ageGraphics/otherAdultLifestage/damageGraphics/a5",
                             bestGraphic.GetPath());
@@ -342,15 +343,15 @@
                                                                   }
                                                           };
 
-            Mock<AlienPartGenerator.BodyAddon.BodyAddonPawnWrapper> mockPawnWrapper =
-                new Mock<AlienPartGenerator.BodyAddon.BodyAddonPawnWrapper>();
+            Mock<BodyAddonPawnWrapper> mockPawnWrapper =
+                new Mock<BodyAddonPawnWrapper>();
             mockPawnWrapper.SetupGet(p => p.CurrentLifeStageDef).Returns(mockOtherAdultLifestageDef.Object);
             mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(true);
             mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 1f)).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 5f)).Returns(false);
 
             // Resolve
-            AlienPartGenerator.IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
+            IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
 
             Assert.AreEqual("/backstoryGraphics/specificBackstory/ageGraphics/otherAdultLifestage",
                             bestGraphic.GetPath());
@@ -515,8 +516,8 @@
                                                                   }
                                                           };
 
-            Mock<AlienPartGenerator.BodyAddon.BodyAddonPawnWrapper> mockPawnWrapper =
-                new Mock<AlienPartGenerator.BodyAddon.BodyAddonPawnWrapper>();
+            Mock<BodyAddonPawnWrapper> mockPawnWrapper =
+                new Mock<BodyAddonPawnWrapper>();
             mockPawnWrapper.SetupGet(p => p.CurrentLifeStageDef).Returns(mockHumanlikeAdultLifestageDef.Object);
             mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockBurnHediff.Object, "nose")).Returns(false);
@@ -525,7 +526,7 @@
             mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
             // Resolve
-            AlienPartGenerator.IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
+            IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
 
             Assert.AreEqual("/damageGraphics/a5",
                             bestGraphic.GetPath());
@@ -689,8 +690,8 @@
                                                                   }
                                                           };
 
-            Mock<AlienPartGenerator.BodyAddon.BodyAddonPawnWrapper> mockPawnWrapper =
-                new Mock<AlienPartGenerator.BodyAddon.BodyAddonPawnWrapper>();
+            Mock<BodyAddonPawnWrapper> mockPawnWrapper =
+                new Mock<BodyAddonPawnWrapper>();
             mockPawnWrapper.SetupGet(p => p.CurrentLifeStageDef).Returns(mockHumanlikeAdultLifestageDef.Object);
             mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockBurnHediff.Object, "nose")).Returns(false);
@@ -699,7 +700,7 @@
             mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 5f)).Returns(false);
 
             // Resolve
-            AlienPartGenerator.IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
+            IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
 
             Assert.AreEqual("/",
                             bestGraphic.GetPath());
