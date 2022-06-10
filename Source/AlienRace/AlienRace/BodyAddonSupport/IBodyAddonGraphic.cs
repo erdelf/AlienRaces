@@ -8,6 +8,7 @@ public interface IBodyAddonGraphic
     public int    GetVariantCount();
     public int    IncrementVariantCount();
 
-    public IEnumerator<IBodyAddonGraphic> GetSubGraphics(BodyAddonPawnWrapper pawn, string part);
-    public bool                           IsApplicable(BodyAddonPawnWrapper   pawn, string part);
+    public IEnumerator<IBodyAddonGraphic> GetSubGraphics(BodyAddonPawnWrapper pawn, string part);//generic get subgraphic
+    public bool                           IsApplicable(BodyAddonPawnWrapper   pawn, string part);//generic is applicable check
+    public IEnumerator<IBodyAddonGraphic> GeneratePaths();
 }
