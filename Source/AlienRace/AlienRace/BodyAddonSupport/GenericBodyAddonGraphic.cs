@@ -13,9 +13,17 @@ public abstract class GenericBodyAddonGraphic : AbstractBodyAddonGraphic
     public override IEnumerator<IBodyAddonGraphic> GetSubGraphics(
         BodyAddonPawnWrapper pawn, string part)
     {
-        foreach (IBodyAddonGraphic graphic in this.backstoryGraphics ?? Enumerable.Empty<IBodyAddonGraphic>())  yield return graphic;
-        foreach (IBodyAddonGraphic graphic in this.hediffGraphics ?? Enumerable.Empty<IBodyAddonGraphic>())  yield return graphic;
-        foreach (IBodyAddonGraphic graphic in this.ageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>())  yield return graphic;
-        foreach (IBodyAddonGraphic graphic in this.damageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>())  yield return graphic;
+        foreach (IBodyAddonGraphic graphic in this.hediffGraphics ?? Enumerable.Empty<IBodyAddonGraphic>())  yield return graphic;//cycle through each hediff graphic defined
+        foreach (IBodyAddonGraphic graphic in this.backstoryGraphics ?? Enumerable.Empty<IBodyAddonGraphic>())  yield return graphic;//cycle through each backstory graphic defined
+        foreach (IBodyAddonGraphic graphic in this.ageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>())  yield return graphic;//cycle through each lifestage graphic defined
+        foreach (IBodyAddonGraphic graphic in this.damageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>())  yield return graphic;//cycle through each damage graphic defined
+    }
+    public override IEnumerator<IBodyAddonGraphic> GeneratePaths()//used for creating the specific path file names in AlienPartGenerator
+    {
+        foreach (IBodyAddonGraphic graphic in this.hediffGraphics ?? Enumerable.Empty<IBodyAddonGraphic>())  yield return graphic;//cycle through each hediff graphic defined
+        foreach (IBodyAddonGraphic graphic in this.backstoryGraphics ?? Enumerable.Empty<IBodyAddonGraphic>())  yield return graphic;//cycle through each backstory graphic defined
+        foreach (IBodyAddonGraphic graphic in this.ageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>())  yield return graphic;//cycle through each lifestage graphic defined
+        foreach (IBodyAddonGraphic graphic in this.damageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>())  yield return graphic;//cycle through each damage graphic defined
+    }
     }
 }

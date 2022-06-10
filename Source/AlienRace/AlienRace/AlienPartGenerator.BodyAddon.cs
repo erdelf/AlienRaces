@@ -99,14 +99,14 @@ namespace AlienRace
             public IBodyAddonGraphic GetBestGraphic(BodyAddonPawnWrapper pawn, string part)
             {
                 IBodyAddonGraphic bestGraphic = this;
-                IEnumerator<IBodyAddonGraphic> currentGraphicSet = this.GetSubGraphics(pawn, part);
-                while (currentGraphicSet.MoveNext())
+                IEnumerator<IBodyAddonGraphic> currentGraphicSet = this.GetSubGraphics(pawn, part);//generate list of subgraphics
+                while (currentGraphicSet.MoveNext())//exits if iterates through list of subgraphics without advancing
                 {
-                    IBodyAddonGraphic current = currentGraphicSet.Current;
-                    if (current?.IsApplicable(pawn, part) ?? false)
+                    IBodyAddonGraphic current = currentGraphicSet.Current;//current branch of tree
+                    if (current?.IsApplicable(pawn, part) ?? false)//checks if branch is next branch to enter
                     {
-                        bestGraphic                = current;
-                        currentGraphicSet          = current.GetSubGraphics(pawn, part);
+                        bestGraphic                = current;//change best graphic to next layer
+                        currentGraphicSet          = current.GetSubGraphics(pawn, part);//enters next layer/branch
                     }
                 }
 
@@ -116,8 +116,8 @@ namespace AlienRace
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
-                IBodyAddonGraphic bestGraphic = this.GetBestGraphic(new BodyAddonPawnWrapper(pawn), this.bodyPart);
-                
+                IBodyAddonGraphic bestGraphic = this.GetBestGraphic(new BodyAddonPawnWrapper(pawn), this.bodyPart);//finds deepest match
+
                 string returnPath = bestGraphic.GetPath() ?? string.Empty;
                 int    variantCounting = bestGraphic.GetVariantCount();
 

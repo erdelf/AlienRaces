@@ -5,7 +5,7 @@ using System.Linq;
 using RimWorld;
 using Verse;
 
-public class BodyAddonPawnWrapper
+public class BodyAddonPawnWrapper//contains addon important information from pawn
 {
     private Pawn WrappedPawn { get; set; }
 
@@ -14,9 +14,9 @@ public class BodyAddonPawnWrapper
     public BodyAddonPawnWrapper() {}
 
     public virtual bool HasBackStoryWithIdentifier(string backstoryId) =>
-        this.WrappedPawn.story.AllBackstories.Any(bs => bs.identifier == backstoryId);
+        this.WrappedPawn.story.AllBackstories.Any(bs => bs.identifier == backstoryId);//matches pawn backstory with input
 
-    private bool IsHediffOfDefAndPart(Hediff hediff, HediffDef hediffDef, string part) =>
+    private bool IsHediffOfDefAndPart(Hediff hediff, HediffDef hediffDef, string part) =>//checks if specific hediff is on given part or no part
         hediff.def == hediffDef &&
         (hediff.Part == null                         ||
          part.NullOrEmpty()                          ||
@@ -29,10 +29,10 @@ public class BodyAddonPawnWrapper
          .Select(h => h.Severity);
 
     public virtual bool HasHediffOfDefAndPart(HediffDef hediffDef, string part) => this.WrappedPawn.health.hediffSet
-    .hediffs
-    .Any(h => IsHediffOfDefAndPart(h, hediffDef, part));
+    .hediffs//generate list of pawn hediffs
+    .Any(h => IsHediffOfDefAndPart(h, hediffDef, part));//compares pawn hediffs to specified hediff def and part
 
-    public virtual LifeStageDef CurrentLifeStageDef => this.WrappedPawn.ageTracker.CurLifeStage;
+    public virtual LifeStageDef CurrentLifeStageDef => this.WrappedPawn.ageTracker.CurLifeStage;//checks if lifestagedefs match
 
     public virtual bool HasHediffOnPartBelowHealthThreshold(string part, float healthThreshold)
     {
