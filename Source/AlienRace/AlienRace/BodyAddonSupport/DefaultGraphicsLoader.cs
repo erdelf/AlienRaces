@@ -25,8 +25,8 @@ public class DefaultGraphicsLoader : IGraphicsLoader
     }
 
     private void LoadAll2DVariantsForGraphic(IBodyAddonGraphic graphic,
-                                             StringBuilder logBuilder,
-                                             string source,
+                                             StringBuilder     logBuilder,
+                                             string            source,
                                              bool              shouldLog = false)
     {
         LogFor(logBuilder, $"Loading variants for {graphic.GetPath()}");
@@ -40,7 +40,7 @@ public class DefaultGraphicsLoader : IGraphicsLoader
         LogFor(logBuilder, $"Variants found for {graphic.GetPath()}: {graphic.GetVariantCount()}", shouldLog);
 
         // If we didn't find any, warn about it
-        if (graphic.GetVariantCount() == 0) Log.Warning($"No graphics found at {graphic.GetPath()} in {source}");
+        if (graphic.GetVariantCount() == 0) Log.Warning($"No graphics found at {graphic.GetPath()} for {graphic.GetType()} in {source}");
     }
 
     /**
