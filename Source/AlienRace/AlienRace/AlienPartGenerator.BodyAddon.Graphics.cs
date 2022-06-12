@@ -24,7 +24,7 @@ public partial class AlienPartGenerator
 
         public override IEnumerator<IBodyAddonGraphic> GetSubGraphics(
             BodyAddonPawnWrapper pawn, string part) => Enumerable.Empty<IBodyAddonGraphic>().GetEnumerator();//there are no subgraphics for damage
-        public override IEnumerator<IBodyAddonGraphic> GeneratePaths() => Enumerable.Empty<IBodyAddonGraphic>().GetEnumerator();
+        public override IEnumerator<IBodyAddonGraphic> GetSubGraphics() => Enumerable.Empty<IBodyAddonGraphic>().GetEnumerator();
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
             pawn.HasHediffOnPartBelowHealthThreshold(part, this.damage);
     }
@@ -76,17 +76,18 @@ public partial class AlienPartGenerator
             IEnumerator<IBodyAddonGraphic> genericSubGraphics = base.GetSubGraphics(pawn, part);//run rest of graphic cycles
             while (genericSubGraphics.MoveNext())
             {
-                yield return genericSubGraphics.Current;//return the final current of genericsubgraphics, needed as genericsubgraphics just gets the subgraphic, not return it to the previous iteration
+                yield return genericSubGraphics.Current;//return each of the generic subgraphics lazily
             }
         }
         
-        public override IEnumerator<IBodyAddonGraphic> GeneratePaths()
+        public override IEnumerator<IBodyAddonGraphic> GetSubGraphics()
         {
             foreach (IBodyAddonGraphic graphic in this.severity ?? Enumerable.Empty<IBodyAddonGraphic>()) yield return graphic;
-            foreach (IBodyAddonGraphic graphic in this.hediffGraphics ?? Enumerable.Empty<IBodyAddonGraphic>()) yield return graphic;//cycle through each hediff graphic defined
-            foreach (IBodyAddonGraphic graphic in this.backstoryGraphics ?? Enumerable.Empty<IBodyAddonGraphic>()) yield return graphic;//cycle through each backstory graphic defined
-            foreach (IBodyAddonGraphic graphic in this.ageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>()) yield return graphic;//cycle through each lifestage graphic defined
-            foreach (IBodyAddonGraphic graphic in this.damageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>()) yield return graphic;//cycle through each damage graphic defined
+            IEnumerator<IBodyAddonGraphic> baseGraphics = base.GetSubGraphics();
+            while (baseGraphics.MoveNext())
+            {
+                yield return baseGraphics.Current;//return each of the generic subgraphics lazily
+            }
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
