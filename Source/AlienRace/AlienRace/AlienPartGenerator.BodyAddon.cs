@@ -99,17 +99,27 @@ namespace AlienRace
             public IBodyAddonGraphic GetBestGraphic(BodyAddonPawnWrapper pawn, string part)
             {
                 IBodyAddonGraphic bestGraphic = this;
-                IEnumerator<IBodyAddonGraphic> currentGraphicSet = this.GetSubGraphics(pawn, part);//generate list of subgraphics
-                while (currentGraphicSet.MoveNext())//exits if iterates through list of subgraphics without advancing
+                Stack<IEnumerator<IBodyAddonGraphic>> stack = new Stack<IEnumerator<IBodyAddonGraphic>>();
+                stack.Push(this.GetSubGraphics(pawn, part)); // generate list of subgraphics
+
+                // Loop through sub trees until we find a deeper match or we run out of alternatives
+                while (stack.Count > 0 && bestGraphic == this)
                 {
-                    IBodyAddonGraphic current = currentGraphicSet.Current;//current branch of tree
-                    if (current?.IsApplicable(pawn, part) ?? false)//checks if branch is next branch to enter
+                    IEnumerator<IBodyAddonGraphic> currentGraphicSet = stack.Pop(); // get the top of the stack  
+                    while (currentGraphicSet.MoveNext()) // exits if iterates through list of subgraphics without advancing
                     {
-                        bestGraphic                = current;//change best graphic to next layer
-                        currentGraphicSet          = current.GetSubGraphics(pawn, part);//enters next layer/branch
+                        IBodyAddonGraphic current = currentGraphicSet.Current; //current branch of tree
+                        if (!(current?.IsApplicable(pawn, part) ?? false)) continue;
+                        if (current.GetPath() == null)
+                            // add the current layer back to the stack so we can rewind
+                            stack.Push(currentGraphicSet);
+                        else
+                            // Only update best graphic if the current one has a valid path
+                            bestGraphic = current;
+
+                        currentGraphicSet = current.GetSubGraphics(pawn, part); //enters next layer/branch
                     }
                 }
-
                 return bestGraphic;
             }
 
