@@ -22,4 +22,6 @@ public interface IBodyAddonGraphic
      * Check if this graphic is relevant to the pawn and part.
      */
     public bool                           IsApplicable(BodyAddonPawnWrapper   pawn, string part);
+
+    public IEnumerable<IBodyAddonGraphic> GetSubGraphicsOfPriority(AlienPartGenerator.BodyAddonPrioritization priority);
 }
