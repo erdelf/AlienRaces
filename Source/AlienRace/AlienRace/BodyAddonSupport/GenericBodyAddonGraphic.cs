@@ -1,6 +1,5 @@
 ﻿namespace AlienRace.BodyAddonSupport;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,7 +20,7 @@ public abstract class GenericBodyAddonGraphic : AbstractBodyAddonGraphic
      */
     public override IEnumerator<IBodyAddonGraphic> GetSubGraphics()
     {
-        foreach (AlienPartGenerator.BodyAddonPrioritization priority in this.GetPriorities())
+        foreach (AlienPartGenerator.BodyAddonPrioritization priority in this.Prioritization)
         {
             foreach (IBodyAddonGraphic graphic in this.GetSubGraphicsOfPriority(priority)) yield return graphic;
         }
