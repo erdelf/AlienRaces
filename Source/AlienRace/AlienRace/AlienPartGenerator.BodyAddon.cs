@@ -161,8 +161,8 @@ namespace AlienRace
         public enum BodyAddonPrioritization : byte
         {
             Severity,
-            Backstory,
             Hediff,
+            Backstory,
             Age,
             Damage
         }
