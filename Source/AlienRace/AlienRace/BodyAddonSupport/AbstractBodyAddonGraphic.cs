@@ -15,5 +15,5 @@ public abstract class AbstractBodyAddonGraphic: IBodyAddonGraphic
         BodyAddonPawnWrapper pawn, string part);
             
     public abstract bool IsApplicable(BodyAddonPawnWrapper pawn, string part);
-    public abstract IEnumerator<IBodyAddonGraphic> GeneratePaths();
+    public abstract IEnumerator<IBodyAddonGraphic> GetSubGraphics();
 }
