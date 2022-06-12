@@ -3,8 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
-    using HarmonyLib;
+    using BodyAddonSupport;
     using RimWorld;
     using UnityEngine;
     using Verse;
@@ -23,6 +22,7 @@
 
         public List<ColorChannelGenerator> colorChannels  = new List<ColorChannelGenerator>();
         public List<OffsetNamed>      offsetDefaults = new List<OffsetNamed>();
+        
 
         public List<WoundAnchorReplacement> anchorReplacements = new List<WoundAnchorReplacement>();
 
@@ -52,7 +52,6 @@
         public Graphic GetNakedGraphic(BodyTypeDef bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender, string maskPath) =>
             GraphicDatabase.Get(typeof(Graphic_Multi), GetNakedPath(bodyType, userpath, this.useGenderedBodies ? gender : ""), shader, Vector2.one, 
                                 skinColor, skinColorSecond, data: null, shaderParameters: null, maskPath: maskPath);
-            //GraphicDatabase.Get<Graphic_Multi>(path: GetNakedPath(bodyType: bodyType, userpath: userpath, gender: this.useGenderedBodies ? gender : ""), shader: shader, drawSize: Vector2.one, color: skinColor, colorTwo: skinColorSecond);
 
         public static string GetNakedPath(BodyTypeDef bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + (bodyType == BodyTypeDefOf.Baby ? BodyTypeDefOf.Child : bodyType);
 
@@ -67,7 +66,7 @@
             return first ? skinColors.first : skinColors.second;
         }
 
-        public void GenerateMeshsAndMeshPools()
+        private void GenerateMeshSets()
         {
             this.offsetDefaults.Add(new OffsetNamed
                                     {
@@ -121,66 +120,18 @@
                                                   }
                                     });
 
+        }
 
-
-            StringBuilder logBuilder = new StringBuilder();
-            this.bodyAddons.Do(action: ba =>
-            { 
-                ba.defaultOffsets = this.offsetDefaults.Find(on => on.name == ba.defaultOffset).offsets;
-
-                void AddToStringBuilder(string s)
-                {
-                    if (ba.debug)
-                        logBuilder.AppendLine(s);
-                }
-
-                if (ba.variantCount != 0) return;
-
-                AddToStringBuilder(s: $"Loading variants for {ba.path}");
-
-                while (ContentFinder<Texture2D>.Get($"{ba.path}{(ba.variantCount == 0 ? "" : ba.variantCount.ToString())}_north", reportFailure: false) != null)
-                    ba.variantCount++;
-
-                AddToStringBuilder(s: $"Variants found for {ba.path}: {ba.variantCount}");
-
-                if (ba.hediffGraphics != null)
-                {
-                    foreach (BodyAddonHediffGraphic bahg in ba.hediffGraphics.Where(predicate: bahg => bahg.variantCount == 0))
-                    {
-                        while (ContentFinder<Texture2D>.Get(bahg.path + (bahg.variantCount == 0 ? "" : bahg.variantCount.ToString()) + "_north", reportFailure: false) != null)
-                            bahg.variantCount++;
-                        AddToStringBuilder($"Variants found for {bahg.path}: {bahg.variantCount}");
-                        if (bahg.variantCount == 0)
-                            Log.Warning($"No hediff graphics found at {bahg.path} for hediff {bahg.hediff} in {this.alienProps.defName}");
-
-                        if (bahg.severity != null)
-                        {
-                            foreach (BodyAddonHediffSeverityGraphic bahsg in bahg.severity)
-                            {
-                                while (ContentFinder<Texture2D>.Get(bahsg.path + (bahsg.variantCount == 0 ? "" : bahsg.variantCount.ToString()) + "_north", reportFailure: false) != null)
-                                    bahsg.variantCount++;
-                                AddToStringBuilder($"Variants found for {bahsg.path} at severity {bahsg.severity}: {bahsg.variantCount}");
-                                if (bahsg.variantCount == 0)
-                                    Log.Warning($"No hediff graphics found at {bahsg.path} at severity {bahsg.severity} for hediff {bahg.hediff} in {this.alienProps.defName}");
-                            }
-                        }
-                    }
-                }
-
-                if (ba.backstoryGraphics != null)
-                {
-                    foreach (BodyAddonBackstoryGraphic babg in ba.backstoryGraphics.Where(predicate: babg => babg.variantCount == 0))
-                    {
-                        while (ContentFinder<Texture2D>.Get(babg.path + (babg.variantCount == 0 ? "" : babg.variantCount.ToString()) + "_north", reportFailure: false) != null)
-                            babg.variantCount++;
-                        AddToStringBuilder($"Variants found for {babg.path}: {babg.variantCount}");
-                        if (babg.variantCount == 0)
-                            Log.Warning($"no backstory graphics found at {babg.path} for backstory {babg.backstory} in {this.alienProps.defName}");
-                    }
-                }
-            });
-            if (logBuilder.Length > 0)
-                 Log.Message($"Loaded body addon variants for {this.alienProps.defName}\n{logBuilder}");
+        public void GenerateMeshsAndMeshPools()
+        {
+            this.GenerateMeshsAndMeshPools(new DefaultGraphicsLoader());
+        }
+        
+        public void GenerateMeshsAndMeshPools(IGraphicsLoader graphicsLoader)
+        {
+            this.GenerateMeshSets();
+            this.GenerateOffsetDefaults();
+            graphicsLoader.LoadAllGraphics(this.alienProps.defName, this.offsetDefaults, this.bodyAddons);
         }
 
         public class WoundAnchorReplacement
