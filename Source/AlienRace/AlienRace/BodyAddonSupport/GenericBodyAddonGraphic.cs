@@ -1,5 +1,6 @@
 ﻿namespace AlienRace.BodyAddonSupport;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,9 +21,18 @@ public abstract class GenericBodyAddonGraphic : AbstractBodyAddonGraphic
      */
     public override IEnumerator<IBodyAddonGraphic> GetSubGraphics()
     {
-        foreach (IBodyAddonGraphic graphic in this.hediffGraphics ?? Enumerable.Empty<IBodyAddonGraphic>()) yield return graphic; //cycle through each hediff graphic defined
-        foreach (IBodyAddonGraphic graphic in this.backstoryGraphics ?? Enumerable.Empty<IBodyAddonGraphic>()) yield return graphic; //cycle through each backstory graphic defined
-        foreach (IBodyAddonGraphic graphic in this.ageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>()) yield return graphic; //cycle through each lifestage graphic defined
-        foreach (IBodyAddonGraphic graphic in this.damageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>()) yield return graphic; //cycle through each damage graphic defined
+        foreach (AlienPartGenerator.BodyAddonPrioritization priority in this.GetPriorities())
+        {
+            foreach (IBodyAddonGraphic graphic in this.GetSubGraphicsOfPriority(priority)) yield return graphic;
+        }
     }
+
+    public override IEnumerable<IBodyAddonGraphic> GetSubGraphicsOfPriority(AlienPartGenerator.BodyAddonPrioritization priority) => priority switch
+    {
+        AlienPartGenerator.BodyAddonPrioritization.Backstory => this.backstoryGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
+        AlienPartGenerator.BodyAddonPrioritization.Hediff => this.hediffGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
+        AlienPartGenerator.BodyAddonPrioritization.Age => this.ageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
+        AlienPartGenerator.BodyAddonPrioritization.Damage => this.damageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
+        _ => Enumerable.Empty<IBodyAddonGraphic>()
+    };
 }
