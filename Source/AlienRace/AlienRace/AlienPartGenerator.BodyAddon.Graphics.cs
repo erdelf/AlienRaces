@@ -11,7 +11,7 @@ using Verse;
 
 public partial class AlienPartGenerator
 {
-    public class BodyAddonDamageGraphic : AbstractBodyAddonGraphic
+    public class BodyAddonDamageGraphic : GenericBodyAddonGraphic
     {
         public float damage;
 
@@ -19,12 +19,23 @@ public partial class AlienPartGenerator
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
             this.damage = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
-            this.path   = xmlRoot.InnerXml.Trim();
-        }
 
-        public override IEnumerator<IBodyAddonGraphic> GetSubGraphics(
-            BodyAddonPawnWrapper pawn, string part) => Enumerable.Empty<IBodyAddonGraphic>().GetEnumerator();//there are no subgraphics for damage
-        public override IEnumerator<IBodyAddonGraphic> GetSubGraphics() => Enumerable.Empty<IBodyAddonGraphic>().GetEnumerator();
+            this.path = xmlRoot.FirstChild.Value?.Trim();
+
+            Traverse traverse = Traverse.Create(this);
+            foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
+            {
+                Traverse field = traverse.Field(xmlRootChildNode.Name);
+                if (field.FieldExists())
+                    field.SetValue(field.GetValueType().IsGenericType
+                                       ? DirectXmlToObject
+                                       .GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, arg2: false)
+                                       : xmlRootChildNode.InnerXml.Trim());
+            }
+        }
+       // public override IEnumerator<IBodyAddonGraphic> GetSubGraphics(
+        //    BodyAddonPawnWrapper pawn, string part) => Enumerable.Empty<IBodyAddonGraphic>().GetEnumerator();//there are no subgraphics for damage
+        //public override IEnumerator<IBodyAddonGraphic> GetSubGraphics() => Enumerable.Empty<IBodyAddonGraphic>().GetEnumerator();
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
             pawn.HasHediffOnPartBelowHealthThreshold(part, this.damage);
     }
@@ -126,7 +137,19 @@ public partial class AlienPartGenerator
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
             this.severity = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
-            this.path     = xmlRoot.InnerXml.Trim();
+
+            this.path = xmlRoot.FirstChild.Value?.Trim();
+
+            Traverse traverse = Traverse.Create(this);
+            foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
+            {
+                Traverse field = traverse.Field(xmlRootChildNode.Name);
+                if (field.FieldExists())
+                    field.SetValue(field.GetValueType().IsGenericType
+                                       ? DirectXmlToObject
+                                       .GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, arg2: false)
+                                       : xmlRootChildNode.InnerXml.Trim());
+            }
         }
 
         // In isolation severity graphics must always be considered applicable because we don't have the hediff
@@ -141,9 +164,25 @@ public partial class AlienPartGenerator
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            this.backstory = xmlRoot.Name;
+            XmlAttribute mayRequire = xmlRoot.Attributes?[name: "MayRequire"];
+            int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.backstory),
+                                                                xmlRoot.Name.Substring(index,
+                                                                    xmlRoot.Name.Length - index),
+                                                                mayRequire?.Value.ToLower());
 
-            this.path = xmlRoot.FirstChild.Value;
+            this.path = xmlRoot.FirstChild.Value?.Trim();
+
+            Traverse traverse = Traverse.Create(this);
+            foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
+            {
+                Traverse field = traverse.Field(xmlRootChildNode.Name);
+                if (field.FieldExists())
+                    field.SetValue(field.GetValueType().IsGenericType
+                                       ? DirectXmlToObject
+                                       .GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, arg2: false)
+                                       : xmlRootChildNode.InnerXml.Trim());
+            }
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
