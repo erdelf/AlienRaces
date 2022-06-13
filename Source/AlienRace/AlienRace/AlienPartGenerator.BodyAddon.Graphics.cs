@@ -1,5 +1,6 @@
 ﻿namespace AlienRace;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
@@ -33,9 +34,7 @@ public partial class AlienPartGenerator
                                        : xmlRootChildNode.InnerXml.Trim());
             }
         }
-       // public override IEnumerator<IBodyAddonGraphic> GetSubGraphics(
-        //    BodyAddonPawnWrapper pawn, string part) => Enumerable.Empty<IBodyAddonGraphic>().GetEnumerator();//there are no subgraphics for damage
-        //public override IEnumerator<IBodyAddonGraphic> GetSubGraphics() => Enumerable.Empty<IBodyAddonGraphic>().GetEnumerator();
+        
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
             pawn.HasHediffOnPartBelowHealthThreshold(part, this.damage);
     }
@@ -80,26 +79,28 @@ public partial class AlienPartGenerator
         public override IEnumerator<IBodyAddonGraphic> GetSubGraphics(BodyAddonPawnWrapper pawn, string part)
         {
             float maxSeverityOfHediff = pawn.SeverityOfHediffsOnPart(this.hediff, part).Max();
-            foreach (BodyAddonHediffSeverityGraphic graphic in
-                     this.severity?.Where(s => maxSeverityOfHediff >= s.severity) ??
-                     Enumerable.Empty<BodyAddonHediffSeverityGraphic>()) yield return graphic;//run severity cycle first
-
-            IEnumerator<IBodyAddonGraphic> genericSubGraphics = base.GetSubGraphics(pawn, part);//run rest of graphic cycles
+            IEnumerator<IBodyAddonGraphic> genericSubGraphics = base.GetSubGraphics(pawn, part); //run rest of graphic cycles
             while (genericSubGraphics.MoveNext())
             {
-                yield return genericSubGraphics.Current;//return each of the generic subgraphics lazily
+                IBodyAddonGraphic current = genericSubGraphics.Current;
+                
+                // check if graphic is valid to return applying type specific requirements
+                bool isValid = current switch
+                {
+                    BodyAddonHediffSeverityGraphic severityGraphic => maxSeverityOfHediff >= severityGraphic.severity,
+                    _ => true
+                };
+                
+                //return each of the generic subgraphics lazily applying any type specific requirments
+                if (isValid) yield return current;
             }
         }
         
-        public override IEnumerator<IBodyAddonGraphic> GetSubGraphics()
+        public override IEnumerable<IBodyAddonGraphic> GetSubGraphicsOfPriority(BodyAddonPrioritization priority) => priority switch
         {
-            foreach (IBodyAddonGraphic graphic in this.severity ?? Enumerable.Empty<IBodyAddonGraphic>()) yield return graphic;
-            IEnumerator<IBodyAddonGraphic> baseGraphics = base.GetSubGraphics();
-            while (baseGraphics.MoveNext())
-            {
-                yield return baseGraphics.Current;//return each of the generic subgraphics lazily
-            }
-        }
+            BodyAddonPrioritization.Severity => this.severity ?? Enumerable.Empty<IBodyAddonGraphic>(),
+            _ => base.GetSubGraphicsOfPriority(priority)
+        };
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
             pawn.HasHediffOfDefAndPart(this.hediff, part);

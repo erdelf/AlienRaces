@@ -157,5 +157,14 @@ namespace AlienRace
             // Top level so always considered applicable
             public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) => true;
         }
+        
+        public enum BodyAddonPrioritization : byte
+        {
+            Severity,
+            Hediff,
+            Backstory,
+            Age,
+            Damage
+        }
     }
 }
