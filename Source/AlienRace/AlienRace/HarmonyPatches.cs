@@ -2217,7 +2217,7 @@ namespace AlienRace
         {
             try
             {
-                if (!ingester.RaceProps.Animal) return;
+                if (ingester.needs == null || ingester.needs.mood == null) return;
 
                 if (ingester.story.traits.HasTrait(AlienDefOf.Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1)
                     if (__result.Any(tfi => tfi.thought       == ThoughtDefOf.AteHumanlikeMeatDirect) && foodDef.ingestible?.sourceDef != ingester.def)
