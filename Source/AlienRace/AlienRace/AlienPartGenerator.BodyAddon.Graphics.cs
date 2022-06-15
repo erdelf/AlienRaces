@@ -165,12 +165,7 @@ public partial class AlienPartGenerator
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            XmlAttribute mayRequire = xmlRoot.Attributes?[name: "MayRequire"];
-            int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
-            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.backstory),
-                                                                xmlRoot.Name.Substring(index,
-                                                                    xmlRoot.Name.Length - index),
-                                                                mayRequire?.Value.ToLower());
+            this.backstory = xmlRoot.Name;
 
             this.path = xmlRoot.FirstChild.Value?.Trim();
 
