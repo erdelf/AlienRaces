@@ -123,5 +123,41 @@ namespace AlienRaceTest
             Assert.AreEqual(0.5f,        bodyAddonHediffSeverityGraphic.severity);
             Assert.AreEqual("test/CPs5", bodyAddonHediffSeverityGraphic.GetPath());
         }
+        
+        [Test]
+        public void TestCanParseCustomBackstorySubtree()
+        {
+            // Setup XRefs
+            LifeStageDef humanlikeAdultLifeStageDef = AddLifestageWithName("HumanlikeAdult");
+            
+            // Select test node
+            XmlNode testXmlNode =
+                this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/backstoryGraphics/Test_Templar");
+
+            // Attempt to parse XML
+            AlienPartGenerator.BodyAddonBackstoryGraphic parsedGraphic = DirectXmlToObject.ObjectFromXml<AlienPartGenerator.BodyAddonBackstoryGraphic>(testXmlNode, false);
+            
+            // Reflectively populate all the XRefs
+            DirectXmlCrossRefLoader.ResolveAllWantedCrossReferences(FailMode.LogErrors);
+            
+            Assert.AreEqual("Test_Templar", parsedGraphic.backstory);
+            Assert.AreEqual("test/B",       parsedGraphic.GetPath());
+            Assert.IsNotNull(parsedGraphic.ageGraphics);
+            Assert.AreEqual(1, parsedGraphic.ageGraphics.Count);
+
+            AlienPartGenerator.BodyAddonAgeGraphic parsedAgeGraphic = parsedGraphic.ageGraphics[0];
+            Assert.AreSame(humanlikeAdultLifeStageDef, parsedAgeGraphic.age);
+            Assert.AreEqual("test/BA", parsedAgeGraphic.GetPath());
+            Assert.IsNotNull(parsedAgeGraphic.damageGraphics);
+            Assert.AreEqual(2, parsedAgeGraphic.damageGraphics.Count);
+
+            AlienPartGenerator.BodyAddonDamageGraphic parsedDamageGraphic1 = parsedAgeGraphic.damageGraphics[0];
+            Assert.AreEqual(1f,          parsedDamageGraphic1.damage);
+            Assert.AreEqual("test/BAd1", parsedDamageGraphic1.GetPath());
+            
+            AlienPartGenerator.BodyAddonDamageGraphic parsedDamageGraphic5 = parsedAgeGraphic.damageGraphics[1];
+            Assert.AreEqual(5f,          parsedDamageGraphic5.damage);
+            Assert.AreEqual("test/BAd5", parsedDamageGraphic5.GetPath());
+        }
     }
 }
