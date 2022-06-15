@@ -6,10 +6,11 @@
     using Moq;
     using NUnit.Framework;
     using RimWorld;
+    using TestSupport;
     using Verse;
 
     [TestFixture]
-    public class BodyAddonTest
+    public class BodyAddonTest : BaseUnityTest
     {
         private readonly Mock<LifeStageDef> mockHumanlikeAdultLifestageDef = new Mock<LifeStageDef>();
         private readonly Mock<LifeStageDef> mockOtherAdultLifestageDef     = new Mock<LifeStageDef>();
@@ -239,6 +240,5 @@
 
             Assert.AreEqual("/", bestGraphic.GetPath());
         }
-
     }
 }
