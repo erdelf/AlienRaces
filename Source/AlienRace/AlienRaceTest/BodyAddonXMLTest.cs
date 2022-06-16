@@ -159,5 +159,185 @@ namespace AlienRaceTest
             Assert.AreEqual(5f,          parsedDamageGraphic5.damage);
             Assert.AreEqual("test/BAd5", parsedDamageGraphic5.GetPath());
         }
+        
+        [Test]
+        public void TestCanParseCustomWholeAddon()
+        {
+            // Setup XRefs
+            LifeStageDef humanlikeAdultLifeStageDef = AddLifestageWithName("HumanlikeAdult");
+            HediffDef crackHediffDef = AddHediffWithName("Crack");
+            HediffDef plagueHediffDef = AddHediffWithName("Plague");
+            
+            // Select test node
+            XmlNode testXmlNode =
+                this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]");
+
+            // Attempt to parse XML
+            AlienPartGenerator.BodyAddon parsedGraphic = DirectXmlToObject.ObjectFromXml<AlienPartGenerator.BodyAddon>(testXmlNode, false);
+            
+            // Reflectively populate all the XRefs
+            DirectXmlCrossRefLoader.ResolveAllWantedCrossReferences(FailMode.LogErrors);
+            
+            Assert.AreEqual("Nose", parsedGraphic.bodyPart);
+            Assert.IsTrue(parsedGraphic.inFrontOfBody);
+            Assert.IsTrue(parsedGraphic.alignWithHead);
+            Assert.AreEqual("base", parsedGraphic.ColorChannel);
+            Assert.AreEqual("test/default", parsedGraphic.path);
+            
+            // Hediff Graphics
+            Assert.IsNotNull(parsedGraphic.hediffGraphics);
+            Assert.AreEqual(1, parsedGraphic.hediffGraphics.Count);
+            
+                // Crack
+                AlienPartGenerator.BodyAddonHediffGraphic parsedCrackGraphic = parsedGraphic.hediffGraphics[0];
+                Assert.AreEqual("test/C", parsedCrackGraphic.GetPath());
+                Assert.AreSame(crackHediffDef, parsedCrackGraphic.hediff);
+                
+                // Crack Hediff Graphics
+                Assert.IsNotNull(parsedCrackGraphic.hediffGraphics);
+                Assert.AreEqual(1, parsedCrackGraphic.hediffGraphics.Count);
+                
+                    // Crack->Plague
+                    AlienPartGenerator.BodyAddonHediffGraphic parsedPlagueGraphic = parsedCrackGraphic.hediffGraphics[0];
+                    Assert.AreEqual("test/CP", parsedPlagueGraphic.GetPath());
+                    Assert.AreSame(plagueHediffDef, parsedPlagueGraphic.hediff);
+                    
+                    // Crack->Plague->Severity Graphics
+                    Assert.IsNotNull(parsedPlagueGraphic.severity);
+                    Assert.AreEqual(1, parsedPlagueGraphic.severity.Count);
+                    
+                        AlienPartGenerator.BodyAddonHediffSeverityGraphic parsedSeverityGraphic = parsedPlagueGraphic.severity[0];
+                        Assert.AreEqual("test/CPs5", parsedSeverityGraphic.GetPath());
+                        Assert.AreEqual(0.5f, parsedSeverityGraphic.severity);
+                        
+                        // Crack->Plague->Severity->Backstory Graphics
+                        Assert.IsNotNull(parsedSeverityGraphic.backstoryGraphics);
+                        Assert.AreEqual(1, parsedSeverityGraphic.backstoryGraphics.Count);
+                        
+                            AlienPartGenerator.BodyAddonBackstoryGraphic parsedBackstoryGraphic = parsedSeverityGraphic.backstoryGraphics[0];
+                            Assert.AreEqual("Test_Templar", parsedBackstoryGraphic.backstory);
+                            Assert.AreEqual("test/CPs5B", parsedBackstoryGraphic.GetPath());
+                            
+                            // Crack->Plague->Severity->Backstory->Age Graphics
+                            Assert.IsNotNull(parsedBackstoryGraphic.ageGraphics);
+                            Assert.AreEqual(1, parsedBackstoryGraphic.ageGraphics.Count);
+                            
+                                AlienPartGenerator.BodyAddonAgeGraphic parsedAgeGraphic = parsedBackstoryGraphic.ageGraphics[0];
+                                Assert.AreSame(humanlikeAdultLifeStageDef, parsedAgeGraphic.age);
+                                Assert.AreEqual("test/CPs5BA", parsedAgeGraphic.GetPath());
+                                
+                                // Crack->Plague->Severity->Backstory->Age->Damage Graphics
+                                Assert.IsNotNull(parsedAgeGraphic.damageGraphics);
+                                Assert.AreEqual(2, parsedAgeGraphic.damageGraphics.Count);
+                                
+                                    AlienPartGenerator.BodyAddonDamageGraphic parsedDamageGraphic1 = parsedAgeGraphic.damageGraphics[0];
+                                    Assert.AreEqual(1f,          parsedDamageGraphic1.damage);
+                                    Assert.AreEqual("test/CPs5BAd1", parsedDamageGraphic1.GetPath());
+                                    
+                                    AlienPartGenerator.BodyAddonDamageGraphic parsedDamageGraphic5 = parsedAgeGraphic.damageGraphics[1];
+                                    Assert.AreEqual(5f,          parsedDamageGraphic5.damage);
+                                    Assert.AreEqual("test/CPs5BAd5", parsedDamageGraphic5.GetPath());
+
+                // Crack Backstory Graphics
+                Assert.IsNotNull(parsedCrackGraphic.backstoryGraphics);
+                Assert.AreEqual(1, parsedCrackGraphic.backstoryGraphics.Count);
+                
+                    parsedBackstoryGraphic = parsedCrackGraphic.backstoryGraphics[0];
+                    Assert.AreEqual("Test_Templar", parsedBackstoryGraphic.backstory);
+                    Assert.AreEqual("test/CB", parsedBackstoryGraphic.GetPath());
+                            
+                    // Crack->Backstory->Age Graphics
+                    Assert.IsNotNull(parsedBackstoryGraphic.ageGraphics);
+                    Assert.AreEqual(1, parsedBackstoryGraphic.ageGraphics.Count);
+                    
+                        parsedAgeGraphic = parsedBackstoryGraphic.ageGraphics[0];
+                        Assert.AreSame(humanlikeAdultLifeStageDef, parsedAgeGraphic.age);
+                        Assert.AreEqual("test/CBA", parsedAgeGraphic.GetPath());
+                        
+                        // Crack->Backstory->Age->Damage Graphics
+                        Assert.IsNotNull(parsedAgeGraphic.damageGraphics);
+                        Assert.AreEqual(2, parsedAgeGraphic.damageGraphics.Count);
+                        
+                            parsedDamageGraphic1 = parsedAgeGraphic.damageGraphics[0];
+                            Assert.AreEqual(1f,          parsedDamageGraphic1.damage);
+                            Assert.AreEqual("test/CBAd1", parsedDamageGraphic1.GetPath());
+                            
+                            parsedDamageGraphic5 = parsedAgeGraphic.damageGraphics[1];
+                            Assert.AreEqual(5f,           parsedDamageGraphic5.damage);
+                            Assert.AreEqual("test/CBAd5", parsedDamageGraphic5.GetPath());
+                            
+                // Crack Age Graphics
+                Assert.IsNotNull(parsedCrackGraphic.ageGraphics);
+                Assert.AreEqual(1, parsedCrackGraphic.ageGraphics.Count);
+        
+                    parsedAgeGraphic = parsedCrackGraphic.ageGraphics[0];
+                    Assert.AreSame(humanlikeAdultLifeStageDef, parsedAgeGraphic.age);
+                    Assert.AreEqual("test/CA", parsedAgeGraphic.GetPath());
+            
+                    // Crack->Age->Damage Graphics
+                    Assert.IsNull(parsedAgeGraphic.damageGraphics);
+                        
+                // Backstory Graphics
+                Assert.IsNotNull(parsedGraphic.backstoryGraphics);
+                Assert.AreEqual(1, parsedGraphic.backstoryGraphics.Count);
+                
+                    parsedBackstoryGraphic = parsedGraphic.backstoryGraphics[0];
+                    Assert.AreEqual("Test_Templar", parsedBackstoryGraphic.backstory);
+                    Assert.AreEqual("test/B", parsedBackstoryGraphic.GetPath());
+                            
+                    // Backstory->Age Graphics
+                    Assert.IsNotNull(parsedBackstoryGraphic.ageGraphics);
+                    Assert.AreEqual(1, parsedBackstoryGraphic.ageGraphics.Count);
+                    
+                        parsedAgeGraphic = parsedBackstoryGraphic.ageGraphics[0];
+                        Assert.AreSame(humanlikeAdultLifeStageDef, parsedAgeGraphic.age);
+                        Assert.AreEqual("test/BA", parsedAgeGraphic.GetPath());
+                        
+                        // Backstory->Age->Damage Graphics
+                        Assert.IsNotNull(parsedAgeGraphic.damageGraphics);
+                        Assert.AreEqual(2, parsedAgeGraphic.damageGraphics.Count);
+                        
+                            parsedDamageGraphic1 = parsedAgeGraphic.damageGraphics[0];
+                            Assert.AreEqual(1f,          parsedDamageGraphic1.damage);
+                            Assert.AreEqual("test/BAd1", parsedDamageGraphic1.GetPath());
+                            
+                            parsedDamageGraphic5 = parsedAgeGraphic.damageGraphics[1];
+                            Assert.AreEqual(5f,           parsedDamageGraphic5.damage);
+                            Assert.AreEqual("test/BAd5", parsedDamageGraphic5.GetPath());
+                            
+                            
+                // Age Graphics
+                Assert.IsNotNull(parsedGraphic.ageGraphics);
+                Assert.AreEqual(1, parsedGraphic.ageGraphics.Count);
+                
+                    parsedAgeGraphic = parsedGraphic.ageGraphics[0];
+                    Assert.AreSame(humanlikeAdultLifeStageDef, parsedAgeGraphic.age);
+                    Assert.AreEqual("test/A", parsedAgeGraphic.GetPath());
+                    
+                    // Backstory->Age->Damage Graphics
+                    Assert.IsNotNull(parsedAgeGraphic.damageGraphics);
+                    Assert.AreEqual(2, parsedAgeGraphic.damageGraphics.Count);
+                    
+                        parsedDamageGraphic1 = parsedAgeGraphic.damageGraphics[0];
+                        Assert.AreEqual(1f,          parsedDamageGraphic1.damage);
+                        Assert.AreEqual("test/Ad1", parsedDamageGraphic1.GetPath());
+                        
+                        parsedDamageGraphic5 = parsedAgeGraphic.damageGraphics[1];
+                        Assert.AreEqual(5f,           parsedDamageGraphic5.damage);
+                        Assert.AreEqual("test/Ad5", parsedDamageGraphic5.GetPath());
+                        
+                        
+                // Backstory->Age->Damage Graphics
+                Assert.IsNotNull(parsedGraphic.damageGraphics);
+                Assert.AreEqual(2, parsedGraphic.damageGraphics.Count);
+                
+                    parsedDamageGraphic1 = parsedGraphic.damageGraphics[0];
+                    Assert.AreEqual(1f,          parsedDamageGraphic1.damage);
+                    Assert.AreEqual("test/d1", parsedDamageGraphic1.GetPath());
+                    
+                    parsedDamageGraphic5 = parsedGraphic.damageGraphics[1];
+                    Assert.AreEqual(5f,           parsedDamageGraphic5.damage);
+                    Assert.AreEqual("test/d5", parsedDamageGraphic5.GetPath());
+        }
     }
 }
