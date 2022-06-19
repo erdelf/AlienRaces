@@ -55,6 +55,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="BodyAddonSupport\BodyAddonPawnWrapperTest.cs" />
         <Compile Include="BodyAddonTest.cs" />
         <Compile Include="BodyAddonXMLTest.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />

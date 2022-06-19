@@ -36,7 +36,7 @@ public partial class AlienPartGenerator
         }
         
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
-            pawn.HasHediffOnPartBelowHealthThreshold(part, this.damage);
+            pawn.IsPartBelowHealthThreshold(part, this.damage);
     }
 
     public class BodyAddonAgeGraphic : GenericBodyAddonGraphic
@@ -68,7 +68,7 @@ public partial class AlienPartGenerator
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
-            pawn.CurrentLifeStageDef == this.age;
+            pawn.CurrentLifeStageDefMatches(this.age);
     }
 
     public class BodyAddonHediffGraphic : GenericBodyAddonGraphic

@@ -61,10 +61,10 @@ namespace AlienRace
                 pawn.GetGender() == Gender.Female ? this.drawForFemale : this.drawForMale;
 
             private bool VisibleForBodyTypeOf(BodyAddonPawnWrapper pawn) => this.bodyTypeRequirement.NullOrEmpty() ||
-                                                             pawn.GetBodyTypeName() == this.bodyTypeRequirement;
+                                                             pawn.HasBodyTypeNamed(this.bodyTypeRequirement);
 
             private bool VisibleUnderApparelOf(BodyAddonPawnWrapper pawn) =>
-                !pawn.HasApparel() ||
+                !pawn.HasApparelGraphics() ||
                 (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
                 !pawn.GetWornApparel().Any(ap => !ap.hatRenderedFrontOfFace &&
                                                 ap.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||
