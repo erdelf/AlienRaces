@@ -38,7 +38,7 @@ public class BodyAddonPawnWrapper//contains addon important information from paw
     {
         // look for part where a given hediff has a part matching defined part
         return this.WrappedPawn.health.hediffSet.hediffs
-                .Where(predicate: h => h.Part.untranslatedCustomLabel == part || h.Part.def.defName == part)
+                .Where(predicate: h => h.Part != null && (h.Part.untranslatedCustomLabel == part || h.Part.def.defName == part))
                 //check if part health is less than health texture limit, needs to config ascending
                 .Any(h => healthThreshold >= this.WrappedPawn.health.hediffSet.GetPartHealth(h.Part));
     }
