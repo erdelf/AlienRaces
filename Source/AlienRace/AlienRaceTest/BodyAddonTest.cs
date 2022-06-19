@@ -176,10 +176,10 @@
         {
             AlienPartGenerator.BodyAddon addonUnderTest  = this.GetTestBodyAddon();
             Mock<BodyAddonPawnWrapper>   mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
-            mockPawnWrapper.SetupGet(p => p.CurrentLifeStageDef).Returns(mockOtherAdultLifestageDef.Object);
+            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(true);
-            mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 1f)).Returns(false);
-            mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 5f)).Returns(true);
+            mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
+            mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
             // Resolve
             IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
@@ -193,10 +193,10 @@
         {
             AlienPartGenerator.BodyAddon addonUnderTest  = this.GetTestBodyAddon();
             Mock<BodyAddonPawnWrapper>   mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
-            mockPawnWrapper.SetupGet(p => p.CurrentLifeStageDef).Returns(mockOtherAdultLifestageDef.Object);
+            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(true);
-            mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 1f)).Returns(false);
-            mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 5f)).Returns(false);
+            mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
+            mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(false);
 
             // Resolve
             IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
@@ -210,12 +210,12 @@
         {
             AlienPartGenerator.BodyAddon addonUnderTest  = this.GetTestBodyAddon();
             Mock<BodyAddonPawnWrapper>   mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
-            mockPawnWrapper.SetupGet(p => p.CurrentLifeStageDef).Returns(mockHumanlikeAdultLifestageDef.Object);
+            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockHumanlikeAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockBurnHediff.Object, "nose")).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockCutHediff.Object,  "nose")).Returns(false);
-            mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 1f)).Returns(false);
-            mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 5f)).Returns(true);
+            mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
+            mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
             // Resolve
             IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
@@ -228,12 +228,12 @@
         {
             AlienPartGenerator.BodyAddon addonUnderTest  = this.GetTestBodyAddon();
             Mock<BodyAddonPawnWrapper>   mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
-            mockPawnWrapper.SetupGet(p => p.CurrentLifeStageDef).Returns(mockHumanlikeAdultLifestageDef.Object);
+            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockHumanlikeAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockBurnHediff.Object, "nose")).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockCutHediff.Object,  "nose")).Returns(false);
-            mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 1f)).Returns(false);
-            mockPawnWrapper.Setup(p => p.HasHediffOnPartBelowHealthThreshold("nose", 5f)).Returns(false);
+            mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
+            mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(false);
 
             // Resolve
             IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
