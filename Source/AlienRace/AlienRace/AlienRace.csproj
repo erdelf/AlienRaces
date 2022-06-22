@@ -314,7 +314,6 @@
     <Compile Include="BodyAddonSupport\AbstractBodyAddonGraphic.cs" />
     <Compile Include="BodyAddonSupport\BodyAddonPawnWrapper.cs" />
     <Compile Include="BodyAddonSupport\DefaultGraphicsLoader.cs" />
-    <Compile Include="BodyAddonSupport\GenericBodyAddonGraphic.cs" />
     <Compile Include="BodyAddonSupport\GraphicFinder2D.cs" />
     <Compile Include="BodyAddonSupport\IBodyAddonGraphic.cs" />
     <Compile Include="BodyAddonSupport\IGraphicFinder.cs" />

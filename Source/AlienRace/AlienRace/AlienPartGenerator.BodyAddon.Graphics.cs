@@ -12,7 +12,7 @@ using Verse;
 
 public partial class AlienPartGenerator
 {
-    public class BodyAddonDamageGraphic : GenericBodyAddonGraphic
+    public class BodyAddonDamageGraphic : AbstractBodyAddonGraphic
     {
         public float damage;
 
@@ -39,7 +39,7 @@ public partial class AlienPartGenerator
             pawn.IsPartBelowHealthThreshold(part, this.damage);
     }
 
-    public class BodyAddonAgeGraphic : GenericBodyAddonGraphic
+    public class BodyAddonAgeGraphic : AbstractBodyAddonGraphic
     {
         public LifeStageDef age;
 
@@ -71,7 +71,7 @@ public partial class AlienPartGenerator
             pawn.CurrentLifeStageDefMatches(this.age);
     }
 
-    public class BodyAddonHediffGraphic : GenericBodyAddonGraphic
+    public class BodyAddonHediffGraphic : AbstractBodyAddonGraphic
     {
         public HediffDef                            hediff;
         public List<BodyAddonHediffSeverityGraphic> severity;
@@ -130,7 +130,7 @@ public partial class AlienPartGenerator
         }
     }
 
-    public class BodyAddonHediffSeverityGraphic : GenericBodyAddonGraphic
+    public class BodyAddonHediffSeverityGraphic : AbstractBodyAddonGraphic
     {
         public float severity;
 
@@ -158,7 +158,7 @@ public partial class AlienPartGenerator
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) => true;
     }
 
-    public class BodyAddonBackstoryGraphic : GenericBodyAddonGraphic
+    public class BodyAddonBackstoryGraphic : AbstractBodyAddonGraphic
     {
         public string backstory;
 
