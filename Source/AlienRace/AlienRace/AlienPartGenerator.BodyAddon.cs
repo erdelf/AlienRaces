@@ -9,7 +9,7 @@ namespace AlienRace
 
     public partial class AlienPartGenerator
     {
-        public class BodyAddon : GenericBodyAddonGraphic
+        public class BodyAddon : AbstractBodyAddonGraphic
         {
             public string bodyPart;
 
