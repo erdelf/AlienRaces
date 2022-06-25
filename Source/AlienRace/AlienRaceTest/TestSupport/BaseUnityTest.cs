@@ -64,7 +64,6 @@
             DefDatabase<HediffDef>.Add(fakeHediffDef);
             return fakeHediffDef;
         }
-
         protected static LifeStageDef AddLifestageWithName(string lifestage)
         {
             LifeStageDef fakeLifeStageDef = new LifeStageDef()
