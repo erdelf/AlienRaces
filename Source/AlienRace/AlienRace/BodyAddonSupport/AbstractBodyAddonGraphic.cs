@@ -3,6 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
+using HarmonyLib;
+using Verse;
 
 public abstract class AbstractBodyAddonGraphic : IBodyAddonGraphic
 {
@@ -65,4 +68,28 @@ public abstract class AbstractBodyAddonGraphic : IBodyAddonGraphic
         AlienPartGenerator.BodyAddonPrioritization.Damage => this.damageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
         _ => Enumerable.Empty<IBodyAddonGraphic>()
     };
+
+    protected virtual void SetInstanceVariablesFromChildNodesOf(XmlNode xmlRootNode) =>
+        this.SetInstanceVariablesFromChildNodesOf(xmlRootNode, new HashSet<string>());
+
+    protected virtual void SetInstanceVariablesFromChildNodesOf(XmlNode xmlRootNode, HashSet<string> excludedFieldNames)
+    {
+        Traverse traverse = Traverse.Create(this);
+        foreach (XmlNode xmlNode in xmlRootNode.ChildNodes)
+            if (!excludedFieldNames.Contains(xmlNode.Name))
+                this.SetFieldFromXmlNode(traverse.Field(xmlNode.Name), xmlNode);
+
+        // If the path has not been set just use the value contained by the root node
+        // This caters for nodes containing _only_ a path i.e. <someNode>a/path/here</someNode> 
+        if (this.path.NullOrEmpty()) this.path = xmlRootNode.FirstChild.Value?.Trim();
+    }
+    
+    protected virtual void SetFieldFromXmlNode(Traverse field, XmlNode xmlNode)
+    {
+        if (!field.FieldExists()) return;
+        Type type = field.GetValueType();
+        field.SetValue(field.GetValueType().IsGenericType
+                           ? DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlNode, false)
+                           : ParseHelper.FromString(xmlNode.InnerXml.Trim(), type));
+    }
 }
