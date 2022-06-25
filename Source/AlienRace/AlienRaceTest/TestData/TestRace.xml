@@ -236,6 +236,25 @@
                                 <a1>test/d1</a1>
                                 <a5>test/d5</a5>
                             </damageGraphics>
+                            <genderGraphics>
+                                <NotARealGender>test/Narg</NotARealGender>
+                                <Male>
+                                    <path>test/M</path>
+                                    <traitGraphics>
+                                        <Brawler>
+                                            <path>test/MB</path>
+                                        </Brawler>
+                                        <staggeringly_ugly>
+                                            test/MSu
+                                        </staggeringly_ugly>
+                                    </traitGraphics>
+                                    <bodytypeGraphics>
+                                        <Thin>
+                                            <path>test/MT</path>
+                                        </Thin>
+                                    </bodytypeGraphics>
+                                </Male>
+                            </genderGraphics>
                         </li>
                         <li>
                             <path>Things/Pawns/TestRace/Ears/EarL</path>
