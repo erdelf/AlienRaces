@@ -125,6 +125,70 @@ namespace AlienRaceTest
         }
         
         [Test]
+        public void TestCanParseCustomGenderGraphicXML()
+        {
+            AlienPartGenerator.BodyAddonGenderGraphic testGenderGraphic =
+                new AlienPartGenerator.BodyAddonGenderGraphic();
+
+            XmlNode testXmlNode =
+                this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/genderGraphics/Male");
+
+            // Attempt to parse XML
+            testGenderGraphic.LoadDataFromXmlCustom(testXmlNode);
+         
+            Assert.AreEqual(Gender.Male, testGenderGraphic.gender);
+            Assert.AreEqual("test/M", testGenderGraphic.GetPath());
+        }
+
+        [Test]
+        public void TestInvalidGenderIsNeverApplicable()
+        {
+            AlienPartGenerator.BodyAddonGenderGraphic testGenderGraphic =
+                new AlienPartGenerator.BodyAddonGenderGraphic();
+
+            XmlNode testXmlNode =
+                this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/genderGraphics/Male");
+
+            // Attempt to parse XML
+            testGenderGraphic.LoadDataFromXmlCustom(testXmlNode);
+         
+            Assert.AreEqual(Gender.Male, testGenderGraphic.gender);
+            Assert.AreEqual("test/M", testGenderGraphic.GetPath());
+        }
+
+        [Test]
+        public void TestCanParseCustomTraitGraphicXML()
+        {
+            AlienPartGenerator.BodyAddonTraitGraphic testTraitGraphic =
+                new AlienPartGenerator.BodyAddonTraitGraphic();
+
+            XmlNode testXmlNode =
+                this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/genderGraphics/Male/traitGraphics/Brawler");
+
+            // Attempt to parse XML
+            testTraitGraphic.LoadDataFromXmlCustom(testXmlNode);
+         
+            Assert.AreEqual("Brawler", testTraitGraphic.trait);
+            Assert.AreEqual("test/MB",    testTraitGraphic.GetPath());
+        }
+        
+        [Test]
+        public void TestCanParseCustomBodytypeGraphicXML()
+        {
+            AlienPartGenerator.BodyAddonBodytypeGraphic testBodytypeGraphic =
+                new AlienPartGenerator.BodyAddonBodytypeGraphic();
+
+            XmlNode testXmlNode =
+                this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/genderGraphics/Male/bodytypeGraphics/Thin");
+
+            // Attempt to parse XML
+            testBodytypeGraphic.LoadDataFromXmlCustom(testXmlNode);
+         
+            Assert.AreEqual("Thin", testBodytypeGraphic.bodytype);
+            Assert.AreEqual("test/MT",    testBodytypeGraphic.GetPath());
+        }
+        
+        [Test]
         public void TestCanParseCustomBackstorySubtree()
         {
             // Setup XRefs
@@ -314,7 +378,7 @@ namespace AlienRaceTest
                     Assert.AreSame(humanlikeAdultLifeStageDef, parsedAgeGraphic.age);
                     Assert.AreEqual("test/A", parsedAgeGraphic.GetPath());
                     
-                    // Backstory->Age->Damage Graphics
+                    // Age->Damage Graphics
                     Assert.IsNotNull(parsedAgeGraphic.damageGraphics);
                     Assert.AreEqual(2, parsedAgeGraphic.damageGraphics.Count);
                     
@@ -327,7 +391,7 @@ namespace AlienRaceTest
                         Assert.AreEqual("test/Ad5", parsedDamageGraphic5.GetPath());
                         
                         
-                // Backstory->Age->Damage Graphics
+                // Age->Damage Graphics
                 Assert.IsNotNull(parsedGraphic.damageGraphics);
                 Assert.AreEqual(2, parsedGraphic.damageGraphics.Count);
                 
@@ -338,6 +402,40 @@ namespace AlienRaceTest
                     parsedDamageGraphic5 = parsedGraphic.damageGraphics[1];
                     Assert.AreEqual(5f,           parsedDamageGraphic5.damage);
                     Assert.AreEqual("test/d5", parsedDamageGraphic5.GetPath());
+            
+                // Gender Graphics
+                Assert.IsNotNull(parsedGraphic.genderGraphics);
+                Assert.AreEqual(2, parsedGraphic.genderGraphics.Count);
+                
+                    AlienPartGenerator.BodyAddonGenderGraphic parsedGenderGraphic1 = parsedGraphic.genderGraphics[0];
+                    // As it is represented by a primitive byte gender can't be null so it defaults to 0 which represents None 
+                    Assert.AreEqual(Gender.None, parsedGenderGraphic1.gender);
+                    Assert.AreEqual("test/Narg", parsedGenderGraphic1.GetPath());
+                    
+                    AlienPartGenerator.BodyAddonGenderGraphic parsedGenderGraphic2 = parsedGraphic.genderGraphics[1];
+                    Assert.AreEqual(Gender.Male, parsedGenderGraphic2.gender);
+                    Assert.AreEqual("test/M", parsedGenderGraphic2.GetPath());
+                    
+                    // Gender->Trait Graphics
+                    Assert.IsNotNull(parsedGenderGraphic2.traitGraphics);
+                    Assert.AreEqual(2, parsedGenderGraphic2.traitGraphics.Count);
+
+                        AlienPartGenerator.BodyAddonTraitGraphic parsedTraitGraphic1 = parsedGenderGraphic2.traitGraphics[0];
+                        Assert.AreEqual("Brawler", parsedTraitGraphic1.trait);
+                        Assert.AreEqual("test/MB",    parsedTraitGraphic1.GetPath());
+                        
+                        AlienPartGenerator.BodyAddonTraitGraphic parsedTraitGraphic2 = parsedGenderGraphic2.traitGraphics[1];
+                        Assert.AreEqual("staggeringly ugly", parsedTraitGraphic2.trait);
+                        Assert.AreEqual("test/MSu",    parsedTraitGraphic2.GetPath());
+
+                    // Gender->Bodytype Graphics
+                    Assert.IsNotNull(parsedGenderGraphic2.bodytypeGraphics);
+                    Assert.AreEqual(1, parsedGenderGraphic2.bodytypeGraphics.Count);
+                        
+                        AlienPartGenerator.BodyAddonBodytypeGraphic parsedBodytypeGraphic = parsedGenderGraphic2.bodytypeGraphics[0];
+                        Assert.AreEqual("Thin", parsedBodytypeGraphic.bodytype);
+                        Assert.AreEqual("test/MT",    parsedBodytypeGraphic.GetPath());
+
         }
     }
 }
