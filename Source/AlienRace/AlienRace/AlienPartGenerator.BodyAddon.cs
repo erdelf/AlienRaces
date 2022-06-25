@@ -177,7 +177,10 @@ namespace AlienRace
         {
             Severity,
             Hediff,
+            Gender,
+            Bodytype,
             Backstory,
+            Trait,
             Age,
             Damage
         }

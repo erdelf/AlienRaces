@@ -15,6 +15,11 @@ public abstract class AbstractBodyAddonGraphic : IBodyAddonGraphic
     public  List<AlienPartGenerator.BodyAddonBackstoryGraphic> backstoryGraphics;
     public  List<AlienPartGenerator.BodyAddonAgeGraphic>       ageGraphics;
     public  List<AlienPartGenerator.BodyAddonDamageGraphic>    damageGraphics;
+    public List<AlienPartGenerator.BodyAddonGenderGraphic>     genderGraphics;
+    public List<AlienPartGenerator.BodyAddonTraitGraphic>      traitGraphics;
+    public List<AlienPartGenerator.BodyAddonBodytypeGraphic>   bodytypeGraphics;
+
+
 
     protected List<AlienPartGenerator.BodyAddonPrioritization> Prioritization =>
         this.prioritization ?? GetPrioritiesByDeclarationOrder().ToList();
@@ -48,6 +53,9 @@ public abstract class AbstractBodyAddonGraphic : IBodyAddonGraphic
 
     public virtual IEnumerable<IBodyAddonGraphic> GetSubGraphicsOfPriority(AlienPartGenerator.BodyAddonPrioritization priority) => priority switch
     {
+        AlienPartGenerator.BodyAddonPrioritization.Bodytype => this.bodytypeGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
+        AlienPartGenerator.BodyAddonPrioritization.Trait => this.traitGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
+        AlienPartGenerator.BodyAddonPrioritization.Gender => this.genderGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
         AlienPartGenerator.BodyAddonPrioritization.Backstory => this.backstoryGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
         AlienPartGenerator.BodyAddonPrioritization.Hediff => this.hediffGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
         AlienPartGenerator.BodyAddonPrioritization.Age => this.ageGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
