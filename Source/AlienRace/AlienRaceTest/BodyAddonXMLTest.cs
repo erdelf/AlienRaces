@@ -92,6 +92,8 @@ namespace AlienRaceTest
         {
             // Setup XRefs
             HediffDef crackHediffDef = AddHediffWithName("Crack");
+            AddHediffWithName("Plague");
+            AddLifestageWithName("HumanlikeAdult");
 
             AlienPartGenerator.BodyAddonHediffGraphic bodyAddonHediffGraphic =
                 new AlienPartGenerator.BodyAddonHediffGraphic();
@@ -110,6 +112,7 @@ namespace AlienRaceTest
         [Test]
         public void TestCanParseCustomHediffSeverityGraphicXML()
         {
+            AddLifestageWithName("HumanlikeAdult");
             AlienPartGenerator.BodyAddonHediffSeverityGraphic bodyAddonHediffSeverityGraphic =
                 new AlienPartGenerator.BodyAddonHediffSeverityGraphic();
 
