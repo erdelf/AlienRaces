@@ -8,12 +8,12 @@ namespace AlienRaceTest.TestSupport
     {
         public void LogFormat(LogType logType, Object context, string format, params object[] args)
         {
-            Console.WriteLine($"{logType}, {context}, {format}, {args}");
+            Console.WriteLine($"{logType}, context={context}, {string.Format(format, args)}");
         }
 
         public void LogException(Exception exception, Object context)
         {
-            Console.WriteLine($"{exception}, {context}");
+            Console.WriteLine($"Exception: Context={context}, Exception={exception.Message}");
         }
     }
 }

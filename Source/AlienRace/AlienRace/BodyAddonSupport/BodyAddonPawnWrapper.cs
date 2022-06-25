@@ -17,11 +17,12 @@ public class BodyAddonPawnWrapper
     public BodyAddonPawnWrapper()
     {
     }
+
     //backstory isApplicable
     public virtual bool HasBackStoryWithIdentifier(string backstoryId) =>
         this.GetBackstories()
          .Any(bs => bs.identifier == backstoryId); //matches pawn backstory with input
-    
+
     private static bool
         IsHediffOfDefAndPart(Hediff hediff, HediffDef hediffDef,
                              string part) => //checks if specific hediff is on given part or no part
@@ -35,14 +36,16 @@ public class BodyAddonPawnWrapper
         this.GetHediffList()
          .Where(h => IsHediffOfDefAndPart(h, hediffDef, part))
          .Select(h => h.Severity);
+
     //hediff isApplicable
     public virtual bool HasHediffOfDefAndPart(HediffDef hediffDef, string part) => this
-        .GetHediffList()                                     //get list of pawn hediffs
+        .GetHediffList() //get list of pawn hediffs
         .Any(h => IsHediffOfDefAndPart(h, hediffDef, part)); //compares pawn hediffs to specified hediff def and part
 
     //age isApplicable
     public virtual bool CurrentLifeStageDefMatches(LifeStageDef lifeStageDef) =>
         this.WrappedPawn.ageTracker?.CurLifeStage?.Equals(lifeStageDef) ?? false;
+
     //damage isApplicable
     public virtual bool IsPartBelowHealthThreshold(string part, float healthThreshold)
     {
@@ -54,10 +57,17 @@ public class BodyAddonPawnWrapper
                     //check if part health is less than health texture limit, needs to config ascending
                 .Any(p => healthThreshold >= this.GetHediffSet().GetPartHealth(p));
     }
+
     //trait isApplicable
-    public virtual bool HasTraitWithIdentifier(string traitId) => this
-        .GetTraitList()
-        .Any(t => t.CurrentData.LabelCap==traitId.CapitalizeFirst());
+    public virtual bool HasTraitWithIdentifier(string traitId)
+    {
+        string capitalisedTrait = traitId.CapitalizeFirst();
+        return this.GetTraitList()
+                .Select(t => t.CurrentData)
+                .Any(t => capitalisedTrait == t.LabelCap ||
+                          capitalisedTrait == t.GetLabelCapFor(this.WrappedPawn) ||
+                          capitalisedTrait == t.untranslatedLabel);
+    }
 
     public virtual bool HasApparelGraphics() =>
         !this.WrappedPawn.Drawer?.renderer?.graphics?.apparelGraphics?.NullOrEmpty() ?? false;
