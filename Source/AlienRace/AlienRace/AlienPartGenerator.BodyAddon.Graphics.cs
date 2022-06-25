@@ -193,6 +193,8 @@ public partial class AlienPartGenerator
         
         private bool genderIsValid;
 
+        public Gender? GetGender => this.genderIsValid ? this.gender : null;
+
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {

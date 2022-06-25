@@ -136,7 +136,7 @@ namespace AlienRaceTest
             // Attempt to parse XML
             testGenderGraphic.LoadDataFromXmlCustom(testXmlNode);
          
-            Assert.AreEqual(Gender.Male, testGenderGraphic.gender);
+            Assert.AreEqual(Gender.Male, testGenderGraphic.GetGender);
             Assert.AreEqual("test/M", testGenderGraphic.GetPath());
         }
 
@@ -147,13 +147,16 @@ namespace AlienRaceTest
                 new AlienPartGenerator.BodyAddonGenderGraphic();
 
             XmlNode testXmlNode =
-                this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/genderGraphics/Male");
+                this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/genderGraphics/NotARealGender");
 
             // Attempt to parse XML
             testGenderGraphic.LoadDataFromXmlCustom(testXmlNode);
          
-            Assert.AreEqual(Gender.Male, testGenderGraphic.gender);
-            Assert.AreEqual("test/M", testGenderGraphic.GetPath());
+            // Gender is an enum so is always non-null and defaults to "None" if an invalid gender is given
+            Assert.AreEqual(Gender.None, testGenderGraphic.gender);
+            // GetGender provides a safer access, explicitly allowing nulls 
+            Assert.IsNull(testGenderGraphic.GetGender);
+            Assert.AreEqual("test/Narg", testGenderGraphic.GetPath());
         }
 
         [Test]
@@ -410,10 +413,12 @@ namespace AlienRaceTest
                     AlienPartGenerator.BodyAddonGenderGraphic parsedGenderGraphic1 = parsedGraphic.genderGraphics[0];
                     // As it is represented by a primitive byte gender can't be null so it defaults to 0 which represents None 
                     Assert.AreEqual(Gender.None, parsedGenderGraphic1.gender);
+                    // GetGender provides a safer access, explicitly allowing nulls 
+                    Assert.IsNull(parsedGenderGraphic1.GetGender);
                     Assert.AreEqual("test/Narg", parsedGenderGraphic1.GetPath());
                     
                     AlienPartGenerator.BodyAddonGenderGraphic parsedGenderGraphic2 = parsedGraphic.genderGraphics[1];
-                    Assert.AreEqual(Gender.Male, parsedGenderGraphic2.gender);
+                    Assert.AreEqual(Gender.Male, parsedGenderGraphic2.GetGender);
                     Assert.AreEqual("test/M", parsedGenderGraphic2.GetPath());
                     
                     // Gender->Trait Graphics
