@@ -23,17 +23,8 @@ public partial class AlienPartGenerator
         {
             this.damage = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
 
-            Traverse traverse = Traverse.Create(this);
-            foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
-            {
-                Traverse field = traverse.Field(xmlRootChildNode.Name);
-                if (!field.FieldExists()) continue;
-                field.SetValue(field.GetValueType().IsGenericType
-                                   ? DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, false)
-                                   : xmlRootChildNode.InnerXml.Trim());
-            }
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
 
-            if (this.path.NullOrEmpty()) this.path = xmlRoot.FirstChild.Value?.Trim();
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
@@ -50,21 +41,13 @@ public partial class AlienPartGenerator
         {
             XmlAttribute mayRequire = xmlRoot.Attributes?[name: "MayRequire"];
             int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
-            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.age),
+            const string ageFieldName = nameof(this.age);
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, ageFieldName,
                                                                 xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index),
                                                                 mayRequire?.Value.ToLower());
 
-            Traverse traverse = Traverse.Create(this);
-            foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
-            {
-                Traverse field = traverse.Field(xmlRootChildNode.Name);
-                if (!field.FieldExists()) continue;
-                field.SetValue(field.GetValueType().IsGenericType
-                                   ? DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, false)
-                                   : xmlRootChildNode.InnerXml.Trim());
-            }
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot, new HashSet<string>{ageFieldName});
 
-            if (this.path.NullOrEmpty()) this.path = xmlRoot.FirstChild.Value?.Trim();
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
@@ -110,23 +93,15 @@ public partial class AlienPartGenerator
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            XmlAttribute mayRequire = xmlRoot.Attributes?[name: "MayRequire"];
-            int          index      = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
-            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.hediff),
+            XmlAttribute mayRequire      = xmlRoot.Attributes?[name: "MayRequire"];
+            int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
+            const string hediffFieldName = nameof(this.hediff);
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, hediffFieldName,
                                                                 xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index),
                                                                 mayRequire?.Value.ToLower());
 
-            Traverse traverse = Traverse.Create(this);
-            foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
-            {
-                Traverse field = traverse.Field(xmlRootChildNode.Name);
-                if (!field.FieldExists()) continue;
-                field.SetValue(field.GetValueType().IsGenericType
-                                   ? DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, false)
-                                   : xmlRootChildNode.InnerXml.Trim());
-            }
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot, new HashSet<string> { hediffFieldName });
 
-            if (this.path.NullOrEmpty()) this.path = xmlRoot.FirstChild.Value?.Trim();
         }
     }
 
@@ -140,17 +115,8 @@ public partial class AlienPartGenerator
         {
             this.severity = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
 
-            Traverse traverse = Traverse.Create(this);
-            foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
-            {
-                Traverse field = traverse.Field(xmlRootChildNode.Name);
-                if (!field.FieldExists()) continue;
-                field.SetValue(field.GetValueType().IsGenericType
-                                   ? DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, false)
-                                   : xmlRootChildNode.InnerXml.Trim());
-            }
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
 
-            if (this.path.NullOrEmpty()) this.path = xmlRoot.FirstChild.Value?.Trim();
         }
 
         // In isolation severity graphics must always be considered applicable because we don't have the hediff
@@ -169,17 +135,8 @@ public partial class AlienPartGenerator
         {
             this.backstory = xmlRoot.Name;
 
-            Traverse traverse = Traverse.Create(this);
-            foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
-            {
-                Traverse field = traverse.Field(xmlRootChildNode.Name);
-                if (!field.FieldExists()) continue;
-                field.SetValue(field.GetValueType().IsGenericType
-                                   ? DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, false)
-                                   : xmlRootChildNode.InnerXml.Trim());
-            }
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
 
-            if (this.path.NullOrEmpty()) this.path = xmlRoot.FirstChild.Value?.Trim();
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
@@ -200,18 +157,8 @@ public partial class AlienPartGenerator
         {
             string genderString = xmlRoot.Name;
             if (!(this.genderIsValid = Enum.TryParse(genderString, out this.gender))) Debug.LogWarning($"Unable to parse {genderString} as Gender");
-
-            Traverse traverse = Traverse.Create(this);
-            foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
-            {
-                Traverse field = traverse.Field(xmlRootChildNode.Name);
-                if (!field.FieldExists()) continue;
-                field.SetValue(field.GetValueType().IsGenericType
-                                   ? DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, false)
-                                   : xmlRootChildNode.InnerXml.Trim());
-            }
             
-            if (this.path.NullOrEmpty()) this.path = xmlRoot.FirstChild.Value?.Trim();
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
@@ -228,17 +175,7 @@ public partial class AlienPartGenerator
         {
             this.trait = xmlRoot.Name.Replace('_', ' ');
 
-            Traverse traverse = Traverse.Create(this);
-            foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
-            {
-                Traverse field = traverse.Field(xmlRootChildNode.Name);
-                if (!field.FieldExists()) continue;
-                field.SetValue(field.GetValueType().IsGenericType
-                                   ? DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, false)
-                                   : xmlRootChildNode.InnerXml.Trim());
-            }
-
-            if (this.path.NullOrEmpty()) this.path = xmlRoot.FirstChild.Value?.Trim();
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
@@ -255,17 +192,7 @@ public partial class AlienPartGenerator
         {
             this.bodytype = xmlRoot.Name.Replace('_', ' ');
 
-            Traverse traverse = Traverse.Create(this);
-            foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
-            {
-                Traverse field = traverse.Field(xmlRootChildNode.Name);
-                if (!field.FieldExists()) continue;
-                field.SetValue(field.GetValueType().IsGenericType
-                                   ? DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, false)
-                                   : xmlRootChildNode.InnerXml.Trim());
-            }
-
-            if (this.path.NullOrEmpty()) this.path = xmlRoot.FirstChild.Value?.Trim();
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
