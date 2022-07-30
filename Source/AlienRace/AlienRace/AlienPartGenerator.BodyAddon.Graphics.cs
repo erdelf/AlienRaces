@@ -198,4 +198,21 @@ public partial class AlienPartGenerator
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
             pawn.HasBodyTypeNamed(this.bodytype);
     }
+
+    //Crowntype Graphics
+    public class BodyAddonCrowntypeGraphic : AbstractBodyAddonGraphic
+    {
+        public string Crowntype;
+
+        [UsedImplicitly]
+        public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+        {
+            this.Crowntype = xmlRoot.Name.Replace('_', ' ');
+
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
+        }
+
+        public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
+            pawn.HasCrownTypeNamed(this.Crowntype);
+    }
 }

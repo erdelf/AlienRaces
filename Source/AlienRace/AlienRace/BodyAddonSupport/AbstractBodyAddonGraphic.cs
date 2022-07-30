@@ -24,7 +24,7 @@ public abstract class AbstractBodyAddonGraphic : IBodyAddonGraphic
     public List<AlienPartGenerator.BodyAddonGenderGraphic>     genderGraphics;
     public List<AlienPartGenerator.BodyAddonTraitGraphic>      traitGraphics;
     public List<AlienPartGenerator.BodyAddonBodytypeGraphic>   bodytypeGraphics;
-
+    public List<AlienPartGenerator.BodyAddonCrowntypeGraphic>  crowntypeGraphics;
 
 
     protected List<AlienPartGenerator.BodyAddonPrioritization> Prioritization =>
@@ -59,6 +59,7 @@ public abstract class AbstractBodyAddonGraphic : IBodyAddonGraphic
 
     public virtual IEnumerable<IBodyAddonGraphic> GetSubGraphicsOfPriority(AlienPartGenerator.BodyAddonPrioritization priority) => priority switch
     {
+        AlienPartGenerator.BodyAddonPrioritization.Crowntype => this.crowntypeGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
         AlienPartGenerator.BodyAddonPrioritization.Bodytype => this.bodytypeGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
         AlienPartGenerator.BodyAddonPrioritization.Trait => this.traitGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
         AlienPartGenerator.BodyAddonPrioritization.Gender => this.genderGraphics ?? Enumerable.Empty<IBodyAddonGraphic>(),
