@@ -60,3 +60,9 @@ Temporary Items
 .idea/modules.xml
 .idea/runConfigurations.xml
 .idea/vcs.xml
+
+# NUnit Output
+InternalTrace.*.log
+nunit-agent_*.log
+testOutput/
+TestResult.xml
