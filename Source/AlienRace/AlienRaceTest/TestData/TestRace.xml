@@ -254,6 +254,9 @@
                                         </Thin>
                                     </bodytypeGraphics>
                                 </Male>
+                                <feMale>
+                                    <path>test/f</path>
+                                </feMale>
                             </genderGraphics>
                         </li>
                         <li>
