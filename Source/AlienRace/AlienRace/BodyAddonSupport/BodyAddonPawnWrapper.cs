@@ -91,6 +91,9 @@ public class BodyAddonPawnWrapper
     public virtual bool HasBodyTypeNamed(string bodyType) =>
         this.WrappedPawn.story?.bodyType?.ToString().EqualsIgnoreCase(bodyType) ?? false;
 
+    public virtual bool HasCrownTypeNamed(string CrownType) =>
+        this.WrappedPawn.GetComp<AlienPartGenerator.AlienComp>()?.crownType.EqualsIgnoreCase(CrownType) ?? false;
+
     public virtual RotStage? GetRotStage() => this.WrappedPawn.Corpse?.GetRotStage();
 
     public virtual List<Hediff> GetHediffList() => this.GetHediffSet().hediffs;
