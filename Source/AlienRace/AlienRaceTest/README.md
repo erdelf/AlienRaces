@@ -63,6 +63,13 @@ Test Run Summary
 
 As you can see I have 16 passing tests, lovely :)
 
+### Why not just run the tests on Github
+That would be ideal. Github can easily run these for you.
+However to do so it would need the Rimworld DLLs.
+I do not believe the license permits including the Rimworld DLLs themselves.
+So the tests must sadly be run on a machine with Rimworld installed.
+And thus cannot be run automatically on Github.
+
 ## Writing tests
 This section gives a little guidance on writing your own tests.
 
