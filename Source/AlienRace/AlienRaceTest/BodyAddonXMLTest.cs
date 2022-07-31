@@ -142,6 +142,22 @@ namespace AlienRaceTest
             Assert.AreEqual(Gender.Male, testGenderGraphic.GetGender);
             Assert.AreEqual("test/M", testGenderGraphic.GetPath());
         }
+        
+        [Test]
+        public void TestCanParseCustomGenderGraphicXMLWithWrongCase()
+        {
+            AlienPartGenerator.BodyAddonGenderGraphic testGenderGraphic =
+                new AlienPartGenerator.BodyAddonGenderGraphic();
+
+            XmlNode testXmlNode =
+                this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/genderGraphics/feMale");
+
+            // Attempt to parse XML
+            testGenderGraphic.LoadDataFromXmlCustom(testXmlNode);
+         
+            Assert.AreEqual(Gender.Female, testGenderGraphic.GetGender);
+            Assert.AreEqual("test/f",    testGenderGraphic.GetPath());
+        }
 
         [Test]
         public void TestInvalidGenderIsNeverApplicable()
@@ -411,7 +427,7 @@ namespace AlienRaceTest
             
                 // Gender Graphics
                 Assert.IsNotNull(parsedGraphic.genderGraphics);
-                Assert.AreEqual(2, parsedGraphic.genderGraphics.Count);
+                Assert.AreEqual(3, parsedGraphic.genderGraphics.Count);
                 
                     AlienPartGenerator.BodyAddonGenderGraphic parsedGenderGraphic1 = parsedGraphic.genderGraphics[0];
                     // As it is represented by a primitive byte gender can't be null so it defaults to 0 which represents None 
@@ -423,6 +439,10 @@ namespace AlienRaceTest
                     AlienPartGenerator.BodyAddonGenderGraphic parsedGenderGraphic2 = parsedGraphic.genderGraphics[1];
                     Assert.AreEqual(Gender.Male, parsedGenderGraphic2.GetGender);
                     Assert.AreEqual("test/M", parsedGenderGraphic2.GetPath());
+                    
+                    AlienPartGenerator.BodyAddonGenderGraphic parsedGenderGraphic3 = parsedGraphic.genderGraphics[2];
+                    Assert.AreEqual(Gender.Female, parsedGenderGraphic3.GetGender);
+                    Assert.AreEqual("test/f", parsedGenderGraphic3.GetPath());
                     
                     // Gender->Trait Graphics
                     Assert.IsNotNull(parsedGenderGraphic2.traitGraphics);

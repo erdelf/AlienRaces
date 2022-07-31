@@ -156,8 +156,9 @@ public partial class AlienPartGenerator
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
             string genderString = xmlRoot.Name;
-            if (!(this.genderIsValid = Enum.TryParse(genderString, out this.gender))) Debug.LogWarning($"Unable to parse {genderString} as Gender");
-            
+            if (!(this.genderIsValid = Enum.TryParse(genderString.ToLowerInvariant().CapitalizeFirst(), out this.gender)))
+                Debug.LogWarning($"Unable to parse {genderString} as Gender");
+
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
