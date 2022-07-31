@@ -190,7 +190,7 @@ public partial class AlienPartGenerator
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            this.bodytype = xmlRoot.Name.Replace('_', ' ');
+            this.bodytype = xmlRoot.Name;
 
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
@@ -207,7 +207,7 @@ public partial class AlienPartGenerator
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            this.Crowntype = xmlRoot.Name.Replace('_', ' ');
+            this.Crowntype = xmlRoot.Name;
 
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }

@@ -12,6 +12,8 @@ public class DefaultGraphicsLoader : IGraphicsLoader
 
 {
     private readonly IGraphicFinder<Texture2D> graphicFinder2D;
+    public static bool logAddons;
+    private bool noPath = false;
 
     public DefaultGraphicsLoader() : this(new GraphicFinder2D())
     {
@@ -29,6 +31,7 @@ public class DefaultGraphicsLoader : IGraphicsLoader
                                              string            source,
                                              bool              shouldLog = false)
     {
+        
         LogFor(logBuilder, $"Loading variants for {graphic.GetPath()}");
 
         // Load all variant paths until we find one that doesn't exist
@@ -40,7 +43,17 @@ public class DefaultGraphicsLoader : IGraphicsLoader
         LogFor(logBuilder, $"Variants found for {graphic.GetPath()}: {graphic.GetVariantCount()}", shouldLog);
 
         // If we didn't find any, warn about it
-        if (graphic.GetVariantCount() == 0) Log.Warning($"No graphics found at {graphic.GetPath()} for {graphic.GetType()} in {source}");
+        if (graphic.GetVariantCount() == 0)
+        {
+            if (logAddons)
+            {
+                Log.Warning($"No graphics found at {graphic.GetPath()} for {graphic.GetType()} in {source}.");
+            }
+            else
+            {
+                noPath = true;
+            }
+        }
     }
 
     /**
@@ -88,7 +101,7 @@ public class DefaultGraphicsLoader : IGraphicsLoader
                 }
             }
         }
-
+        if (noPath) Log.Message($"Body addon textures were not found for one or more body addons, enable detailed addon logging in settings for more information");
         if (logBuilder.Length > 0) Log.Message($"Loaded body addon variants for {source}\n{logBuilder}");
     }
 }
