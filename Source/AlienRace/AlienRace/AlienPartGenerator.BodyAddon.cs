@@ -86,7 +86,7 @@ namespace AlienRace
             private bool RequiredBodyPartExistsFor(BodyAddonPawnWrapper pawn) =>
                 this.bodyPart.NullOrEmpty()          ||
                 pawn.HasNamedBodyPart(this.bodyPart) ||
-                (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false);
+                (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false);//any missing part textures need to be done on the first branch level
 
             public virtual bool CanDrawAddon(Pawn pawn) => this.CanDrawAddon(new BodyAddonPawnWrapper(pawn));
 

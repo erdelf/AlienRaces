@@ -7,7 +7,7 @@
         <description>Test Race Description</description>
         <alienRace>
             <generalSettings>
-                <maleGenderProbability>0</maleGenderProbability>
+                <maleGenderProbability>50</maleGenderProbability>
                 <immuneToAge>false</immuneToAge>
                 <canLayDown>true</canLayDown>
                 <humanRecipeImport>true</humanRecipeImport>
@@ -37,6 +37,8 @@
                     </aliencrowntypes>
                     <alienbodytypes>
                         <li>Female</li>
+						<li>Male</li>
+						<li>Hulk</li>
                     </alienbodytypes>
                     <useGenderedHeads>false</useGenderedHeads>
                     <customDrawSize>(1.15, 1.15)</customDrawSize>
@@ -80,84 +82,6 @@
                     </colorChannels>
                     <bodyAddons>
                         <li>
-                            <path>Things/Pawn/TestRace/Horns/HornFL</path>
-                            <bodyPart>left horn</bodyPart>
-                            <inFrontOfBody>true</inFrontOfBody>
-                            <layerInvert>false</layerInvert>
-                            <alignWithHead>true</alignWithHead>
-                            <colorChannel>base</colorChannel>
-                            <hediffGraphics>
-                                <BionicHorn>Things/Pawns/TestRace/Horns/BionicHornL</BionicHorn>
-                                <Crack>
-                                    <path>Things/Pawns/TestRace/Horns/HornsCrackedL</path>
-                                    <severity>
-                                        <a10>Things/Pawns/TestRace/Horns/HornsShatteredL</a10>
-                                        <a5>Things/Pawns/TestRace/Horns/HornsBrokenL</a5>
-                                        <a2>Things/Pawns/TestRace/Horns/HornsCrackedL</a2>
-                                    </severity>
-                                </Crack>
-                            </hediffGraphics>
-                        </li>
-                        <li>
-                            <path>Things/Pawn/TestRace/Horns/HornBL</path>
-                            <bodyPart>left horn</bodyPart>
-                            <inFrontOfBody>false</inFrontOfBody>
-                            <layerInvert>false</layerInvert>
-                            <alignWithHead>true</alignWithHead>
-                            <colorChannel>base</colorChannel>
-                            <hediffGraphics>
-                                <BionicHorn>Things/Pawns/TestRace/Horns/BionicHornBL</BionicHorn>
-                                <Crack>
-                                    <path>Things/Pawns/TestRace/Horns/HornsCrackedBL</path>
-                                    <severity>
-                                        <a10>Things/Pawns/TestRace/Horns/HornsShatteredBL</a10>
-                                        <a5>Things/Pawns/TestRace/Horns/HornsBrokenBL</a5>
-                                        <a2>Things/Pawns/TestRace/Horns/HornsCrackedBL</a2>
-                                    </severity>
-                                </Crack>
-                            </hediffGraphics>
-                        </li>
-                        <li>
-                            <path>Things/Pawn/TestRace/Horns/HornFR</path>
-                            <bodyPart>right horn</bodyPart>
-                            <inFrontOfBody>true</inFrontOfBody>
-                            <layerInvert>false</layerInvert>
-                            <alignWithHead>true</alignWithHead>
-                            <colorChannel>base</colorChannel>
-                            <linkVariantIndexWithPrevious>true</linkVariantIndexWithPrevious>
-                            <hediffGraphics>
-                                <BionicHorn>Things/Pawns/TestRace/Horns/BionicHornR</BionicHorn>
-                                <Crack>
-                                    <path>Things/Pawns/TestRace/Horns/HornsCrackedR</path>
-                                    <severity>
-                                        <a10>Things/Pawns/TestRace/Horns/HornsShatteredR</a10>
-                                        <a5>Things/Pawns/TestRace/Horns/HornsBrokenR</a5>
-                                        <a2>Things/Pawns/TestRace/Horns/HornsCrackedR</a2>
-                                    </severity>
-                                </Crack>
-                            </hediffGraphics>
-                        </li>
-                        <li>
-                            <path>Things/Pawn/TestRace/Horns/HornBR</path>
-                            <bodyPart>right horn</bodyPart>
-                            <inFrontOfBody>false</inFrontOfBody>
-                            <layerInvert>false</layerInvert>
-                            <alignWithHead>true</alignWithHead>
-                            <colorChannel>base</colorChannel>
-                            <linkVariantIndexWithPrevious>true</linkVariantIndexWithPrevious>
-                            <hediffGraphics>
-                                <BionicHorn>Things/Pawns/TestRace/Horns/BionicHornR</BionicHorn>
-                                <Crack>
-                                    <path>Things/Pawns/TestRace/Horns/HornsCrackedR</path>
-                                    <severity>
-                                        <a10>Things/Pawns/TestRace/Horns/HornsShatteredR</a10>
-                                        <a5>Things/Pawns/TestRace/Horns/HornsBrokenR</a5>
-                                        <a2>Things/Pawns/TestRace/Horns/HornsCrackedR</a2>
-                                    </severity>
-                                </Crack>
-                            </hediffGraphics>
-                        </li>
-                        <li>
                             <bodyPart>Nose</bodyPart>
                             <inFrontOfBody>true</inFrontOfBody>
                             <alignWithHead>true</alignWithHead>
@@ -173,7 +97,7 @@
                                                 <a0.5>
                                                     <path>test/CPs5</path>
                                                     <backstoryGraphics>
-                                                        <Test_Templar>
+                                                        <Test_backstory>
                                                             <path>test/CPs5B</path>
                                                             <ageGraphics>
                                                                 <HumanlikeAdult>
@@ -184,14 +108,14 @@
                                                                     </damageGraphics>
                                                                 </HumanlikeAdult>
                                                             </ageGraphics>
-                                                        </Test_Templar>
+                                                        </Test_backstory>
                                                     </backstoryGraphics>
                                                 </a0.5>
                                             </severity>
                                         </Plague>
                                     </hediffGraphics>
                                     <backstoryGraphics>
-                                        <Test_Templar>
+                                        <Test_backstory>
                                             <path>test/CB</path>
                                             <ageGraphics>
                                                 <HumanlikeAdult>
@@ -202,7 +126,7 @@
                                                     </damageGraphics>
                                                 </HumanlikeAdult>
                                             </ageGraphics>
-                                        </Test_Templar>
+                                        </Test_backstory>
                                     </backstoryGraphics>
                                     <ageGraphics>
                                         <HumanlikeAdult>test/CA</HumanlikeAdult>
@@ -210,7 +134,7 @@
                                 </Crack>
                             </hediffGraphics>
                             <backstoryGraphics>
-                                <Test_Templar>
+                                <Test_backstory>
                                     <path>test/B</path>
                                     <ageGraphics>
                                         <HumanlikeAdult>
@@ -221,7 +145,7 @@
                                             </damageGraphics>
                                         </HumanlikeAdult>
                                     </ageGraphics>
-                                </Test_Templar>
+                                </Test_backstory>
                             </backstoryGraphics>
                             <ageGraphics>
                                 <HumanlikeAdult>
@@ -256,100 +180,14 @@
                                 </Male>
                             </genderGraphics>
                         </li>
-                        <li>
-                            <path>Things/Pawns/TestRace/Ears/EarL</path>
-                            <bodyPart>left ear</bodyPart>
-                            <inFrontOfBody>true</inFrontOfBody>
-                            <alignWithHead>true</alignWithHead>
-                            <drawnDesiccated>false</drawnDesiccated>
-                            <colorChannel>skin</colorChannel>
-                            <hediffGraphics>
-                                <CochlearImplant>Things/Pawns/TestRace/Ears/CochlearImplantL</CochlearImplant>
-                                <BionicEar>Things/Pawns/TestRace/Ears/BionicEarL</BionicEar>
-                            </hediffGraphics>
-                            <hiddenUnderApparelFor>
-                                <li>FullHead</li>
-                            </hiddenUnderApparelFor>
-                        </li>
-                        <li>
-                            <path>Things/Pawns/TestRace/Ears/EarR</path>
-                            <bodyPart>right ear</bodyPart>
-                            <inFrontOfBody>true</inFrontOfBody>
-                            <alignWithHead>true</alignWithHead>
-                            <drawnDesiccated>false</drawnDesiccated>
-                            <colorChannel>skin</colorChannel>
-                            <linkVariantIndexWithPrevious>true</linkVariantIndexWithPrevious>
-                            <hediffGraphics>
-                                <CochlearImplant>Things/Pawns/TestRace/Ears/CochlearImplantR</CochlearImplant>
-                                <BionicEar>Things/Pawns/TestRace/Ears/BionicEarR</BionicEar>
-                            </hediffGraphics>
-                            <hiddenUnderApparelFor>
-                                <li>FullHead</li>
-                            </hiddenUnderApparelFor>
-                        </li>-->
                     </bodyAddons>
                 </alienPartGenerator>
                 <forcedRaceTraitEntries>
 					<li>
-						<defName>Test_Hrutar</defName>
+						<defName>Test_backstory</defName>
 					</li>
                 </forcedRaceTraitEntries>
-                <disallowedTraits>
-                    <li>
-                        <defName>Wimp</defName>
-                    </li><!--<li>Wimp</li>-->
-                    <li>
-                        <defName>Cannibal</defName>
-                    </li><!--<li>Cannibal</li>-->
-                    <li>
-                        <defName>Greedy</defName>
-                    </li><!--<li>Greedy</li>-->
-                    <li>
-                        <defName>Ascetic</defName>
-                    </li><!--<li>Ascetic</li>-->
-                    <li>
-                        <defName>Jealous</defName>
-                    </li><!--<li>Jealous</li>-->
-                    <li>
-                        <defName>AnnoyingVoice</defName>
-                    </li><!--<li>AnnoyingVoice</li>-->
-                    <li>
-                        <defName>TorturedArtist</defName>
-                    </li><!--<li>TorturedArtist</li>-->
-                    <li>
-                        <defName>Beauty</defName>
-                        <degree>-1</degree><!--<li>Ugly</li>-->
-                    </li>
-                    <li>
-                        <defName>Beauty</defName>
-                        <degree>-2</degree><!--<li>Staggeringly ugly</li>-->
-                    </li>
-
-                    <li>
-                        <defName>Industriousness</defName>
-                        <degree>-1</degree><!--<li>Lazy</li>-->
-                    </li>
-                    <li>
-                        <defName>Industriousness</defName>
-                        <degree>-2</degree><!--<li>slothful</li>-->
-                    </li>
-                    <li>
-                        <defName>SpeedOffset</defName>
-                        <degree>-1</degree><!--<li>slowpoke</li>-->
-                    </li>
-                    <li>
-                        <defName>Nerves</defName>
-                        <degree>-1</degree><!--<li>Nervous</li>-->
-                    </li>
-                    <li>
-                        <defName>Immunity</defName>
-                        <degree>-1</degree><!--<li>sickly</li>-->
-                    </li>
-                    <li>
-                        <defName>PsychicSensitivity</defName>
-                        <degree>-2</degree><!--<li>Psychically deaf</li>-->
-                    </li>
-                </disallowedTraits>
+                <disallowedTraits></disallowedTraits>
                 <traitCount>4</traitCount>
                 <additionalTraits>1~2</additionalTraits>
             </generalSettings>
@@ -377,7 +215,7 @@
                     <value>
                         <hasStyle>true</hasStyle>
                         <styleTagsOverride>
-                            <li>Test_Horn</li>
+                            <li>Test_Hair</li>
                         </styleTagsOverride>
                     </value>
                 </li>
@@ -417,80 +255,7 @@
                 <relationChanceModifierChild>0.5</relationChanceModifierChild>
                 <relationChanceModifierSibling>0.5</relationChanceModifierSibling>
             </relationSettings>
-            <raceRestriction>
-                <whiteTraitList>
-                    <li>Test_Tomboy</li>
-                    <li>Test_Agronomist</li>
-                    <li>Test_Fauna_Master</li>
-                    <li>Test_GeneCode</li>
-                    <li>Test_Young_Psyker</li>
-                    <li>Test_Jeager</li>
-                    <li>Test_NaturalBirth</li>
-                    <li>Test_GiftedPsyker</li>
-                    <li>Test_CraftersVirtue</li>
-                    <li>Test_Saviour</li>
-                    <li>Test_PresenceOfMind</li>
-                    <li>Test_CrystalizedSkin</li>
-                    <li>Test_Deadeye</li>
-                    <li>Test_Akimbo</li>
-                    <li>Test_UnbreakableWill</li>
-                    <li>Test_Young_Valkyrie</li>
-                    <li>Test_Squad_Captain</li>
-                    <li>Test_Commissar</li>
-                    <li>Test_Berserker</li>
-                    <li>Test_Vanguard</li>
-                    <li>Test_Valkyrie</li>
-                    <li>Test_Warden</li>
-                    <li>Test_NB_Valkyrie</li>
-                    <li>Test_Vestal</li>
-                    <li>Test_Sentinel</li>
-                    <li>Test_Hrutar</li>
-                    <li>Test_Warmaster</li>
-                </whiteTraitList>
-
-                <apparelList>
-                    <li>Test_TemplarSportSuit</li>
-                    <li>Test_TemplarParCoat</li>
-                    <li>Test_TemplarNanoSuit</li>
-                    <li>Test_TemplarJumpSuit</li>
-                    <li>Test_InterfaceVisor</li>
-                    <li>Test_EPM</li>
-                    <li>Test_PrestigeNanoSuit</li>
-                    <li>Test_StandardArmor</li>
-                    <li>Test_StandardHelmet</li>
-                    <li>Test_ValkyrieArmor</li>
-                    <li>Test_ValkyrieHelmet</li>
-                    <li>Test_HeavyTestRaceArmor</li>
-                    <li>Test_HeavyTestRaceHelmet</li>
-                    <li>Test_DefenderArmor</li>
-                    <li>Test_WarMasterArmor</li>
-                </apparelList>
-                <onlyUseRaceRestrictedApparel>true</onlyUseRaceRestrictedApparel>
-                <weaponList>
-                    <li>Test_Devastator</li>
-                    <li>Test_Slug_Rifle</li>
-                    <li>Test_Restorer_Pistol</li>
-                    <li>Test_SoulRipper_Rifle</li>
-                    <li>Test_SoulRipper_MG</li>
-                    <li>Test_Spectre_Sniper_Rifle</li>
-                    <li>Test_Nova_Blaster</li>
-                    <li>Test_Dainas_Eclipse_Crucible</li>
-                    <li>Test_Dianas_Power_Gauntlet</li>
-                    <li>Test_Laevateinn</li>
-                    <li>Test_TemplarChainAxe</li>
-                    <li>Test_TemplarChainsword</li>
-                    <li>Test_TemplarHalberd</li>
-                    <li>Test_TemplarPowerGauntlet</li>
-                    <li>Test_TemplarPowerSword</li>
-                    <li>Test_TemplarPowerSwordMarkTwo</li>
-                    <li>Test_TemplarShortSword</li>
-                    <li>Test_TemplarWarAxe</li>
-                    <li>Test_Tool_Axe</li>
-                    <li>Test_Tool_Machete</li>
-                    <li>Test_Tool_PickAxe</li>
-                </weaponList>
-                <onlyUseRaceRestrictedWeapons>true</onlyUseRaceRestrictedWeapons>
-            </raceRestriction>
+			<raceRestriction></raceRestriction>
             <compatibility>
                 <isFlesh>true</isFlesh>
                 <isSentient>true</isSentient>
@@ -499,35 +264,35 @@
         </alienRace>
         <statBases>
             <MarketValue>1100</MarketValue>
-            <MoveSpeed>1.6</MoveSpeed>
+            <MoveSpeed>1</MoveSpeed>
             <Flammability>0</Flammability>
             <MentalBreakThreshold>-1</MentalBreakThreshold>
-            <RestRateMultiplier>1.3</RestRateMultiplier>
+            <RestRateMultiplier>1</RestRateMultiplier>
             <FoodPoisonChance>0</FoodPoisonChance>
-            <MeleeDodgeChance>15</MeleeDodgeChance>
-            <PainShockThreshold>20</PainShockThreshold>
-            <ComfyTemperatureMin>-90</ComfyTemperatureMin>
-            <ComfyTemperatureMax>115</ComfyTemperatureMax>
-            <ImmunityGainSpeed>7.25</ImmunityGainSpeed>
-            <CarryingCapacity>395</CarryingCapacity>
-            <ArmorRating_Sharp>3.5</ArmorRating_Sharp>
-            <ArmorRating_Blunt>2.5</ArmorRating_Blunt>
-            <ArmorRating_Heat>2</ArmorRating_Heat>
+            <MeleeDodgeChance>10</MeleeDodgeChance>
+            <PainShockThreshold>10</PainShockThreshold>
+            <ComfyTemperatureMin>-10</ComfyTemperatureMin>
+            <ComfyTemperatureMax>45</ComfyTemperatureMax>
+            <ImmunityGainSpeed>1</ImmunityGainSpeed>
+            <CarryingCapacity>70</CarryingCapacity>
+            <ArmorRating_Sharp>0.5</ArmorRating_Sharp>
+            <ArmorRating_Blunt>0.5</ArmorRating_Blunt>
+            <ArmorRating_Heat>0.5</ArmorRating_Heat>
             <ToxicSensitivity>0</ToxicSensitivity>
-            <EatingSpeed>1.2</EatingSpeed>
+            <EatingSpeed>1</EatingSpeed>
             <MeatAmount>45</MeatAmount>
-            <WorkSpeedGlobal>2.5</WorkSpeedGlobal>
-            <PlantWorkSpeed>2.2</PlantWorkSpeed>
-            <PlantHarvestYield>1.8</PlantHarvestYield>
+            <WorkSpeedGlobal>1</WorkSpeedGlobal>
+            <PlantWorkSpeed>1</PlantWorkSpeed>
+            <PlantHarvestYield>1</PlantHarvestYield>
             <MeleeHitChance>1</MeleeHitChance>
             <LeatherAmount>75</LeatherAmount>
-            <MiningSpeed>2.8</MiningSpeed>
-            <MiningYield>3.5</MiningYield>
+            <MiningSpeed>2</MiningSpeed>
+            <MiningYield>1</MiningYield>
             <AimingDelayFactor>1</AimingDelayFactor>
-            <NegotiationAbility>1.5</NegotiationAbility>
-            <ConstructionSpeed>1.5</ConstructionSpeed>
-            <ConstructSuccessChance>2.5</ConstructSuccessChance>
-            <SocialImpact>5</SocialImpact>
+            <NegotiationAbility>1</NegotiationAbility>
+            <ConstructionSpeed>1</ConstructionSpeed>
+            <ConstructSuccessChance>2</ConstructSuccessChance>
+            <SocialImpact>2</SocialImpact>
         </statBases>
         <tools>
             <li>
@@ -581,7 +346,7 @@
                 <capacities>
                     <li>Headbutt</li>
                 </capacities>
-                <power>70</power>
+                <power>7</power>
                 <cooldownTime>5</cooldownTime>
                 <linkedBodyPartsGroup>HeadAttackTool</linkedBodyPartsGroup>
                 <chanceFactor>1.8</chanceFactor>
@@ -591,16 +356,15 @@
             <thinkTreeMain>Humanlike</thinkTreeMain>
             <thinkTreeConstant>HumanlikeConstant</thinkTreeConstant>
             <baseHungerRate>0.3</baseHungerRate>
-            <nameGenerator>NamerPersonNordic</nameGenerator>
             <intelligence>Humanlike</intelligence>
             <makesFootprints>true</makesFootprints>
-            <lifeExpectancy>1000</lifeExpectancy>
-            <leatherDef>Leather_Light</leatherDef>
+            <lifeExpectancy>100</lifeExpectancy>
+            <leatherDef>Leather_Human</leatherDef>
             <nameCategory>HumanStandard</nameCategory>
             <trainability>Advanced</trainability>
             <hasGenders>true</hasGenders>
-            <body>TestBody</body>
-            <fleshType>TestBodyGirl</fleshType>
+            <body>Human</body>
+            <fleshType>Human</fleshType>
             <baseBodySize>0.8</baseBodySize>
             <baseHealthScale>1.5</baseHealthScale>
             <manhunterOnDamageChance>1.00</manhunterOnDamageChance>
@@ -623,19 +387,19 @@
                 </li>
                 <li>
                     <def>HumanlikeToddler</def>
-                    <minAge>30</minAge>
+                    <minAge>3</minAge>
                 </li>
                 <li>
                     <def>HumanlikeChild</def>
-                    <minAge>60</minAge>
+                    <minAge>6</minAge>
                 </li>
                 <li>
                     <def>HumanlikeTeenager</def>
-                    <minAge>130</minAge>
+                    <minAge>13</minAge>
                 </li>
                 <li>
                     <def>HumanlikeAdult</def>
-                    <minAge>230</minAge>
+                    <minAge>23</minAge>
                 </li>
             </lifeStageAges>
             <soundMeleeHitPawn>Pawn_Melee_Punch_HitPawn</soundMeleeHitPawn>
