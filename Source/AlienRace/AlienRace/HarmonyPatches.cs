@@ -912,7 +912,8 @@ namespace AlienRace
         public static void RottableCompStageChangedPostfix(ThingWithComps ___parent)
         {
             Pawn pawn = ___parent as Pawn ?? (___parent as Corpse)?.InnerPawn;
-            pawn?.Drawer.renderer.graphics.ResolveAllGraphics();
+            if(pawn != null)
+                pawn.Drawer.renderer.graphics.nakedGraphic = null;
 
         }
 
@@ -1297,7 +1298,7 @@ namespace AlienRace
         public static void CheckForStateChangePostfix(Pawn ___pawn)
         {
             if (Current.ProgramState == ProgramState.Playing && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace)
-                ___pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+                ___pawn.Drawer.renderer.graphics.nakedGraphic = null;
         }
 
         public static IEnumerable<CodeInstruction> BaseHeadOffsetAtTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -1372,7 +1373,7 @@ namespace AlienRace
         {
             if (Current.ProgramState == ProgramState.Playing && (___pawn).def is ThingDef_AlienRace &&
                 ___pawn.Drawer.renderer.graphics.AllResolved)
-                ___pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+                ___pawn.Drawer.renderer.graphics.nakedGraphic = null;
         }
 
         public static void HasHeadPrefix(HediffSet __instance) =>
@@ -2217,7 +2218,7 @@ namespace AlienRace
         {
             try
             {
-                
+                if (ingester.def is not ThingDef_AlienRace alienProps) return;
 
                 if (ingester.story.traits.HasTrait(AlienDefOf.Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1)
                     if (__result.Any(tfi => tfi.thought       == ThoughtDefOf.AteHumanlikeMeatDirect) && foodDef.ingestible?.sourceDef != ingester.def)
@@ -2226,8 +2227,6 @@ namespace AlienRace
                              (foodSource?.TryGetComp<CompIngredients>()?.ingredients
                                       ?.Any(predicate: td => FoodUtility.GetMeatSourceCategory(td) == MeatSourceCategory.Humanlike && td.ingestible?.sourceDef != ingester.def) ?? false))
                         __result.RemoveAll(tfi => tfi.thought == ThoughtDefOf.AteHumanlikeMeatAsIngredient);
-
-                if (!(ingester.def is ThingDef_AlienRace alienProps)) return;
 
                 bool cannibal = ingester.story.traits.HasTrait(TraitDefOf.Cannibal);
 
