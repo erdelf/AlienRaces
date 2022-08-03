@@ -12,7 +12,6 @@ public class DefaultGraphicsLoader : IGraphicsLoader
 
 {
     private readonly IGraphicFinder<Texture2D> graphicFinder2D;
-    public static bool logAddons;
     private bool noPath = false;
 
     public DefaultGraphicsLoader() : this(new GraphicFinder2D())
@@ -45,9 +44,9 @@ public class DefaultGraphicsLoader : IGraphicsLoader
         // If we didn't find any, warn about it
         if (graphic.GetVariantCount() == 0)
         {
-            if (logAddons)
+            if (Prefs.DevMode)
             {
-                Log.Warning($"No graphics found at {graphic.GetPath()} for {graphic.GetType()} in {source}.");
+                Log.Warning($"No graphics found at {graphic.GetPath()} for {graphic.GetType()} in {source}. Race authors may have intentionally left a branch node path blank to designate a different texture in the selection tree should be used.");
             }
             else
             {
@@ -101,7 +100,7 @@ public class DefaultGraphicsLoader : IGraphicsLoader
                 }
             }
         }
-        if (noPath) Log.Message($"Body addon textures were not found for one or more body addons, enable detailed addon logging in settings for more information");
+        if (noPath) Log.Message($"Body addon textures were not found for one or more body addons, enable devmode for more information");
         if (logBuilder.Length > 0) Log.Message($"Loaded body addon variants for {source}\n{logBuilder}");
     }
 }
