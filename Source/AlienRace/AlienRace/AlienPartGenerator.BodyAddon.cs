@@ -146,7 +146,7 @@ namespace AlienRace
                 if (variantCounting <= 0)
                     variantCounting = 1;
 
-                ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
+                ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>()?.GetChannel(this.ColorChannel)?? new ExposableValueTuple<Color, Color>(Color.white, Color.white);
                 int                               tv;
 
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
