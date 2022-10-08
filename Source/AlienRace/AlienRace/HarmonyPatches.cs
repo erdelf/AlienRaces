@@ -911,7 +911,10 @@ namespace AlienRace
             Dictionary<Pawn, PawnTextureAtlasFrameSet>.KeyCollection keys = CachedData.pawnTextureAtlasFrameAssignments(atlas).Keys;
 
             int atlasScale = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1;
-            return keys.Count == 0 || keys.Any(p => p.def == pawn.def || ((p.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1) == atlasScale);
+            float borderScale = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.borderScale ?? 1;
+
+            return keys.Count == 0 || keys.Any(p => p.def == pawn.def || (((p.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1)     == atlasScale) && 
+                                                    (Math.Abs(((p.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.borderScale ?? 1) - borderScale) < 0.01));
         }
         
         public static float GetBorderSizeForPawn() =>
