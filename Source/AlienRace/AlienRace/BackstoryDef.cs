@@ -31,7 +31,7 @@
 
         public override void ResolveReferences()
         {
-
+            this.identifier = this.defName;
             base.ResolveReferences();
 
             this.forcedTraits = (this.forcedTraits ??= new List<BackstoryTrait>()).

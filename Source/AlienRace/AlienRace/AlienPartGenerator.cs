@@ -41,8 +41,6 @@
 
         public BodyPartDef headBodyPartDef;
 
-        private static readonly Dictionary<Vector2, AlienGraphicMeshSet> meshPools = new Dictionary<Vector2, AlienGraphicMeshSet>();
-
         public List<BodyAddon> bodyAddons = new List<BodyAddon>();
 
         public ThingDef_AlienRace alienProps;
@@ -71,39 +69,6 @@
 
         public void GenerateMeshsAndMeshPools()
         {
-            void AddMeshSet(Vector2 drawSize, Vector2 headDrawSize)
-            {
-                if (!meshPools.Keys.Any(predicate: v => v.Equals(drawSize)))
-                {
-                    meshPools.Add(drawSize, new AlienGraphicMeshSet
-                                            {
-                                                bodySet        = new GraphicMeshSet(1.5f * drawSize.x,     1.5f * drawSize.y),     // bodySet
-                                                headSet        = new GraphicMeshSet(1.5f * headDrawSize.x, 1.5f * headDrawSize.y), // headSet
-                                                hairSetAverage = new GraphicMeshSet(1.5f * headDrawSize.x, 1.5f * headDrawSize.y), // hairSetAverage
-                                            });
-                }
-            }
-
-            foreach (GraphicPaths graphicsPath in this.alienProps.alienRace.graphicPaths.Concat(
-                                                                                                new GraphicPaths
-                                                                                                {
-                                                                                                    customDrawSize             = this.customDrawSize,
-                                                                                                    customHeadDrawSize         = this.customHeadDrawSize,
-                                                                                                    customPortraitDrawSize     = this.customPortraitDrawSize,
-                                                                                                    customPortraitHeadDrawSize = this.customPortraitHeadDrawSize
-                                                                                                }))
-            {
-                AddMeshSet(graphicsPath.customDrawSize,             graphicsPath.customDrawSize);
-                AddMeshSet(graphicsPath.customHeadDrawSize,         graphicsPath.customHeadDrawSize);
-                AddMeshSet(graphicsPath.customPortraitDrawSize,     graphicsPath.customPortraitDrawSize);
-                AddMeshSet(graphicsPath.customPortraitHeadDrawSize, graphicsPath.customPortraitHeadDrawSize);
-            }
-
-            Vector3 rel = Vector3.back;
-
-            Vector3 v = (rel) * 2;
-
-
             this.offsetDefaults.Add(new OffsetNamed
                                     {
                                         name = "Center",
@@ -262,10 +227,6 @@
             public Vector2             customHeadDrawSize         = Vector2.one;
             public Vector2             customPortraitDrawSize     = Vector2.one;
             public Vector2             customPortraitHeadDrawSize = Vector2.one;
-            public AlienGraphicMeshSet alienGraphics;
-            public AlienGraphicMeshSet alienHeadGraphics;
-            public AlienGraphicMeshSet alienPortraitGraphics;
-            public AlienGraphicMeshSet alienPortraitHeadGraphics;
             public int                 headMaskVariant = -1;
             public int                 bodyMaskVariant = -1;
             public List<Graphic>       addonGraphics;
@@ -297,7 +258,7 @@
                         Color tattooColor = skinColor;
                         tattooColor.a *= 0.8f;
                         this.colorChannels.Add(key: "tattoo", new ExposableValueTuple<Color, Color>(tattooColor, tattooColor));
-
+                        
                         foreach (ColorChannelGenerator channel in apg.colorChannels)
                         {
                             if (!this.colorChannels.ContainsKey(channel.name))
@@ -308,7 +269,7 @@
                             if (channel.second != null)
                                 colors.second = this.GenerateColor(channel, false);
                         }
-
+                        
                         ExposableValueTuple<Color, Color> hairColors = this.colorChannels[key: "hair"];
 
                         if (hairColors.first == Color.clear)
@@ -317,14 +278,14 @@
                             hairColors.first  = color;
                             hairColors.second = color;
                         }
-
+                        
                         if (pawn.Corpse?.GetRotStage() == RotStage.Rotting)
                             this.colorChannels["skin"].first = PawnGraphicSet.RottingColorDefault;
                         CachedData.hairColor(pawn.story) = hairColors.first;
 
                         this.RegenerateColorChannelLink("skin");
-                        
-                        
+
+
                         if (alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
                         {
                             if (Rand.Value < GenMath.SmootherStep(alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt,
@@ -415,14 +376,6 @@
                 return new ExposableValueTuple<Color, Color>(Color.white, Color.white);
             }
 
-            internal void AssignProperMeshs()
-            {
-                this.alienGraphics             = meshPools[this.customDrawSize];
-                this.alienHeadGraphics         = meshPools[this.customHeadDrawSize];
-                this.alienPortraitGraphics     = meshPools[this.customPortraitDrawSize];
-                this.alienPortraitHeadGraphics = meshPools[this.customPortraitHeadDrawSize];
-            }
-
             public void RegenerateColorChannelLinks()
             {
                 foreach (KeyValuePair<string, HashSet<ExposableValueTuple<string, bool>>> kvp in this.colorChannelLinks) 
@@ -499,13 +452,6 @@
                 Scribe_Values.Look(ref this.first, label: "first");
                 Scribe_Values.Look(ref this.second, label: "second");
             }
-        }
-
-        public class AlienGraphicMeshSet
-        {
-            public GraphicMeshSet bodySet;
-            public GraphicMeshSet headSet;
-            public GraphicMeshSet hairSetAverage;
         }
     }
 }
