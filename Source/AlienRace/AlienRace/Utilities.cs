@@ -6,6 +6,7 @@
     using HarmonyLib;
     using JetBrains.Annotations;
     using RimWorld;
+    using UnityEngine;
     using Verse;
     using Verse.AI;
 
@@ -96,13 +97,16 @@
             return racePropsToRaceDict[props];
         }
 
-        public static readonly AccessTools.FieldRef<Pawn_StoryTracker, string> headGraphicPath = AccessTools.FieldRefAccess<Pawn_StoryTracker, string>("headGraphicPath");
-
         public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allApparelPairs =
             AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnApparelGenerator), "allApparelPairs"));
 
         public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allWeaponPairs =
             AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnWeaponGenerator), "allWeaponPairs"));
+
+        public delegate Color SwaddleColor(PawnGraphicSet graphicSet);
+
+        public static readonly SwaddleColor swaddleColor =
+            AccessTools.MethodDelegate<SwaddleColor>(AccessTools.Method(typeof(PawnGraphicSet), "SwaddleColor"));
 
         public delegate void PawnGeneratorPawnRelations(Pawn pawn, ref PawnGenerationRequest request);
 
@@ -119,5 +123,8 @@
 
         public static readonly AccessTools.FieldRef<List<FoodUtility.ThoughtFromIngesting>> ingestThoughts =
             AccessTools.StaticFieldRefAccess<List<FoodUtility.ThoughtFromIngesting>>(AccessTools.Field(typeof(FoodUtility), "ingestThoughts"));
+
+        public static readonly AccessTools.FieldRef<Pawn_StoryTracker, Color> hairColor =
+            AccessTools.FieldRefAccess<Pawn_StoryTracker, Color>(AccessTools.Field(typeof(Pawn_StoryTracker), "hairColor"));
     }
 }
