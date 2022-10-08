@@ -63,7 +63,7 @@
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
 
             if (alienComp == null) 
-                return PawnSkinColors.GetSkinColor(alien.story.melanin);
+                return alien.story.SkinColorBase;
 
             ExposableValueTuple<Color, Color> skinColors = alienComp.GetChannel(channel: "skin");
             return first ? skinColors.first : skinColors.second;
@@ -98,6 +98,10 @@
                 AddMeshSet(graphicsPath.customPortraitDrawSize,     graphicsPath.customPortraitDrawSize);
                 AddMeshSet(graphicsPath.customPortraitHeadDrawSize, graphicsPath.customPortraitHeadDrawSize);
             }
+
+            Vector3 rel = Vector3.back;
+
+            Vector3 v = (rel) * 2;
 
 
             this.offsetDefaults.Add(new OffsetNamed
@@ -253,6 +257,7 @@
         {
             public bool                fixGenderPostSpawn;
             public string              crownType;
+            public string              headGraphicPath;
             public Vector2             customDrawSize             = Vector2.one;
             public Vector2             customHeadDrawSize         = Vector2.one;
             public Vector2             customPortraitDrawSize     = Vector2.one;
@@ -285,7 +290,7 @@
 
                         this.colorChannels.Add(key: "base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
                         this.colorChannels.Add(key: "hair", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
-                        Color skinColor = PawnSkinColors.GetSkinColor(pawn.story.melanin);
+                        Color skinColor = pawn.story.SkinColorBase;
 
                         this.colorChannels.Add(key: "skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
 
@@ -308,14 +313,14 @@
 
                         if (hairColors.first == Color.clear)
                         {
-                            Color color = PawnHairColors.RandomHairColor(pawn.story.SkinColor, pawn.ageTracker.AgeBiologicalYears);
+                            Color color = PawnHairColors.RandomHairColor(pawn, pawn.story.SkinColor, pawn.ageTracker.AgeBiologicalYears);
                             hairColors.first  = color;
                             hairColors.second = color;
                         }
 
                         if (pawn.Corpse?.GetRotStage() == RotStage.Rotting)
                             this.colorChannels["skin"].first = PawnGraphicSet.RottingColorDefault;
-                        pawn.story.hairColor = hairColors.first;
+                        CachedData.hairColor(pawn.story) = hairColors.first;
 
                         this.RegenerateColorChannelLink("skin");
                         
@@ -329,8 +334,8 @@
                                                                   pawn.ageTracker.AgeBiologicalYears))
                             {
                                 float grey = Rand.Range(min: 0.65f, max: 0.85f);
-                                pawn.story.hairColor = new Color(grey, grey, grey);
-                                hairColors.first     = pawn.story.hairColor;
+                                hairColors.first                 = new Color(grey, grey, grey);
+                                CachedData.hairColor(pawn.story) = hairColors.first;
                             }
                         }
                     }
@@ -354,7 +359,7 @@
                         return split[1] == "1" ? this.ColorChannels[split[0]].first : this.ColorChannels[split[0]].second;
                     case ColorGenerator_SkinColorMelanin cm:
                         return cm.naturalMelanin ? 
-                                   PawnSkinColors.GetSkinColor(((Pawn) this.parent).story.melanin) : 
+                                   ((Pawn) this.parent).story.SkinColorBase : 
                                    gen.NewRandomizedColor();
                     default:
                         return gen.NewRandomizedColor();

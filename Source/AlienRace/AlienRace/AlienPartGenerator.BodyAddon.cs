@@ -60,11 +60,10 @@
 
             private ShaderTypeDef shaderType;
 
-            public ShaderTypeDef ShaderType => this.shaderType = this.shaderType ?? ShaderTypeDefOf.Cutout;
+            public ShaderTypeDef ShaderType => this.shaderType ??= ShaderTypeDefOf.Cutout;
 
             private List<BodyAddonPrioritization> prioritization;
-            public List<BodyAddonPrioritization> Prioritization => this.prioritization ?? 
-                                                                   (this.prioritization = new List<BodyAddonPrioritization> { BodyAddonPrioritization.Hediff, BodyAddonPrioritization.Backstory });
+            public List<BodyAddonPrioritization> Prioritization => this.prioritization ??= new List<BodyAddonPrioritization> { BodyAddonPrioritization.Hediff, BodyAddonPrioritization.Backstory };
 
 
 

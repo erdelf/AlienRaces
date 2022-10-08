@@ -44,12 +44,9 @@
             });
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
 
-            if(!this.alienRace.styleSettings.ContainsKey(typeof(HairDef)))
-                this.alienRace.styleSettings.Add(typeof(HairDef), new StyleSettings());
-            if (!this.alienRace.styleSettings.ContainsKey(typeof(TattooDef)))
-                this.alienRace.styleSettings.Add(typeof(TattooDef), new StyleSettings());
-            if (!this.alienRace.styleSettings.ContainsKey(typeof(BeardDef)))
-                this.alienRace.styleSettings.Add(typeof(BeardDef), new StyleSettings());
+            foreach (Type type in typeof(StyleItemDef).AllSubclassesNonAbstract())
+                if(!this.alienRace.styleSettings.ContainsKey(type))
+                    this.alienRace.styleSettings.Add(type, new StyleSettings());
 
             foreach (AlienPartGenerator.BodyAddon bodyAddon in this.alienRace.generalSettings.alienPartGenerator.bodyAddons)
             {
@@ -116,7 +113,6 @@
         public List<AlienTraitEntry>  forcedRaceTraitEntries;
         public List<AlienTraitEntry>  disallowedTraits;
         public IntRange               traitCount         = new IntRange(2, 3);
-        public IntRange               additionalTraits   = IntRange.zero;
         public AlienPartGenerator     alienPartGenerator = new AlienPartGenerator();
 
         public List<FactionRelationSettings> factionRelations;

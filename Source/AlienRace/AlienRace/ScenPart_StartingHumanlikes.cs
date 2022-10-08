@@ -88,7 +88,7 @@
                 Pawn newPawn = null;
                 for (int x = 0; x < 200; x++)
                 {
-                    newPawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(this.KindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, tile: -1, forceGenerateNewPawn: true, newborn: false, allowDead: false, allowDowned: false, canGeneratePawnRelations: true, mustBeCapableOfViolence: false, colonistRelationChanceFactor: 26f, forceAddFreeWarmLayerIfNeeded: true));
+                    newPawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(this.KindDef, Faction.OfPlayer, PawnGenerationContext.PlayerStarter, tile: -1, forceGenerateNewPawn: true, allowDead: false, allowDowned: false, canGeneratePawnRelations: true, mustBeCapableOfViolence: false, colonistRelationChanceFactor: 26f, forceAddFreeWarmLayerIfNeeded: true));
                     if (PawnCheck(newPawn))
                     {
                         x = 200;
