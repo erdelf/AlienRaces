@@ -221,6 +221,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnTextureAtlas), nameof(PawnTextureAtlas.TryGetFrameSet)), 
                           transpiler: new HarmonyMethod(patchType, nameof(PawnTextureAtlasGetFrameSetTranspiler)));
 
+            harmony.Patch(AccessTools.Method(typeof(PawnTextureAtlas), nameof(PawnTextureAtlas.TryGetFrameSet)), 
+                          prefix: new HarmonyMethod(patchType, nameof(PawnTextureAtlasGetFrameSetPrefix)));
+
             harmony.Patch(typeof(PawnTextureAtlas).GetNestedTypes(AccessTools.all)[0].GetMethods(AccessTools.all).First(mi => mi.GetParameters().Any()), 
                           transpiler: new HarmonyMethod(patchType, nameof(PawnTextureAtlasConstructorFuncTranspiler)));
 
@@ -904,6 +907,18 @@ namespace AlienRace
 
                 yield return instruction;
             }
+        }
+
+
+        public static bool PawnTextureAtlasGetFrameSetPrefix(ref bool __result, Pawn pawn, ref bool createdNew, PawnTextureAtlas __instance, List<PawnTextureAtlasFrameSet> ___freeFrameSets)
+        {
+            if (__instance.FreeCount > 0 && ___freeFrameSets.First().meshes.First().vertices.First().x / -1f != ((pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.borderScale ?? 1f)) 
+            {
+                createdNew = false;
+                __result = false;
+                return false;
+            }
+            return true;
         }
 
         public static bool TextureAtlasSameRace(PawnTextureAtlas atlas, Pawn pawn)
