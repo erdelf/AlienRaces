@@ -55,8 +55,8 @@
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
             public List<string> hiddenUnderApparelTag = new List<string>();
 
-            public string backstoryRequirement;
-            public string bodyTypeRequirement;
+            public BackstoryDef backstoryRequirement;
+            public BodyTypeDef bodyTypeRequirement;
 
             private ShaderTypeDef shaderType;
 
@@ -71,12 +71,12 @@
                 (pawn.Drawer.renderer.graphics.apparelGraphics.NullOrEmpty() || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
                 !pawn.apparel.WornApparel.Any(predicate: ap => !ap.def.apparel.hatRenderedFrontOfFace && ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
                 ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(s))))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && ((pawn.CurrentBed()?.def.building.bed_showSleeperBody ?? true) || this.drawnInBed) &&
-                    (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
+                    (this.backstoryRequirement == null || pawn.story.AllBackstories.Contains(this.backstoryRequirement)) &&   
                     (this.drawnDesiccated || pawn.Corpse?.GetRotStage() != RotStage.Dessicated) &&
                     (this.bodyPart.NullOrEmpty() || 
                      (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
                      (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
-               (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement.NullOrEmpty() || pawn.story.bodyType.ToString() == this.bodyTypeRequirement);
+               (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement == null || pawn.story.bodyType == this.bodyTypeRequirement);
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
@@ -88,7 +88,7 @@
                     switch(prio)
                     {
                         case BodyAddonPrioritization.Backstory:
-                            if (this.backstoryGraphics?.FirstOrDefault(predicate: babgs => pawn.story.AllBackstories.Any(predicate: bs => bs.identifier == babgs.backstory)) is BodyAddonBackstoryGraphic babg)
+                            if (this.backstoryGraphics?.FirstOrDefault(predicate: babgs => pawn.story.AllBackstories.Any(predicate: bs => bs == babgs.backstory)) is { } babg)
                             {
                                 returnPath      = babg.path;
                                 variantCounting = babg.variantCount;
@@ -204,14 +204,14 @@
 
         public class BodyAddonBackstoryGraphic
         {
-            public string backstory;
+            public BackstoryDef backstory;
             public string path;
             public int variantCount = 0;
 
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
-                this.backstory = xmlRoot.Name;
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.backstory), xmlRoot.Name, null, null, typeof(BackstoryDef));
 
                 this.path = xmlRoot.FirstChild.Value;
             }
