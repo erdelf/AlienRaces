@@ -2523,13 +2523,13 @@ namespace AlienRace
             }
         }
 
-        public static void CanHaveThoughtPostfix(ref bool __result, ThoughtWorker_Precept worker, Pawn p)
+        public static void CanHaveThoughtPostfix(ref bool __result, ThoughtWorker_Precept __instance, Pawn pawn)
         {
             if (!__result) return;
 
-            ThoughtDef def = worker.def;
+            ThoughtDef def = __instance.def;
 
-            __result = ThoughtSettings.CanGetThought(def, p);
+            __result = ThoughtSettings.CanGetThought(def, pawn);
         }
 
         public static void CanGetThoughtPostfix(ref bool __result, ThoughtDef def, Pawn pawn)
