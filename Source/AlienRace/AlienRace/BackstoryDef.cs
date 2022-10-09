@@ -19,6 +19,7 @@
         public BackstoryDef                  linkedBackstory;
         public RelationSettings              relationSettings = new RelationSettings();
         public List<string>                  forcedHediffs    = new List<string>();
+        public List<SkillGain>               passions         = new List<SkillGain>();
         public IntRange                      bioAgeRange;
         public IntRange                      chronoAgeRange;
         public List<ThingDefCountRangeClass> forcedItems = new List<ThingDefCountRangeClass>();
