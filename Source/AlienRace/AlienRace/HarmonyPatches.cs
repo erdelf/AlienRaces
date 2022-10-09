@@ -3108,12 +3108,6 @@ namespace AlienRace
 
                     DrawAddonsFinalHook(pawn, ba, rotation, ref addonGraphic, ref offsetVector, ref num, ref mat);
 
-                    if (ba.alignWithHead)
-                    {
-                        Log.Message($"{pawn.NameShortColored}: {ba.path} | {headOffset}");
-                        Log.ResetMessageCount();
-                    }
-
                     //                                                                                   Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
                     GenDraw.DrawMeshNowOrLater(
                                                addonGraphic.MeshAt(rotation),
