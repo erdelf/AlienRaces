@@ -1,12 +1,12 @@
 ﻿namespace AlienRace
 {
+    using HarmonyLib;
+    using RimWorld;
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using HarmonyLib;
-    using RimWorld;
     using UnityEngine;
     using Verse;
 
@@ -248,6 +248,22 @@
         public ThoughtDef GetAteThought(ThingDef race, bool cannibal, bool ingredient) =>
             (this.ateThoughtSpecific?.FirstOrDefault(predicate: at => at.raceList?.Contains(race) ?? false) ?? this.ateThoughtGeneral)?.GetThought(cannibal, ingredient);
 
+        public bool CanGetThought(ThoughtDef def)
+        {
+            def = this.ReplaceIfApplicable(def);
+
+            return (!this.cannotReceiveThoughtsAtAll || (this.canStillReceiveThoughts?.Contains(def) ?? false)) &&
+                   (!(this.cannotReceiveThoughts?.Contains(def) ?? false));
+        }
+
+        public static bool CanGetThought(ThoughtDef def, Pawn pawn)
+        {
+            bool result = !(ThoughtSettings.thoughtRestrictionDict.TryGetValue(def, out List<ThingDef_AlienRace> races));
+
+            return pawn.def is not ThingDef_AlienRace alienProps ? 
+                       result : 
+                       (races?.Contains(alienProps) ?? true) && alienProps.alienRace.thoughtSettings.CanGetThought(def);
+        }
 
         public List<ThoughtReplacer> replacerList;
     }
