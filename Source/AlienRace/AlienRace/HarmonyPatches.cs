@@ -137,7 +137,7 @@ namespace AlienRace
                           new HarmonyMethod(patchType, nameof(RenderPawnInternalTranspiler)));
 
             harmony.Patch(AccessTools.PropertyGetter(typeof(StartingPawnUtility), "DefaultStartingPawnRequest"),
-                          transpiler: new HarmonyMethod(patchType, nameof(NewGeneratedStartingPawnTranspiler)));
+                          transpiler: new HarmonyMethod(patchType, nameof(DefaultStartingPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo)), 
                 postfix: new HarmonyMethod(patchType, nameof(GiveAppropriateBioAndNameToPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GeneratePawnName)),
@@ -2640,7 +2640,7 @@ namespace AlienRace
             }
         }
 
-        public static IEnumerable<CodeInstruction> NewGeneratedStartingPawnTranspiler(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> DefaultStartingPawnTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             FieldInfo basicMemberInfo = AccessTools.Field(typeof(FactionDef), nameof(FactionDef.basicMemberKind));
 
