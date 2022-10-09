@@ -855,8 +855,18 @@ namespace AlienRace
 
         public static bool WantsToUseStylePrefix(Pawn pawn, StyleItemDef styleItemDef, ref bool __result)
         {
-            if (pawn.def is not ThingDef_AlienRace alienProps || styleItemDef == null || alienProps.alienRace.styleSettings[styleItemDef.GetType()].hasStyle)
+            if (pawn.def is not ThingDef_AlienRace alienProps || styleItemDef == null)
                 return true;
+            if (alienProps.alienRace.styleSettings[styleItemDef.GetType()].hasStyle)
+            {
+                if (!alienProps.alienRace.styleSettings[styleItemDef.GetType()].styleTagsOverride.NullOrEmpty())
+                {
+                    __result = alienProps.alienRace.styleSettings[styleItemDef.GetType()].IsValidStyle(styleItemDef, pawn, true);
+                    return false;
+                }
+
+                return true;
+            }
 
             __result = true;
             return false;
