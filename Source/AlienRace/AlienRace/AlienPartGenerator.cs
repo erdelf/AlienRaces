@@ -54,7 +54,7 @@
                                 skinColor, skinColorSecond, data: null, shaderParameters: null, maskPath: maskPath);
             //GraphicDatabase.Get<Graphic_Multi>(path: GetNakedPath(bodyType: bodyType, userpath: userpath, gender: this.useGenderedBodies ? gender : ""), shader: shader, drawSize: Vector2.one, color: skinColor, colorTwo: skinColorSecond);
 
-        public static string GetNakedPath(BodyTypeDef bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + bodyType;
+        public static string GetNakedPath(BodyTypeDef bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + (bodyType == BodyTypeDefOf.Baby ? BodyTypeDefOf.Child : bodyType);
 
         public Color SkinColor(Pawn alien, bool first = true)
         {
