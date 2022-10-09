@@ -3077,19 +3077,21 @@ namespace AlienRace
                     }
 
                     Graphic addonGraphic = alienComp.addonGraphics[i];
+                    
 
-                    //todo: scale with lifestage
 
                     addonGraphic.drawSize = (isPortrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) *
                                             (ba.scaleWithPawnDrawsize ? 
                                                  ba.alignWithHead ? 
-                                                     isPortrait ? 
+                                                     (isPortrait ? 
                                                          alienComp.customPortraitHeadDrawSize : 
-                                                         alienComp.customHeadDrawSize :
-                                                     isPortrait ? 
+                                                         alienComp.customHeadDrawSize
+                                                        ) * (ModsConfig.BiotechActive ? pawn.ageTracker.CurLifeStage.headSizeFactor ?? MeshPool.HumanlikeHeadAverageWidth : 1.5f) :
+                                                     (isPortrait ? 
                                                          alienComp.customPortraitDrawSize : 
                                                          alienComp.customDrawSize
-                                                 : Vector2.one) * 1.5f;
+                                                        ) * (ModsConfig.BiotechActive ? pawn.ageTracker.CurLifeStage.bodySizeFactor : 1.5f)
+                                                 : Vector2.one * 1.5f);
 
                     Material mat = addonGraphic.MatAt(rotation);
                     if (!isPortrait && isInvisible)
