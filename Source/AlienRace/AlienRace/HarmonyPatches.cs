@@ -111,9 +111,8 @@ namespace AlienRace
             //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
             //            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver_Skygaze), name: nameof(JobDriver_Skygaze.Posture)).GetGetMethod(nonPublic: false), postfix:
             //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateRandomAge"), new HarmonyMethod(patchType, nameof(GenerateRandomAgePrefix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateTraits"), postfix: new HarmonyMethod(patchType, nameof(GenerateTraitsPostfix)),
-                          transpiler: new HarmonyMethod(patchType, nameof(GenerateTraitsTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateRandomAge"), new HarmonyMethod(patchType,             nameof(GenerateRandomAgePrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateTraits"),    postfix: new HarmonyMethod(patchType,    nameof(GenerateTraitsPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateTraitsFor"), transpiler: new HarmonyMethod(patchType, nameof(GenerateTraitsForTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(JobGiver_SatisfyChemicalNeed), name: "DrugValidator"), 
                           postfix:          new HarmonyMethod(patchType, nameof(DrugValidatorPostfix)));
@@ -1557,7 +1556,7 @@ namespace AlienRace
 
             foreach (CodeInstruction instruction in instructionList)
             {
-                //todo: fix additional traits
+                //todo: growth curve
                 /*
                 if (instruction.opcode == OpCodes.Stloc_1)
                 {
@@ -1573,7 +1572,7 @@ namespace AlienRace
         {
             if (pawn.def is not ThingDef_AlienRace alienProps) return count;
 
-            IntRange traitCount = alienProps.alienRace.generalSettings.traitCount;
+            IntRange traitCount = alienProps.alienRace.generalSettings.additionalTraits;
 
             if (traitCount.min != 2 || traitCount.max != 3)
                 count = traitCount.RandomInRange;
@@ -2942,16 +2941,27 @@ namespace AlienRace
             if (!request.AllowedDevelopmentalStages.Newborn() && request.CanGeneratePawnRelations)
                 CachedData.generatePawnsRelations(pawn, ref request);
 
-            if (pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
-                alienProps.alienRace.generalSettings.forcedRaceTraitEntries.ForEach(action: ate =>
+            if (pawn.def is ThingDef_AlienRace alienProps)
+            {
+                if (!alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
+                    alienProps.alienRace.generalSettings.forcedRaceTraitEntries.ForEach(action: ate =>
+                                                                                                {
+                                                                                                    if ((pawn.gender != Gender.Male ||
+                                                                                                         !(Math.Abs(ate.commonalityMale - -1f) < 0.001f) && !(Rand.Range(min: 0, max: 100) < ate.commonalityMale))                                  &&
+                                                                                                        (pawn.gender != Gender.Female || Math.Abs(ate.commonalityFemale - -1f) > 0.001f && !(Rand.Range(min: 0, max: 100) < ate.commonalityFemale)) &&
+                                                                                                        pawn.gender != Gender.None) return;
+                                                                                                    if (!pawn.story.traits.allTraits.Any(predicate: tr => tr.def == ate.defName))
+                                                                                                        pawn.story.traits.GainTrait(new Trait(ate.defName, ate.degree, forced: true));
+                                                                                                });
+
+                int         traits            = alienProps.alienRace.generalSettings.additionalTraits.RandomInRange;
+                if (traits > 0)
                 {
-                    if ((pawn.gender != Gender.Male ||
-                         !(Math.Abs(ate.commonalityMale - -1f) < 0.001f) && !(Rand.Range(min: 0, max: 100) < ate.commonalityMale))                           &&
-                        (pawn.gender != Gender.Female || Math.Abs(ate.commonalityFemale - -1f) > 0.001f && !(Rand.Range(min: 0, max: 100) < ate.commonalityFemale)) &&
-                        pawn.gender != Gender.None) return;
-                    if (!pawn.story.traits.allTraits.Any(predicate: tr => tr.def == ate.defName))
-                        pawn.story.traits.GainTrait(new Trait(ate.defName, ate.degree, forced: true));
-                });
+                    List<Trait> traitList = PawnGenerator.GenerateTraitsFor(pawn, traits, request);
+                    foreach (Trait trait in traitList)
+                        pawn.story.traits.GainTrait(trait);
+                }
+            }
         }
 
         public static void SkinColorPostfix(Pawn ___pawn, ref Color __result)
