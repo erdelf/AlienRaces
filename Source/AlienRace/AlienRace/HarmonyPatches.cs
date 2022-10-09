@@ -3021,7 +3021,7 @@ namespace AlienRace
                 {
                     yield return new CodeInstruction(OpCodes.Dup); // renderFlags
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
-                    yield return new CodeInstruction(OpCodes.Ldloc_S, 6); //b (aka headoffset)
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, 8); //b (aka headoffset)
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
                     yield return new CodeInstruction(OpCodes.Ldloc_0);             // quat
@@ -3077,7 +3077,7 @@ namespace AlienRace
 
                     Graphic addonGraphic = alienComp.addonGraphics[i];
                     
-
+                    
 
                     addonGraphic.drawSize = (isPortrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) *
                                             (ba.scaleWithPawnDrawsize ? 
@@ -3096,7 +3096,13 @@ namespace AlienRace
                     if (!isPortrait && isInvisible)
                         mat = InvisibilityMatPool.GetInvisibleMat(mat);
 
-                    DrawAddonsFinalHook(pawn, ba, ref addonGraphic, ref offsetVector, ref num, ref mat);
+                    DrawAddonsFinalHook(pawn, ba, rotation, ref addonGraphic, ref offsetVector, ref num, ref mat);
+
+                    if (ba.alignWithHead)
+                    {
+                        Log.Message($"{pawn.NameShortColored}: {ba.path} | {headOffset}");
+                        Log.ResetMessageCount();
+                    }
 
                     //                                                                                   Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
                     GenDraw.DrawMeshNowOrLater(
@@ -3108,7 +3114,7 @@ namespace AlienRace
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void DrawAddonsFinalHook(Pawn pawn, AlienPartGenerator.BodyAddon addon, ref Graphic graphic, ref Vector3 offsetVector, ref float angle, ref Material mat)
+        public static void DrawAddonsFinalHook(Pawn pawn, AlienPartGenerator.BodyAddon addon, Rot4 rot, ref Graphic graphic, ref Vector3 offsetVector, ref float angle, ref Material mat)
         {
 
         }
