@@ -709,7 +709,7 @@ namespace AlienRace
 
             if (FoodUtility.IsHumanlikeCorpseOrHumanlikeMeatOrIngredient(__instance))
             {
-                bool alienMeat = (__instance.def.IsCorpse     && Utilities.DifferentRace(ingester.def, (__instance as Corpse).InnerPawn.def)) ||
+                bool alienMeat = (__instance.def.IsCorpse     && Utilities.DifferentRace(ingester.def, (__instance as Corpse)!.InnerPawn.def)) ||
                                  (__instance.def.IsIngestible && __instance.def.IsMeat && Utilities.DifferentRace(ingester.def, __instance.def.ingestible.sourceDef));
 
                 CompIngredients compIngredients = __instance.TryGetComp<CompIngredients>();
@@ -884,7 +884,7 @@ namespace AlienRace
                 cameraZoom = 1f / ((pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.borderScale ?? 1f);
         }
 
-        public static Pawn createPawnAtlasPawn = null;
+        public static Pawn createPawnAtlasPawn;
 
         public static void GlobalTextureAtlasGetFrameSetPrefix(Pawn pawn) => 
             createPawnAtlasPawn = pawn;
@@ -985,7 +985,7 @@ namespace AlienRace
                     if (anchor == anchorReplacement.replacement && anchorReplacement.offsets != null)
                     {
                         AlienPartGenerator.AlienComp alienComp = ___pawn.GetComp<AlienPartGenerator.AlienComp>();
-                        anchorOffset = anchorReplacement.offsets.GetOffset(anchor.rotation.Value).GetOffset(false, ___pawn.story.bodyType, alienComp.crownType);
+                        anchorOffset = anchorReplacement.offsets.GetOffset(anchor.rotation!.Value).GetOffset(false, ___pawn.story.bodyType, alienComp.crownType);
                         return;
                     }
                 }
@@ -2918,7 +2918,7 @@ namespace AlienRace
                     for (int i = 0; i < apg.bodyAddons.Count; i++)
                     {
                         Graphic g = apg.bodyAddons[i].GetPath(alien, ref sharedIndex,
-                                                              alienComp.addonVariants.Count > i ? (int?) alienComp.addonVariants[i] : null);
+                                                              alienComp.addonVariants.Count > i ? alienComp.addonVariants[i] : null);
                         alienComp.addonGraphics.Add(g);
                         if (alienComp.addonVariants.Count <= i)
                             alienComp.addonVariants.Add(sharedIndex);
@@ -3016,7 +3016,6 @@ namespace AlienRace
 
         public static IEnumerable<CodeInstruction> RenderPawnInternalTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            FieldInfo  humanlikeHeadInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeHeadSet));
             MethodInfo drawHeadHairInfo      = AccessTools.Method(typeof(PawnRenderer), "DrawHeadHair");
             MethodInfo flagSetInfo       = AccessTools.Method(typeof(PawnRenderFlagsExtension), nameof(PawnRenderFlagsExtension.FlagSet));
 
