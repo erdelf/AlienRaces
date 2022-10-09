@@ -220,10 +220,24 @@
 
     public class StyleSettings
     {
-        public bool          hasStyle = true;
+        public bool          hasStyle      = true;
+        public bool          genderRespected = true;
         public List<string>  styleTags;
         public List<string>  styleTagsOverride;
+        public List<string>  bannedTags;
         public ShaderTypeDef shader;
+
+        public bool IsValidStyle(StyleItemDef styleItemDef, Pawn pawn) =>
+            !this.hasStyle ? 
+                styleItemDef.styleTags.Contains("alienNoStyle") :
+
+                (this.styleTags.NullOrEmpty()  || this.styleTags.Any(s => styleItemDef.styleTags.Contains(s)))   &&
+                (this.bannedTags.NullOrEmpty() || !this.bannedTags.Any(s => styleItemDef.styleTags.Contains(s))) &&
+                (!this.genderRespected                                                                               ||
+                 pawn.gender == Gender.None                                                                          ||
+                 styleItemDef.styleGender is StyleGender.Any or StyleGender.MaleUsually or StyleGender.FemaleUsually ||
+                 styleItemDef.styleGender == StyleGender.Male   && pawn.gender == Gender.Male                        ||
+                 styleItemDef.styleGender == StyleGender.Female && pawn.gender == Gender.Female);
     }
 
     public class ThoughtSettings
@@ -258,7 +272,7 @@
 
         public static bool CanGetThought(ThoughtDef def, Pawn pawn)
         {
-            bool result = !(ThoughtSettings.thoughtRestrictionDict.TryGetValue(def, out List<ThingDef_AlienRace> races));
+            bool result = !(thoughtRestrictionDict.TryGetValue(def, out List<ThingDef_AlienRace> races));
 
             return pawn.def is not ThingDef_AlienRace alienProps ? 
                        result : 

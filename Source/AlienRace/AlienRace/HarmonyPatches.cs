@@ -838,35 +838,17 @@ namespace AlienRace
 
         public static bool WantsToUseStylePrefix(Pawn pawn, StyleItemDef styleItemDef, ref bool __result)
         {
-            if (pawn.def is ThingDef_AlienRace alienProps && styleItemDef != null)
-            {
-                StyleSettings styleSettings = alienProps.alienRace.styleSettings[styleItemDef.GetType()];
-                List<string>  styleTags     = styleSettings.hasStyle ? styleSettings.styleTagsOverride : new List<string> { "alienNoStyle" };
-                if (styleTags.NullOrEmpty())
-                    return true;
-                
-                __result = styleItemDef.styleTags.Any(s => styleTags.Contains(s)) && 
-                           (styleItemDef.styleGender is StyleGender.Any or StyleGender.MaleUsually or StyleGender.FemaleUsually ||
-                            (styleItemDef.styleGender == StyleGender.Male   && pawn.gender == Gender.Male)                      ||
-                            (styleItemDef.styleGender == StyleGender.Female && pawn.gender == Gender.Female));
+            if (pawn.def is not ThingDef_AlienRace alienProps || styleItemDef == null || alienProps.alienRace.styleSettings[styleItemDef.GetType()].hasStyle)
+                return true;
 
-                return false;
-            }
-            return true;
+            __result = true;
+            return false;
         }
 
         public static void WantsToUseStylePostfix(Pawn pawn, StyleItemDef styleItemDef, ref bool __result)
         {
             if (__result && pawn.def is ThingDef_AlienRace alienProps && styleItemDef != null)
-            {
-                StyleSettings styleSettings = alienProps.alienRace.styleSettings[styleItemDef.GetType()];
-                List<string>  styleTags     = styleSettings.hasStyle ? styleSettings.styleTags : new List<string> {"alienNoStyle"};
-
-                __result = (styleTags.NullOrEmpty() || styleTags.Any(s => styleItemDef.styleTags.Contains(s))) &&
-                           (styleItemDef.styleGender is StyleGender.Any or StyleGender.MaleUsually or StyleGender.FemaleUsually ||
-                            (styleItemDef.styleGender == StyleGender.Male   && pawn.gender == Gender.Male)                      ||
-                            (styleItemDef.styleGender == StyleGender.Female && pawn.gender == Gender.Female));
-            }
+                __result = alienProps.alienRace.styleSettings[styleItemDef.GetType()].IsValidStyle(styleItemDef, pawn);
         }
 
         public static void CacheRenderPawnPrefix(Pawn pawn, ref float cameraZoom, bool portrait)
