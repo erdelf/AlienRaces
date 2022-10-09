@@ -221,19 +221,21 @@
 
     public class StyleSettings
     {
-        public bool          hasStyle      = true;
+        public bool          hasStyle        = true;
         public bool          genderRespected = true;
         public List<string>  styleTags;
         public List<string>  styleTagsOverride;
         public List<string>  bannedTags;
         public ShaderTypeDef shader;
 
-        public bool IsValidStyle(StyleItemDef styleItemDef, Pawn pawn) =>
-            !this.hasStyle ? 
+        public bool IsValidStyle(StyleItemDef styleItemDef, Pawn pawn, bool useOverrides = false) =>
+            !this.hasStyle ?
                 styleItemDef.styleTags.Contains("alienNoStyle") :
 
-                (this.styleTags.NullOrEmpty()  || this.styleTags.Any(s => styleItemDef.styleTags.Contains(s)))   &&
-                (this.bannedTags.NullOrEmpty() || !this.bannedTags.Any(s => styleItemDef.styleTags.Contains(s))) &&
+                (useOverrides ?
+                     this.styleTagsOverride.NullOrEmpty() || this.styleTagsOverride.Any(s => styleItemDef.styleTags.Contains(s)) :
+                     this.styleTags.NullOrEmpty()         || this.styleTags.Any(s => styleItemDef.styleTags.Contains(s))) &&
+                (this.bannedTags.NullOrEmpty() || !this.bannedTags.Any(s => styleItemDef.styleTags.Contains(s)))          &&
                 (!this.genderRespected                                                                               ||
                  pawn.gender == Gender.None                                                                          ||
                  styleItemDef.styleGender is StyleGender.Any or StyleGender.MaleUsually or StyleGender.FemaleUsually ||
