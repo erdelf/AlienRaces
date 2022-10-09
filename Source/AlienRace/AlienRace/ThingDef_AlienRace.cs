@@ -114,6 +114,7 @@
         public List<AlienTraitEntry>  disallowedTraits;
         public IntRange               traitCount         = new IntRange(2, 3);
         public AlienPartGenerator     alienPartGenerator = new AlienPartGenerator();
+        public List<SkillGain>        passions           = new List<SkillGain>();
 
         public List<FactionRelationSettings> factionRelations;
         public int maxDamageForSocialfight = int.MaxValue;

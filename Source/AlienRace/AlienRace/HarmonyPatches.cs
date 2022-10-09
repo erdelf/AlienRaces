@@ -265,7 +265,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBeardSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
-            
+
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateSkills"), postfix: new HarmonyMethod(patchType, nameof(GenerateSkillsPostfix)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -412,6 +414,21 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
             
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static void GenerateSkillsPostfix(Pawn pawn)
+        {
+            foreach (BackstoryDef backstory in pawn.story.AllBackstories)
+                if (backstory is AlienBackstoryDef alienBackstory)
+                {
+                    IEnumerable<SkillGain> passions = alienBackstory.passions;
+
+                    if (pawn.def is ThingDef_AlienRace alienProps)
+                        passions = passions.Concat(alienProps.alienRace.generalSettings.passions);
+
+                    foreach (SkillGain passion in passions)
+                        pawn.skills.GetSkill(passion.skill).passion = (Passion)passion.xp;
+                }
         }
 
         public static IEnumerable<CodeInstruction> GetHumanlikeHairSetForPawnTranspiler(IEnumerable<CodeInstruction> instructions)
