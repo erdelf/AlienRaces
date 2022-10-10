@@ -208,6 +208,22 @@
         }
     }
 
+        public int BodyMaskCount
+        {
+            get
+            {
+                if (this.bodyMaskCount >= 0 || this.bodyMasks.NullOrEmpty())
+                    return this.bodyMaskCount;
+
+                this.bodyMaskCount = 0;
+                while (ContentFinder<Texture2D>.Get($"{this.bodyMasks}{(this.bodyMaskCount == 0 ? string.Empty : this.bodyMaskCount.ToString())}_north", reportFailure: false) != null)
+                    this.bodyMaskCount++;
+
+                return this.bodyMaskCount;
+            }
+        }
+    }
+
     public class DirectionOffset
     {
         public Vector2 north = Vector2.zero;

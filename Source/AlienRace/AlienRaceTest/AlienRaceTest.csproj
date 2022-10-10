@@ -63,12 +63,6 @@
     <Compile Include="TestSupport\UnityLogHandler.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AlienRace\AlienRace.csproj">
-      <Project>{e7afa757-436c-40a3-aafd-66351aa01536}</Project>
-      <Name>AlienRace</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>
