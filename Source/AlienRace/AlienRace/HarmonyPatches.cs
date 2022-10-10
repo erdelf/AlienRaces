@@ -3038,7 +3038,7 @@ namespace AlienRace
                 if (i > 6 && instructionList[i - 2].OperandIs(drawHeadHairInfo) && instructionList[i+1].OperandIs(flagSetInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Dup); // renderFlags
-                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldloc_1); //vector
                     yield return new CodeInstruction(OpCodes.Ldloc_S, 8); //b (aka headoffset)
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderer), name: "pawn"));
