@@ -66,7 +66,7 @@
             return first ? skinColors.first : skinColors.second;
         }
 
-        private void GenerateMeshSets()
+        private void GenerateOffsetDefaults()
         {
             this.offsetDefaults.Add(new OffsetNamed
                                     {
@@ -129,7 +129,6 @@
         
         public void GenerateMeshsAndMeshPools(IGraphicsLoader graphicsLoader)
         {
-            this.GenerateMeshSets();
             this.GenerateOffsetDefaults();
             graphicsLoader.LoadAllGraphics(this.alienProps.defName, this.offsetDefaults, this.bodyAddons);
         }
@@ -367,6 +366,7 @@
             }
 
             [DebugAction(category: "AlienRace", name: "Regenerate all colorchannels", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+            // ReSharper disable once UnusedMember.Local
             private static void RegenerateColorchannels()
             {
                 foreach (Pawn pawn in Find.CurrentMap.mapPawns.AllPawns)
@@ -378,24 +378,25 @@
             }
         }
 
-        public class ExposableValueTuple<K, V> : IExposable, IEquatable<ExposableValueTuple<K,V>>
+        public class ExposableValueTuple<TK, TV> : IExposable, IEquatable<ExposableValueTuple<TK,TV>>
         {
-            public K first;
-            public V second;
+            public TK first;
+            public TV second;
 
             public ExposableValueTuple()
             {
             }
 
-            public ExposableValueTuple(K first, V second)
+            public ExposableValueTuple(TK first, TV second)
             {
                 this.first = first;
                 this.second = second;
             }
 
-            public bool Equals(ExposableValueTuple<K, V> other) => 
+            public bool Equals(ExposableValueTuple<TK, TV> other) => 
                 other != null && this.first.Equals(other.first) && this.second.Equals(other.second);
 
+            // ReSharper disable twice NonReadonlyMemberInGetHashCode
             public override int GetHashCode() => this.first.GetHashCode() + this.second.GetHashCode();
 
             public void ExposeData()

@@ -80,7 +80,7 @@
             AlienPartGenerator.BodyAddonBackstoryGraphic backstory =
                 new AlienPartGenerator.BodyAddonBackstoryGraphic
                 {
-                    backstory = "specificBackstory",
+                    backstory = new BackstoryDef() { defName = "specificBackstory", identifier = "specificBackstory" },
                     path      = "/backstoryGraphics/specificBackstory",
                     ageGraphics = new List<AlienPartGenerator.BodyAddonAgeGraphic>
                                   {
@@ -192,9 +192,7 @@
         {
             AlienPartGenerator.BodyAddon addonUnderTest  = this.GetTestBodyAddon();
             Mock<BodyAddonPawnWrapper>   mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
-            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object))
-                        .Returns(true);
-            mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(true);
+            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
@@ -210,9 +208,7 @@
         {
             AlienPartGenerator.BodyAddon addonUnderTest  = this.GetTestBodyAddon();
             Mock<BodyAddonPawnWrapper>   mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
-            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object))
-                        .Returns(true);
-            mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(true);
+            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(false);
 
@@ -228,9 +224,7 @@
         {
             AlienPartGenerator.BodyAddon addonUnderTest  = this.GetTestBodyAddon();
             Mock<BodyAddonPawnWrapper>   mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
-            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockHumanlikeAdultLifestageDef.Object))
-                        .Returns(true);
-            mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(false);
+            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockHumanlikeAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockBurnHediff.Object, "nose")).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockCutHediff.Object,  "nose")).Returns(false);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
@@ -247,9 +241,7 @@
         {
             AlienPartGenerator.BodyAddon addonUnderTest  = this.GetTestBodyAddon();
             Mock<BodyAddonPawnWrapper>   mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
-            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockHumanlikeAdultLifestageDef.Object))
-                        .Returns(true);
-            mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(false);
+            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockHumanlikeAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockBurnHediff.Object, "nose")).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockCutHediff.Object,  "nose")).Returns(false);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
@@ -269,7 +261,6 @@
             Mock<BodyAddonPawnWrapper> mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
             mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockHumanlikeAdultLifestageDef.Object))
                         .Returns(true);
-            mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockBurnHediff.Object, "nose")).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockCutHediff.Object,  "nose")).Returns(false);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
@@ -290,7 +281,6 @@
             Mock<BodyAddonPawnWrapper> mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
             mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object))
                         .Returns(true);
-            mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(true);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
@@ -311,7 +301,6 @@
             Mock<BodyAddonPawnWrapper> mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
             mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object))
                         .Returns(true);
-            mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(true);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
@@ -338,9 +327,7 @@
                     }
                 };
             Mock<BodyAddonPawnWrapper> mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
-            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object))
-                        .Returns(true);
-            mockPawnWrapper.Setup(p => p.HasBackStoryWithIdentifier("specificBackstory")).Returns(true);
+            mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(true);
 

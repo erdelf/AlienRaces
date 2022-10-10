@@ -19,9 +19,8 @@ public class BodyAddonPawnWrapper
     }
 
     //backstory isApplicable
-    public virtual bool HasBackStoryWithIdentifier(string backstoryId) =>
-        this.GetBackstories()
-         .Any(bs => bs.identifier == backstoryId); //matches pawn backstory with input
+    public virtual bool HasBackStory(BackstoryDef backstory) =>
+        this.GetBackstories().Contains(backstory); //matches pawn backstory with input
 
     private static bool
         IsHediffOfDefAndPart(Hediff hediff, HediffDef hediffDef,
@@ -47,26 +46,21 @@ public class BodyAddonPawnWrapper
         this.WrappedPawn.ageTracker?.CurLifeStage?.Equals(lifeStageDef) ?? false;
 
     //damage isApplicable
-    public virtual bool IsPartBelowHealthThreshold(string part, float healthThreshold)
-    {
+    public virtual bool IsPartBelowHealthThreshold(string part, float healthThreshold) =>
         // look for part where a given hediff has a part matching defined part
-        return this.GetHediffList()
-                .Select(hediff => hediff.Part)
-                .Where(hediffPart => hediffPart != null)
-                .Where(hediffPart => hediffPart.untranslatedCustomLabel == part || hediffPart.def?.defName == part)
-                    //check if part health is less than health texture limit, needs to config ascending
-                .Any(p => healthThreshold >= this.GetHediffSet().GetPartHealth(p));
-    }
+        this.GetHediffList()
+         .Select(hediff => hediff.Part)
+         .Where(hediffPart => hediffPart != null)
+         .Where(hediffPart => hediffPart.untranslatedCustomLabel == part || hediffPart.def?.defName == part)
+             //check if part health is less than health texture limit, needs to config ascending
+         .Any(p => healthThreshold >= this.GetHediffSet().GetPartHealth(p));
 
     //trait isApplicable
     public virtual bool HasTraitWithIdentifier(string traitId)
     {
         string capitalisedTrait = traitId.CapitalizeFirst();
-        return this.GetTraitList()
-                .Select(t => t.CurrentData)
-                .Any(t => capitalisedTrait == t.LabelCap ||
-                          capitalisedTrait == t.GetLabelCapFor(this.WrappedPawn) ||
-                          capitalisedTrait == t.untranslatedLabel);
+        return this.GetTraitList().Select(t => t.CurrentData).Any(t => 
+                    capitalisedTrait == t.LabelCap || capitalisedTrait == t.GetLabelCapFor(this.WrappedPawn) || capitalisedTrait == t.untranslatedLabel);
     }
 
     public virtual bool HasApparelGraphics() =>
@@ -77,8 +71,8 @@ public class BodyAddonPawnWrapper
 
     public virtual bool VisibleInBed() => this.WrappedPawn.CurrentBed()?.def?.building?.bed_showSleeperBody ?? true;
 
-    public virtual bool HasBackstory(string backstoryId) =>
-        this.WrappedPawn.story?.AllBackstories?.Any(b => b.identifier == backstoryId) ?? false;
+    public virtual bool HasBackstory(BackstoryDef backstory) =>
+        this.WrappedPawn.story?.AllBackstories?.Contains(backstory) ?? false;
 
     public virtual bool HasNamedBodyPart(string part) =>
         this.GetHediffSet().GetNotMissingParts()
@@ -88,11 +82,11 @@ public class BodyAddonPawnWrapper
 
     public virtual PawnPosture GetPosture() => this.WrappedPawn.GetPosture();
 
-    public virtual bool HasBodyTypeNamed(string bodyType) =>
-        this.WrappedPawn.story?.bodyType?.ToString().EqualsIgnoreCase(bodyType) ?? false;
+    public virtual bool HasBodyType(BodyTypeDef bodyType) =>
+        this.WrappedPawn.story.bodyType == bodyType;
 
-    public virtual bool HasCrownTypeNamed(string CrownType) =>
-        this.WrappedPawn.GetComp<AlienPartGenerator.AlienComp>()?.crownType.EqualsIgnoreCase(CrownType) ?? false;
+    public virtual bool HasCrownTypeNamed(string crownType) =>
+        this.WrappedPawn.GetComp<AlienPartGenerator.AlienComp>()?.crownType.EqualsIgnoreCase(crownType) ?? false;
 
     public virtual RotStage? GetRotStage() => this.WrappedPawn.Corpse?.GetRotStage();
 
@@ -105,8 +99,8 @@ public class BodyAddonPawnWrapper
      */
     public virtual HediffSet GetHediffSet() => this.WrappedPawn.health?.hediffSet ?? new HediffSet(this.WrappedPawn);
 
-    public virtual IEnumerable<Backstory> GetBackstories() =>
-        this.WrappedPawn.story?.AllBackstories ?? Enumerable.Empty<Backstory>();
+    public virtual IEnumerable<BackstoryDef> GetBackstories() =>
+        this.WrappedPawn.story?.AllBackstories ?? Enumerable.Empty<BackstoryDef>();
 
     public virtual TraitSet GetTraits() => this.WrappedPawn.story?.traits ?? new TraitSet(this.WrappedPawn);
 }

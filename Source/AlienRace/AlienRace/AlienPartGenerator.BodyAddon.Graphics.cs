@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using BodyAddonSupport;
-using HarmonyLib;
 using JetBrains.Annotations;
 using RimWorld;
 using UnityEngine;
@@ -128,19 +127,18 @@ public partial class AlienPartGenerator
     //Backstory Graphics
     public class BodyAddonBackstoryGraphic : AbstractBodyAddonGraphic
     {
-        public string backstory;
+        public BackstoryDef backstory;
 
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            this.backstory = xmlRoot.Name;
-
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.backstory), xmlRoot.Name);
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
 
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
-            pawn.HasBackStoryWithIdentifier(this.backstory);
+            pawn.HasBackStory(this.backstory);
     }
 
     //Gender Graphics
@@ -186,34 +184,34 @@ public partial class AlienPartGenerator
     //Bodytype Graphics
     public class BodyAddonBodytypeGraphic : AbstractBodyAddonGraphic
     {
-        public string bodytype;
+        public BodyTypeDef bodytype;
 
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            this.bodytype = xmlRoot.Name;
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.bodytype), xmlRoot.Name);
 
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
-            pawn.HasBodyTypeNamed(this.bodytype);
+            pawn.HasBodyType(this.bodytype);
     }
 
     //Crowntype Graphics
     public class BodyAddonCrowntypeGraphic : AbstractBodyAddonGraphic
     {
-        public string Crowntype;
+        public string crowntype;
 
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            this.Crowntype = xmlRoot.Name;
+            this.crowntype = xmlRoot.Name;
 
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
-            pawn.HasCrownTypeNamed(this.Crowntype);
+            pawn.HasCrownTypeNamed(this.crowntype);
     }
 }

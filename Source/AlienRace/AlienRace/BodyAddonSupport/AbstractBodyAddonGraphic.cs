@@ -13,10 +13,11 @@ public abstract class AbstractBodyAddonGraphic : IBodyAddonGraphic
     public int variantCount;
     
     // Not unused, users can define their own order in XML which takes priority.
+    
     #pragma warning disable CS0649
     private List<AlienPartGenerator.BodyAddonPrioritization>   prioritization;
     #pragma warning restore CS0649
-    
+
     public  List<AlienPartGenerator.BodyAddonHediffGraphic>    hediffGraphics;
     public  List<AlienPartGenerator.BodyAddonBackstoryGraphic> backstoryGraphics;
     public  List<AlienPartGenerator.BodyAddonAgeGraphic>       ageGraphics;
@@ -37,25 +38,18 @@ public abstract class AbstractBodyAddonGraphic : IBodyAddonGraphic
 
     public abstract bool IsApplicable(BodyAddonPawnWrapper pawn, string part);
 
-    private static IEnumerable<AlienPartGenerator.BodyAddonPrioritization> GetPrioritiesByDeclarationOrder() => Enum
-                                                                                                            .GetValues(typeof(AlienPartGenerator.BodyAddonPrioritization))
-                                                                                                            .Cast<AlienPartGenerator.BodyAddonPrioritization>();
+    private static IEnumerable<AlienPartGenerator.BodyAddonPrioritization> GetPrioritiesByDeclarationOrder() => 
+        Enum.GetValues(typeof(AlienPartGenerator.BodyAddonPrioritization)).Cast<AlienPartGenerator.BodyAddonPrioritization>();
 
-    public virtual IEnumerator<IBodyAddonGraphic> GetSubGraphics(
-        BodyAddonPawnWrapper pawn, string part) =>
+    public virtual IEnumerator<IBodyAddonGraphic> GetSubGraphics(BodyAddonPawnWrapper pawn, string part) =>
         this.GetSubGraphics();
 
     /**
      * Get an enumerator of all the sub-graphics, unrestricted in any way.
      * Used to aid initialisation in the AlienPartGenerator
      */
-    public virtual IEnumerator<IBodyAddonGraphic> GetSubGraphics()
-    {
-        foreach (AlienPartGenerator.BodyAddonPrioritization priority in this.Prioritization)
-        {
-            foreach (IBodyAddonGraphic graphic in this.GetSubGraphicsOfPriority(priority)) yield return graphic;
-        }
-    }
+    public virtual IEnumerator<IBodyAddonGraphic> GetSubGraphics() => 
+        this.Prioritization.SelectMany(this.GetSubGraphicsOfPriority).GetEnumerator();
 
     public virtual IEnumerable<IBodyAddonGraphic> GetSubGraphicsOfPriority(AlienPartGenerator.BodyAddonPrioritization priority) => priority switch
     {
@@ -82,15 +76,16 @@ public abstract class AbstractBodyAddonGraphic : IBodyAddonGraphic
 
         // If the path has not been set just use the value contained by the root node
         // This caters for nodes containing _only_ a path i.e. <someNode>a/path/here</someNode> 
-        if (this.path.NullOrEmpty()) this.path = xmlRootNode.FirstChild.Value?.Trim();
+        if (this.path.NullOrEmpty()) 
+            this.path = xmlRootNode.FirstChild.Value?.Trim();
     }
     
     protected virtual void SetFieldFromXmlNode(Traverse field, XmlNode xmlNode)
     {
-        if (!field.FieldExists()) return;
-        Type type = field.GetValueType();
-        field.SetValue(field.GetValueType().IsGenericType
-                           ? DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlNode, false)
-                           : ParseHelper.FromString(xmlNode.InnerXml.Trim(), type));
+        if (!field.FieldExists()) 
+            return;
+        field.SetValue(field.GetValueType().IsGenericType ? 
+                           DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlNode, false) : 
+                           ParseHelper.FromString(xmlNode.InnerXml.Trim(), field.GetValueType()));
     }
 }
