@@ -46,7 +46,7 @@ public abstract class AbstractBodyAddonGraphic : IBodyAddonGraphic
 
     /**
      * Get an enumerator of all the sub-graphics, unrestricted in any way.
-     * Used to aid initialisation in the AlienPartGenerator
+     * Used to aid initialization in the AlienPartGenerator
      */
     public virtual IEnumerator<IBodyAddonGraphic> GetSubGraphics() => 
         this.Prioritization.SelectMany(this.GetSubGraphicsOfPriority).GetEnumerator();
