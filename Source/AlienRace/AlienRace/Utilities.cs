@@ -6,9 +6,11 @@
     using HarmonyLib;
     using JetBrains.Annotations;
     using RimWorld;
+    using RimWorld.Planet;
     using UnityEngine;
     using Verse;
     using Verse.AI;
+    using Verse.AI.Group;
 
     [DefOf]
     public static class AlienDefOf
@@ -39,12 +41,10 @@
 
     public static class Utilities
     {
-        public static bool DifferentRace(ThingDef one, ThingDef two)
-        {
-            return one != two && one != null && two != null && one.race.Humanlike && two.race.Humanlike && 
-                   !(one is ThingDef_AlienRace oneAr && oneAr.alienRace.generalSettings.notXenophobistTowards.Contains(two)) &&
-                   !(two is ThingDef_AlienRace twoAr && twoAr.alienRace.generalSettings.immuneToXenophobia);
-        }
+        public static bool DifferentRace(ThingDef one, ThingDef two) =>
+            one != two                                                                                                && one != null && two != null && one.race.Humanlike && two.race.Humanlike &&
+            !(one is ThingDef_AlienRace oneAr && oneAr.alienRace.generalSettings.notXenophobistTowards.Contains(two)) &&
+            !(two is ThingDef_AlienRace twoAr && twoAr.alienRace.generalSettings.immuneToXenophobia);
     }
 
     [UsedImplicitly]
