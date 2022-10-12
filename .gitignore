@@ -53,3 +53,16 @@ Temporary Items
 *.pfx
 *.DotSettings
 **/packages/*
+*.iml
+.idea/codeStyles/codeStyleConfig.xml
+.idea/codeStyles/Project.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/runConfigurations.xml
+.idea/vcs.xml
+
+# NUnit Output
+InternalTrace.*.log
+nunit-agent_*.log
+testOutput/
+TestResult.xml
