@@ -60,12 +60,12 @@ namespace AlienRace
                 !pawn.HasApparelGraphics()                                                             ||
                 (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
                 !pawn.GetWornApparel().Any(ap => 
-                    !ap.hatRenderedFrontOfFace && ap.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
+                    !ap.hatRenderedFrontOfFace && ap.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
+                    ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
 
             private bool VisibleForPostureOf(BodyAddonPawnWrapper pawn) =>
                 (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) &&
                 (pawn.VisibleInBed()                       || this.drawnInBed);
-
 
             private bool VisibleForBackstoryOf(BodyAddonPawnWrapper pawn) => this.backstoryRequirement == null ||
                                                                              pawn.HasBackstory(this.backstoryRequirement);
@@ -76,12 +76,14 @@ namespace AlienRace
             private bool RequiredBodyPartExistsFor(BodyAddonPawnWrapper pawn) =>
                 this.bodyPart.NullOrEmpty()          ||
                 pawn.HasNamedBodyPart(this.bodyPart) ||
-                (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false);//any missing part textures need to be done on the first branch level
+                (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false);
+                //any missing part textures need to be done on the first branch level
 
             private bool VisibleForGenderOf(BodyAddonPawnWrapper pawn) =>
                 pawn.GetGender() == Gender.Female ? this.drawForFemale : this.drawForMale;
 
-            private bool VisibleForBodyTypeOf(BodyAddonPawnWrapper pawn) => this.bodyTypeRequirement == null || pawn.HasBodyType(this.bodyTypeRequirement);
+            private bool VisibleForBodyTypeOf(BodyAddonPawnWrapper pawn) => 
+                this.bodyTypeRequirement == null || pawn.HasBodyType(this.bodyTypeRequirement);
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 this.CanDrawAddon(new BodyAddonPawnWrapper(pawn));
@@ -143,17 +145,20 @@ namespace AlienRace
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
 
                 return !returnPath.NullOrEmpty() ?
-                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath += (tv = savedIndex.HasValue ?
-                                                                                                       sharedIndex = savedIndex.Value % variantCounting :
-                                                                                                       this.linkVariantIndexWithPrevious ? sharedIndex % variantCounting : sharedIndex = Rand.Range(min: 0, variantCounting)) == 0 ?
-                                                                                                 "" :
-                                                                                                 tv.ToString(),
-                                                                               ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ?
-                                                                                   this.ShaderType.Shader :
-                                                                                   ShaderDatabase.CutoutComplex, this.drawSize * 1.5f, channel.first, channel.second, new GraphicData
-                                                                                                                                                                      {
-                                                                                                                                                                          drawRotated = !this.drawRotated
-                                                                                                                                                                      }) :
+                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(
+                               returnPath += (tv = savedIndex.HasValue ?
+                                                       sharedIndex = savedIndex.Value % variantCounting :
+                                                       this.linkVariantIndexWithPrevious ? 
+                                                           sharedIndex % variantCounting : 
+                                                           sharedIndex = Rand.Range(min: 0, variantCounting)) == 0 ?
+                                                            "" :
+                                                            tv.ToString(),
+                               ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ?
+                                   this.ShaderType.Shader :
+                                   ShaderDatabase.CutoutComplex, this.drawSize * 1.5f, channel.first, channel.second, new GraphicData
+                                                                                                                      {
+                                                                                                                          drawRotated = !this.drawRotated
+                                                                                                                      }) :
                            null;
             }
 
