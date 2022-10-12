@@ -32,15 +32,16 @@
     public class AlienRaceSettings : ModSettings
     {
         public bool centralMelanin;
-
         public override void ExposeData()
         {
             base.ExposeData();
             Scribe_Values.Look(ref this.centralMelanin, label: "centralMelanin", defaultValue: false);
         }
 
-        public void UpdateSettings() =>
-            ((ThingDef_AlienRace)ThingDefOf.Human).alienRace.generalSettings.alienPartGenerator.colorChannels.Find(match: ccg => ccg.name == "skin").first = 
-            new ColorGenerator_SkinColorMelanin { maxMelanin = 1f, minMelanin = 0f, naturalMelanin = this.centralMelanin};
+        public void UpdateSettings()
+        {
+            ((ThingDef_AlienRace)ThingDefOf.Human).alienRace.generalSettings.alienPartGenerator.colorChannels.Find(match: ccg => ccg.name == "skin").first =
+            new ColorGenerator_SkinColorMelanin { maxMelanin = 1f, minMelanin = 0f, naturalMelanin = this.centralMelanin };
+        }
     }
 }

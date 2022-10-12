@@ -7,10 +7,10 @@
 
     public class Scribe_NestedCollections
     {
-        public static void Look<K, V>(ref Dictionary<K, HashSet<V>> dict, string label, LookMode keyLookMode, LookMode valueLookMode, bool forceSave = false)
+        public static void Look<TK, TV>(ref Dictionary<TK, HashSet<TV>> dict, string label, LookMode keyLookMode, LookMode valueLookMode, bool forceSave = false)
         {
-            List<K>          keysWorkingList   = null;
-            List<HashSet<V>> valuesWorkingList = null;
+            List<TK>          keysWorkingList   = null;
+            List<HashSet<TV>> valuesWorkingList = null;
             if (Scribe.EnterNode(label))
                 try
                 {
@@ -29,17 +29,17 @@
                         }
                         else
                         {
-                            dict = new Dictionary<K, HashSet<V>>();
+                            dict = new Dictionary<TK, HashSet<TV>>();
                         }
                     }
 
                     if (Scribe.mode == LoadSaveMode.Saving || Scribe.mode == LoadSaveMode.LoadingVars)
                     {
-                        keysWorkingList   = new List<K>();
-                        valuesWorkingList = new List<HashSet<V>>();
+                        keysWorkingList   = new List<TK>();
+                        valuesWorkingList = new List<HashSet<TV>>();
                         if (Scribe.mode == LoadSaveMode.Saving && dict != null)
                         {
-                            foreach (KeyValuePair<K, HashSet<V>> item in dict)
+                            foreach (KeyValuePair<TK, HashSet<TV>> item in dict)
                             {
                                 keysWorkingList.Add(item.Key);
                                 valuesWorkingList.Add(item.Value);
@@ -92,7 +92,7 @@
                             {
                                 if (keysWorkingList[i] == null)
                                 {
-                                    Log.Error(string.Concat("Null key while loading dictionary of ", typeof(K), " and ", typeof(V), ". label=", label));
+                                    Log.Error(string.Concat("Null key while loading dictionary of ", typeof(TK), " and ", typeof(TV), ". label=", label));
                                     continue;
                                 }
 

@@ -46,9 +46,6 @@
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.2.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Lib.Harmony.2.2.2\lib\net48\0Harmony.dll</HintPath>
-    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
@@ -203,6 +200,10 @@
       <HintPath>..\..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.SubstanceModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.SubsystemsModule">
+      <HintPath>..\..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.SubsystemsModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.TerrainModule">
       <HintPath>..\..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.TerrainModule.dll</HintPath>
       <Private>False</Private>
@@ -306,9 +307,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlienPartGenerator.BodyAddon.cs" />
+    <Compile Include="AlienPartGenerator.BodyAddon.Graphics.cs" />
     <Compile Include="AlienPartGenerator.cs" />
+    <Compile Include="AlienPartGenerator.Offsets.cs" />
     <Compile Include="AlienRaceMod.cs" />
     <Compile Include="BackstoryDef.cs" />
+    <Compile Include="BodyAddonSupport\AbstractBodyAddonGraphic.cs" />
+    <Compile Include="BodyAddonSupport\BodyAddonPawnWrapper.cs" />
+    <Compile Include="BodyAddonSupport\DefaultGraphicsLoader.cs" />
+    <Compile Include="BodyAddonSupport\GraphicFinder2D.cs" />
+    <Compile Include="BodyAddonSupport\IBodyAddonGraphic.cs" />
+    <Compile Include="BodyAddonSupport\IGraphicFinder.cs" />
+    <Compile Include="BodyAddonSupport\IGraphicsLoader.cs" />
     <Compile Include="ColorGenerators.cs" />
     <Compile Include="Scribe_NestedCollections.cs" />
     <Compile Include="HarmonyPatches.cs" />
@@ -321,7 +331,9 @@
     <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <PackageReference Include="Lib.Harmony">
+      <Version>2.2.2</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

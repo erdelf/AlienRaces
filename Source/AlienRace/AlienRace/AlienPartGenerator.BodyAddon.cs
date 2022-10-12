@@ -1,59 +1,53 @@
-﻿namespace AlienRace
+namespace AlienRace
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Xml;
-    using HarmonyLib;
-    using JetBrains.Annotations;
+    using BodyAddonSupport;
     using RimWorld;
     using UnityEngine;
     using Verse;
 
     public partial class AlienPartGenerator
     {
-        public class BodyAddon
+        public class BodyAddon : AbstractBodyAddonGraphic
         {
-            public string           path;
-            public string           bodyPart;
-            
-            public string           defaultOffset = "Center";
-            [Unsaved]
-            public BodyAddonOffsets defaultOffsets;
+            public string bodyPart;
 
-            public BodyAddonOffsets offsets = new BodyAddonOffsets();
+            public           string           defaultOffset = "Center";
+            [Unsaved] public BodyAddonOffsets defaultOffsets;
+
+            public BodyAddonOffsets offsets                      = new();
             public bool             linkVariantIndexWithPrevious = false;
             public float            angle                        = 0f;
             public bool             inFrontOfBody                = false;
             public bool             layerInvert                  = true;
 
 
-            public bool drawnOnGround = true;
-            public bool drawnInBed = true;
+            public bool drawnOnGround   = true;
+            public bool drawnInBed      = true;
             public bool drawnDesiccated = true;
-            public bool drawForMale = true;
-            public bool drawForFemale = true;
+            public bool drawForMale     = true;
+            public bool drawForFemale   = true;
 
             public bool alignWithHead = false;
 
-            public Vector2 drawSize = Vector2.one;
-            public Vector2 drawSizePortrait = Vector2.zero;
-            public bool drawRotated = true;
-            public bool scaleWithPawnDrawsize = false;
+            public Vector2 drawSize              = Vector2.one;
+            public Vector2 drawSizePortrait      = Vector2.zero;
+            public bool    drawRotated           = true;
+            public bool    scaleWithPawnDrawsize = false;
 
             private string colorChannel;
 
-            public string ColorChannel => 
-                this.colorChannel = this.colorChannel ?? "skin";
+            public string ColorChannel
+            {
+                get => this.colorChannel ??= "skin";
+                set => this.colorChannel = value ?? "skin";
+            }
 
-            public int variantCount = 0;
             public bool debug = true;
 
-            public List<BodyAddonHediffGraphic> hediffGraphics;
-            public List<BodyAddonBackstoryGraphic> backstoryGraphics;
-
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
-            public List<string> hiddenUnderApparelTag = new List<string>();
+            public List<string>           hiddenUnderApparelTag = new List<string>();
 
             public BackstoryDef backstoryRequirement;
             public BodyTypeDef bodyTypeRequirement;
@@ -61,223 +55,124 @@
             private ShaderTypeDef shaderType;
 
             public ShaderTypeDef ShaderType => this.shaderType ??= ShaderTypeDefOf.Cutout;
+            
+            private bool VisibleUnderApparelOf(BodyAddonPawnWrapper pawn) =>
+                !pawn.HasApparelGraphics()                                                             ||
+                (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
+                !pawn.GetWornApparel().Any(ap => 
+                    !ap.hatRenderedFrontOfFace && ap.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
 
-            private List<BodyAddonPrioritization> prioritization;
-            public List<BodyAddonPrioritization> Prioritization => this.prioritization ??= new List<BodyAddonPrioritization> { BodyAddonPrioritization.Hediff, BodyAddonPrioritization.Backstory };
+            private bool VisibleForPostureOf(BodyAddonPawnWrapper pawn) =>
+                (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) &&
+                (pawn.VisibleInBed()                       || this.drawnInBed);
 
 
+            private bool VisibleForBackstoryOf(BodyAddonPawnWrapper pawn) => this.backstoryRequirement == null ||
+                                                                             pawn.HasBackstory(this.backstoryRequirement);
+
+            private bool VisibleForRotStageOf(BodyAddonPawnWrapper pawn) =>
+                this.drawnDesiccated || pawn.GetRotStage() != RotStage.Dessicated;
+
+            private bool RequiredBodyPartExistsFor(BodyAddonPawnWrapper pawn) =>
+                this.bodyPart.NullOrEmpty()          ||
+                pawn.HasNamedBodyPart(this.bodyPart) ||
+                (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false);//any missing part textures need to be done on the first branch level
+
+            private bool VisibleForGenderOf(BodyAddonPawnWrapper pawn) =>
+                pawn.GetGender() == Gender.Female ? this.drawForFemale : this.drawForMale;
+
+            private bool VisibleForBodyTypeOf(BodyAddonPawnWrapper pawn) => this.bodyTypeRequirement == null || pawn.HasBodyType(this.bodyTypeRequirement);
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
-                (pawn.Drawer.renderer.graphics.apparelGraphics.NullOrEmpty() || ((this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) || 
-                !pawn.apparel.WornApparel.Any(predicate: ap => !ap.def.apparel.hatRenderedFrontOfFace && ap.def.apparel.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
-                ap.def.apparel.tags.Any(predicate: s => this.hiddenUnderApparelTag.Contains(s))))) && (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) && ((pawn.CurrentBed()?.def.building.bed_showSleeperBody ?? true) || this.drawnInBed) &&
-                    (this.backstoryRequirement == null || pawn.story.AllBackstories.Contains(this.backstoryRequirement)) &&   
-                    (this.drawnDesiccated || pawn.Corpse?.GetRotStage() != RotStage.Dessicated) &&
-                    (this.bodyPart.NullOrEmpty() || 
-                     (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
-                     (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
-               (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement == null || pawn.story.bodyType == this.bodyTypeRequirement);
+                this.CanDrawAddon(new BodyAddonPawnWrapper(pawn));
+
+            private bool CanDrawAddon(BodyAddonPawnWrapper pawn) =>
+                this.VisibleUnderApparelOf(pawn)     &&
+                this.VisibleForPostureOf(pawn)       &&
+                this.VisibleForBackstoryOf(pawn)     &&
+                this.VisibleForRotStageOf(pawn)      &&
+                this.RequiredBodyPartExistsFor(pawn) &&
+                this.VisibleForGenderOf(pawn)        &&
+                this.VisibleForBodyTypeOf(pawn);
+
+            public IBodyAddonGraphic GetBestGraphic(BodyAddonPawnWrapper pawn, string part)
+            {
+                Pair<int, IBodyAddonGraphic>                     bestGraphic = new(0, this);
+                Stack<Pair<int, IEnumerator<IBodyAddonGraphic>>> stack       = new();
+                stack.Push(new Pair<int, IEnumerator<IBodyAddonGraphic>>(1, this.GetSubGraphics(pawn, part))); // generate list of subgraphics
+
+                // Loop through sub trees until we find a deeper match or we run out of alternatives
+                while (stack.Count > 0 && (bestGraphic.Second == this || bestGraphic.First < stack.Peek().First))
+                {
+                    Pair<int, IEnumerator<IBodyAddonGraphic>> currentGraphicSet = stack.Pop(); // get the top of the stack
+
+                    while (currentGraphicSet.Second.MoveNext()) // exits if iterates through list of subgraphics without advancing
+                    {
+                        IBodyAddonGraphic current = currentGraphicSet.Second.Current; //current branch of tree
+                        if (!(current?.IsApplicable(pawn, part) ?? false)) 
+                            continue;
+
+                        if (current.GetPath().NullOrEmpty())
+                            // add the current layer back to the stack so we can rewind
+                            stack.Push(currentGraphicSet);
+                        else
+                            // Only update best graphic if the current one has a valid path
+                            bestGraphic = new Pair<int, IBodyAddonGraphic>(currentGraphicSet.First, current);
+
+                        // enters next layer/branch
+                        currentGraphicSet = new Pair<int, IEnumerator<IBodyAddonGraphic>>(currentGraphicSet.First + 1, current.GetSubGraphics(pawn, part));
+                    }
+                }
+
+                return bestGraphic.Second;
+            }
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
-                string returnPath = string.Empty;
-                int variantCounting = 0;
+                IBodyAddonGraphic bestGraphic = this.GetBestGraphic(new BodyAddonPawnWrapper(pawn), this.bodyPart); //finds deepest match
 
-                foreach (BodyAddonPrioritization prio in this.Prioritization)
-                {
-                    switch(prio)
-                    {
-                        case BodyAddonPrioritization.Backstory:
-                            if (this.backstoryGraphics?.FirstOrDefault(predicate: babgs => pawn.story.AllBackstories.Any(predicate: bs => bs == babgs.backstory)) is { } babg)
-                            {
-                                returnPath      = babg.path;
-                                variantCounting = babg.variantCount;
-                            }
-                            break;
-                        case BodyAddonPrioritization.Hediff:
-                            if(!this.hediffGraphics.NullOrEmpty())
-                                foreach (BodyAddonHediffGraphic bahg in this.hediffGraphics)
-                                {
-
-                                    foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(predicate: h => h.def == bahg.hediff &&
-                                                                                                             (h.Part == null                                  ||
-                                                                                                              this.bodyPart.NullOrEmpty()                     ||
-                                                                                                              h.Part.untranslatedCustomLabel == this.bodyPart ||
-                                                                                                              h.Part.def.defName             == this.bodyPart)))
-                                    {
-                                        returnPath      = bahg.path;
-                                        variantCounting = bahg.variantCount;
-
-                                        if (!bahg.severity.NullOrEmpty())
-                                            foreach (BodyAddonHediffSeverityGraphic bahsg in bahg.severity)
-                                            {
-                                                if (h.Severity >= bahsg.severity)
-                                                {
-                                                    returnPath      = bahsg.path;
-                                                    variantCounting = bahsg.variantCount;
-                                                    break;
-                                                }
-                                            }
-                                        break;
-                                    }
-                                }
-
-                            break;
-                        default: 
-                            throw new ArrayTypeMismatchException();
-                    }
-                    if (!returnPath.NullOrEmpty())
-                        break;
-                }
-
-                if (returnPath.NullOrEmpty())
-                {
-                    returnPath = this.path;
-                    variantCounting = this.variantCount;
-                }
+                string returnPath      = bestGraphic.GetPath() ?? string.Empty;
+                int    variantCounting = bestGraphic.GetVariantCount();
 
                 if (variantCounting <= 0)
                     variantCounting = 1;
 
-                ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
-                int tv;
+                ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>()?.GetChannel(this.ColorChannel) ?? new ExposableValueTuple<Color, Color>(Color.white, Color.white);
+                int                               tv;
 
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
 
                 return !returnPath.NullOrEmpty() ?
-                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath += (tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
-                                                                                             (this.linkVariantIndexWithPrevious ?
-                                                                                                  sharedIndex % variantCounting :
-                                                                                                  (sharedIndex = Rand.Range(min: 0, variantCounting))))) == 0 ? "" : tv.ToString(),
-                                                              ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
-                                                              this.drawSize * 1.5f,
-                                                              channel.first, channel.second, new GraphicData
-                                                                                                   {
-                                                                                                       drawRotated = !this.drawRotated
-                                                                                                   }) :
+                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath += (tv = savedIndex.HasValue ?
+                                                                                                       sharedIndex = savedIndex.Value % variantCounting :
+                                                                                                       this.linkVariantIndexWithPrevious ? sharedIndex % variantCounting : sharedIndex = Rand.Range(min: 0, variantCounting)) == 0 ?
+                                                                                                 "" :
+                                                                                                 tv.ToString(),
+                                                                               ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ?
+                                                                                   this.ShaderType.Shader :
+                                                                                   ShaderDatabase.CutoutComplex, this.drawSize * 1.5f, channel.first, channel.second, new GraphicData
+                                                                                                                                                                      {
+                                                                                                                                                                          drawRotated = !this.drawRotated
+                                                                                                                                                                      }) :
                            null;
             }
-        }
 
 
-        public class BodyAddonHediffGraphic
-        {
-            public HediffDef hediff;
-            public string path;
-            public int variantCount = 0;
-            public List<BodyAddonHediffSeverityGraphic> severity;
-
-            [UsedImplicitly]
-            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
-            {
-                XmlAttribute mayRequire = xmlRoot.Attributes[name: "MayRequire"];
-                int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
-                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.hediff),  xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index), mayRequire?.Value.ToLower());
-
-                this.path = xmlRoot.FirstChild.Value?.Trim();
-
-                Traverse traverse = Traverse.Create(this);
-                foreach (XmlNode xmlRootChildNode in xmlRoot.ChildNodes)
-                {
-                    Traverse field = traverse.Field(xmlRootChildNode.Name);
-                    if (field.FieldExists())
-                        field.SetValue(field.GetValueType().IsGenericType ?
-                                                  DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlRootChildNode, arg2: false) :
-                                                  xmlRootChildNode.InnerXml.Trim());
-                }
-            }
-        }
-
-        public class BodyAddonHediffSeverityGraphic
-        {
-            public float severity;
-            public string path;
-            public int variantCount = 0;
-
-            [UsedImplicitly]
-            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
-            {
-                this.severity = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
-                this.path   = xmlRoot.InnerXml.Trim();
-            }
-        }
-
-        public class BodyAddonBackstoryGraphic
-        {
-            public BackstoryDef backstory;
-            public string path;
-            public int variantCount = 0;
-
-            [UsedImplicitly]
-            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
-            {
-                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.backstory), xmlRoot.Name, null, null, typeof(BackstoryDef));
-
-                this.path = xmlRoot.FirstChild.Value;
-            }
-        }
-
-        public class BodyAddonOffsets
-        {
-            public RotationOffset GetOffset(Rot4 rotation) =>
-                rotation == Rot4.South ? this.south :
-                rotation == Rot4.North ? this.north :
-                rotation == Rot4.East  ? this.east : this.west;
-
-            public RotationOffset south = new RotationOffset();
-            public RotationOffset north = new RotationOffset();
-            public RotationOffset east = new RotationOffset();
-            public RotationOffset west;
-        }
-
-        public class RotationOffset
-        {
-            public Vector3 GetOffset(bool portrait, BodyTypeDef bodyType, string crownType)
-            {
-                Vector2 bodyOffset  = (portrait ? this.portraitBodyTypes  ?? this.bodyTypes : this.bodyTypes)?.FirstOrDefault(predicate: to => to.bodyType == bodyType)?.offset  ?? Vector2.zero;
-                Vector2 crownOffset = (portrait ? this.portraitCrownTypes ?? this.crownTypes : this.crownTypes)?.FirstOrDefault(predicate: to => to.crownType == crownType)?.offset ?? Vector2.zero;
-
-                return new Vector3(this.offset.x + bodyOffset.x + crownOffset.x, this.layerOffset, this.offset.y + bodyOffset.y + crownOffset.y);
-            }
-
-            public float                 layerOffset;
-            public Vector2               offset;
-            public List<BodyTypeOffset>  portraitBodyTypes;
-            public List<BodyTypeOffset>  bodyTypes;
-            public List<CrownTypeOffset> portraitCrownTypes;
-            public List<CrownTypeOffset> crownTypes;
-        }
-
-        public class BodyTypeOffset
-        {
-            public BodyTypeDef bodyType;
-            public Vector2 offset = Vector2.zero;
-
-            [UsedImplicitly]
-            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
-            {
-                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.bodyType), xmlRoot.Name);
-                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
-            }
-        }
-
-        public class CrownTypeOffset
-        {
-            public string crownType;
-            public Vector2 offset = Vector2.zero;
-
-            [UsedImplicitly]
-            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
-            {
-                this.crownType = xmlRoot.Name;
-                this.offset = (Vector2) ParseHelper.FromString(xmlRoot.FirstChild.Value, typeof(Vector2));
-            }
+            // Top level so always considered applicable
+            public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) => true;
         }
 
         public enum BodyAddonPrioritization : byte
         {
+            Severity,
+            Hediff,
+            Gender,
+            Bodytype,
+            Crowntype,
             Backstory,
-            Hediff
+            Trait,
+            Age,
+            Damage
         }
     }
 }
