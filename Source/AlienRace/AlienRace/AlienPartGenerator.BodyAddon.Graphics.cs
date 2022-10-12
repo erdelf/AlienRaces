@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml;
 using BodyAddonSupport;
@@ -112,8 +113,7 @@ public partial class AlienPartGenerator
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            this.severity = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
-
+            this.severity = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim(), CultureInfo.InvariantCulture);
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
 
         }

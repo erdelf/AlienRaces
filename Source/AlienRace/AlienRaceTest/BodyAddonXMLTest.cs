@@ -47,7 +47,7 @@ namespace AlienRaceTest
             // Attempt to parse XML
             testBackstoryGraphic.LoadDataFromXmlCustom(testXmlNode);
 
-            Assert.AreEqual("Test_backstory", testBackstoryGraphic.backstory);
+            //Assert.AreEqual("Test_backstory", testBackstoryGraphic.backstory); // name loaded via crossref
             Assert.AreEqual("test/B",       testBackstoryGraphic.GetPath());
         }
 
@@ -205,8 +205,8 @@ namespace AlienRaceTest
 
             // Attempt to parse XML
             testBodytypeGraphic.LoadDataFromXmlCustom(testXmlNode);
-         
-            Assert.AreEqual("Thin", testBodytypeGraphic.bodytype);
+
+            //Assert.AreEqual("Thin", testBodytypeGraphic.bodytype); // loaded via crossref
             Assert.AreEqual("test/MT",    testBodytypeGraphic.GetPath());
         }
         
@@ -225,8 +225,8 @@ namespace AlienRaceTest
             
             // Reflectively populate all the XRefs
             DirectXmlCrossRefLoader.ResolveAllWantedCrossReferences(FailMode.LogErrors);
-            
-            Assert.AreEqual("Test_backstory", parsedGraphic.backstory);
+
+            //Assert.AreEqual("Test_backstory", parsedGraphic.backstory); // name loaded via crossref
             Assert.AreEqual("test/B",       parsedGraphic.GetPath());
             Assert.IsNotNull(parsedGraphic.ageGraphics);
             Assert.AreEqual(1, parsedGraphic.ageGraphics.Count);
@@ -301,7 +301,7 @@ namespace AlienRaceTest
                         Assert.AreEqual(1, parsedSeverityGraphic.backstoryGraphics.Count);
                         
                             AlienPartGenerator.BodyAddonBackstoryGraphic parsedBackstoryGraphic = parsedSeverityGraphic.backstoryGraphics[0];
-                            Assert.AreEqual("Test_backstory", parsedBackstoryGraphic.backstory);
+                            //Assert.AreEqual("Test_backstory", parsedBackstoryGraphic.backstory); //linked via def
                             Assert.AreEqual("test/CPs5B", parsedBackstoryGraphic.GetPath());
                             
                             // Crack->Plague->Severity->Backstory->Age Graphics
@@ -329,7 +329,7 @@ namespace AlienRaceTest
                 Assert.AreEqual(1, parsedCrackGraphic.backstoryGraphics.Count);
                 
                     parsedBackstoryGraphic = parsedCrackGraphic.backstoryGraphics[0];
-                    Assert.AreEqual("Test_backstoryr", parsedBackstoryGraphic.backstory);
+                    //Assert.AreEqual("Test_backstoryr", parsedBackstoryGraphic.backstory); //read via def
                     Assert.AreEqual("test/CB", parsedBackstoryGraphic.GetPath());
                             
                     // Crack->Backstory->Age Graphics
@@ -368,7 +368,7 @@ namespace AlienRaceTest
                 Assert.AreEqual(1, parsedGraphic.backstoryGraphics.Count);
                 
                     parsedBackstoryGraphic = parsedGraphic.backstoryGraphics[0];
-                    Assert.AreEqual("Test_backstory", parsedBackstoryGraphic.backstory);
+                    //Assert.AreEqual("Test_backstory", parsedBackstoryGraphic.backstory); linked vi df
                     Assert.AreEqual("test/B", parsedBackstoryGraphic.GetPath());
                             
                     // Backstory->Age Graphics
@@ -461,7 +461,7 @@ namespace AlienRaceTest
                     Assert.AreEqual(1, parsedGenderGraphic2.bodytypeGraphics.Count);
                         
                         AlienPartGenerator.BodyAddonBodytypeGraphic parsedBodytypeGraphic = parsedGenderGraphic2.bodytypeGraphics[0];
-                        Assert.AreEqual("Thin", parsedBodytypeGraphic.bodytype);
+                        //Assert.AreEqual("Thin", parsedBodytypeGraphic.bodytype); //linked via def
                         Assert.AreEqual("test/MT",    parsedBodytypeGraphic.GetPath());
 
         }
