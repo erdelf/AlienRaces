@@ -173,7 +173,7 @@ namespace AlienRace
             Hediff,
             Gender,
             Bodytype,
-            Crowntype,
+            Headtype,
             Backstory,
             Trait,
             Age,
