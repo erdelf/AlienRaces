@@ -18,21 +18,27 @@
                         <generalSettings>
                             <allowHumanBios>true</allowHumanBios>
                             <alienPartGenerator>
-                                <aliencrowntypes>
-                                    <li>Average_Normal</li>
-                                    <li>Average_Wide</li>
-                                    <li>Average_Pointy</li>
-                                    <li>Narrow_Normal</li>
-                                    <li>Narrow_Pointy</li>
-                                    <li>Narrow_Wide</li>
-                                </aliencrowntypes>
-								<alienbodytypes>
+                                <headTypes>
+                                    <li>Male_AverageNormal</li>
+                                    <li>Male_AverageWide</li>
+                                    <li>Male_AveragePointy</li>
+                                    <li>Male_NarrowNormal</li>
+                                    <li>Male_NarrowPointy</li>
+                                    <li>Male_NarrowWide</li>
+                                    <li>Female_AverageNormal</li>
+                                    <li>Female_AverageWide</li>
+                                    <li>Female_AveragePointy</li>
+                                    <li>Female_NarrowNormal</li>
+                                    <li>Female_NarrowPointy</li>
+                                    <li>Female_NarrowWide</li>
+                                </headTypes>
+								<bodytypes>
 									<li>Male</li>
 									<li>Female</li>
 									<li>Thin</li>
 									<li>Hulk</li>
 									<li>Fat</li>
-								</alienbodytypes>
+								</bodytypes>
                                 <colorChannels>
                                     <li>
                                         <name>skin</name>
