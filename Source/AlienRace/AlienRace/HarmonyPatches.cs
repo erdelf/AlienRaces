@@ -110,7 +110,7 @@ namespace AlienRace
             //            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver_Skygaze), name: nameof(JobDriver_Skygaze.Posture)).GetGetMethod(nonPublic: false), postfix:
             //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateRandomAge"), new HarmonyMethod(patchType,             nameof(GenerateRandomAgePrefix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateTraits"),    postfix: new HarmonyMethod(patchType,    nameof(GenerateTraitsPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateTraits"),    new HarmonyMethod(patchType,             nameof(GenerateTraitsPrefix)), postfix: new HarmonyMethod(patchType, nameof(GenerateTraitsPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateTraitsFor"), transpiler: new HarmonyMethod(patchType, nameof(GenerateTraitsForTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(JobGiver_SatisfyChemicalNeed), name: "DrugValidator"), 
                           postfix:          new HarmonyMethod(patchType, nameof(DrugValidatorPostfix)));
@@ -263,10 +263,15 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBeardSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
 
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateSkills"), postfix: new HarmonyMethod(patchType, nameof(GenerateSkillsPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateSkills"), new HarmonyMethod(patchType, nameof(GenerateSkillsPrefix)), postfix: new HarmonyMethod(patchType, nameof(GenerateSkillsPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnInternalTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker), "Notify_GenesChanged"), transpiler: new HarmonyMethod(patchType, nameof(NotifyGenesChangedTranspiler)));
+
+            harmony.Patch(AccessTools.Method(typeof(GrowthUtility),   nameof(GrowthUtility.IsGrowthBirthday)),       transpiler: new HarmonyMethod(patchType, nameof(IsGrowthBirthdayTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), nameof(Pawn_AgeTracker.TryChildGrowthMoment)), new HarmonyMethod(patchType,             nameof(TryChildGrowthMomentPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(Gizmo_GrowthTier), "GrowthTierTooltip"), new HarmonyMethod(patchType,             nameof(GrowthTierTooltipPrefix)));
+
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -415,6 +420,32 @@ namespace AlienRace
             
             AlienRaceMod.settings.UpdateSettings();
         }
+
+        public static void GrowthTierTooltipPrefix(Pawn ___child) =>
+            growthMomentPawn = ___child;
+
+        public static void TryChildGrowthMomentPrefix(Pawn ___pawn) =>
+            growthMomentPawn = ___pawn;
+
+        public static void GenerateSkillsPrefix(Pawn pawn) =>
+            growthMomentPawn = pawn;
+
+        public static void GenerateTraitsPrefix(Pawn pawn) =>
+            growthMomentPawn = pawn;
+
+        public static Pawn growthMomentPawn;
+
+        public static IEnumerable<CodeInstruction> IsGrowthBirthdayTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            foreach (CodeInstruction instruction in instructions)
+                if (instruction.opcode == OpCodes.Ldsfld)
+                    yield return CodeInstruction.Call(patchType, nameof(GrowthMomentHelper));
+                else
+                    yield return instruction;
+        }
+
+        public static int[] GrowthMomentHelper() =>
+            (growthMomentPawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.growthAges ?? GrowthUtility.GrowthMomentAges;
 
         public static IEnumerable<CodeInstruction> NotifyGenesChangedTranspiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -1608,13 +1639,12 @@ namespace AlienRace
 
             foreach (CodeInstruction instruction in instructionList)
             {
-                //todo: growth curve
-                /*
-                if (instruction.opcode == OpCodes.Stloc_1)
+                
+                if (instruction.opcode == OpCodes.Stloc_0)
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(AdditionalInitialTraits)));
-                }*/
+                }
 
                 yield return instruction;
             }
@@ -1624,9 +1654,9 @@ namespace AlienRace
         {
             if (pawn.def is not ThingDef_AlienRace alienProps) return count;
 
-            IntRange traitCount = alienProps.alienRace.generalSettings.additionalTraits;
+            IntRange traitCount = alienProps.alienRace.generalSettings.traitCount;
 
-            if (traitCount.min != 2 || traitCount.max != 3)
+            if (traitCount.min != 1 || traitCount.max != 3)
                 count = traitCount.RandomInRange;
             return count;
         }

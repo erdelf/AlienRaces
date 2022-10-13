@@ -130,6 +130,8 @@
         public static readonly AccessTools.FieldRef<Pawn_StoryTracker, Color> hairColor =
             AccessTools.FieldRefAccess<Pawn_StoryTracker, Color>(AccessTools.Field(typeof(Pawn_StoryTracker), "hairColor"));
 
+        public static readonly AccessTools.FieldRef<Pawn_AgeTracker, Pawn> ageTrackerPawn =
+            AccessTools.FieldRefAccess<Pawn_AgeTracker, Pawn>(AccessTools.Field(typeof(Pawn_AgeTracker), "pawn"));
 
         public static List<HeadTypeDef> defaultHeadTypeDefs;
 
