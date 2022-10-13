@@ -40,8 +40,8 @@
 
         public void UpdateSettings()
         {
-            ((ThingDef_AlienRace)ThingDefOf.Human).alienRace.generalSettings.alienPartGenerator.colorChannels.Find(match: ccg => ccg.name == "skin").first =
-            new ColorGenerator_SkinColorMelanin { maxMelanin = 1f, minMelanin = 0f, naturalMelanin = this.centralMelanin };
+            ((ThingDef_AlienRace)ThingDefOf.Human).alienRace.generalSettings.alienPartGenerator.colorChannels.Find(match: ccg => ccg.name == "skin").first = 
+                new ColorGenerator_SkinColorMelanin { maxMelanin = 1f, minMelanin = 0f, naturalMelanin = this.centralMelanin };
         }
     }
 }

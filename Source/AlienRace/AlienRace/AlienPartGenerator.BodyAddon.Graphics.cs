@@ -198,20 +198,20 @@ public partial class AlienPartGenerator
             pawn.HasBodyType(this.bodytype);
     }
 
-    //Crowntype Graphics
-    public class BodyAddonCrowntypeGraphic : AbstractBodyAddonGraphic
+    //Headtype Graphics
+    public class BodyAddonHeadtypeGraphic : AbstractBodyAddonGraphic
     {
-        public string crowntype;
+        public HeadTypeDef headType;
 
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            this.crowntype = xmlRoot.Name;
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.headType), xmlRoot.Name);
 
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
         public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) =>
-            pawn.HasCrownTypeNamed(this.crowntype);
+            pawn.HasHeadTypeNamed(this.headType);
     }
 }

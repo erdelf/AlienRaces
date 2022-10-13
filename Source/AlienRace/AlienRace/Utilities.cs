@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using HarmonyLib;
     using JetBrains.Annotations;
     using RimWorld;
@@ -37,6 +38,8 @@
         [MayRequireIdeology]
         public static HistoryEventDef HAR_Alien_SoldSlave;
         // ReSharper restore InconsistentNaming
+
+
     }
 
     public static class Utilities
@@ -126,5 +129,15 @@
 
         public static readonly AccessTools.FieldRef<Pawn_StoryTracker, Color> hairColor =
             AccessTools.FieldRefAccess<Pawn_StoryTracker, Color>(AccessTools.Field(typeof(Pawn_StoryTracker), "hairColor"));
+
+
+        public static List<HeadTypeDef> defaultHeadTypeDefs;
+
+        static CachedData() =>
+            LongEventHandler.QueueLongEvent(() =>
+            {
+                defaultHeadTypeDefs = DefDatabase<HeadTypeDef>.AllDefsListForReading.Where(hd =>
+                            Regex.IsMatch(hd.defName, @"(?>Male|Female)_(?>Average|Narrow)(?>Normal|Wide|Pointy)")).ToList();
+            }, "loadingHeadtypeDefs", false, null, false);
     }
 }

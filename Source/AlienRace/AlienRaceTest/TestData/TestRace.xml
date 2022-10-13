@@ -26,7 +26,7 @@
                 <alienPartGenerator>
                     <borderScale>1</borderScale>
                     <atlasScale>8</atlasScale>
-                    <aliencrowntypes>
+                    <headTypes>
                         <li>TestHead</li>
                         <li>TestHead2</li>
                         <li>TestHead3</li>
@@ -34,12 +34,12 @@
                         <li>TestHead5</li>
                         <li>TestHead6</li>
                         <li>TestHead7</li>
-                    </aliencrowntypes>
-                    <alienbodytypes>
+                    </headTypes>
+                    <bodytypes>
                         <li>Female</li>
-						<li>Male</li>
-						<li>Hulk</li>
-                    </alienbodytypes>
+						            <li>Male</li>
+						            <li>Hulk</li>
+                    </bodytypes>
                     <useGenderedHeads>false</useGenderedHeads>
                     <customDrawSize>(1.15, 1.15)</customDrawSize>
                     <customHeadDrawSize>(1.00, 1.00)</customHeadDrawSize>
