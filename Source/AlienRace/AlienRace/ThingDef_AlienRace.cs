@@ -112,6 +112,7 @@
         public List<ChemicalSettings> chemicalSettings;
         public List<AlienTraitEntry>  forcedRaceTraitEntries;
         public List<AlienTraitEntry>  disallowedTraits;
+        public IntRange               traitCount         = new IntRange(1, 3);
         public IntRange               additionalTraits   = IntRange.zero;
         public AlienPartGenerator     alienPartGenerator = new AlienPartGenerator();
         public List<SkillGain>        passions           = new List<SkillGain>();
@@ -124,6 +125,7 @@
         public bool humanRecipeImport = false;
 
         public SimpleCurve lovinIntervalHoursFromAge;
+        public int[]       growthAges = { 7, 10, 13 };
     }
 
     public class FactionRelationSettings
