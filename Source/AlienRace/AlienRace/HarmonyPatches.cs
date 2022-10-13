@@ -945,6 +945,8 @@ namespace AlienRace
                     done = true;
                     yield return new CodeInstruction(OpCodes.Ldarg_0) {labels = instruction.ExtractLabels()};
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return CodeInstruction.LoadField(typeof(PawnTextureAtlas), "freeFrameSets");
                     yield return CodeInstruction.Call(patchType, nameof(TextureAtlasSameRace));
                     yield return new CodeInstruction(OpCodes.Brtrue_S, jumpLabel);
                     yield return new CodeInstruction(OpCodes.Ldc_I4_0);
@@ -956,15 +958,25 @@ namespace AlienRace
             }
         }
 
-        public static bool TextureAtlasSameRace(PawnTextureAtlas atlas, Pawn pawn)
+        public static bool TextureAtlasSameRace(PawnTextureAtlas atlas, Pawn pawn, List<PawnTextureAtlasFrameSet> frameSets)
         {
             Dictionary<Pawn, PawnTextureAtlasFrameSet>.KeyCollection keys = CachedData.pawnTextureAtlasFrameAssignments(atlas).Keys;
 
             int atlasScale = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1;
             float borderScale = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.borderScale ?? 1;
 
-            return keys.Count == 0 || keys.Any(p => p.def == pawn.def || (((p.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1)     == atlasScale) && 
-                                                    (Math.Abs(((p.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.borderScale ?? 1) - borderScale) < 0.01));
+            if (keys.Count == 0)
+            {
+                if (atlas.RawTexture.width == 2048 * atlasScale && Math.Abs(frameSets.First().meshes.First().vertices.First().x + borderScale) < 0.01f)
+                    return true;
+            }
+            else if (keys.Any(p => p.def == pawn.def || (((p.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.atlasScale ?? 1)     == atlasScale) && 
+                                   (Math.Abs(((p.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.borderScale ?? 1) - borderScale) < 0.01)))
+            {
+                return true;
+            }
+
+            return false;
         }
         
         public static float GetBorderSizeForPawn() =>
