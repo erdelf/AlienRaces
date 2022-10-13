@@ -81,8 +81,6 @@ namespace AlienRace
                 postfix: new HarmonyMethod(patchType, nameof(ApparelScoreGainPostFix)));
             harmony.Patch(AccessTools.Method(typeof(ThoughtUtility), nameof(ThoughtUtility.CanGetThought)),
                 postfix: new HarmonyMethod(patchType, nameof(CanGetThoughtPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(ThoughtWorker_AgeReversalDemanded), nameof(ThoughtWorker_AgeReversalDemanded.CanHaveThought)),
-                          postfix: new HarmonyMethod(patchType, nameof(CanHaveThoughtPostfix)));
             harmony.Patch(AccessTools.Method(typeof(FoodUtility), nameof(FoodUtility.ThoughtsFromIngesting)), 
                           postfix: new HarmonyMethod(patchType, nameof(ThoughtsFromIngestingPostfix)));
             harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), nameof(MemoryThoughtHandler.TryGainMemory), new[] { typeof(Thought_Memory), typeof(Pawn) }),
@@ -2587,15 +2585,6 @@ namespace AlienRace
                     cantReason = $"{pawn.def.LabelCap} can't equip this";
                 }
             }
-        }
-
-        public static void CanHaveThoughtPostfix(ref bool __result, ThoughtWorker_Precept __instance, Pawn pawn)
-        {
-            if (!__result) return;
-
-            ThoughtDef def = __instance.def;
-
-            __result = ThoughtSettings.CanGetThought(def, pawn);
         }
 
         public static void CanGetThoughtPostfix(ref bool __result, ThoughtDef def, Pawn pawn)
