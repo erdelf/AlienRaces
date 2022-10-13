@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using BodyAddonSupport;
     using RimWorld;
@@ -10,9 +11,11 @@
 
     public partial class AlienPartGenerator
     {
-        public List<string> aliencrowntypes = new List<string> { "Average_Normal" };
+        public List<HeadTypeDef> headTypes;
+        public List<HeadTypeDef> HeadTypes => 
+            this.headTypes ?? CachedData.defaultHeadTypeDefs;
 
-        public List<BodyTypeDef> alienbodytypes = new List<BodyTypeDef>();
+        public List<BodyTypeDef> bodytypes = new List<BodyTypeDef>();
 
         public bool useGenderedHeads = true;
         public bool useGenderedBodies = false;
@@ -45,9 +48,21 @@
 
         public ThingDef_AlienRace alienProps;
 
-        public string RandomAlienHead(string userpath, Pawn pawn) => GetAlienHead(userpath, (this.useGenderedHeads ? pawn.gender.ToString() : ""), pawn.GetComp<AlienComp>().crownType = this.aliencrowntypes[Rand.Range(min: 0, this.aliencrowntypes.Count)]);
+        public string GetAlienHead(string userpath, Pawn pawn) => 
+            GetAlienHead(userpath, this.useGenderedHeads ? pawn.gender : Gender.None, pawn.story.headType);
 
-        public static string GetAlienHead(string userpath, string gender, string crowntype) => userpath.NullOrEmpty() ? "" : userpath + (userpath == GraphicPaths.VANILLA_HEAD_PATH ? gender + "/" : "") + (!gender.NullOrEmpty() ? gender + "_" : "") + crowntype;
+        public static string GetAlienHead(string userpath, Gender gender, HeadTypeDef headType)
+        {
+            string path         = userpath;
+            string headTypePath = Path.GetFileName(headType.graphicPath);
+
+            if (gender == Gender.None && headType.gender != Gender.None)
+                headTypePath = headTypePath.Substring(headTypePath.IndexOf('_')+1);
+            else
+                path = userpath + (userpath == GraphicPaths.VANILLA_HEAD_PATH ? gender + "/" : "");
+
+            return userpath.NullOrEmpty() ? string.Empty : path + headTypePath;
+        }
 
         public Graphic GetNakedGraphic(BodyTypeDef bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender, string maskPath) =>
             GraphicDatabase.Get(typeof(Graphic_Multi), GetNakedPath(bodyType, userpath, this.useGenderedBodies ? gender : ""), shader, Vector2.one, 
@@ -170,17 +185,15 @@
 
         public class AlienComp : ThingComp
         {
-            public bool                fixGenderPostSpawn;
-            public string              crownType;
-            public string              headGraphicPath;
-            public Vector2             customDrawSize             = Vector2.one;
-            public Vector2             customHeadDrawSize         = Vector2.one;
-            public Vector2             customPortraitDrawSize     = Vector2.one;
-            public Vector2             customPortraitHeadDrawSize = Vector2.one;
-            public int                 headMaskVariant = -1;
-            public int                 bodyMaskVariant = -1;
-            public List<Graphic>       addonGraphics;
-            public List<int>           addonVariants;
+            public bool          fixGenderPostSpawn;
+            public Vector2       customDrawSize             = Vector2.one;
+            public Vector2       customHeadDrawSize         = Vector2.one;
+            public Vector2       customPortraitDrawSize     = Vector2.one;
+            public Vector2       customPortraitHeadDrawSize = Vector2.one;
+            public int           headMaskVariant            = -1;
+            public int           bodyMaskVariant            = -1;
+            public List<Graphic> addonGraphics;
+            public List<int>     addonVariants;
 
             public int lastAlienMeatIngestedTick = 0;
 
@@ -291,7 +304,6 @@
             {
                 base.PostExposeData();
                 Scribe_Values.Look(ref this.fixGenderPostSpawn, label: "fixAlienGenderPostSpawn");
-                Scribe_Values.Look(ref this.crownType,          label: "crownType");
                 Scribe_Collections.Look(ref this.addonVariants, label: "addonVariants");
                 Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
                 Scribe_NestedCollections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Undefined, LookMode.Undefined);

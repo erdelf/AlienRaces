@@ -267,6 +267,9 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateSkills"), postfix: new HarmonyMethod(patchType, nameof(GenerateSkillsPostfix)));
 
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnInternalTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker), "Notify_GenesChanged"), transpiler: new HarmonyMethod(patchType, nameof(NotifyGenesChangedTranspiler)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -414,6 +417,45 @@ namespace AlienRace
             
             AlienRaceMod.settings.UpdateSettings();
         }
+
+        public static IEnumerable<CodeInstruction> NotifyGenesChangedTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo allDefsInfo = AccessTools.PropertyGetter(typeof(DefDatabase<HeadTypeDef>), nameof(DefDatabase<HeadTypeDef>.AllDefs));
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+                if (instruction.Calls(allDefsInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_GeneTracker), nameof(Pawn_GeneTracker.pawn)));
+                    yield return CodeInstruction.Call(patchType, nameof(HeadTypeFilter));
+                }
+            }
+        }
+
+        public static IEnumerable<CodeInstruction> TryGenerateNewPawnInternalTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            bool done = false;
+
+            MethodInfo allDefsInfo = AccessTools.PropertyGetter(typeof(DefDatabase<HeadTypeDef>), nameof(DefDatabase<HeadTypeDef>.AllDefs));
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+                if (!done && instruction.Calls(allDefsInfo))
+                {
+                    done = true;
+                    yield return new CodeInstruction(OpCodes.Ldloc_0);
+                    yield return CodeInstruction.Call(patchType, nameof(HeadTypeFilter));
+                }
+            }
+        }
+
+        public static IEnumerable<HeadTypeDef> HeadTypeFilter(IEnumerable<HeadTypeDef> headTypes, Pawn pawn) =>
+            pawn.def is not ThingDef_AlienRace alienProps ? 
+                headTypes : 
+                headTypes.Intersect(alienProps.alienRace.generalSettings.alienPartGenerator.HeadTypes);
 
         public static void GenerateSkillsPostfix(Pawn pawn)
         {
@@ -984,7 +1026,7 @@ namespace AlienRace
                     if (anchor == anchorReplacement.replacement && anchorReplacement.offsets != null)
                     {
                         AlienPartGenerator.AlienComp alienComp = ___pawn.GetComp<AlienPartGenerator.AlienComp>();
-                        anchorOffset = anchorReplacement.offsets.GetOffset(anchor.rotation!.Value).GetOffset(false, ___pawn.story.bodyType, alienComp.crownType);
+                        anchorOffset = anchorReplacement.offsets.GetOffset(anchor.rotation!.Value).GetOffset(false, ___pawn.story.bodyType, ___pawn.story.headType);
                         return;
                     }
                 }
@@ -1100,7 +1142,7 @@ namespace AlienRace
                                                                                                               ba.offsets.west,
                                                                                                               ba.offsets.north,
                                                                                                               ba.offsets.south,
-                                                                                                          }.Sum(selector: ro => (ro.bodyTypes?.Count ?? 0) * 2 + (ro.crownTypes?.Count ?? 0) * 2 + 3/* + (ro.portraitBodyTypes?.Count ?? 0) * 2 + 
+                                                                                                          }.Sum(selector: ro => (ro.bodyTypes?.Count ?? 0) * 2 + (ro.headTypes?.Count ?? 0) * 2 + 3/* + (ro.portraitBodyTypes?.Count ?? 0) * 2 + 
                                                    (ro.crownTypes?.Count ?? 0) * 2 + (ro.portraitCrownTypes?.Count ?? 0) * 2*/) + 2) + 1);
                     yield return new CodeInstruction(OpCodes.Add);
                 }
@@ -1269,11 +1311,11 @@ namespace AlienRace
                                 NextLine();
                             }
 
-                        if(!ro.crownTypes.NullOrEmpty())
-                            foreach (AlienPartGenerator.CrownTypeOffset crownTypeOffsets in ro.crownTypes)
+                        if(!ro.headTypes.NullOrEmpty())
+                            foreach (AlienPartGenerator.HeadTypeOffsets headTypeOffsets in ro.headTypes)
                             {
-                                string  label3Type = crownTypeOffsets.crownType + ".";
-                                Vector2 offset     = crownTypeOffsets.offset;
+                                string  label3Type = headTypeOffsets.headType + ".";
+                                Vector2 offset     = headTypeOffsets.offset;
                                 float   offsetX    = offset.x;
                                 float   offsetY    = offset.y;
 
@@ -1281,9 +1323,9 @@ namespace AlienRace
                                     WriteLine(value, label3Rotation + label3Type + (x ? "x" : "y"));
 
 
-                                crownTypeOffsets.offset.x = WriteAddonLine(offsetX, x: true);
+                                headTypeOffsets.offset.x = WriteAddonLine(offsetX, x: true);
                                 NextLine();
-                                crownTypeOffsets.offset.y = WriteAddonLine(offsetY, x: false);
+                                headTypeOffsets.offset.y = WriteAddonLine(offsetY, x: false);
                                 NextLine();
                             }
                     }
@@ -2525,8 +2567,6 @@ namespace AlienRace
                 lsap is LifeStageAgeAlien lsaap && lsaap.body != null && ((lsac as LifeStageAgeAlien)?.body ?? ___pawn.RaceProps.body) != lsaap.body)
             {
                 ___pawn.health.hediffSet = new HediffSet(___pawn);
-                string path = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(___pawn.ageTracker.CurLifeStageRace.def).head;
-                ___pawn.GetComp<AlienPartGenerator.AlienComp>().headGraphicPath = alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(path, ___pawn);
             }
         }
 
@@ -2628,14 +2668,6 @@ namespace AlienRace
 
                 AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
                 CachedData.hairColor(pawn.story) = alienComp.GetChannel(channel: "hair").first;
-
-                string headPath = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).head;
-
-                alienComp.headGraphicPath = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(pawn.ageTracker.CurLifeStage).head.NullOrEmpty() ?
-                                                             "" :
-                                                             alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(headPath, pawn);
-
-                pawn.story.headType = DefDatabase<HeadTypeDef>.GetNamed((pawn.gender == Gender.Female ? "Female" : "Male") + "_AverageNormal");
             }
         }
 
@@ -2779,11 +2811,6 @@ namespace AlienRace
                         __instance.pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
                         __instance.pawn.Name   = PawnBioAndNameGenerator.GeneratePawnName(__instance.pawn);
 
-                        alienComp.headGraphicPath = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head.NullOrEmpty()
-                                                                                ? ""
-                                                                                : apg.RandomAlienHead(alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(alien.ageTracker.CurLifeStage).head,
-                                                                                                      __instance.pawn);
-
                         alienComp.fixGenderPostSpawn = false;
                     }
                     
@@ -2793,10 +2820,6 @@ namespace AlienRace
                     alienComp.customHeadDrawSize         = graphicPaths.customHeadDrawSize;
                     alienComp.customPortraitDrawSize     = graphicPaths.customPortraitDrawSize;
                     alienComp.customPortraitHeadDrawSize = graphicPaths.customPortraitHeadDrawSize;
-
-                    alienComp.headGraphicPath = alienComp.crownType.NullOrEmpty()
-                                                    ? apg.RandomAlienHead(graphicPaths.head, alien)
-                                                    : AlienPartGenerator.GetAlienHead(graphicPaths.head, apg.useGenderedHeads ? alien.gender.ToString() : "", alienComp.crownType);
 
                     CachedData.hairColor(alien.story) = alienComp.GetChannel("hair").first;
 
@@ -2830,9 +2853,11 @@ namespace AlienRace
                                                                            ShaderDatabase.Cutout)
                                                        : null;
 
-                    __instance.headGraphic = alien.health.hediffSet.HasHead && !alienComp.headGraphicPath.NullOrEmpty() ? 
-                                                 GraphicDatabase.Get<Graphic_Multi>(alienComp.headGraphicPath,
-                                                                                    ContentFinder<Texture2D>.Get(alienComp.headGraphicPath + "_northm", reportFailure: false) == null && graphicPaths.headMasks.NullOrEmpty() ? 
+                    string headGraphicPath = alienProps.alienRace.generalSettings.alienPartGenerator.GetAlienHead(graphicPaths.head, alien);
+
+                    __instance.headGraphic = alien.health.hediffSet.HasHead && !headGraphicPath.NullOrEmpty() ? 
+                                                 GraphicDatabase.Get<Graphic_Multi>(headGraphicPath,
+                                                                                    ContentFinder<Texture2D>.Get(headGraphicPath + "_northm", reportFailure: false) == null && graphicPaths.headMasks.NullOrEmpty() ? 
                                                                                         graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout : 
                                                                                         ShaderDatabase.CutoutComplex, Vector2.one, alien.story.SkinColor,
                                                                                     apg.SkinColor(alien, first: false), null,
@@ -2845,8 +2870,8 @@ namespace AlienRace
                                                                                                                       string.Empty))
                                                  : null;
                     
-                    __instance.desiccatedHeadGraphic = alien.health.hediffSet.HasHead && !alienComp.headGraphicPath.NullOrEmpty() ? 
-                                                           GraphicDatabase.Get<Graphic_Multi>(alienComp.headGraphicPath, ShaderDatabase.Cutout, Vector2.one, PawnGraphicSet.RottingColorDefault) : 
+                    __instance.desiccatedHeadGraphic = alien.health.hediffSet.HasHead && !headGraphicPath.NullOrEmpty() ? 
+                                                           GraphicDatabase.Get<Graphic_Multi>(headGraphicPath, ShaderDatabase.Cutout, Vector2.one, PawnGraphicSet.RottingColorDefault) : 
                                                            null;
                     __instance.skullGraphic = alien.health.hediffSet.HasHead && !graphicPaths.skull.NullOrEmpty()
                                                   ? GraphicDatabase.Get<Graphic_Multi>(graphicPaths.skull, ShaderDatabase.Cutout, Vector2.one, Color.white)
@@ -2888,7 +2913,7 @@ namespace AlienRace
                             __instance.faceTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.FaceTattoo.texPath,
                                                                                               (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ??
                                                                                                ShaderDatabase.CutoutSkinOverlay),
-                                                                                              Vector2.one, tattooColor.first, tattooColor.second, null, alienComp.headGraphicPath);
+                                                                                              Vector2.one, tattooColor.first, tattooColor.second, null, headGraphicPath);
                         else
                             __instance.faceTattooGraphic = null;
 
@@ -2976,10 +3001,10 @@ namespace AlienRace
                 pawn.story.bodyType = DefDatabase<BodyTypeDef>.GetRandom();
 
             if (pawn.def is ThingDef_AlienRace alienProps                                             &&
-                !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.NullOrEmpty() &&
-                !alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.Contains(pawn.story.bodyType))
+                !alienProps.alienRace.generalSettings.alienPartGenerator.bodytypes.NullOrEmpty() &&
+                !alienProps.alienRace.generalSettings.alienPartGenerator.bodytypes.Contains(pawn.story.bodyType))
             {
-                List<BodyTypeDef> bodyTypeDefs = alienProps.alienRace.generalSettings.alienPartGenerator.alienbodytypes.ListFullCopy();
+                List<BodyTypeDef> bodyTypeDefs = alienProps.alienRace.generalSettings.alienPartGenerator.bodytypes.ListFullCopy();
 
                 if (pawn.gender == Gender.Male && bodyTypeDefs.Contains(BodyTypeDefOf.Female) && bodyTypeDefs.Count > 1)
                     bodyTypeDefs.Remove(BodyTypeDefOf.Female);
@@ -3068,8 +3093,8 @@ namespace AlienRace
                     AlienPartGenerator.BodyAddon ba = addons[i];
                     if (!ba.CanDrawAddon(pawn)) continue;
 
-                    Vector3 offsetVector = (ba.defaultOffsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story.bodyType, alienComp.crownType) ?? Vector3.zero) +
-                                           (ba.offsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story.bodyType, alienComp.crownType)        ?? Vector3.zero);
+                    Vector3 offsetVector = (ba.defaultOffsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story.bodyType,pawn.story.headType) ?? Vector3.zero) +
+                                           (ba.offsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story.bodyType, pawn.story.headType)        ?? Vector3.zero);
 
                     //Defaults for tails 
                     //south 0.42f, -0.3f, -0.22f

@@ -85,8 +85,8 @@ public class BodyAddonPawnWrapper
     public virtual bool HasBodyType(BodyTypeDef bodyType) =>
         this.WrappedPawn.story.bodyType == bodyType;
 
-    public virtual bool HasCrownTypeNamed(string crownType) =>
-        this.WrappedPawn.GetComp<AlienPartGenerator.AlienComp>()?.crownType.EqualsIgnoreCase(crownType) ?? false;
+    public virtual bool HasHeadTypeNamed(HeadTypeDef headType) =>
+        this.WrappedPawn.story.headType == headType;
 
     public virtual RotStage? GetRotStage() => this.WrappedPawn.Corpse?.GetRotStage();
 
