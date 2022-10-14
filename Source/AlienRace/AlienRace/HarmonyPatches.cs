@@ -130,8 +130,9 @@ namespace AlienRace
                 new HarmonyMethod(patchType, nameof(ResolveAllGraphicsPrefix)));
             
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer), name: "RenderPawnInternal",
-                                             new[] { typeof(Vector3), typeof(float), typeof(bool), typeof(Rot4), typeof(RotDrawMode), typeof(PawnRenderFlags)}), transpiler:
-                          new HarmonyMethod(patchType, nameof(RenderPawnInternalTranspiler)));
+                                             new[] { typeof(Vector3), typeof(float), typeof(bool), typeof(Rot4), typeof(RotDrawMode), typeof(PawnRenderFlags)}), 
+                          new HarmonyMethod(patchType, nameof(RenderPawnInternalPrefix)),
+                          transpiler: new HarmonyMethod(patchType, nameof(RenderPawnInternalTranspiler)));
 
             harmony.Patch(AccessTools.PropertyGetter(typeof(StartingPawnUtility), "DefaultStartingPawnRequest"),
                           transpiler: new HarmonyMethod(patchType, nameof(DefaultStartingPawnTranspiler)));
@@ -525,7 +526,9 @@ namespace AlienRace
 
         public static Vector2 GetHumanlikeHairSetForPawnHelper(Vector2 headFactor, Pawn pawn)
         {
-            Vector2 drawSize = pawn.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize ?? Vector2.one;
+            Vector2 drawSize = (portraitRender.First.Target as Pawn == pawn && portraitRender.Second ? 
+                                   pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitHeadDrawSize : 
+                                   pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
             return drawSize * headFactor;
         }
 
@@ -561,7 +564,9 @@ namespace AlienRace
 
         public static GraphicMeshSet GetHumanlikeHeadSetForPawnHelper(float lifestageFactor, Pawn pawn)
         {
-            Vector2 drawSize = pawn.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize ?? Vector2.one;
+            Vector2 drawSize = (portraitRender.First.Target as Pawn == pawn && portraitRender.Second ?
+                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitHeadDrawSize :
+                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
 
             return MeshPool.GetMeshSetForWidth(drawSize.x * lifestageFactor, drawSize.y * lifestageFactor);
         }
@@ -598,7 +603,9 @@ namespace AlienRace
 
         public static GraphicMeshSet GetHumanlikeBodySetForPawnHelper(float lifestageFactor, Pawn pawn)
         {
-            Vector2 drawSize = pawn.GetComp<AlienPartGenerator.AlienComp>()?.customDrawSize ?? Vector2.one;
+            Vector2 drawSize = (portraitRender.First.Target as Pawn == pawn && portraitRender.Second ?
+                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitDrawSize :
+                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customDrawSize) ?? Vector2.one;
 
             return MeshPool.GetMeshSetForWidth(drawSize.x * lifestageFactor, drawSize.y * lifestageFactor);
         }
@@ -3082,6 +3089,13 @@ namespace AlienRace
             }
 
             request.KindDef = kindDef;
+        }
+
+        public static Pair<System.WeakReference, bool> portraitRender;
+
+        public static void RenderPawnInternalPrefix(Pawn ___pawn, PawnRenderFlags flags)
+        {
+            portraitRender = new Pair<System.WeakReference, bool>(new System.WeakReference(___pawn), (flags & PawnRenderFlags.Portrait) != 0);
         }
 
         public static IEnumerable<CodeInstruction> RenderPawnInternalTranspiler(IEnumerable<CodeInstruction> instructions)
