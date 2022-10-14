@@ -3050,6 +3050,10 @@ namespace AlienRace
         public static void GeneratePawnPrefix(ref PawnGenerationRequest request)
         {
             PawnKindDef kindDef = request.KindDef;
+
+            if (request.AllowedDevelopmentalStages.Newborn())
+                return;
+
             if (Faction.OfPlayerSilentFail != null && kindDef == PawnKindDefOf.Villager && (request.Faction?.IsPlayer ?? false) && kindDef.race != Faction.OfPlayer?.def.basicMemberKind.race)
                 kindDef = Faction.OfPlayer?.def.basicMemberKind;
 
