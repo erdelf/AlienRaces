@@ -483,9 +483,9 @@ namespace AlienRace
         }
 
         public static IEnumerable<HeadTypeDef> HeadTypeFilter(IEnumerable<HeadTypeDef> headTypes, Pawn pawn) =>
-            pawn.def is not ThingDef_AlienRace alienProps ? 
-                headTypes : 
-                headTypes.Intersect(alienProps.alienRace.generalSettings.alienPartGenerator.HeadTypes);
+            pawn.def is ThingDef_AlienRace alienProps ? 
+                headTypes.Intersect(alienProps.alienRace.generalSettings.alienPartGenerator.HeadTypes) : 
+                headTypes;
 
         public static void GenerateSkillsPostfix(Pawn pawn)
         {
