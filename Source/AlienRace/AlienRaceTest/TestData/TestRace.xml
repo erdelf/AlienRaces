@@ -186,9 +186,9 @@
                     </bodyAddons>
                 </alienPartGenerator>
                 <forcedRaceTraitEntries>
-					<li>
-						<defName>Test_backstory</defName>
-					</li>
+					        <li>
+						        <defName>Test_backstory</defName>
+					        </li>
                 </forcedRaceTraitEntries>
                 <disallowedTraits></disallowedTraits>
                 <traitCount>4</traitCount>

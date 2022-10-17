@@ -38,8 +38,8 @@ namespace AlienRaceTest
         [Test]
         public void TestCanParseCustomBackstoryGraphicXML()
         {
-            AlienPartGenerator.BodyAddonBackstoryGraphic testBackstoryGraphic =
-                new AlienPartGenerator.BodyAddonBackstoryGraphic();
+            AlienPartGenerator.ExtendedBackstoryGraphic testBackstoryGraphic =
+                new AlienPartGenerator.ExtendedBackstoryGraphic();
 
             XmlNode testXmlNode =
                 this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/backstoryGraphics/Test_backstory");
@@ -57,8 +57,8 @@ namespace AlienRaceTest
             // Setup XRefs
             LifeStageDef humanlikeAdultLifeStageDef = AddLifestageWithName("HumanlikeAdult");
 
-            AlienPartGenerator.BodyAddonAgeGraphic testAgeGraphic =
-                new AlienPartGenerator.BodyAddonAgeGraphic();
+            AlienPartGenerator.ExtendedAgeGraphic testAgeGraphic =
+                new AlienPartGenerator.ExtendedAgeGraphic();
 
             XmlNode testXmlNode =
                 this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/backstoryGraphics/Test_backstory/ageGraphics/HumanlikeAdult");
@@ -74,8 +74,8 @@ namespace AlienRaceTest
         [Test]
         public void TestCanParseCustomDamageGraphicXML()
         {
-            AlienPartGenerator.BodyAddonDamageGraphic testDamageGraphic =
-                new AlienPartGenerator.BodyAddonDamageGraphic();
+            AlienPartGenerator.ExtendedDamageGraphic testDamageGraphic =
+                new AlienPartGenerator.ExtendedDamageGraphic();
 
             XmlNode testXmlNode =
                 this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/backstoryGraphics/Test_backstory/ageGraphics/HumanlikeAdult/damageGraphics/a5");
@@ -95,43 +95,43 @@ namespace AlienRaceTest
             AddHediffWithName("Plague");
             AddLifestageWithName("HumanlikeAdult");
 
-            AlienPartGenerator.BodyAddonHediffGraphic bodyAddonHediffGraphic =
-                new AlienPartGenerator.BodyAddonHediffGraphic();
+            AlienPartGenerator.ExtendedHediffGraphic extendedHediffGraphic =
+                new AlienPartGenerator.ExtendedHediffGraphic();
 
             XmlNode testXmlNode =
                 this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/hediffGraphics/Crack");
 
             // Attempt to parse XML
-            bodyAddonHediffGraphic.LoadDataFromXmlCustom(testXmlNode);
+            extendedHediffGraphic.LoadDataFromXmlCustom(testXmlNode);
             DirectXmlCrossRefLoader.ResolveAllWantedCrossReferences(FailMode.LogErrors);
 
-            Assert.AreSame(crackHediffDef, bodyAddonHediffGraphic.hediff);
-            Assert.AreEqual("test/C", bodyAddonHediffGraphic.GetPath());
+            Assert.AreSame(crackHediffDef, extendedHediffGraphic.hediff);
+            Assert.AreEqual("test/C", extendedHediffGraphic.GetPath());
         }
 
         [Test]
         public void TestCanParseCustomHediffSeverityGraphicXML()
         {
             AddLifestageWithName("HumanlikeAdult");
-            AlienPartGenerator.BodyAddonHediffSeverityGraphic bodyAddonHediffSeverityGraphic =
-                new AlienPartGenerator.BodyAddonHediffSeverityGraphic();
+            AlienPartGenerator.ExtendedHediffSeverityGraphic extendedHediffSeverityGraphic =
+                new AlienPartGenerator.ExtendedHediffSeverityGraphic();
 
             XmlNode testXmlNode =
                 this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/hediffGraphics/Crack/hediffGraphics/Plague/severity/a0.5");
 
             // Attempt to parse XML
-            bodyAddonHediffSeverityGraphic.LoadDataFromXmlCustom(testXmlNode);
+            extendedHediffSeverityGraphic.LoadDataFromXmlCustom(testXmlNode);
             DirectXmlCrossRefLoader.ResolveAllWantedCrossReferences(FailMode.LogErrors);
 
-            Assert.AreEqual(0.5f,        bodyAddonHediffSeverityGraphic.severity);
-            Assert.AreEqual("test/CPs5", bodyAddonHediffSeverityGraphic.GetPath());
+            Assert.AreEqual(0.5f,        extendedHediffSeverityGraphic.severity);
+            Assert.AreEqual("test/CPs5", extendedHediffSeverityGraphic.GetPath());
         }
         
         [Test]
         public void TestCanParseCustomGenderGraphicXML()
         {
-            AlienPartGenerator.BodyAddonGenderGraphic testGenderGraphic =
-                new AlienPartGenerator.BodyAddonGenderGraphic();
+            AlienPartGenerator.ExtendedGenderGraphic testGenderGraphic =
+                new AlienPartGenerator.ExtendedGenderGraphic();
 
             XmlNode testXmlNode =
                 this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/genderGraphics/Male");
@@ -146,8 +146,8 @@ namespace AlienRaceTest
         [Test]
         public void TestCanParseCustomGenderGraphicXMLWithWrongCase()
         {
-            AlienPartGenerator.BodyAddonGenderGraphic testGenderGraphic =
-                new AlienPartGenerator.BodyAddonGenderGraphic();
+            AlienPartGenerator.ExtendedGenderGraphic testGenderGraphic =
+                new AlienPartGenerator.ExtendedGenderGraphic();
 
             XmlNode testXmlNode =
                 this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/genderGraphics/feMale");
@@ -162,8 +162,8 @@ namespace AlienRaceTest
         [Test]
         public void TestInvalidGenderIsNeverApplicable()
         {
-            AlienPartGenerator.BodyAddonGenderGraphic testGenderGraphic =
-                new AlienPartGenerator.BodyAddonGenderGraphic();
+            AlienPartGenerator.ExtendedGenderGraphic testGenderGraphic =
+                new AlienPartGenerator.ExtendedGenderGraphic();
 
             XmlNode testXmlNode =
                 this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/genderGraphics/NotARealGender");
@@ -181,8 +181,8 @@ namespace AlienRaceTest
         [Test]
         public void TestCanParseCustomTraitGraphicXML()
         {
-            AlienPartGenerator.BodyAddonTraitGraphic testTraitGraphic =
-                new AlienPartGenerator.BodyAddonTraitGraphic();
+            AlienPartGenerator.ExtendedTraitGraphic testTraitGraphic =
+                new AlienPartGenerator.ExtendedTraitGraphic();
 
             XmlNode testXmlNode =
                 this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/genderGraphics/Male/traitGraphics/Brawler");
@@ -197,8 +197,8 @@ namespace AlienRaceTest
         [Test]
         public void TestCanParseCustomBodytypeGraphicXML()
         {
-            AlienPartGenerator.BodyAddonBodytypeGraphic testBodytypeGraphic =
-                new AlienPartGenerator.BodyAddonBodytypeGraphic();
+            AlienPartGenerator.ExtendedBodytypeGraphic testBodytypeGraphic =
+                new AlienPartGenerator.ExtendedBodytypeGraphic();
 
             XmlNode testXmlNode =
                 this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/genderGraphics/Male/bodytypeGraphics/Thin");
@@ -221,7 +221,7 @@ namespace AlienRaceTest
                 this.BodyAddonNodeMatching("li[bodyPart[contains(text(), 'Nose')]]/backstoryGraphics/Test_backstory");
 
             // Attempt to parse XML
-            AlienPartGenerator.BodyAddonBackstoryGraphic parsedGraphic = DirectXmlToObject.ObjectFromXml<AlienPartGenerator.BodyAddonBackstoryGraphic>(testXmlNode, false);
+            AlienPartGenerator.ExtendedBackstoryGraphic parsedGraphic = DirectXmlToObject.ObjectFromXml<AlienPartGenerator.ExtendedBackstoryGraphic>(testXmlNode, false);
             
             // Reflectively populate all the XRefs
             DirectXmlCrossRefLoader.ResolveAllWantedCrossReferences(FailMode.LogErrors);
@@ -231,17 +231,17 @@ namespace AlienRaceTest
             Assert.IsNotNull(parsedGraphic.ageGraphics);
             Assert.AreEqual(1, parsedGraphic.ageGraphics.Count);
 
-            AlienPartGenerator.BodyAddonAgeGraphic parsedAgeGraphic = parsedGraphic.ageGraphics[0];
+            AlienPartGenerator.ExtendedAgeGraphic parsedAgeGraphic = parsedGraphic.ageGraphics[0];
             Assert.AreSame(humanlikeAdultLifeStageDef, parsedAgeGraphic.age);
             Assert.AreEqual("test/BA", parsedAgeGraphic.GetPath());
             Assert.IsNotNull(parsedAgeGraphic.damageGraphics);
             Assert.AreEqual(2, parsedAgeGraphic.damageGraphics.Count);
 
-            AlienPartGenerator.BodyAddonDamageGraphic parsedDamageGraphic1 = parsedAgeGraphic.damageGraphics[0];
+            AlienPartGenerator.ExtendedDamageGraphic parsedDamageGraphic1 = parsedAgeGraphic.damageGraphics[0];
             Assert.AreEqual(1f,          parsedDamageGraphic1.damage);
             Assert.AreEqual("test/BAd1", parsedDamageGraphic1.GetPath());
             
-            AlienPartGenerator.BodyAddonDamageGraphic parsedDamageGraphic5 = parsedAgeGraphic.damageGraphics[1];
+            AlienPartGenerator.ExtendedDamageGraphic parsedDamageGraphic5 = parsedAgeGraphic.damageGraphics[1];
             Assert.AreEqual(5f,          parsedDamageGraphic5.damage);
             Assert.AreEqual("test/BAd5", parsedDamageGraphic5.GetPath());
         }
@@ -275,7 +275,7 @@ namespace AlienRaceTest
             Assert.AreEqual(1, parsedGraphic.hediffGraphics.Count);
             
                 // Crack
-                AlienPartGenerator.BodyAddonHediffGraphic parsedCrackGraphic = parsedGraphic.hediffGraphics[0];
+                AlienPartGenerator.ExtendedHediffGraphic parsedCrackGraphic = parsedGraphic.hediffGraphics[0];
                 Assert.AreEqual("test/C", parsedCrackGraphic.GetPath());
                 Assert.AreSame(crackHediffDef, parsedCrackGraphic.hediff);
                 
@@ -284,7 +284,7 @@ namespace AlienRaceTest
                 Assert.AreEqual(1, parsedCrackGraphic.hediffGraphics.Count);
                 
                     // Crack->Plague
-                    AlienPartGenerator.BodyAddonHediffGraphic parsedPlagueGraphic = parsedCrackGraphic.hediffGraphics[0];
+                    AlienPartGenerator.ExtendedHediffGraphic parsedPlagueGraphic = parsedCrackGraphic.hediffGraphics[0];
                     Assert.AreEqual("test/CP", parsedPlagueGraphic.GetPath());
                     Assert.AreSame(plagueHediffDef, parsedPlagueGraphic.hediff);
                     
@@ -292,7 +292,7 @@ namespace AlienRaceTest
                     Assert.IsNotNull(parsedPlagueGraphic.severity);
                     Assert.AreEqual(1, parsedPlagueGraphic.severity.Count);
                     
-                        AlienPartGenerator.BodyAddonHediffSeverityGraphic parsedSeverityGraphic = parsedPlagueGraphic.severity[0];
+                        AlienPartGenerator.ExtendedHediffSeverityGraphic parsedSeverityGraphic = parsedPlagueGraphic.severity[0];
                         Assert.AreEqual("test/CPs5", parsedSeverityGraphic.GetPath());
                         Assert.AreEqual(0.5f, parsedSeverityGraphic.severity);
                         
@@ -300,7 +300,7 @@ namespace AlienRaceTest
                         Assert.IsNotNull(parsedSeverityGraphic.backstoryGraphics);
                         Assert.AreEqual(1, parsedSeverityGraphic.backstoryGraphics.Count);
                         
-                            AlienPartGenerator.BodyAddonBackstoryGraphic parsedBackstoryGraphic = parsedSeverityGraphic.backstoryGraphics[0];
+                            AlienPartGenerator.ExtendedBackstoryGraphic parsedBackstoryGraphic = parsedSeverityGraphic.backstoryGraphics[0];
                             //Assert.AreEqual("Test_backstory", parsedBackstoryGraphic.backstory); //linked via def
                             Assert.AreEqual("test/CPs5B", parsedBackstoryGraphic.GetPath());
                             
@@ -308,7 +308,7 @@ namespace AlienRaceTest
                             Assert.IsNotNull(parsedBackstoryGraphic.ageGraphics);
                             Assert.AreEqual(1, parsedBackstoryGraphic.ageGraphics.Count);
                             
-                                AlienPartGenerator.BodyAddonAgeGraphic parsedAgeGraphic = parsedBackstoryGraphic.ageGraphics[0];
+                                AlienPartGenerator.ExtendedAgeGraphic parsedAgeGraphic = parsedBackstoryGraphic.ageGraphics[0];
                                 Assert.AreSame(humanlikeAdultLifeStageDef, parsedAgeGraphic.age);
                                 Assert.AreEqual("test/CPs5BA", parsedAgeGraphic.GetPath());
                                 
@@ -316,11 +316,11 @@ namespace AlienRaceTest
                                 Assert.IsNotNull(parsedAgeGraphic.damageGraphics);
                                 Assert.AreEqual(2, parsedAgeGraphic.damageGraphics.Count);
                                 
-                                    AlienPartGenerator.BodyAddonDamageGraphic parsedDamageGraphic1 = parsedAgeGraphic.damageGraphics[0];
+                                    AlienPartGenerator.ExtendedDamageGraphic parsedDamageGraphic1 = parsedAgeGraphic.damageGraphics[0];
                                     Assert.AreEqual(1f,          parsedDamageGraphic1.damage);
                                     Assert.AreEqual("test/CPs5BAd1", parsedDamageGraphic1.GetPath());
                                     
-                                    AlienPartGenerator.BodyAddonDamageGraphic parsedDamageGraphic5 = parsedAgeGraphic.damageGraphics[1];
+                                    AlienPartGenerator.ExtendedDamageGraphic parsedDamageGraphic5 = parsedAgeGraphic.damageGraphics[1];
                                     Assert.AreEqual(5f,          parsedDamageGraphic5.damage);
                                     Assert.AreEqual("test/CPs5BAd5", parsedDamageGraphic5.GetPath());
 
@@ -429,18 +429,18 @@ namespace AlienRaceTest
                 Assert.IsNotNull(parsedGraphic.genderGraphics);
                 Assert.AreEqual(3, parsedGraphic.genderGraphics.Count);
                 
-                    AlienPartGenerator.BodyAddonGenderGraphic parsedGenderGraphic1 = parsedGraphic.genderGraphics[0];
+                    AlienPartGenerator.ExtendedGenderGraphic parsedGenderGraphic1 = parsedGraphic.genderGraphics[0];
                     // As it is represented by a primitive byte gender can't be null so it defaults to 0 which represents None 
                     Assert.AreEqual(Gender.None, parsedGenderGraphic1.gender);
                     // GetGender provides a safer access, explicitly allowing nulls 
                     Assert.IsNull(parsedGenderGraphic1.GetGender);
                     Assert.AreEqual("test/Narg", parsedGenderGraphic1.GetPath());
                     
-                    AlienPartGenerator.BodyAddonGenderGraphic parsedGenderGraphic2 = parsedGraphic.genderGraphics[1];
+                    AlienPartGenerator.ExtendedGenderGraphic parsedGenderGraphic2 = parsedGraphic.genderGraphics[1];
                     Assert.AreEqual(Gender.Male, parsedGenderGraphic2.GetGender);
                     Assert.AreEqual("test/M", parsedGenderGraphic2.GetPath());
                     
-                    AlienPartGenerator.BodyAddonGenderGraphic parsedGenderGraphic3 = parsedGraphic.genderGraphics[2];
+                    AlienPartGenerator.ExtendedGenderGraphic parsedGenderGraphic3 = parsedGraphic.genderGraphics[2];
                     Assert.AreEqual(Gender.Female, parsedGenderGraphic3.GetGender);
                     Assert.AreEqual("test/f", parsedGenderGraphic3.GetPath());
                     
@@ -448,11 +448,11 @@ namespace AlienRaceTest
                     Assert.IsNotNull(parsedGenderGraphic2.traitGraphics);
                     Assert.AreEqual(2, parsedGenderGraphic2.traitGraphics.Count);
 
-                        AlienPartGenerator.BodyAddonTraitGraphic parsedTraitGraphic1 = parsedGenderGraphic2.traitGraphics[0];
+                        AlienPartGenerator.ExtendedTraitGraphic parsedTraitGraphic1 = parsedGenderGraphic2.traitGraphics[0];
                         Assert.AreEqual("Brawler", parsedTraitGraphic1.trait);
                         Assert.AreEqual("test/MB",    parsedTraitGraphic1.GetPath());
                         
-                        AlienPartGenerator.BodyAddonTraitGraphic parsedTraitGraphic2 = parsedGenderGraphic2.traitGraphics[1];
+                        AlienPartGenerator.ExtendedTraitGraphic parsedTraitGraphic2 = parsedGenderGraphic2.traitGraphics[1];
                         Assert.AreEqual("staggeringly ugly", parsedTraitGraphic2.trait);
                         Assert.AreEqual("test/MSu",    parsedTraitGraphic2.GetPath());
 
@@ -460,7 +460,7 @@ namespace AlienRaceTest
                     Assert.IsNotNull(parsedGenderGraphic2.bodytypeGraphics);
                     Assert.AreEqual(1, parsedGenderGraphic2.bodytypeGraphics.Count);
                         
-                        AlienPartGenerator.BodyAddonBodytypeGraphic parsedBodytypeGraphic = parsedGenderGraphic2.bodytypeGraphics[0];
+                        AlienPartGenerator.ExtendedBodytypeGraphic parsedBodytypeGraphic = parsedGenderGraphic2.bodytypeGraphics[0];
                         //Assert.AreEqual("Thin", parsedBodytypeGraphic.bodytype); //linked via def
                         Assert.AreEqual("test/MT",    parsedBodytypeGraphic.GetPath());
 

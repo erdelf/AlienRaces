@@ -1,23 +1,109 @@
 namespace AlienRace
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using BodyAddonSupport;
+    using System.Xml;
+    using ExtendedGraphics;
+    using HarmonyLib;
+    using JetBrains.Annotations;
     using RimWorld;
     using UnityEngine;
     using Verse;
 
     public partial class AlienPartGenerator
     {
-        public class BodyAddon : AbstractBodyAddonGraphic
+        public class ExtendedGraphicTop : AbstractExtendedGraphic
         {
+            public bool debug = true;
+            public bool Debug => this.debug && (!this.path.NullOrEmpty() || this.GetSubGraphics().MoveNext());
+
+            public bool linkVariantIndexWithPrevious = false;
+
+            public Vector2 drawSize         = Vector2.one;
+            public Vector2 drawSizePortrait = Vector2.zero;
+
+            public int variantCountMax = 0;
+
+            public int VariantCountMax
+            {
+                get => this.variantCountMax;
+                set => this.variantCountMax = Mathf.Max(this.VariantCountMax, value);
+            }
+
             public string bodyPart;
 
+            private const string REWIND_PATH = "void";
+
+            public IExtendedGraphic GetBestGraphic(ExtendedGraphicsPawnWrapper pawn, string part)
+            {
+                Pair<int, IExtendedGraphic> bestGraphic = new(0, this);
+                Stack<Pair<int, IEnumerator<IExtendedGraphic>>> stack = new();
+                stack.Push(new Pair<int, IEnumerator<IExtendedGraphic>>(1, this.GetSubGraphics(pawn, part))); // generate list of subgraphics
+
+                // Loop through sub trees until we find a deeper match or we run out of alternatives
+                while (stack.Count > 0 && (bestGraphic.Second == this || bestGraphic.First < stack.Peek().First))
+                {
+                    Pair<int, IEnumerator<IExtendedGraphic>> currentGraphicSet = stack.Pop(); // get the top of the stack
+
+                    while (currentGraphicSet.Second.MoveNext()) // exits if iterates through list of subgraphics without advancing
+                    {
+                        IExtendedGraphic current = currentGraphicSet.Second.Current; //current branch of tree
+                        //Log.ResetMessageCount();
+                        //Log.Message(Traverse.Create(pawn).Property("WrappedPawn").GetValue<Pawn>().NameShortColored + ": " + AccessTools.GetDeclaredFields(current.GetType())[0].GetValue(current) + " | " + current.GetType().FullName + " | " + current.GetPath());
+                        if (!(current?.IsApplicable(pawn, part) ?? false))
+                            continue;
+                        /*
+                        Log.Message("applicable");
+                        Log.Message((!current.GetPath().NullOrEmpty()).ToString());
+                        Log.Message(current.GetVariantCount().ToString());*/
+                        if (current.GetPath() == REWIND_PATH)
+                            // add the current layer back to the stack so we can rewind
+                            stack.Push(currentGraphicSet);
+                        else if(!current.GetPath().NullOrEmpty() && current.GetVariantCount() > 0)
+                            // Only update best graphic if the current one has a valid path
+                            bestGraphic = new Pair<int, IExtendedGraphic>(currentGraphicSet.First, current);
+                        //Log.Message(bestGraphic.Second.GetPath());
+                        // enters next layer/branch
+                        currentGraphicSet = new Pair<int, IEnumerator<IExtendedGraphic>>(currentGraphicSet.First + 1, current.GetSubGraphics(pawn, part));
+                    }
+                }
+
+                return bestGraphic.Second;
+            }
+
+            public virtual string GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?(), string pathAppendix = null)
+            {
+                IExtendedGraphic bestGraphic = this.GetBestGraphic(new ExtendedGraphicsPawnWrapper(pawn), this.bodyPart); //finds deepest match
+
+                string returnPath      = bestGraphic.GetPath() ?? string.Empty;
+                int    variantCounting = bestGraphic.GetVariantCount();
+
+                if (variantCounting <= 0)
+                    variantCounting = 1;
+
+                savedIndex ??= this.linkVariantIndexWithPrevious ? sharedIndex % this.VariantCountMax : Rand.Range(0, this.VariantCountMax);
+
+                return returnPath + pathAppendix + ((sharedIndex = savedIndex.Value % variantCounting) == 0 ? "" : sharedIndex.ToString());
+            }
+            
+            // Top level so always considered applicable
+            public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, string part) => true;
+
+            [UsedImplicitly]
+            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+            {
+                this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
+            }
+        }
+
+        public class BodyAddon : ExtendedGraphicTop
+        {
             public           string           defaultOffset = "Center";
             [Unsaved] public BodyAddonOffsets defaultOffsets;
 
             public BodyAddonOffsets offsets                      = new();
-            public bool             linkVariantIndexWithPrevious = false;
+            
             public float            angle                        = 0f;
             public bool             inFrontOfBody                = false;
             public bool             layerInvert                  = true;
@@ -31,8 +117,6 @@ namespace AlienRace
 
             public bool alignWithHead = false;
 
-            public Vector2 drawSize              = Vector2.one;
-            public Vector2 drawSizePortrait      = Vector2.zero;
             public bool    drawRotated           = true;
             public bool    scaleWithPawnDrawsize = false;
 
@@ -44,8 +128,6 @@ namespace AlienRace
                 set => this.colorChannel = value ?? "skin";
             }
 
-            public bool debug = true;
-
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
             public List<string>           hiddenUnderApparelTag = new List<string>();
 
@@ -56,39 +138,39 @@ namespace AlienRace
 
             public ShaderTypeDef ShaderType => this.shaderType ??= ShaderTypeDefOf.Cutout;
             
-            private bool VisibleUnderApparelOf(BodyAddonPawnWrapper pawn) =>
+            private bool VisibleUnderApparelOf(ExtendedGraphicsPawnWrapper pawn) =>
                 !pawn.HasApparelGraphics()                                                             ||
                 (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
                 !pawn.GetWornApparel().Any(ap => 
                     !ap.hatRenderedFrontOfFace && ap.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
                     ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
 
-            private bool VisibleForPostureOf(BodyAddonPawnWrapper pawn) =>
+            private bool VisibleForPostureOf(ExtendedGraphicsPawnWrapper pawn) =>
                 (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) &&
                 (pawn.VisibleInBed()                       || this.drawnInBed);
 
-            private bool VisibleForBackstoryOf(BodyAddonPawnWrapper pawn) => this.backstoryRequirement == null ||
+            private bool VisibleForBackstoryOf(ExtendedGraphicsPawnWrapper pawn) => this.backstoryRequirement == null ||
                                                                              pawn.HasBackstory(this.backstoryRequirement);
 
-            private bool VisibleForRotStageOf(BodyAddonPawnWrapper pawn) =>
+            private bool VisibleForRotStageOf(ExtendedGraphicsPawnWrapper pawn) =>
                 this.drawnDesiccated || pawn.GetRotStage() != RotStage.Dessicated;
 
-            private bool RequiredBodyPartExistsFor(BodyAddonPawnWrapper pawn) =>
+            private bool RequiredBodyPartExistsFor(ExtendedGraphicsPawnWrapper pawn) =>
                 this.bodyPart.NullOrEmpty()          ||
                 pawn.HasNamedBodyPart(this.bodyPart) ||
                 (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false);
                 //any missing part textures need to be done on the first branch level
 
-            private bool VisibleForGenderOf(BodyAddonPawnWrapper pawn) =>
+            private bool VisibleForGenderOf(ExtendedGraphicsPawnWrapper pawn) =>
                 pawn.GetGender() == Gender.Female ? this.drawForFemale : this.drawForMale;
 
-            private bool VisibleForBodyTypeOf(BodyAddonPawnWrapper pawn) => 
+            private bool VisibleForBodyTypeOf(ExtendedGraphicsPawnWrapper pawn) => 
                 this.bodyTypeRequirement == null || pawn.HasBodyType(this.bodyTypeRequirement);
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
-                this.CanDrawAddon(new BodyAddonPawnWrapper(pawn));
+                this.CanDrawAddon(new ExtendedGraphicsPawnWrapper(pawn));
 
-            private bool CanDrawAddon(BodyAddonPawnWrapper pawn) =>
+            private bool CanDrawAddon(ExtendedGraphicsPawnWrapper pawn) =>
                 this.VisibleUnderApparelOf(pawn)     &&
                 this.VisibleForPostureOf(pawn)       &&
                 this.VisibleForBackstoryOf(pawn)     &&
@@ -97,77 +179,26 @@ namespace AlienRace
                 this.VisibleForGenderOf(pawn)        &&
                 this.VisibleForBodyTypeOf(pawn);
 
-            public IBodyAddonGraphic GetBestGraphic(BodyAddonPawnWrapper pawn, string part)
+            public virtual Graphic GetGraphic(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
-                Pair<int, IBodyAddonGraphic>                     bestGraphic = new(0, this);
-                Stack<Pair<int, IEnumerator<IBodyAddonGraphic>>> stack       = new();
-                stack.Push(new Pair<int, IEnumerator<IBodyAddonGraphic>>(1, this.GetSubGraphics(pawn, part))); // generate list of subgraphics
-
-                // Loop through sub trees until we find a deeper match or we run out of alternatives
-                while (stack.Count > 0 && (bestGraphic.Second == this || bestGraphic.First < stack.Peek().First))
-                {
-                    Pair<int, IEnumerator<IBodyAddonGraphic>> currentGraphicSet = stack.Pop(); // get the top of the stack
-
-                    while (currentGraphicSet.Second.MoveNext()) // exits if iterates through list of subgraphics without advancing
-                    {
-                        IBodyAddonGraphic current = currentGraphicSet.Second.Current; //current branch of tree
-                        if (!(current?.IsApplicable(pawn, part) ?? false)) 
-                            continue;
-
-                        if (current.GetPath().NullOrEmpty())
-                            // add the current layer back to the stack so we can rewind
-                            stack.Push(currentGraphicSet);
-                        else
-                            // Only update best graphic if the current one has a valid path
-                            bestGraphic = new Pair<int, IBodyAddonGraphic>(currentGraphicSet.First, current);
-
-                        // enters next layer/branch
-                        currentGraphicSet = new Pair<int, IEnumerator<IBodyAddonGraphic>>(currentGraphicSet.First + 1, current.GetSubGraphics(pawn, part));
-                    }
-                }
-
-                return bestGraphic.Second;
-            }
-
-            public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
-            {
-                IBodyAddonGraphic bestGraphic = this.GetBestGraphic(new BodyAddonPawnWrapper(pawn), this.bodyPart); //finds deepest match
-
-                string returnPath      = bestGraphic.GetPath() ?? string.Empty;
-                int    variantCounting = bestGraphic.GetVariantCount();
-
-                if (variantCounting <= 0)
-                    variantCounting = 1;
-
                 ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>()?.GetChannel(this.ColorChannel) ?? new ExposableValueTuple<Color, Color>(Color.white, Color.white);
-                int                               tv;
 
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
 
+                string returnPath = this.GetPath(pawn, ref sharedIndex, savedIndex);
+
                 return !returnPath.NullOrEmpty() ?
-                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(
-                               returnPath += (tv = savedIndex.HasValue ?
-                                                       sharedIndex = savedIndex.Value % variantCounting :
-                                                       this.linkVariantIndexWithPrevious ? 
-                                                           sharedIndex % variantCounting : 
-                                                           sharedIndex = Rand.Range(min: 0, variantCounting)) == 0 ?
-                                                            "" :
-                                                            tv.ToString(),
-                               ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ?
-                                   this.ShaderType.Shader :
-                                   ShaderDatabase.CutoutComplex, this.drawSize * 1.5f, channel.first, channel.second, new GraphicData
-                                                                                                                      {
-                                                                                                                          drawRotated = !this.drawRotated
-                                                                                                                      }) :
+                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ?
+                                                                                               this.ShaderType.Shader : 
+                                                                                               ShaderDatabase.CutoutComplex, this.drawSize * 1.5f, channel.first, channel.second, new GraphicData
+                                                                                                                                                                                  {
+                                                                                                                                                                                      drawRotated = !this.drawRotated
+                                                                                                                                                                                  }) :
                            null;
             }
-
-
-            // Top level so always considered applicable
-            public override bool IsApplicable(BodyAddonPawnWrapper pawn, string part) => true;
         }
 
-        public enum BodyAddonPrioritization : byte
+        public enum ExtendedGraphicsPrioritization : byte
         {
             Severity,
             Hediff,
