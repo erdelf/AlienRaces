@@ -15,7 +15,6 @@ namespace AlienRace
     using Verse;
     using Verse.AI;
     using Verse.Grammar;
-    using Random = System.Random;
 
     /// <summary>
     /// "More useful than the Harmony wiki" ~ Mehni
@@ -3029,10 +3028,10 @@ namespace AlienRace
                 pawn.story.bodyType = DefDatabase<BodyTypeDef>.GetRandom();
 
             if (pawn.def is ThingDef_AlienRace alienProps &&
-                !alienProps.alienRace.generalSettings.alienPartGenerator.bodytypes.NullOrEmpty() &&
-                !alienProps.alienRace.generalSettings.alienPartGenerator.bodytypes.Contains(pawn.story.bodyType))
+                !alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.NullOrEmpty() &&
+                !alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.Contains(pawn.story.bodyType))
             {
-                List<BodyTypeDef> bodyTypeDefs = alienProps.alienRace.generalSettings.alienPartGenerator.bodytypes.ListFullCopy();
+                List<BodyTypeDef> bodyTypeDefs = alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.ListFullCopy();
 
                 if (pawn.gender == Gender.Male && bodyTypeDefs.Contains(BodyTypeDefOf.Female) && bodyTypeDefs.Count > 1)
                     bodyTypeDefs.Remove(BodyTypeDefOf.Female);
