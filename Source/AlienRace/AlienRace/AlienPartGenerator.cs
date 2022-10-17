@@ -4,21 +4,20 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using BodyAddonSupport;
+    using ExtendedGraphics;
     using RimWorld;
     using UnityEngine;
+    using UnityEngine.Analytics;
     using Verse;
+    using Gender = Verse.Gender;
 
     public partial class AlienPartGenerator
     {
         public List<HeadTypeDef> headTypes;
         public List<HeadTypeDef> HeadTypes => 
-            this.headTypes ?? CachedData.defaultHeadTypeDefs;
+            this.headTypes ?? CachedData.DefaultHeadTypeDefs;
 
         public List<BodyTypeDef> bodytypes = new List<BodyTypeDef>();
-
-        public bool useGenderedHeads = true;
-        public bool useGenderedBodies = false;
 
         public int getsGreyAt = 40;
 
@@ -47,10 +46,7 @@
         public List<BodyAddon> bodyAddons = new List<BodyAddon>();
 
         public ThingDef_AlienRace alienProps;
-
-        public string GetAlienHead(string userpath, Pawn pawn) => 
-            GetAlienHead(userpath, this.useGenderedHeads ? pawn.gender : Gender.None, pawn.story.headType);
-
+        /*
         public static string GetAlienHead(string userpath, Gender gender, HeadTypeDef headType)
         {
             string path         = userpath;
@@ -62,14 +58,13 @@
                 path = userpath + (userpath == GraphicPaths.VANILLA_HEAD_PATH ? gender + "/" : "");
 
             return userpath.NullOrEmpty() ? string.Empty : path + headTypePath;
-        }
-
+        }*/
+        /*
         public Graphic GetNakedGraphic(BodyTypeDef bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender, string maskPath) =>
-            GraphicDatabase.Get(typeof(Graphic_Multi), GetNakedPath(bodyType, userpath, this.useGenderedBodies ? gender : ""), shader, Vector2.one, 
-                                skinColor, skinColorSecond, data: null, shaderParameters: null, maskPath: maskPath);
+            GraphicDatabase.Get(typeof(Graphic_Multi), GetNakedPath(bodyType, userpath, this.useGenderedBodies ? gender : ""), shader, Vector2.one, skinColor, skinColorSecond, data: null, shaderParameters: null, maskPath: maskPath);
 
         public static string GetNakedPath(BodyTypeDef bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + (bodyType == BodyTypeDefOf.Baby ? BodyTypeDefOf.Child : bodyType);
-
+        */
         public Color SkinColor(Pawn alien, bool first = true)
         {
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
@@ -141,11 +136,87 @@
         {
             this.GenerateMeshsAndMeshPools(new DefaultGraphicsLoader());
         }
-        
+
         public void GenerateMeshsAndMeshPools(IGraphicsLoader graphicsLoader)
         {
             this.GenerateOffsetDefaults();
-            graphicsLoader.LoadAllGraphics(this.alienProps.defName, this.offsetDefaults, this.bodyAddons);
+            graphicsLoader.LoadAllGraphics(this.alienProps.defName, this.bodyAddons.Cast<ExtendedGraphicTop>().ToArray());
+            
+            if (!this.alienProps.alienRace.graphicPaths.head.GetSubGraphics().MoveNext())
+            {
+                ExtendedGraphicTop headGraphic = this.alienProps.alienRace.graphicPaths.head;
+                string             headPath    = headGraphic.path;
+
+                this.alienProps.alienRace.graphicPaths.head.headtypeGraphics = new List<ExtendedHeadtypeGraphic>();
+
+                foreach (HeadTypeDef headType in this.HeadTypes)
+                {
+                    string headTypePath = Path.GetFileName(headType.graphicPath);
+
+                    headGraphic.headtypeGraphics.Add(new ExtendedHeadtypeGraphic()
+                                                     {
+                                                         headType = headType,
+                                                         path     = headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath.Substring(headTypePath.IndexOf('_') + 1),
+                                                         genderGraphics = new List<ExtendedGenderGraphic>()
+                                                                          {
+                                                                              new ExtendedGenderGraphic()
+                                                                              {
+                                                                                  gender = Enum.TryParse(headTypePath.Substring(0, headTypePath.IndexOf('_')), out Gender gender) ? gender : Gender.None,
+                                                                                  path = headPath + headTypePath
+                                                                              }
+                                                                          }
+                                                     });
+                }
+            }
+
+            if (!this.alienProps.alienRace.graphicPaths.body.GetSubGraphics().MoveNext())
+            {
+                ExtendedGraphicTop bodyGraphic = this.alienProps.alienRace.graphicPaths.body;
+                string             bodyPath    = bodyGraphic.path;
+
+                bodyGraphic.bodytypeGraphics = new List<ExtendedBodytypeGraphic>();
+
+                foreach (BodyTypeDef bodyTypeRaw in this.bodytypes)
+                {
+                    BodyTypeDef bodyType = bodyTypeRaw == BodyTypeDefOf.Baby ? BodyTypeDefOf.Child : bodyTypeRaw;
+
+                    bodyGraphic.bodytypeGraphics.Add(new ExtendedBodytypeGraphic()
+                                                     {
+                                                         bodytype = bodyType,
+                                                         path     = $"{bodyPath}Naked_{bodyType.defName}",
+                                                         genderGraphics = new List<ExtendedGenderGraphic>()
+                                                                          {
+                                                                              new ExtendedGenderGraphic()
+                                                                              {
+                                                                                  gender = Gender.Male,
+                                                                                  path   = $"{bodyPath}{Gender.Male}_Naked_{bodyType.defName}"
+                                                                              },
+                                                                              new ExtendedGenderGraphic()
+                                                                              {
+                                                                                  gender = Gender.Female,
+                                                                                  path   = $"{bodyPath}{Gender.Female}_Naked_{bodyType.defName}"
+                                                                              }
+                                                                          }
+                                                     });
+                }
+            }
+
+
+
+
+
+            graphicsLoader.LoadAllGraphics(this.alienProps.defName, 
+                                           this.alienProps.alienRace.graphicPaths.head,
+                                           this.alienProps.alienRace.graphicPaths.body,
+                                           this.alienProps.alienRace.graphicPaths.skeleton,
+                                           this.alienProps.alienRace.graphicPaths.skull,
+                                           this.alienProps.alienRace.graphicPaths.stump,
+                                           this.alienProps.alienRace.graphicPaths.bodyMasks,
+                                           this.alienProps.alienRace.graphicPaths.headMasks);
+
+            foreach (BodyAddon bodyAddon in this.bodyAddons)
+                // Initialise the offsets of each addon with the generic default offsets
+                bodyAddon.defaultOffsets = this.offsetDefaults.Find(on => on.name == bodyAddon.defaultOffset).offsets;
         }
 
         public class WoundAnchorReplacement
@@ -185,15 +256,20 @@
 
         public class AlienComp : ThingComp
         {
-            public bool          fixGenderPostSpawn;
-            public Vector2       customDrawSize             = Vector2.one;
-            public Vector2       customHeadDrawSize         = Vector2.one;
-            public Vector2       customPortraitDrawSize     = Vector2.one;
-            public Vector2       customPortraitHeadDrawSize = Vector2.one;
-            public int           headMaskVariant            = -1;
-            public int           bodyMaskVariant            = -1;
-            public List<Graphic> addonGraphics;
-            public List<int>     addonVariants;
+            public  bool          fixGenderPostSpawn;
+            public  Vector2       customDrawSize             = Vector2.one;
+            public  Vector2       customHeadDrawSize         = Vector2.one;
+            public  Vector2       customPortraitDrawSize     = Vector2.one;
+            public  Vector2       customPortraitHeadDrawSize = Vector2.one;
+
+            public  int           bodyVariant                = -1;
+            public  int           headVariant                = -1;
+            public  int           headMaskVariant            = -1;
+            public  int           bodyMaskVariant            = -1;
+
+            public  List<Graphic> addonGraphics;
+            public  List<int>     addonVariants;
+        
 
             public int lastAlienMeatIngestedTick = 0;
 
@@ -307,12 +383,13 @@
                 Scribe_Collections.Look(ref this.addonVariants, label: "addonVariants");
                 Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
                 Scribe_NestedCollections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Undefined, LookMode.Undefined);
+
+                Scribe_Values.Look(ref this.headVariant, nameof(this.headVariant), -1);
+                Scribe_Values.Look(ref this.bodyVariant, nameof(this.bodyVariant), -1);
                 Scribe_Values.Look(ref this.headMaskVariant, nameof(this.headMaskVariant), -1);
                 Scribe_Values.Look(ref this.bodyMaskVariant, nameof(this.bodyMaskVariant), -1);
 
-                if (this.colorChannelLinks == null)
-                    this.colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>();
-                    
+                this.colorChannelLinks ??= new Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>();
             }
 
             public ExposableValueTuple<Color, Color> GetChannel(string channel)

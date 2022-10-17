@@ -55,9 +55,7 @@
                             </alienPartGenerator>
                         </generalSettings>
                         <graphicPaths>
-                            <li>
-                                <skinShader>CutoutSkin</skinShader>
-                            </li>
+                            <skinShader>CutoutSkin</skinShader>
                         </graphicPaths>
                         <thoughtSettings>
                             <cannotReceiveThoughts></cannotReceiveThoughts>

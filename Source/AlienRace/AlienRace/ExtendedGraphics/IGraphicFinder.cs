@@ -1,4 +1,4 @@
-namespace AlienRace.BodyAddonSupport;
+namespace AlienRace.ExtendedGraphics;
 
 public interface IGraphicFinder<out T>
 {
