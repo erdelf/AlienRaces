@@ -83,7 +83,7 @@
             {
                 this.alienRace.graphicPaths.head.headtypeGraphics = new List<AlienPartGenerator.ExtendedHeadtypeGraphic>();
 
-                foreach (HeadTypeDef headType in CachedData.DefaultHeadTypeDefs)
+                foreach (HeadTypeDef headType in this.alienRace.generalSettings.alienPartGenerator.HeadTypes)
                 {
                     string headTypePath = Path.GetFileName(headType.graphicPath);
                     
