@@ -1,11 +1,9 @@
 namespace AlienRace
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Xml;
     using ExtendedGraphics;
-    using HarmonyLib;
     using JetBrains.Annotations;
     using RimWorld;
     using UnityEngine;

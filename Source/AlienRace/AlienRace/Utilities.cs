@@ -8,11 +8,9 @@
     using HarmonyLib;
     using JetBrains.Annotations;
     using RimWorld;
-    using RimWorld.Planet;
     using UnityEngine;
     using Verse;
     using Verse.AI;
-    using Verse.AI.Group;
 
     [DefOf]
     public static class AlienDefOf

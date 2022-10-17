@@ -118,7 +118,7 @@
             {
                 this.alienRace.graphicPaths.skeleton.path             = string.Empty;
                 this.alienRace.graphicPaths.skeleton.bodytypeGraphics = new List<AlienPartGenerator.ExtendedBodytypeGraphic>();
-                foreach (BodyTypeDef bodyType in this.alienRace.generalSettings.alienPartGenerator.bodytypes)
+                foreach (BodyTypeDef bodyType in this.alienRace.generalSettings.alienPartGenerator.bodyTypes)
                 {
                     this.alienRace.graphicPaths.skeleton.bodytypeGraphics.Add(new AlienPartGenerator.ExtendedBodytypeGraphic()
                                                                               {

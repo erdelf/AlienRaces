@@ -7,7 +7,6 @@
     using ExtendedGraphics;
     using RimWorld;
     using UnityEngine;
-    using UnityEngine.Analytics;
     using Verse;
     using Gender = Verse.Gender;
 
@@ -17,7 +16,7 @@
         public List<HeadTypeDef> HeadTypes => 
             this.headTypes ?? CachedData.DefaultHeadTypeDefs;
 
-        public List<BodyTypeDef> bodytypes = new List<BodyTypeDef>();
+        public List<BodyTypeDef> bodyTypes = new List<BodyTypeDef>();
 
         public int getsGreyAt = 40;
 
@@ -176,7 +175,7 @@
 
                 bodyGraphic.bodytypeGraphics = new List<ExtendedBodytypeGraphic>();
 
-                foreach (BodyTypeDef bodyTypeRaw in this.bodytypes)
+                foreach (BodyTypeDef bodyTypeRaw in this.bodyTypes)
                 {
                     BodyTypeDef bodyType = bodyTypeRaw == BodyTypeDefOf.Baby ? BodyTypeDefOf.Child : bodyTypeRaw;
 
