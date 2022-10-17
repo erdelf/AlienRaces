@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using System.Text.RegularExpressions;
     using HarmonyLib;
     using JetBrains.Annotations;
@@ -94,8 +95,7 @@
         {
             if (!racePropsToRaceDict.ContainsKey(props))
                 racePropsToRaceDict.Add(props,
-                                        new List<ThingDef>(DefDatabase<ThingDef>.AllDefsListForReading).Concat(new List<ThingDef_AlienRace>(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading))
-                                                                                                    .First(predicate: td => td.race == props));
+                                        new List<ThingDef>(DefDatabase<ThingDef>.AllDefsListForReading).Concat(new List<ThingDef_AlienRace>(DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)).First(predicate: td => td.race == props));
 
             return racePropsToRaceDict[props];
         }
@@ -133,13 +133,17 @@
         public static readonly AccessTools.FieldRef<Pawn_AgeTracker, Pawn> ageTrackerPawn =
             AccessTools.FieldRefAccess<Pawn_AgeTracker, Pawn>(AccessTools.Field(typeof(Pawn_AgeTracker), "pawn"));
 
-        public static List<HeadTypeDef> defaultHeadTypeDefs;
+        private static List<HeadTypeDef> defaultHeadTypeDefs;
 
-        static CachedData() =>
-            LongEventHandler.QueueLongEvent(() =>
-            {
-                defaultHeadTypeDefs = DefDatabase<HeadTypeDef>.AllDefsListForReading.Where(hd =>
-                            Regex.IsMatch(hd.defName, @"(?>Male|Female)_(?>Average|Narrow)(?>Normal|Wide|Pointy)")).ToList();
-            }, "loadingHeadtypeDefs", false, null, false);
+        public static List<HeadTypeDef> DefaultHeadTypeDefs
+        {
+            get => defaultHeadTypeDefs.NullOrEmpty() ? 
+                       DefaultHeadTypeDefs = DefDatabase<HeadTypeDef>.AllDefsListForReading.Where(hd => Regex.IsMatch(hd.defName, @"(?>Male|Female)_(?>Average|Narrow)(?>Normal|Wide|Pointy)")).ToList() : 
+                       defaultHeadTypeDefs;
+            set => defaultHeadTypeDefs = value;
+        }
+
+        public static readonly AccessTools.FieldRef<Dictionary<Type, MethodInfo>> customDataLoadMethodCacheInfo =
+            AccessTools.StaticFieldRefAccess<Dictionary<Type, MethodInfo>>(AccessTools.Field(typeof(DirectXmlToObject), "customDataLoadMethodCache"));
     }
 }

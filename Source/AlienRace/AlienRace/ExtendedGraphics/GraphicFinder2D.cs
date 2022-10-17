@@ -1,4 +1,4 @@
-namespace AlienRace.BodyAddonSupport;
+namespace AlienRace.ExtendedGraphics;
 
 using System;
 using UnityEngine;

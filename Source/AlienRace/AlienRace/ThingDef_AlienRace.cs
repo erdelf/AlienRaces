@@ -5,6 +5,7 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using UnityEngine;
@@ -19,29 +20,12 @@
             this.comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
             base.ResolveReferences();
 
-            if (this.alienRace.graphicPaths.NullOrEmpty())
-                this.alienRace.graphicPaths.Add(new GraphicPaths());
-
             if (this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize == Vector2.zero)
                 this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
             if (this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize == Vector2.zero)
                 this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
+            
 
-            this.alienRace.graphicPaths.ForEach(action: gp =>
-            {
-                if(gp.customDrawSize == Vector2.one)
-                    gp.customDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
-                if (gp.customPortraitDrawSize == Vector2.one)
-                    gp.customPortraitDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
-                if (gp.customHeadDrawSize == Vector2.zero)
-                    gp.customHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize;
-                if (gp.customPortraitHeadDrawSize == Vector2.zero)
-                    gp.customPortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize;
-                if (gp.headOffset == Vector2.zero)
-                    gp.headOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
-                if (gp.headOffsetDirectional == null)
-                    gp.headOffsetDirectional = this.alienRace.generalSettings.alienPartGenerator.headOffsetDirectional;
-            });
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
 
             foreach (Type type in typeof(StyleItemDef).AllSubclassesNonAbstract())
@@ -49,13 +33,100 @@
                     this.alienRace.styleSettings.Add(type, new StyleSettings());
 
             foreach (AlienPartGenerator.BodyAddon bodyAddon in this.alienRace.generalSettings.alienPartGenerator.bodyAddons)
-            {
-                if (bodyAddon.offsets.west == null)
-                    bodyAddon.offsets.west = bodyAddon.offsets.east;
-            }
+                bodyAddon.offsets.west ??= bodyAddon.offsets.east;
 
             if (this.alienRace.generalSettings.minAgeForAdulthood < 0)
                 this.alienRace.generalSettings.minAgeForAdulthood = (float) AccessTools.Field(typeof(PawnBioAndNameGenerator), name: "MinAgeForAdulthood").GetValue(obj: null);
+
+            for (int i = 0; i < this.race.lifeStageAges.Count; i++)
+            {
+                LifeStageAge lsa = this.race.lifeStageAges[i];
+
+                if (lsa is not LifeStageAgeAlien lsaa)
+                {
+                    lsaa = new LifeStageAgeAlien
+                           {
+                               def           = lsa.def,
+                               minAge        = lsa.minAge,
+                               soundAmbience = lsa.soundAmbience,
+                               soundAngry    = lsa.soundAngry,
+                               soundCall     = lsa.soundCall,
+                               soundDeath    = lsa.soundDeath,
+                               soundWounded  = lsa.soundWounded
+                           };
+
+                    this.race.lifeStageAges[i] = lsaa;
+                }
+
+                if (lsaa.customDrawSize == Vector2.one)
+                    lsaa.customDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
+
+                if (lsaa.customPortraitDrawSize == Vector2.one)
+                    lsaa.customPortraitDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
+
+                if (lsaa.customHeadDrawSize == Vector2.zero)
+                    lsaa.customHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize;
+
+                if (lsaa.customPortraitHeadDrawSize == Vector2.zero)
+                    lsaa.customPortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize;
+
+                if (lsaa.headOffset == Vector2.zero)
+                    lsaa.headOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
+
+                lsaa.headOffsetDirectional ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetDirectional;
+            }
+
+            if (this.alienRace.graphicPaths.body.path == GraphicPaths.VANILLA_BODY_PATH && !this.alienRace.graphicPaths.body.GetSubGraphics().MoveNext())
+                ;//this.alienRace.graphicPaths.body.debug = false;
+
+            if (this.alienRace.graphicPaths.head.path == GraphicPaths.VANILLA_HEAD_PATH && !this.alienRace.graphicPaths.head.GetSubGraphics().MoveNext())
+            {
+                this.alienRace.graphicPaths.head.headtypeGraphics = new List<AlienPartGenerator.ExtendedHeadtypeGraphic>();
+
+                foreach (HeadTypeDef headType in CachedData.DefaultHeadTypeDefs)
+                {
+                    string headTypePath = Path.GetFileName(headType.graphicPath);
+                    
+                    AlienPartGenerator.ExtendedHeadtypeGraphic headtypeGraphic = new AlienPartGenerator.ExtendedHeadtypeGraphic()
+                                                                                 {
+                                                                                     headType = headType
+                                                                                 };
+
+                    if (Enum.TryParse(headTypePath.Substring(0, headTypePath.IndexOf('_')), out Gender gender))
+                    {
+                        headtypeGraphic.genderGraphics = new List<AlienPartGenerator.ExtendedGenderGraphic>()
+                                                         {
+                                                             new AlienPartGenerator.ExtendedGenderGraphic()
+                                                             {
+                                                                 gender = gender,
+                                                                 path   = $"{GraphicPaths.VANILLA_HEAD_PATH}{gender}/{headTypePath}"
+                                                             }
+                                                         };
+                    }
+                    else
+                    {
+                        headtypeGraphic.path = GraphicPaths.VANILLA_HEAD_PATH + headTypePath;
+                    }
+
+                    this.alienRace.graphicPaths.head.headtypeGraphics.Add(headtypeGraphic);
+                    //this.alienRace.graphicPaths.head.debug = false;
+                }
+
+            }
+
+            if (this.alienRace.graphicPaths.skeleton.path == GraphicPaths.VANILLA_SKELETON_PATH && !this.alienRace.graphicPaths.skeleton.GetSubGraphics().MoveNext())
+            {
+                this.alienRace.graphicPaths.skeleton.path             = string.Empty;
+                this.alienRace.graphicPaths.skeleton.bodytypeGraphics = new List<AlienPartGenerator.ExtendedBodytypeGraphic>();
+                foreach (BodyTypeDef bodyType in this.alienRace.generalSettings.alienPartGenerator.bodytypes)
+                {
+                    this.alienRace.graphicPaths.skeleton.bodytypeGraphics.Add(new AlienPartGenerator.ExtendedBodytypeGraphic()
+                                                                              {
+                                                                                  bodytype = bodyType,
+                                                                                  path     = bodyType.bodyDessicatedGraphicPath
+                                                                              });
+                }
+            }
 
             void RecursiveAttributeCheck(Type type, Traverse instance)
             {
@@ -92,7 +163,7 @@
         public class AlienSettings
         {
             public GeneralSettings                 generalSettings  = new GeneralSettings();
-            public List<GraphicPaths>              graphicPaths     = new List<GraphicPaths>();
+            public GraphicPaths                    graphicPaths     = new GraphicPaths();
             public Dictionary<Type, StyleSettings> styleSettings    = new Dictionary<Type, StyleSettings>();
             public ThoughtSettings                 thoughtSettings  = new ThoughtSettings();
             public RelationSettings                relationSettings = new RelationSettings();
@@ -153,61 +224,20 @@
 
     public class GraphicPaths
     {
-        public List<LifeStageDef> lifeStageDefs;
-
-        public Vector2 customDrawSize = Vector2.one;
-        public Vector2 customPortraitDrawSize = Vector2.one;
-        public Vector2 customHeadDrawSize = Vector2.zero;
-        public Vector2 customPortraitHeadDrawSize = Vector2.zero;
-
-        public Vector2 headOffset = Vector2.zero;
-        public DirectionOffset headOffsetDirectional;
-
-        public const string VANILLA_HEAD_PATH = "Things/Pawn/Humanlike/Heads/";
+        public const string VANILLA_HEAD_PATH     = "Things/Pawn/Humanlike/Heads/";
+        public const string VANILLA_BODY_PATH     = "Things/Pawn/Humanlike/Bodies/";
         public const string VANILLA_SKELETON_PATH = "Things/Pawn/Humanlike/HumanoidDessicated";
+        
+        public AlienPartGenerator.ExtendedGraphicTop body              = new() { path = VANILLA_BODY_PATH};
+        public AlienPartGenerator.ExtendedGraphicTop bodyMasks         = new() { path = string.Empty };
+        public AlienPartGenerator.ExtendedGraphicTop head              = new() { path = VANILLA_HEAD_PATH };
+        public AlienPartGenerator.ExtendedGraphicTop headMasks         = new() { path = string.Empty };
 
-        public  string body          = "Things/Pawn/Humanlike/Bodies/";
-        public  string bodyMasks     = string.Empty;
-        private int    bodyMaskCount = -1;
-        public  string head          = "Things/Pawn/Humanlike/Heads/";
-        public  string headMasks     = string.Empty;
-        private int    headMaskCount = -1;
-
-        public string skeleton = "Things/Pawn/Humanlike/HumanoidDessicated";
-        public string skull    = "Things/Pawn/Humanlike/Heads/None_Average_Skull";
-        public string stump    = "Things/Pawn/Humanlike/Heads/None_Average_Stump";
+        public AlienPartGenerator.ExtendedGraphicTop skeleton = new() { path = VANILLA_SKELETON_PATH };
+        public AlienPartGenerator.ExtendedGraphicTop skull    = new() { path = "Things/Pawn/Humanlike/Heads/None_Average_Skull" };
+        public AlienPartGenerator.ExtendedGraphicTop stump    = new() { path = "Things/Pawn/Humanlike/Heads/None_Average_Stump" };
 
         public ShaderTypeDef skinShader;
-
-        public int HeadMaskCount
-        {
-            get
-            {
-                if (this.headMaskCount >= 0 || this.headMasks.NullOrEmpty())
-                    return this.headMaskCount;
-
-                this.headMaskCount = 0;
-                while (ContentFinder<Texture2D>.Get($"{this.headMasks}{(this.headMaskCount == 0 ? string.Empty : this.headMaskCount.ToString())}_north", reportFailure: false) != null)
-                    this.headMaskCount++;
-
-                return this.headMaskCount;
-            }
-        }
-
-        public int BodyMaskCount
-        {
-            get
-            {
-                if (this.bodyMaskCount >= 0 || this.bodyMasks.NullOrEmpty())
-                    return this.bodyMaskCount;
-
-                this.bodyMaskCount = 0;
-                while (ContentFinder<Texture2D>.Get($"{this.bodyMasks}{(this.bodyMaskCount == 0 ? string.Empty : this.bodyMaskCount.ToString())}_north", reportFailure: false) != null)
-                    this.bodyMaskCount++;
-
-                return this.bodyMaskCount;
-            }
-        }
     }
 
     public class DirectionOffset
@@ -519,12 +549,6 @@
         public List<ResearchProjectDef> projects = new List<ResearchProjectDef>();
         public List<ThingDef> apparelList;
     }
-    
-    public static class GraphicPathsExtension
-    {
-        public static GraphicPaths GetCurrentGraphicPath(this List<GraphicPaths> list, LifeStageDef lifeStageDef) => 
-            list.FirstOrDefault(predicate: gp => gp.lifeStageDefs?.Contains(lifeStageDef) ?? false) ?? list.First();
-    }
 
     public class Info : DefModExtension
     {
@@ -535,6 +559,14 @@
     public class LifeStageAgeAlien : LifeStageAge
     {
         public BodyDef body;
+
+        public Vector2         headOffset = Vector2.zero;
+        public DirectionOffset headOffsetDirectional;
+
+        public Vector2         customDrawSize             = Vector2.one;
+        public Vector2         customPortraitDrawSize     = Vector2.one;
+        public Vector2         customHeadDrawSize         = Vector2.zero;
+        public Vector2         customPortraitHeadDrawSize = Vector2.zero;
     }
 
     public class CompatibilityInfo

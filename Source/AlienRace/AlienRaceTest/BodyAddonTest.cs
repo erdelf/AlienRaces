@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using AlienRace;
-    using AlienRace.BodyAddonSupport;
+    using AlienRace.ExtendedGraphics;
     using Moq;
     using NUnit.Framework;
     using RimWorld;
@@ -21,14 +21,14 @@
 
         private AlienPartGenerator.BodyAddon GetTestBodyAddon()
         {
-            AlienPartGenerator.BodyAddonHediffGraphic cut = new AlienPartGenerator.BodyAddonHediffGraphic
+            AlienPartGenerator.ExtendedHediffGraphic cut = new AlienPartGenerator.ExtendedHediffGraphic
                                                             {
                                                                 hediff = mockCutHediff.Object,
                                                                 path   = "/hediffGraphics/cut",
                                                                 ageGraphics =
-                                                                    new List<AlienPartGenerator.BodyAddonAgeGraphic>
+                                                                    new List<AlienPartGenerator.ExtendedAgeGraphic>
                                                                     {
-                                                                        new AlienPartGenerator.BodyAddonAgeGraphic
+                                                                        new AlienPartGenerator.ExtendedAgeGraphic
                                                                         {
                                                                             age = mockHumanlikeAdultLifestageDef.Object,
                                                                             path = "/hediffGraphics/cut/age"
@@ -36,14 +36,14 @@
                                                                     }
                                                             };
 
-            AlienPartGenerator.BodyAddonHediffGraphic burn = new AlienPartGenerator.BodyAddonHediffGraphic
+            AlienPartGenerator.ExtendedHediffGraphic burn = new AlienPartGenerator.ExtendedHediffGraphic
                                                              {
                                                                  hediff = mockBurnHediff.Object,
                                                                  path   = "/hediffGraphics/burn",
                                                                  ageGraphics =
-                                                                     new List<AlienPartGenerator.BodyAddonAgeGraphic>
+                                                                     new List<AlienPartGenerator.ExtendedAgeGraphic>
                                                                      {
-                                                                         new AlienPartGenerator.BodyAddonAgeGraphic
+                                                                         new AlienPartGenerator.ExtendedAgeGraphic
                                                                          {
                                                                              age = mockHumanlikeAdultLifestageDef
                                                                              .Object,
@@ -53,19 +53,19 @@
                                                                      },
                                                                  severity =
                                                                      new List<AlienPartGenerator.
-                                                                         BodyAddonHediffSeverityGraphic>
+                                                                         ExtendedHediffSeverityGraphic>
                                                                      {
                                                                          new AlienPartGenerator.
-                                                                         BodyAddonHediffSeverityGraphic
+                                                                         ExtendedHediffSeverityGraphic
                                                                          {
                                                                              path = "/hediffGraphics/burn/severity/a0",
                                                                              severity = 0f,
                                                                              ageGraphics =
                                                                                  new List<AlienPartGenerator.
-                                                                                     BodyAddonAgeGraphic>
+                                                                                     ExtendedAgeGraphic>
                                                                                  {
                                                                                      new AlienPartGenerator.
-                                                                                     BodyAddonAgeGraphic
+                                                                                     ExtendedAgeGraphic
                                                                                      {
                                                                                          age =
                                                                                              mockHumanlikeAdultLifestageDef
@@ -78,26 +78,26 @@
                                                                      }
                                                              };
 
-            AlienPartGenerator.BodyAddonBackstoryGraphic backstory =
-                new AlienPartGenerator.BodyAddonBackstoryGraphic
+            AlienPartGenerator.ExtendedBackstoryGraphic backstory =
+                new AlienPartGenerator.ExtendedBackstoryGraphic
                 {
                     backstory = new BackstoryDef() { defName = "specificBackstory", identifier = "specificBackstory" },
                     path      = "/backstoryGraphics/specificBackstory",
-                    ageGraphics = new List<AlienPartGenerator.BodyAddonAgeGraphic>
+                    ageGraphics = new List<AlienPartGenerator.ExtendedAgeGraphic>
                                   {
-                                      new AlienPartGenerator.BodyAddonAgeGraphic
+                                      new AlienPartGenerator.ExtendedAgeGraphic
                                       {
                                           age  = mockOtherAdultLifestageDef.Object,
                                           path = "/backstoryGraphics/specificBackstory/ageGraphics/otherAdultLifestage",
-                                          damageGraphics = new List<AlienPartGenerator.BodyAddonDamageGraphic>
+                                          damageGraphics = new List<AlienPartGenerator.ExtendedDamageGraphic>
                                                            {
-                                                               new AlienPartGenerator.BodyAddonDamageGraphic
+                                                               new AlienPartGenerator.ExtendedDamageGraphic
                                                                {
                                                                    damage = 1f,
                                                                    path =
                                                                        "/backstoryGraphics/specificBackstory/ageGraphics/otherAdultLifestage/damageGraphics/a1"
                                                                },
-                                                               new AlienPartGenerator.BodyAddonDamageGraphic
+                                                               new AlienPartGenerator.ExtendedDamageGraphic
                                                                {
                                                                    damage = 5f,
                                                                    path =
@@ -106,15 +106,15 @@
                                                            }
                                       }
                                   },
-                    damageGraphics = new List<AlienPartGenerator.BodyAddonDamageGraphic>
+                    damageGraphics = new List<AlienPartGenerator.ExtendedDamageGraphic>
                                      {
-                                         new AlienPartGenerator.BodyAddonDamageGraphic
+                                         new AlienPartGenerator.ExtendedDamageGraphic
                                          {
                                              damage = 1f,
                                              path =
                                                  "/backstoryGraphics/specificBackstory/damageGraphics/a1"
                                          },
-                                         new AlienPartGenerator.BodyAddonDamageGraphic
+                                         new AlienPartGenerator.ExtendedDamageGraphic
                                          {
                                              damage = 5f,
                                              path =
@@ -122,20 +122,20 @@
                                          }
                                      }
                 };
-            AlienPartGenerator.BodyAddonAgeGraphic age = new AlienPartGenerator.BodyAddonAgeGraphic
+            AlienPartGenerator.ExtendedAgeGraphic age = new AlienPartGenerator.ExtendedAgeGraphic
                                                          {
                                                              age  = mockOtherAdultLifestageDef.Object,
                                                              path = "/ageGraphics/otherAdultLifestage",
                                                              damageGraphics =
-                                                                 new List<AlienPartGenerator.BodyAddonDamageGraphic>
+                                                                 new List<AlienPartGenerator.ExtendedDamageGraphic>
                                                                  {
-                                                                     new AlienPartGenerator.BodyAddonDamageGraphic
+                                                                     new AlienPartGenerator.ExtendedDamageGraphic
                                                                      {
                                                                          damage = 1f,
                                                                          path =
                                                                              "/ageGraphics/otherAdultLifestage/damageGraphics/a1"
                                                                      },
-                                                                     new AlienPartGenerator.BodyAddonDamageGraphic
+                                                                     new AlienPartGenerator.ExtendedDamageGraphic
                                                                      {
                                                                          damage = 5f,
                                                                          path =
@@ -144,13 +144,13 @@
                                                                  }
                                                          };
 
-            AlienPartGenerator.BodyAddonDamageGraphic damageA1 = new AlienPartGenerator.BodyAddonDamageGraphic
+            AlienPartGenerator.ExtendedDamageGraphic damageA1 = new AlienPartGenerator.ExtendedDamageGraphic
                                                                  {
                                                                      damage = 1f,
                                                                      path =
                                                                          "/damageGraphics/a1"
                                                                  };
-            AlienPartGenerator.BodyAddonDamageGraphic damageA5 = new AlienPartGenerator.BodyAddonDamageGraphic
+            AlienPartGenerator.ExtendedDamageGraphic damageA5 = new AlienPartGenerator.ExtendedDamageGraphic
                                                                  {
                                                                      damage = 5f,
                                                                      path =
@@ -165,22 +165,22 @@
                                                               ColorChannel  = "base",
                                                               path          = "/",
                                                               hediffGraphics =
-                                                                  new List<AlienPartGenerator.BodyAddonHediffGraphic>
+                                                                  new List<AlienPartGenerator.ExtendedHediffGraphic>
                                                                   {
                                                                       cut, burn
                                                                   },
                                                               backstoryGraphics =
-                                                                  new List<AlienPartGenerator.BodyAddonBackstoryGraphic>
+                                                                  new List<AlienPartGenerator.ExtendedBackstoryGraphic>
                                                                   {
                                                                       backstory
                                                                   },
                                                               ageGraphics =
-                                                                  new List<AlienPartGenerator.BodyAddonAgeGraphic>
+                                                                  new List<AlienPartGenerator.ExtendedAgeGraphic>
                                                                   {
                                                                       age
                                                                   },
                                                               damageGraphics =
-                                                                  new List<AlienPartGenerator.BodyAddonDamageGraphic>
+                                                                  new List<AlienPartGenerator.ExtendedDamageGraphic>
                                                                   {
                                                                       damageA1, damageA5
                                                                   }
@@ -192,14 +192,14 @@
         public void TestReturnsDeepestLeafFromBackstory()
         {
             AlienPartGenerator.BodyAddon addonUnderTest  = this.GetTestBodyAddon();
-            Mock<BodyAddonPawnWrapper>   mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
+            Mock<ExtendedGraphicsPawnWrapper>   mockPawnWrapper = new Mock<ExtendedGraphicsPawnWrapper>();
             mockPawnWrapper.Setup(p => p.HasBackStory(addonUnderTest.backstoryGraphics.First().backstory)).Returns(true);
             mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
             // Resolve
-            IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
+            IExtendedGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
 
             Assert.AreEqual("/backstoryGraphics/specificBackstory/ageGraphics/otherAdultLifestage/damageGraphics/a5",
                             bestGraphic.GetPath());
@@ -209,14 +209,14 @@
         public void TestDoesNotDescendToDamageWhenInGoodHealth()
         {
             AlienPartGenerator.BodyAddon addonUnderTest  = this.GetTestBodyAddon();
-            Mock<BodyAddonPawnWrapper>   mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
+            Mock<ExtendedGraphicsPawnWrapper>   mockPawnWrapper = new Mock<ExtendedGraphicsPawnWrapper>();
             mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.HasBackStory(addonUnderTest.backstoryGraphics.First().backstory)).Returns(true);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(false);
 
             // Resolve
-            IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
+            IExtendedGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
 
             Assert.AreEqual("/backstoryGraphics/specificBackstory/ageGraphics/otherAdultLifestage",
                             bestGraphic.GetPath());
@@ -226,7 +226,7 @@
         public void TestPicksDamageAtTopLevel()
         {
             AlienPartGenerator.BodyAddon addonUnderTest  = this.GetTestBodyAddon();
-            Mock<BodyAddonPawnWrapper>   mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
+            Mock<ExtendedGraphicsPawnWrapper>   mockPawnWrapper = new Mock<ExtendedGraphicsPawnWrapper>();
             mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockHumanlikeAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.HasBackStory(addonUnderTest.backstoryGraphics.First().backstory)).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockBurnHediff.Object, "nose")).Returns(false);
@@ -235,7 +235,7 @@
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
             // Resolve
-            IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
+            IExtendedGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
 
             Assert.AreEqual("/damageGraphics/a5", bestGraphic.GetPath());
         }
@@ -244,7 +244,7 @@
         public void TestPicksDefaultWhenNothingMatches()
         {
             AlienPartGenerator.BodyAddon addonUnderTest  = this.GetTestBodyAddon();
-            Mock<BodyAddonPawnWrapper>   mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
+            Mock<ExtendedGraphicsPawnWrapper>   mockPawnWrapper = new Mock<ExtendedGraphicsPawnWrapper>();
             mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockHumanlikeAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.HasBackStory(addonUnderTest.backstoryGraphics.First().backstory)).Returns(false);
             mockPawnWrapper.Setup(p => p.HasHediffOfDefAndPart(mockBurnHediff.Object, "nose")).Returns(false);
@@ -253,7 +253,7 @@
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(false);
 
             // Resolve
-            IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
+            IExtendedGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
 
             Assert.AreEqual("/", bestGraphic.GetPath());
         }
@@ -263,7 +263,7 @@
         {
             AlienPartGenerator.BodyAddon addonUnderTest = this.GetTestBodyAddon();
             addonUnderTest.path = null;
-            Mock<BodyAddonPawnWrapper> mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
+            Mock<ExtendedGraphicsPawnWrapper> mockPawnWrapper = new Mock<ExtendedGraphicsPawnWrapper>();
             mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockHumanlikeAdultLifestageDef.Object))
                         .Returns(true);
             mockPawnWrapper.Setup(p => p.HasBackStory(addonUnderTest.backstoryGraphics.First().backstory)).Returns(false);
@@ -273,7 +273,7 @@
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
             // Resolve
-            IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
+            IExtendedGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
 
             Assert.AreEqual("/damageGraphics/a5", bestGraphic.GetPath());
         }
@@ -284,7 +284,7 @@
             AlienPartGenerator.BodyAddon addonUnderTest = this.GetTestBodyAddon();
             addonUnderTest.backstoryGraphics[0].ageGraphics[0].damageGraphics
                        .Find(d => Math.Abs(d.damage - 5f) < 0.0001).path = null;
-            Mock<BodyAddonPawnWrapper> mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
+            Mock<ExtendedGraphicsPawnWrapper> mockPawnWrapper = new Mock<ExtendedGraphicsPawnWrapper>();
             mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object))
                         .Returns(true);
             mockPawnWrapper.Setup(p => p.HasBackStory(addonUnderTest.backstoryGraphics.First().backstory)).Returns(true);
@@ -292,7 +292,7 @@
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
             // Resolve
-            IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
+            IExtendedGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
 
             Assert.AreEqual("/backstoryGraphics/specificBackstory/ageGraphics/otherAdultLifestage",
                             bestGraphic.GetPath());
@@ -305,7 +305,7 @@
             addonUnderTest.backstoryGraphics[0].ageGraphics[0].path = null;
             addonUnderTest.backstoryGraphics[0].ageGraphics[0].damageGraphics
                        .Find(d => Math.Abs(d.damage - 5f) < 0.0001).path = null;
-            Mock<BodyAddonPawnWrapper> mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
+            Mock<ExtendedGraphicsPawnWrapper> mockPawnWrapper = new Mock<ExtendedGraphicsPawnWrapper>();
             mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object))
                         .Returns(true);
             mockPawnWrapper.Setup(p => p.HasBackStory(addonUnderTest.backstoryGraphics.First().backstory)).Returns(true);
@@ -313,7 +313,7 @@
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
             // Resolve
-            IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
+            IExtendedGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
 
             Assert.AreEqual("/backstoryGraphics/specificBackstory/damageGraphics/a5",
                             bestGraphic.GetPath());
@@ -326,22 +326,22 @@
         {
             AlienPartGenerator.BodyAddon addonUnderTest = this.GetTestBodyAddon();
             addonUnderTest.backstoryGraphics[0].ageGraphics[0].ageGraphics =
-                new List<AlienPartGenerator.BodyAddonAgeGraphic>
+                new List<AlienPartGenerator.ExtendedAgeGraphic>
                 {
-                    new AlienPartGenerator.BodyAddonAgeGraphic
+                    new AlienPartGenerator.ExtendedAgeGraphic
                     {
                         age = mockOtherAdultLifestageDef.Object,
                         path = "" //if not null would have been ./ageGraphics/otherAdultLifestage/ageGraphics/otherAdultLifestage
                     }
                 };
-            Mock<BodyAddonPawnWrapper> mockPawnWrapper = new Mock<BodyAddonPawnWrapper>();
+            Mock<ExtendedGraphicsPawnWrapper> mockPawnWrapper = new Mock<ExtendedGraphicsPawnWrapper>();
             mockPawnWrapper.Setup(p => p.CurrentLifeStageDefMatches(this.mockOtherAdultLifestageDef.Object)).Returns(true);
             mockPawnWrapper.Setup(p => p.HasBackStory(addonUnderTest.backstoryGraphics.First().backstory)).Returns(true);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 1f)).Returns(false);
             mockPawnWrapper.Setup(p => p.IsPartBelowHealthThreshold("nose", 5f)).Returns(true);
 
             // Resolve
-            IBodyAddonGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
+            IExtendedGraphic bestGraphic = addonUnderTest.GetBestGraphic(mockPawnWrapper.Object, "nose");
 
             Assert.AreEqual("/backstoryGraphics/specificBackstory/ageGraphics/otherAdultLifestage/damageGraphics/a5",
                             bestGraphic.GetPath());

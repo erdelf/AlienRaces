@@ -1,4 +1,4 @@
-﻿namespace AlienRace.BodyAddonSupport;
+﻿namespace AlienRace.ExtendedGraphics;
 
 using System.Collections.Generic;
 using System.Linq;
@@ -8,13 +8,13 @@ using Verse;
 /**
  * Encapsulates pawn access for the purpose of BodyAddon access.
  */
-public class BodyAddonPawnWrapper
+public class ExtendedGraphicsPawnWrapper
 {
     private Pawn WrappedPawn { get; set; }
 
-    public BodyAddonPawnWrapper(Pawn pawn) => this.WrappedPawn = pawn;
+    public ExtendedGraphicsPawnWrapper(Pawn pawn) => this.WrappedPawn = pawn;
 
-    public BodyAddonPawnWrapper()
+    public ExtendedGraphicsPawnWrapper()
     {
     }
 

@@ -1,7 +1,7 @@
 namespace AlienRaceTest.BodyAddonSupport
 {
     using System.Runtime.Serialization;
-    using AlienRace.BodyAddonSupport;
+    using AlienRace.ExtendedGraphics;
     using Moq;
     using NUnit.Framework;
     using TestSupport;
@@ -11,7 +11,7 @@ namespace AlienRaceTest.BodyAddonSupport
     public class BodyAddonPawnWrapperTest : BaseUnityTest
     {
         private Pawn                 pawn;
-        private BodyAddonPawnWrapper pawnWrapperUnderTest;
+        private ExtendedGraphicsPawnWrapper pawnWrapperUnderTest;
 
         [SetUp]
         public void SetupBodyAddonPawnWrapperTest()
@@ -22,7 +22,7 @@ namespace AlienRaceTest.BodyAddonSupport
                 .GetUninitializedObject(typeof(Pawn_HealthTracker)); //does not call ctor
             healthTracker.hediffSet   = new HediffSet(this.pawn);
             this.pawn.health          = healthTracker;
-            this.pawnWrapperUnderTest = new BodyAddonPawnWrapper(this.pawn);
+            this.pawnWrapperUnderTest = new ExtendedGraphicsPawnWrapper(this.pawn);
         }
 
         [Test]
