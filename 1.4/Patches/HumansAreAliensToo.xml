@@ -32,13 +32,13 @@
                                     <li>Female_NarrowPointy</li>
                                     <li>Female_NarrowWide</li>
                                 </headTypes>
-								<bodytypes>
+								<bodyTypes>
 									<li>Male</li>
 									<li>Female</li>
 									<li>Thin</li>
 									<li>Hulk</li>
 									<li>Fat</li>
-								</bodytypes>
+								</bodyTypes>
                                 <colorChannels>
                                     <li>
                                         <name>skin</name>
