@@ -28,8 +28,8 @@ public partial class AlienPartGenerator
 
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, string part) =>
-            pawn.IsPartBelowHealthThreshold(part, this.damage);
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+            pawn.IsPartBelowHealthThreshold(part, partLabel, this.damage);
     }
 
     //Age Graphics
@@ -52,7 +52,7 @@ public partial class AlienPartGenerator
 
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, string part) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
             pawn.CurrentLifeStageDefMatches(this.age);
     }
 
@@ -63,10 +63,10 @@ public partial class AlienPartGenerator
         public HediffDef hediff;
         public List<ExtendedHediffSeverityGraphic> severity;
 
-        public override IEnumerator<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, string part)
+        public override IEnumerator<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel)
         {
-            float maxSeverityOfHediff = pawn.SeverityOfHediffsOnPart(this.hediff, part).Max();
-            IEnumerator<IExtendedGraphic> genericSubGraphics = base.GetSubGraphics(pawn, part); //run rest of graphic cycles
+            float maxSeverityOfHediff = pawn.SeverityOfHediffsOnPart(this.hediff, part, partLabel).Max();
+            IEnumerator<IExtendedGraphic> genericSubGraphics = base.GetSubGraphics(pawn, part, partLabel); //run rest of graphic cycles
             while (genericSubGraphics.MoveNext())
             {
                 IExtendedGraphic current = genericSubGraphics.Current;
@@ -90,8 +90,8 @@ public partial class AlienPartGenerator
                 _ => base.GetSubGraphicsOfPriority(priority)
             };
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, string part) =>
-            pawn.HasHediffOfDefAndPart(this.hediff, part);
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+            pawn.HasHediffOfDefAndPart(this.hediff, part, partLabel);
 
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
@@ -124,7 +124,7 @@ public partial class AlienPartGenerator
         // In isolation severity graphics must always be considered applicable because we don't have the hediff
         // As severityGraphics are only valid nested It is expected that the list will only contain applicable instances. 
         // the specific severity amount check is done above in the hediff level
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, string part) => true;
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) => true;
     }
 
     //Backstory Graphics
@@ -141,7 +141,7 @@ public partial class AlienPartGenerator
 
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, string part) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
             pawn.HasBackStory(this.backstory);
     }
 
@@ -164,7 +164,7 @@ public partial class AlienPartGenerator
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, string part) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
             this.genderIsValid && pawn.GetGender() == this.gender;
     }
 
@@ -181,7 +181,7 @@ public partial class AlienPartGenerator
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, string part) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
             pawn.HasTraitWithIdentifier(this.trait);
     }
 
@@ -198,7 +198,7 @@ public partial class AlienPartGenerator
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, string part) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
             pawn.HasBodyType(this.bodytype);
     }
 
@@ -215,7 +215,7 @@ public partial class AlienPartGenerator
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, string part) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
             pawn.HasHeadTypeNamed(this.headType);
     }
 }
