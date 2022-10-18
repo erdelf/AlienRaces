@@ -36,12 +36,12 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     public int GetVariantCount() => this.variantCount;
     public int IncrementVariantCount() => this.variantCount++;
 
-    public abstract bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, string part);
+    public abstract bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel);
 
     private static IEnumerable<AlienPartGenerator.ExtendedGraphicsPrioritization> GetPrioritiesByDeclarationOrder() => 
         Enum.GetValues(typeof(AlienPartGenerator.ExtendedGraphicsPrioritization)).Cast<AlienPartGenerator.ExtendedGraphicsPrioritization>();
 
-    public virtual IEnumerator<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, string part) =>
+    public virtual IEnumerator<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
         this.GetSubGraphics();
 
     /**
