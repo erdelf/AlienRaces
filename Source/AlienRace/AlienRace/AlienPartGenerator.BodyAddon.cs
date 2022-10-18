@@ -21,7 +21,7 @@ namespace AlienRace
             public Vector2 drawSize         = Vector2.one;
             public Vector2 drawSizePortrait = Vector2.zero;
 
-            public int variantCountMax = 0;
+            public int variantCountMax;
 
             public int VariantCountMax
             {
@@ -29,15 +29,16 @@ namespace AlienRace
                 set => this.variantCountMax = Mathf.Max(this.VariantCountMax, value);
             }
 
-            public string bodyPart;
+            public BodyPartDef bodyPart;
+            public string      bodyPartLabel;
 
             private const string REWIND_PATH = "void";
 
-            public IExtendedGraphic GetBestGraphic(ExtendedGraphicsPawnWrapper pawn, string part)
+            public IExtendedGraphic GetBestGraphic(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel)
             {
                 Pair<int, IExtendedGraphic> bestGraphic = new(0, this);
                 Stack<Pair<int, IEnumerator<IExtendedGraphic>>> stack = new();
-                stack.Push(new Pair<int, IEnumerator<IExtendedGraphic>>(1, this.GetSubGraphics(pawn, part))); // generate list of subgraphics
+                stack.Push(new Pair<int, IEnumerator<IExtendedGraphic>>(1, this.GetSubGraphics(pawn, part, partLabel))); // generate list of subgraphics
 
                 // Loop through sub trees until we find a deeper match or we run out of alternatives
                 while (stack.Count > 0 && (bestGraphic.Second == this || bestGraphic.First < stack.Peek().First))
@@ -49,7 +50,7 @@ namespace AlienRace
                         IExtendedGraphic current = currentGraphicSet.Second.Current; //current branch of tree
                         //Log.ResetMessageCount();
                         //Log.Message(Traverse.Create(pawn).Property("WrappedPawn").GetValue<Pawn>().NameShortColored + ": " + AccessTools.GetDeclaredFields(current.GetType())[0].GetValue(current) + " | " + current.GetType().FullName + " | " + current.GetPath());
-                        if (!(current?.IsApplicable(pawn, part) ?? false))
+                        if (!(current?.IsApplicable(pawn, part, partLabel) ?? false))
                             continue;
                         /*
                         Log.Message("applicable");
@@ -63,7 +64,7 @@ namespace AlienRace
                             bestGraphic = new Pair<int, IExtendedGraphic>(currentGraphicSet.First, current);
                         //Log.Message(bestGraphic.Second.GetPath());
                         // enters next layer/branch
-                        currentGraphicSet = new Pair<int, IEnumerator<IExtendedGraphic>>(currentGraphicSet.First + 1, current.GetSubGraphics(pawn, part));
+                        currentGraphicSet = new Pair<int, IEnumerator<IExtendedGraphic>>(currentGraphicSet.First + 1, current.GetSubGraphics(pawn, part, partLabel));
                     }
                 }
 
@@ -72,7 +73,7 @@ namespace AlienRace
 
             public virtual string GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?(), string pathAppendix = null)
             {
-                IExtendedGraphic bestGraphic = this.GetBestGraphic(new ExtendedGraphicsPawnWrapper(pawn), this.bodyPart); //finds deepest match
+                IExtendedGraphic bestGraphic = this.GetBestGraphic(new ExtendedGraphicsPawnWrapper(pawn), this.bodyPart, this.bodyPartLabel); //finds deepest match
 
                 string returnPath      = bestGraphic.GetPath() ?? string.Empty;
                 int    variantCounting = bestGraphic.GetVariantCount();
@@ -86,7 +87,7 @@ namespace AlienRace
             }
             
             // Top level so always considered applicable
-            public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, string part) => true;
+            public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) => true;
 
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
@@ -154,8 +155,7 @@ namespace AlienRace
                 this.drawnDesiccated || pawn.GetRotStage() != RotStage.Dessicated;
 
             private bool RequiredBodyPartExistsFor(ExtendedGraphicsPawnWrapper pawn) =>
-                this.bodyPart.NullOrEmpty()          ||
-                pawn.HasNamedBodyPart(this.bodyPart) ||
+                pawn.HasNamedBodyPart(this.bodyPart, this.bodyPartLabel) ||
                 (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false);
                 //any missing part textures need to be done on the first branch level
 

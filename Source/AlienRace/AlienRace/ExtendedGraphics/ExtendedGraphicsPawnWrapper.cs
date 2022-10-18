@@ -22,36 +22,29 @@ public class ExtendedGraphicsPawnWrapper
     public virtual bool HasBackStory(BackstoryDef backstory) =>
         this.GetBackstories().Contains(backstory); //matches pawn backstory with input
 
-    private static bool
-        IsHediffOfDefAndPart(Hediff hediff, HediffDef hediffDef,
-                             string part) => //checks if specific hediff is on given part or no part
-        hediff.def == hediffDef &&
-        (hediff.Part == null                         ||
-         part.NullOrEmpty()                          ||
-         hediff.Part.untranslatedCustomLabel == part ||
-         hediff.Part.def.defName             == part);
+    private bool IsHediffOfDefAndPart(Hediff hediff, HediffDef hediffDef, BodyPartDef part, string partLabel) => //checks if specific hediff is on given part or no part
+        hediff.def == hediffDef && (hediff.Part == null || this.IsBodyPart(hediff.Part, part, partLabel));
 
-    public virtual IEnumerable<float> SeverityOfHediffsOnPart(HediffDef hediffDef, string part) =>
+    public virtual IEnumerable<float> SeverityOfHediffsOnPart(HediffDef hediffDef, BodyPartDef part, string partLabel) =>
         this.GetHediffList()
-         .Where(h => IsHediffOfDefAndPart(h, hediffDef, part))
+         .Where(h => IsHediffOfDefAndPart(h, hediffDef, part, partLabel))
          .Select(h => h.Severity);
 
     //hediff isApplicable
-    public virtual bool HasHediffOfDefAndPart(HediffDef hediffDef, string part) => this
-        .GetHediffList() //get list of pawn hediffs
-        .Any(h => IsHediffOfDefAndPart(h, hediffDef, part)); //compares pawn hediffs to specified hediff def and part
+    public virtual bool HasHediffOfDefAndPart(HediffDef hediffDef, BodyPartDef part, string partLabel) => 
+        this.GetHediffList().Any(h => this.IsHediffOfDefAndPart(h, hediffDef, part, partLabel)); //compares pawn hediffs to specified hediff def and part
 
     //age isApplicable
     public virtual bool CurrentLifeStageDefMatches(LifeStageDef lifeStageDef) =>
         this.WrappedPawn.ageTracker?.CurLifeStage?.Equals(lifeStageDef) ?? false;
 
     //damage isApplicable
-    public virtual bool IsPartBelowHealthThreshold(string part, float healthThreshold) =>
+    public virtual bool IsPartBelowHealthThreshold(BodyPartDef part, string partLabel, float healthThreshold) =>
         // look for part where a given hediff has a part matching defined part
         this.GetHediffList()
          .Select(hediff => hediff.Part)
          .Where(hediffPart => hediffPart != null)
-         .Where(hediffPart => hediffPart.untranslatedCustomLabel == part || hediffPart.def?.defName == part)
+         .Where(hediffPart => this.IsBodyPart(hediffPart, part, partLabel))
              //check if part health is less than health texture limit, needs to config ascending
          .Any(p => healthThreshold >= this.GetHediffSet().GetPartHealth(p));
 
@@ -74,9 +67,14 @@ public class ExtendedGraphicsPawnWrapper
     public virtual bool HasBackstory(BackstoryDef backstory) =>
         this.WrappedPawn.story?.AllBackstories?.Contains(backstory) ?? false;
 
-    public virtual bool HasNamedBodyPart(string part) =>
-        this.GetHediffSet().GetNotMissingParts()
-         ?.Any(bpr => bpr.untranslatedCustomLabel == part || bpr.def.defName == part) ?? false;
+    public virtual bool HasNamedBodyPart(BodyPartDef part, string partLabel) =>
+        (part == null && partLabel.NullOrEmpty()) || this.GetBodyPart(part, partLabel) != null;
+
+    public virtual BodyPartRecord GetBodyPart(BodyPartDef part, string partLabel) =>
+        this.GetHediffSet().GetNotMissingParts()?.FirstOrDefault(bpr => IsBodyPart(bpr, part, partLabel));
+
+    public virtual bool IsBodyPart(BodyPartRecord bpr, BodyPartDef part, string partLabel) =>
+        (partLabel.NullOrEmpty() || bpr.untranslatedCustomLabel == partLabel) && (part == null || bpr.def == part);
 
     public virtual Gender GetGender() => this.WrappedPawn.gender;
 
