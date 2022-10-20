@@ -80,7 +80,7 @@ namespace AlienRace
 
                 if (variantCounting <= 0)
                     variantCounting = 1;
-
+                
                 savedIndex ??= this.linkVariantIndexWithPrevious ? sharedIndex % this.VariantCountMax : Rand.Range(0, this.VariantCountMax);
 
                 return returnPath + pathAppendix + ((sharedIndex = savedIndex.Value % variantCounting) == 0 ? "" : sharedIndex.ToString());

@@ -2868,8 +2868,7 @@ namespace AlienRace
 
                     string bodyPath = graphicPaths.body.GetPath(alien, ref sharedIndex, alienComp.bodyVariant);
                     alienComp.bodyVariant = sharedIndex;
-
-                    string bodyMask = graphicPaths.bodyMasks.GetPath(alien, ref sharedIndex, alienComp.bodyMaskVariant);
+                    string bodyMask = graphicPaths.bodyMasks.GetPath(alien, ref sharedIndex, alienComp.bodyMaskVariant < 0 ? null : alienComp.bodyMaskVariant);
                     alienComp.bodyMaskVariant = sharedIndex;
 
                     __instance.nakedGraphic = !bodyPath.NullOrEmpty() ?
@@ -2893,11 +2892,11 @@ namespace AlienRace
                     string headPath = graphicPaths.head.GetPath(alien, ref sharedIndex, alienComp.headVariant);
                     alienComp.headVariant = sharedIndex;
 
-                    string headMask = graphicPaths.headMasks.GetPath(alien, ref sharedIndex, alienComp.headMaskVariant);
+                    string headMask = graphicPaths.headMasks.GetPath(alien, ref sharedIndex, alienComp.headMaskVariant < 0 ? null : alienComp.headMaskVariant);
                     alienComp.headMaskVariant = sharedIndex;
 
                     __instance.headGraphic = alien.health.hediffSet.HasHead && !headPath.NullOrEmpty() ? 
-                                                 GraphicDatabase.Get<Graphic_Multi>(headPath, ContentFinder<Texture2D>.Get(headPath + "_northm", reportFailure: false) == null ? 
+                                                 GraphicDatabase.Get<Graphic_Multi>(headPath, headMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(headPath + "_northm", reportFailure: false) == null ? 
                                                                                                          graphicPaths.skinShader?.Shader ?? ShaderDatabase.CutoutSkin : ShaderDatabase.CutoutComplex, 
                                                                                     Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false), null, headMask)
                                                  : null;
