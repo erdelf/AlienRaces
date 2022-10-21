@@ -259,11 +259,11 @@
                 foreach (XmlNode xmlNode in xmlRoot.ChildNodes)
                     switch (xmlNode.Name)
                     {
-                        case "name": 
+                        case "name":
                             this.name = xmlNode.InnerText.Trim();
                             break;
                         case "first":
-                            if(this.entries.NullOrEmpty())
+                            if (this.entries.NullOrEmpty())
                                 this.entries.Add(new ColorChannelGeneratorCategory() { weight = 100f });
                             this.entries[0].first = DirectXmlToObject.ObjectFromXml<ColorGenerator>(xmlNode, false);
                             break;
@@ -281,7 +281,7 @@
 
         public class ColorChannelGeneratorCategory
         {
-            public float          weight;
+            public float          weight = float.Epsilon;
             public ColorGenerator first;
             public ColorGenerator second;
         }
@@ -335,7 +335,7 @@
                         {
                             if (!this.colorChannels.ContainsKey(channel.name))
                                 this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color>(Color.white, Color.white));
-                            this.colorChannels[channel.name] = this.colorChannels[channel.name];
+                            this.colorChannels[channel.name] = this.GenerateChannel(channel, this.colorChannels[channel.name]);
                         }
                         
                         ExposableValueTuple<Color, Color> hairColors = this.colorChannels[key: "hair"];
