@@ -1,8 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Configuration>
   <Excluded>
-    <exclude>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\AlienRaces Dev\.git</exclude>
-    <exclude>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\AlienRaces Dev\.vs</exclude>
-    <exclude>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\AlienRaces Dev\Source</exclude>
+    <exclude>.git</exclude>
+    <exclude>.idea</exclude>
+    <exclude>.vs</exclude>
+    <exclude>Source</exclude>
   </Excluded>
 </Configuration>
