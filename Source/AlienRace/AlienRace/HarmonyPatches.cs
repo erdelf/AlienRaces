@@ -259,10 +259,11 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(JobDriver_Lovin), "GenerateRandomMinTicksToNextLovin"), transpiler: new HarmonyMethod(patchType, nameof(GenerateRandomMinTicksToNextLovinTranspiler)));
             
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeBodySetForPawnTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn)),  transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeBodySetForPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn)),  transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)),  transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBeardSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderer),             nameof(PawnRenderer.GetBodyOverlayMeshSet)),                   postfix: new HarmonyMethod(patchType, nameof(GetBodyOverlayMeshSetPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateSkills"), new HarmonyMethod(patchType, nameof(GenerateSkillsPrefix)), postfix: new HarmonyMethod(patchType, nameof(GenerateSkillsPostfix)));
 
@@ -272,7 +273,6 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(GrowthUtility),   nameof(GrowthUtility.IsGrowthBirthday)),       transpiler: new HarmonyMethod(patchType, nameof(IsGrowthBirthdayTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), nameof(Pawn_AgeTracker.TryChildGrowthMoment)), new HarmonyMethod(patchType,             nameof(TryChildGrowthMomentPrefix)));
             harmony.Patch(AccessTools.Method(typeof(Gizmo_GrowthTier), "GrowthTierTooltip"), new HarmonyMethod(patchType,             nameof(GrowthTierTooltipPrefix)));
-
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -420,6 +420,20 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static void GetBodyOverlayMeshSetPostfix(PawnRenderer __instance, Pawn ___pawn, ref GraphicMeshSet __result)
+        {
+            if (!___pawn.RaceProps.Humanlike)
+                return;
+
+            Vector2 drawSize = (portraitRender.First.Target as Pawn == ___pawn && portraitRender.Second ?
+                                    ___pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitHeadDrawSize :
+                                    ___pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
+
+            Vector3 vector3 = __result.MeshAt(Rot4.North).vertices[2] * 2;
+
+            __result = MeshPool.GetMeshSetForWidth(drawSize.x * vector3.x, drawSize.y * vector3.z);
         }
 
         public static void GrowthTierTooltipPrefix(Pawn ___child) =>
@@ -1073,7 +1087,6 @@ namespace AlienRace
                 {
                     if (anchor == anchorReplacement.replacement && anchorReplacement.offsets != null)
                     {
-                        AlienPartGenerator.AlienComp alienComp = ___pawn.GetComp<AlienPartGenerator.AlienComp>();
                         anchorOffset = anchorReplacement.offsets.GetOffset(anchor.rotation!.Value).GetOffset(false, ___pawn.story.bodyType, ___pawn.story.headType);
                         return;
                     }
@@ -2602,7 +2615,7 @@ namespace AlienRace
 
         public static void BirthdayBiologicalPrefix(Pawn ___pawn)
         {
-            if (___pawn.def is not ThingDef_AlienRace alienProps) 
+            if (___pawn.def is not ThingDef_AlienRace) 
                 return;
 
             if (!___pawn.def.race.lifeStageAges.Skip(count: 1).Any() || ___pawn.ageTracker.CurLifeStageIndex == 0) 
@@ -2700,7 +2713,7 @@ namespace AlienRace
 
         public static void GiveAppropriateBioAndNameToPostfix(Pawn pawn)
         {
-            if (pawn.def is ThingDef_AlienRace alienProps)
+            if (pawn.def is ThingDef_AlienRace)
             {
                 //Log.Message(pawn.LabelCap);
 
@@ -3079,11 +3092,11 @@ namespace AlienRace
             request.KindDef = kindDef;
         }
 
-        public static Pair<System.WeakReference, bool> portraitRender;
+        public static Pair<WeakReference, bool> portraitRender;
 
         public static void RenderPawnInternalPrefix(Pawn ___pawn, PawnRenderFlags flags)
         {
-            portraitRender = new Pair<System.WeakReference, bool>(new System.WeakReference(___pawn), (flags & PawnRenderFlags.Portrait) != 0);
+            portraitRender = new Pair<WeakReference, bool>(new WeakReference(___pawn), (flags & PawnRenderFlags.Portrait) != 0);
         }
 
         public static IEnumerable<CodeInstruction> RenderPawnInternalTranspiler(IEnumerable<CodeInstruction> instructions)
