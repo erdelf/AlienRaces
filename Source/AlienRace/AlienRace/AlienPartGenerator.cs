@@ -426,7 +426,7 @@
                 Scribe_Values.Look(ref this.fixGenderPostSpawn, label: "fixAlienGenderPostSpawn");
                 Scribe_Collections.Look(ref this.addonVariants, label: "addonVariants");
                 Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
-                Scribe_NestedCollections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Undefined, LookMode.Undefined);
+                Scribe_NestedCollections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Undefined, LookMode.Deep);
 
                 Scribe_Values.Look(ref this.headVariant, nameof(this.headVariant), -1);
                 Scribe_Values.Look(ref this.bodyVariant, nameof(this.bodyVariant), -1);
@@ -536,7 +536,10 @@
 
             public void ExposeData()
             {
-                Scribe_Values.Look(ref this.first, label: "first");
+                if(typeof(TK).GetInterface(nameof(IExposable)) != null)
+                    Scribe_Deep.Look(ref this.first, label: nameof(this.first));
+                else
+                    Scribe_Values.Look(ref this.first, label: "first");
                 Scribe_Values.Look(ref this.second, label: "second");
             }
         }
