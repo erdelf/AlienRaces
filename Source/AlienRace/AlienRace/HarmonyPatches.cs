@@ -448,9 +448,8 @@ namespace AlienRace
             Vector2 drawSize = (portraitRender.First.Target as Pawn == ___pawn && portraitRender.Second ?
                                     ___pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitHeadDrawSize :
                                     ___pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
-
-            Vector3 vector3 = __result.MeshAt(Rot4.North).vertices[2] * 2;
-
+            float   lifeStageFactor = ModsConfig.BiotechActive ? ___pawn.ageTracker.CurLifeStage.bodyWidth ?? 1f : 1f;
+            Vector3 vector3         = __result.MeshAt(Rot4.North).vertices[2] * 2 * lifeStageFactor;
             __result = MeshPool.GetMeshSetForWidth(drawSize.x * vector3.x, drawSize.y * vector3.z);
         }
 
