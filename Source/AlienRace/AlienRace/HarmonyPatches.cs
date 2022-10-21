@@ -274,6 +274,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), nameof(Pawn_AgeTracker.TryChildGrowthMoment)), new HarmonyMethod(patchType,             nameof(TryChildGrowthMomentPrefix)));
             harmony.Patch(AccessTools.Method(typeof(Gizmo_GrowthTier), "GrowthTierTooltip"), new HarmonyMethod(patchType,             nameof(GrowthTierTooltipPrefix)));
 
+            harmony.Patch(AccessTools.Method(typeof(Pawn_StyleTracker), nameof(Pawn_StyleTracker.FinalizeHairColor)),  postfix: new HarmonyMethod(patchType, nameof(FinalizeHairColorPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Toils_StyleChange), nameof(Toils_StyleChange.FinalizeLookChange)), postfix: new HarmonyMethod(patchType, nameof(FinalizeLookChangePostfix)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -421,6 +424,21 @@ namespace AlienRace
 
             AlienRaceMod.settings.UpdateSettings();
         }
+
+        public static void FinalizeLookChangePostfix(ref Toil __result)
+        {
+            
+            Action initAction = __result.initAction;
+            Toil   toil       = __result;
+            __result.initAction = () =>
+                              {
+                                  initAction();
+                                  toil.actor.GetComp<AlienPartGenerator.AlienComp>()?.OverwriteColorChannel("hair", toil.actor.style.nextHairColor);
+                              };
+        }
+
+        public static void FinalizeHairColorPostfix(Pawn_StyleTracker __instance) =>
+            __instance.pawn.GetComp<AlienPartGenerator.AlienComp>()?.OverwriteColorChannel("hair", __instance.pawn.style.nextHairColor);
 
         public static void GetBodyOverlayMeshSetPostfix(PawnRenderer __instance, Pawn ___pawn, ref GraphicMeshSet __result)
         {
