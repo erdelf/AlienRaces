@@ -4,7 +4,9 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Xml;
     using ExtendedGraphics;
+    using JetBrains.Annotations;
     using RimWorld;
     using UnityEngine;
     using Verse;
@@ -247,7 +249,39 @@
 
         public class ColorChannelGenerator
         {
-            public string         name = "";
+            public string                              name = "";
+            public List<ColorChannelGeneratorCategory> entries = new List<ColorChannelGeneratorCategory>();
+
+
+            [UsedImplicitly]
+            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+            {
+                foreach (XmlNode xmlNode in xmlRoot.ChildNodes)
+                    switch (xmlNode.Name)
+                    {
+                        case "name": 
+                            this.name = xmlNode.InnerText.Trim();
+                            break;
+                        case "first":
+                            if(this.entries.NullOrEmpty())
+                                this.entries.Add(new ColorChannelGeneratorCategory() { weight = 100f });
+                            this.entries[0].first = DirectXmlToObject.ObjectFromXml<ColorGenerator>(xmlNode, false);
+                            break;
+                        case "second":
+                            if (this.entries.NullOrEmpty())
+                                this.entries.Add(new ColorChannelGeneratorCategory() { weight = 100f });
+                            this.entries[0].second = DirectXmlToObject.ObjectFromXml<ColorGenerator>(xmlNode, false);
+                            break;
+                        case "entries":
+                            this.entries = DirectXmlToObject.ObjectFromXml<List<ColorChannelGeneratorCategory>>(xmlNode, false);
+                            break;
+                    }
+            }
+        }
+
+        public class ColorChannelGeneratorCategory
+        {
+            public float          weight;
             public ColorGenerator first;
             public ColorGenerator second;
         }
@@ -273,7 +307,7 @@
             public int lastAlienMeatIngestedTick = 0;
 
             private Dictionary<string, ExposableValueTuple<Color, Color>> colorChannels;
-            private Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>   colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>();
+            private Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>   colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
 
             public Dictionary<string, ExposableValueTuple<Color, Color>> ColorChannels
             {
@@ -282,7 +316,7 @@
                     if (this.colorChannels == null || !this.colorChannels.Any())
                     {
                         this.colorChannels     = new Dictionary<string, ExposableValueTuple<Color, Color>>();
-                        this.colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>();
+                        this.colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
                         Pawn               pawn       = (Pawn) this.parent;
                         ThingDef_AlienRace alienProps = ((ThingDef_AlienRace) this.parent.def);
                         AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
@@ -301,11 +335,7 @@
                         {
                             if (!this.colorChannels.ContainsKey(channel.name))
                                 this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color>(Color.white, Color.white));
-                            ExposableValueTuple<Color, Color> colors = this.colorChannels[channel.name];
-                            if (channel.first != null)
-                                colors.first = this.GenerateColor(channel, true);
-                            if (channel.second != null)
-                                colors.second = this.GenerateColor(channel, false);
+                            this.colorChannels[channel.name] = this.colorChannels[channel.name];
                         }
                         
                         ExposableValueTuple<Color, Color> hairColors = this.colorChannels[key: "hair"];
@@ -343,18 +373,33 @@
                 }
             }
 
-            public Color GenerateColor(ColorChannelGenerator channel, bool first)
+
+            public ExposableValueTuple<Color, Color> GenerateChannel(ColorChannelGenerator channel, ExposableValueTuple<Color, Color> colors = null)
             {
-                ColorGenerator gen = first ? channel.first : channel.second;
+                colors ??= new ExposableValueTuple<Color, Color>();
+
+                ColorChannelGeneratorCategory categoryEntry = channel.entries.RandomElementByWeight(ccgc => ccgc.weight);
+
+                if (categoryEntry.first != null)
+                    colors.first = this.GenerateColor(channel, categoryEntry, true);
+                if (categoryEntry.second != null)
+                    colors.second = this.GenerateColor(channel, categoryEntry, false);
+
+                return colors;
+            }
+
+            public Color GenerateColor(ColorChannelGenerator channel, ColorChannelGeneratorCategory category, bool first)
+            {
+                ColorGenerator gen = first ? category.first : category.second;
 
                 switch (gen)
                 {
                     case ColorGenerator_CustomAlienChannel ac:
                         string[] split = ac.colorChannel.Split('_');
                         if (!this.colorChannelLinks.ContainsKey(split[0]))
-                            this.colorChannelLinks.Add(split[0], new HashSet<ExposableValueTuple<string, bool>>());
-
-                        this.colorChannelLinks[split[0]].Add(new ExposableValueTuple<string, bool>(channel.name, first));
+                            this.colorChannelLinks.Add(split[0], new HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool >>());
+                        if (this.colorChannelLinks[split[0]].All(evt => evt.first.first != channel.name))
+                            this.colorChannelLinks[split[0]].Add(new ExposableValueTuple<ExposableValueTuple<string, int>, bool>(new ExposableValueTuple<string, int>(channel.name, channel.entries.IndexOf(category)), first));
                         return split[1] == "1" ? this.ColorChannels[split[0]].first : this.ColorChannels[split[0]].second;
                     case ColorGenerator_SkinColorMelanin cm:
                         return cm.naturalMelanin ? 
@@ -388,7 +433,7 @@
                 Scribe_Values.Look(ref this.headMaskVariant, nameof(this.headMaskVariant), -1);
                 Scribe_Values.Look(ref this.bodyMaskVariant, nameof(this.bodyMaskVariant), -1);
 
-                this.colorChannelLinks ??= new Dictionary<string, HashSet<ExposableValueTuple<string, bool>>>();
+                this.colorChannelLinks ??= new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
             }
 
             public ExposableValueTuple<Color, Color> GetChannel(string channel)
@@ -402,11 +447,7 @@
                 foreach (ColorChannelGenerator apgChannel in apg.colorChannels)
                     if (apgChannel.name == channel)
                     {
-                        this.ColorChannels.Add(channel, new ExposableValueTuple<Color, Color>());
-                        if (apgChannel.first != null)
-                            this.ColorChannels[channel].first = this.GenerateColor(apgChannel, true);
-                        if (apgChannel.second != null)
-                            this.ColorChannels[channel].second = this.GenerateColor(apgChannel, false);
+                        this.ColorChannels.Add(channel, this.GenerateChannel(apgChannel));
 
                         return this.ColorChannels[channel];
                     }
@@ -416,7 +457,7 @@
 
             public void RegenerateColorChannelLinks()
             {
-                foreach (KeyValuePair<string, HashSet<ExposableValueTuple<string, bool>>> kvp in this.colorChannelLinks) 
+                foreach (KeyValuePair<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> kvp in this.colorChannelLinks) 
                     this.RegenerateColorChannelLink(kvp.Key);
             }
 
@@ -426,17 +467,16 @@
                 AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
 
                 if (this.colorChannelLinks.ContainsKey(channel))
-                    foreach (ExposableValueTuple<string, bool> link in this.colorChannelLinks[channel])
+                    foreach (ExposableValueTuple<ExposableValueTuple<string, int>, bool> link in this.colorChannelLinks[channel])
                     {
                         foreach (ColorChannelGenerator apgChannel in apg.colorChannels)
                         {
-                            if (apgChannel.name == link.first)
+                            if (apgChannel.name == link.first.first)
                             {
                                 if (link.second)
-                                    this.ColorChannels[link.first].first = this.GenerateColor(apgChannel, true);
+                                    this.ColorChannels[link.first.first].first = this.GenerateColor(apgChannel, apgChannel.entries[link.first.second], true);
                                 else
-                                    this.ColorChannels[link.first].second = this.GenerateColor(apgChannel, false);
-                                
+                                    this.ColorChannels[link.first.first].second = this.GenerateColor(apgChannel, apgChannel.entries[link.first.second], false);
                             }
                         }
                     }
@@ -463,6 +503,13 @@
                     if (comp != null)
                         comp.colorChannels = null;
                 }
+            }
+
+            [DebugAction("AlienRace", name: "Reresolve graphics", actionType = DebugActionType.ToolMapForPawns)]
+            // ReSharper disable once UnusedMember.Local
+            private static void ReresolveGraphic(Pawn p)
+            {
+                p.Drawer?.renderer?.graphics?.SetAllGraphicsDirty();
             }
         }
 
