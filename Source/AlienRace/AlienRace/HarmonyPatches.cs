@@ -2902,7 +2902,7 @@ namespace AlienRace
                     alienComp.bodyMaskVariant = sharedIndex;
 
                     __instance.nakedGraphic = !bodyPath.NullOrEmpty() ?
-                                                  GraphicDatabase.Get<Graphic_Multi>(bodyPath, ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
+                                                  GraphicDatabase.Get<Graphic_Multi>(bodyPath, bodyMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
                                                                                                    graphicPaths.skinShader?.Shader ?? ShaderDatabase.CutoutSkin : ShaderDatabase.CutoutComplex, 
                                                                                      Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false), null, bodyMask) :
                                                   null;
