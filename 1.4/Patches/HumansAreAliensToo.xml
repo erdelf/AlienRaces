@@ -33,6 +33,8 @@
                                     <li>Female_NarrowWide</li>
                                 </headTypes>
 								<bodyTypes>
+                                    <li MayRequire="Ludeon.RimWorld.Biotech">Baby</li>
+                                    <li MayRequire="Ludeon.RimWorld.Biotech">Child</li>
 									<li>Male</li>
 									<li>Female</li>
 									<li>Thin</li>
