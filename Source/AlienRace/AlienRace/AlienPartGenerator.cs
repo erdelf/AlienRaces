@@ -150,7 +150,7 @@
 
                 this.alienProps.alienRace.graphicPaths.head.headtypeGraphics = new List<ExtendedHeadtypeGraphic>();
 
-                foreach (HeadTypeDef headType in this.HeadTypes)
+                foreach (HeadTypeDef headType in this.HeadTypes.Concat(DefDatabase<HeadTypeDef>.AllDefs.Where(htd => !htd.requiredGenes.NullOrEmpty())))
                 {
                     string headTypePath = Path.GetFileName(headType.graphicPath);
 
@@ -181,6 +181,8 @@
                     headGraphic.headtypeGraphics.Add(headtypeGraphic);
                 }
             }
+
+            //Log.Message(string.Join("\n", this.alienProps.alienRace.graphicPaths.head.headtypeGraphics.Select(ehg => $"{ehg.headType.defName}: {ehg.path} | {string.Join("|", ehg.genderGraphics?.Select(egg => $"{egg.gender}: {egg.path}") ?? new []{string.Empty})}")));
 
             if (!this.alienProps.alienRace.graphicPaths.body.GetSubGraphics().MoveNext())
             {

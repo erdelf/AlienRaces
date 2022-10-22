@@ -83,20 +83,26 @@
             {
                 this.alienRace.graphicPaths.head.headtypeGraphics = new List<AlienPartGenerator.ExtendedHeadtypeGraphic>();
 
-                foreach (HeadTypeDef headType in this.alienRace.generalSettings.alienPartGenerator.HeadTypes)
+                foreach (HeadTypeDef headType in this.alienRace.generalSettings.alienPartGenerator.HeadTypes.Concat(DefDatabase<HeadTypeDef>.AllDefs.Where(htd => !htd.requiredGenes.NullOrEmpty())))
                 {
                     string headTypePath = Path.GetFileName(headType.graphicPath);
-                    
-                    AlienPartGenerator.ExtendedHeadtypeGraphic headtypeGraphic = new AlienPartGenerator.ExtendedHeadtypeGraphic()
+
+                    AlienPartGenerator.ExtendedHeadtypeGraphic headtypeGraphic = new()
                                                                                  {
                                                                                      headType = headType
                                                                                  };
 
-                    if (Enum.TryParse(headTypePath.Substring(0, headTypePath.IndexOf('_')), out Gender gender))
+                    bool gaunt = headType.defName == "Gaunt";
+
+                    if (gaunt)
+                    {
+                        headtypeGraphic.path = GraphicPaths.VANILLA_HEAD_PATH + "Genes/" + headTypePath;
+                    }
+                    else if (Enum.TryParse(headTypePath.Substring(0, headTypePath.IndexOf('_')), out Gender gender))
                     {
                         headtypeGraphic.genderGraphics = new List<AlienPartGenerator.ExtendedGenderGraphic>()
                                                          {
-                                                             new AlienPartGenerator.ExtendedGenderGraphic()
+                                                             new()
                                                              {
                                                                  gender = gender,
                                                                  path   = $"{GraphicPaths.VANILLA_HEAD_PATH}{gender}/{headTypePath}"
