@@ -154,19 +154,31 @@
                 {
                     string headTypePath = Path.GetFileName(headType.graphicPath);
 
-                    headGraphic.headtypeGraphics.Add(new ExtendedHeadtypeGraphic()
-                                                     {
-                                                         headType = headType,
-                                                         path     = headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath.Substring(headTypePath.IndexOf('_') + 1),
-                                                         genderGraphics = new List<ExtendedGenderGraphic>()
-                                                                          {
-                                                                              new ExtendedGenderGraphic()
-                                                                              {
-                                                                                  gender = Enum.TryParse(headTypePath.Substring(0, headTypePath.IndexOf('_')), out Gender gender) ? gender : Gender.None,
-                                                                                  path = headPath + headTypePath
-                                                                              }
-                                                                          }
-                                                     });
+                    int  ind            = headTypePath.IndexOf('_');
+                    bool genderIncluded = headType.gender != Gender.None && ind >= 0 && Enum.TryParse(headTypePath.Substring(0, ind), out Gender _);
+                    headTypePath = genderIncluded ? headTypePath.Substring(ind + 1) : headTypePath;
+
+                    ExtendedHeadtypeGraphic headtypeGraphic = new()
+                                                              {
+                                                                  headType = headType,
+                                                                  path     = headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath,
+                                                              };
+
+
+                    Gender firstGender = genderIncluded ? headType.gender : Gender.Male;
+                    headtypeGraphic.genderGraphics.Add(new ExtendedGenderGraphic
+                                                       {
+                                                           gender = firstGender,
+                                                           path   = headPath + firstGender + "_" + headTypePath
+                                                       });
+                    if (!genderIncluded)
+                        headtypeGraphic.genderGraphics.Add(new ExtendedGenderGraphic
+                                                           {
+                                                               gender = Gender.Female,
+                                                               path   = headPath + Gender.Female + headTypePath
+                                                           });
+
+                    headGraphic.headtypeGraphics.Add(headtypeGraphic);
                 }
             }
 
