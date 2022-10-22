@@ -3199,7 +3199,7 @@ namespace AlienRace
                                                      (isPortrait ? 
                                                          alienComp.customPortraitDrawSize : 
                                                          alienComp.customDrawSize
-                                                        ) * (ModsConfig.BiotechActive ? pawn.ageTracker.CurLifeStage.bodySizeFactor : 1.5f)
+                                                        ) * (ModsConfig.BiotechActive ? pawn.ageTracker.CurLifeStage.bodySizeFactor : 1) * 1.5f
                                                  : Vector2.one * 1.5f);
 
                     Material mat = addonGraphic.MatAt(rotation);
