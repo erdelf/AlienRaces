@@ -18,14 +18,14 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     private List<AlienPartGenerator.ExtendedGraphicsPrioritization>   prioritization;
     #pragma warning restore CS0649
 
-    public  List<AlienPartGenerator.ExtendedHediffGraphic>    hediffGraphics;
-    public  List<AlienPartGenerator.ExtendedBackstoryGraphic> backstoryGraphics;
-    public  List<AlienPartGenerator.ExtendedAgeGraphic>       ageGraphics;
-    public  List<AlienPartGenerator.ExtendedDamageGraphic>    damageGraphics;
-    public List<AlienPartGenerator.ExtendedGenderGraphic>     genderGraphics;
-    public List<AlienPartGenerator.ExtendedTraitGraphic>      traitGraphics;
-    public List<AlienPartGenerator.ExtendedBodytypeGraphic>   bodytypeGraphics;
-    public List<AlienPartGenerator.ExtendedHeadtypeGraphic>   headtypeGraphics;
+    public List<AlienPartGenerator.ExtendedHediffGraphic>    hediffGraphics;
+    public List<AlienPartGenerator.ExtendedBackstoryGraphic> backstoryGraphics;
+    public List<AlienPartGenerator.ExtendedAgeGraphic>       ageGraphics;
+    public List<AlienPartGenerator.ExtendedDamageGraphic>    damageGraphics;
+    public List<AlienPartGenerator.ExtendedGenderGraphic>    genderGraphics;
+    public List<AlienPartGenerator.ExtendedTraitGraphic>     traitGraphics;
+    public List<AlienPartGenerator.ExtendedBodytypeGraphic>  bodytypeGraphics;
+    public List<AlienPartGenerator.ExtendedHeadtypeGraphic>  headtypeGraphics;
 
 
     protected List<AlienPartGenerator.ExtendedGraphicsPrioritization> Prioritization =>
