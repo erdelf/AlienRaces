@@ -2896,7 +2896,7 @@ namespace AlienRace
 
                     int sharedIndex = 0;
 
-                    string bodyPath = graphicPaths.body.GetPath(alien, ref sharedIndex, alienComp.bodyVariant);
+                    string bodyPath = graphicPaths.body.GetPath(alien, ref sharedIndex, alienComp.bodyVariant < 0 ? null : alienComp.bodyVariant);
                     alienComp.bodyVariant = sharedIndex;
                     string bodyMask = graphicPaths.bodyMasks.GetPath(alien, ref sharedIndex, alienComp.bodyMaskVariant < 0 ? null : alienComp.bodyMaskVariant);
                     alienComp.bodyMaskVariant = sharedIndex;
@@ -2919,7 +2919,7 @@ namespace AlienRace
                                                        GraphicDatabase.Get<Graphic_Multi>(skeletonPath, ShaderDatabase.Cutout) : 
                                                        null;
 
-                    string headPath = graphicPaths.head.GetPath(alien, ref sharedIndex, alienComp.headVariant);
+                    string headPath = graphicPaths.head.GetPath(alien, ref sharedIndex, alienComp.headVariant < 0 ? null : alienComp.headVariant);
                     alienComp.headVariant = sharedIndex;
 
                     string headMask = graphicPaths.headMasks.GetPath(alien, ref sharedIndex, alienComp.headMaskVariant < 0 ? null : alienComp.headMaskVariant);
