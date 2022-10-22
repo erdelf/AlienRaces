@@ -145,11 +145,12 @@
             
             if (!this.alienProps.alienRace.graphicPaths.head.GetSubGraphics().MoveNext())
             {
+                
                 ExtendedGraphicTop headGraphic = this.alienProps.alienRace.graphicPaths.head;
                 string             headPath    = headGraphic.path;
-
+                
                 this.alienProps.alienRace.graphicPaths.head.headtypeGraphics = new List<ExtendedHeadtypeGraphic>();
-
+                
                 foreach (HeadTypeDef headType in this.HeadTypes.Concat(DefDatabase<HeadTypeDef>.AllDefs.Where(htd => !htd.requiredGenes.NullOrEmpty())))
                 {
                     string headTypePath = Path.GetFileName(headType.graphicPath);
@@ -157,15 +158,17 @@
                     int  ind            = headTypePath.IndexOf('_');
                     bool genderIncluded = headType.gender != Gender.None && ind >= 0 && Enum.TryParse(headTypePath.Substring(0, ind), out Gender _);
                     headTypePath = genderIncluded ? headTypePath.Substring(ind + 1) : headTypePath;
-
+                    
                     ExtendedHeadtypeGraphic headtypeGraphic = new()
                                                               {
                                                                   headType = headType,
                                                                   path     = headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath,
+                                                                  genderGraphics = new List<ExtendedGenderGraphic>()
                                                               };
 
-
+                    
                     Gender firstGender = genderIncluded ? headType.gender : Gender.Male;
+                    
                     headtypeGraphic.genderGraphics.Add(new ExtendedGenderGraphic
                                                        {
                                                            gender = firstGender,
@@ -177,11 +180,11 @@
                                                                gender = Gender.Female,
                                                                path   = headPath + Gender.Female + headTypePath
                                                            });
-
+                    
                     headGraphic.headtypeGraphics.Add(headtypeGraphic);
                 }
             }
-
+            
             //Log.Message(string.Join("\n", this.alienProps.alienRace.graphicPaths.head.headtypeGraphics.Select(ehg => $"{ehg.headType.defName}: {ehg.path} | {string.Join("|", ehg.genderGraphics?.Select(egg => $"{egg.gender}: {egg.path}") ?? new []{string.Empty})}")));
 
             if (!this.alienProps.alienRace.graphicPaths.body.GetSubGraphics().MoveNext())
@@ -215,9 +218,7 @@
                                                      });
                 }
             }
-
-
-
+            
 
 
             graphicsLoader.LoadAllGraphics(this.alienProps.defName, 
@@ -228,7 +229,7 @@
                                            this.alienProps.alienRace.graphicPaths.stump,
                                            this.alienProps.alienRace.graphicPaths.bodyMasks,
                                            this.alienProps.alienRace.graphicPaths.headMasks);
-
+            
             foreach (BodyAddon bodyAddon in this.bodyAddons)
                 // Initialise the offsets of each addon with the generic default offsets
                 bodyAddon.defaultOffsets = this.offsetDefaults.Find(on => on.name == bodyAddon.defaultOffset).offsets;
