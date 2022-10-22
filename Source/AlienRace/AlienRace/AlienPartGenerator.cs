@@ -195,7 +195,7 @@
 
                     bodyGraphic.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
                                                      {
-                                                         bodytype = bodyType,
+                                                         bodytype = bodyTypeRaw,
                                                          path     = $"{bodyPath}Naked_{bodyType.defName}",
                                                          genderGraphics = new List<ExtendedGenderGraphic>()
                                                                           {
