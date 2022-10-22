@@ -193,18 +193,18 @@
                 {
                     BodyTypeDef bodyType = bodyTypeRaw == BodyTypeDefOf.Baby ? BodyTypeDefOf.Child : bodyTypeRaw;
 
-                    bodyGraphic.bodytypeGraphics.Add(new ExtendedBodytypeGraphic()
+                    bodyGraphic.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
                                                      {
                                                          bodytype = bodyType,
                                                          path     = $"{bodyPath}Naked_{bodyType.defName}",
                                                          genderGraphics = new List<ExtendedGenderGraphic>()
                                                                           {
-                                                                              new ExtendedGenderGraphic()
+                                                                              new()
                                                                               {
                                                                                   gender = Gender.Male,
                                                                                   path   = $"{bodyPath}{Gender.Male}_Naked_{bodyType.defName}"
                                                                               },
-                                                                              new ExtendedGenderGraphic()
+                                                                              new()
                                                                               {
                                                                                   gender = Gender.Female,
                                                                                   path   = $"{bodyPath}{Gender.Female}_Naked_{bodyType.defName}"
