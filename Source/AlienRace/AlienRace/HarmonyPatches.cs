@@ -2,6 +2,7 @@ namespace AlienRace
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Eventing.Reader;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -276,6 +277,12 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(Pawn_StyleTracker), nameof(Pawn_StyleTracker.FinalizeHairColor)),  postfix: new HarmonyMethod(patchType, nameof(FinalizeHairColorPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Toils_StyleChange), nameof(Toils_StyleChange.FinalizeLookChange)), postfix: new HarmonyMethod(patchType, nameof(FinalizeLookChangePostfix)));
+
+            //New Patches
+            harmony.Patch(AccessTools.Method(typeof(IncidentWorker_Disease), "CanAddHediffToAnyPartOfDef"), prefix: new HarmonyMethod(patchType, nameof(CanAddHediffToAnyPartOfDefPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(ITab_Pawn_Gear), "get_IsVisible"), prefix: new HarmonyMethod(patchType, nameof(IsVisiblePrefix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_IdeoTracker), "get_CertaintyChangeFactor"), prefix: new HarmonyMethod(patchType, nameof(CertaintyChangeFactorPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(HediffGiver), "TryApply"), prefix: new HarmonyMethod(patchType, nameof(TryApplyPrefix)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -3221,6 +3228,100 @@ namespace AlienRace
         public static void DrawAddonsFinalHook(Pawn pawn, AlienPartGenerator.BodyAddon addon, Rot4 rot, ref Graphic graphic, ref Vector3 offsetVector, ref float angle, ref Material mat)
         {
 
+        }
+
+        /// <summary>
+        /// Patch is for when the "Babies always healthy" Storyteller option is enabled.
+        /// </summary>
+        public static bool CanAddHediffToAnyPartOfDefPrefix(ref bool __result, Pawn pawn)
+        {
+            if (pawn.ageTracker.CurLifeStage.developmentalStage.Baby() && Find.Storyteller.difficulty.babiesAreHealthy)
+            {
+                __result = false;
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Is optional. Human babies don't have the Gear tab, but also it doesn't cause issues if displayed.
+        /// </summary>
+        public static bool IsVisiblePrefix(ITab_Pawn_Gear __instance, ref bool __result)
+        {
+            var selPawnForGear = Traverse.Create(__instance).Method("get_SelPawnForGear").GetValue<Pawn>();
+
+            if (selPawnForGear.ageTracker.CurLifeStage.developmentalStage.Baby())
+            {
+                __result = false;
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Sets the Ideology certainty factor curve for children.
+        /// </summary>
+        public static bool CertaintyChangeFactorPrefix(Pawn_IdeoTracker __instance, ref float __result)
+        {
+            var pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+
+            __result = CertaintyCurve(pawn);
+            return false;
+        }
+
+        /// <summary>
+        /// Racial ideology certainty curves
+        /// </summary>
+        private static Dictionary<ThingDef, SimpleCurve> ideoCurves = new Dictionary<ThingDef, SimpleCurve>();
+
+        /// <summary>
+        /// Creates a certainty curve for each race. Ideology does not matter, just the pawn's child and adult ages.
+        /// </summary>
+        /// <param name="pawn">Pawn to check the ideology certainty curve of.</param>
+        /// <returns>Float between the values of 2 and 1 depending on how close to an adult the pawn is.</returns>
+        private static float CertaintyCurve(Pawn pawn)
+        {
+            if(!ModsConfig.BiotechActive || pawn == null) return 1f;
+
+            if (!ideoCurves.ContainsKey(pawn.def))
+            {
+                float child = -1;
+                float adult = -1;
+
+                foreach (var lifeStage in pawn.RaceProps.lifeStageAges)
+                {
+                    if (child == -1 && lifeStage.def.developmentalStage.Child()) child = lifeStage.minAge; //Just want the first lifeStage where a pawn is a child
+                    if (lifeStage.def.developmentalStage.Adult()) adult = lifeStage.minAge; //Want last life stage to match how Humans work. Does not take into account a life stage like "elder" if a custom race would have that.
+                }
+
+                //If for some reason a stage is not found, set the ages to be extremely low.
+                if (child == -1) child = 0;
+                if (adult < child) adult = child + 0.001f; //Add 0.001 to the child to prevent an inverted curve if the adult age is less than the child age.
+
+                ideoCurves.Add(pawn.def, new SimpleCurve
+                    {
+                        new CurvePoint(child, 2f),
+                        new CurvePoint(adult, 1f)
+                    });
+            }
+
+            return ideoCurves[pawn.def].Evaluate(pawn.ageTracker.AgeBiologicalYearsFloat);
+        }
+
+        /// <summary>
+        /// Patch is for when the "Babies always healthy" Storyteller option is enabled.
+        /// </summary>
+        public static bool TryApplyPrefix(HediffGiver __instance, ref bool __result, Pawn pawn)
+        {
+            if (pawn.ageTracker.CurLifeStage.developmentalStage.Baby() && Find.Storyteller.difficulty.babiesAreHealthy)
+            {
+                __result = false;
+                return false;
+            }
+
+            return true;
         }
     }
 }
