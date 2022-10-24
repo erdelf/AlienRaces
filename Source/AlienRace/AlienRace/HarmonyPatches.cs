@@ -3195,7 +3195,7 @@ namespace AlienRace
                                                      (isPortrait ? 
                                                          alienComp.customPortraitHeadDrawSize : 
                                                          alienComp.customHeadDrawSize
-                                                        ) * (ModsConfig.BiotechActive ? pawn.ageTracker.CurLifeStage.headSizeFactor ?? MeshPool.HumanlikeHeadAverageWidth : 1.5f) :
+                                                        ) * (ModsConfig.BiotechActive ? (pawn.ageTracker.CurLifeStage.headSizeFactor ?? 1f) * 1.5f : 1.5f) :
                                                      (isPortrait ? 
                                                          alienComp.customPortraitDrawSize : 
                                                          alienComp.customDrawSize
