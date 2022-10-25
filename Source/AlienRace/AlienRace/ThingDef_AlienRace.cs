@@ -93,12 +93,12 @@
                                                                                  };
 
                     bool gaunt = headType.defName == "Gaunt";
-
+                    int  ind;
                     if (gaunt)
                     {
                         headtypeGraphic.path = GraphicPaths.VANILLA_HEAD_PATH + "Genes/" + headTypePath;
                     }
-                    else if (Enum.TryParse(headTypePath.Substring(0, headTypePath.IndexOf('_')), out Gender gender))
+                    else if ((ind = headTypePath.IndexOf('_')) >= 0 && Enum.TryParse(headTypePath.Substring(0, ind), out Gender gender))
                     {
                         headtypeGraphic.genderGraphics = new List<AlienPartGenerator.ExtendedGenderGraphic>()
                                                          {
