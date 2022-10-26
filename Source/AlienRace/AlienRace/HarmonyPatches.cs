@@ -2900,7 +2900,7 @@ namespace AlienRace
                     alienComp.bodyVariant = sharedIndex;
                     string bodyMask = graphicPaths.bodyMasks.GetPath(alien, ref sharedIndex, alienComp.bodyMaskVariant < 0 ? null : alienComp.bodyMaskVariant);
                     alienComp.bodyMaskVariant = sharedIndex;
-
+                    
                     __instance.nakedGraphic = !bodyPath.NullOrEmpty() ?
                                                   GraphicDatabase.Get<Graphic_Multi>(bodyPath, bodyMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
                                                                                                    graphicPaths.skinShader?.Shader ?? ShaderDatabase.CutoutSkin : ShaderDatabase.CutoutComplex, 
@@ -3191,15 +3191,14 @@ namespace AlienRace
 
                     addonGraphic.drawSize = (isPortrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) *
                                             (ba.scaleWithPawnDrawsize ? 
-                                                 ba.alignWithHead ? 
+                                                 (ba.alignWithHead ? 
                                                      (isPortrait ? 
                                                          alienComp.customPortraitHeadDrawSize : 
-                                                         alienComp.customHeadDrawSize
-                                                        ) * (ModsConfig.BiotechActive ? pawn.ageTracker.CurLifeStage.headSizeFactor ?? MeshPool.HumanlikeHeadAverageWidth : 1) * 1.5f :
+                                                         alienComp.customHeadDrawSize) :
                                                      (isPortrait ? 
                                                          alienComp.customPortraitDrawSize : 
-                                                         alienComp.customDrawSize
-                                                        ) * (ModsConfig.BiotechActive ? pawn.ageTracker.CurLifeStage.bodySizeFactor : 1) * 1.5f
+                                                         alienComp.customDrawSize)
+                                                     ) * (ModsConfig.BiotechActive ? pawn.ageTracker.CurLifeStage.bodyWidth ?? 1.5f : 1.5f)
                                                  : Vector2.one * 1.5f);
 
                     Material mat = addonGraphic.MatAt(rotation);
