@@ -216,7 +216,7 @@ namespace AlienRace
             {
                 public bool drawNoJob = true;
 
-                public List<BodyAddonJobConfigJob> jobs;
+                public List<BodyAddonJobConfigJob> jobs = new List<BodyAddonJobConfigJob>();
 
                 private Dictionary<JobDef, BodyAddonJobConfigJob> jobMap;
 
