@@ -113,11 +113,16 @@ namespace AlienRace
             public bool drawnDesiccated = true;
             public bool drawForMale     = true;
             public bool drawForFemale   = true;
+            public bool drawDrafted     = true;
+            public bool drawUndrafted   = true;
+
+            public BodyAddonJobConfig jobs = new BodyAddonJobConfig();
 
             public bool alignWithHead = false;
 
             public bool    drawRotated           = true;
             public bool    scaleWithPawnDrawsize = false;
+
 
             private string colorChannel;
 
@@ -165,6 +170,16 @@ namespace AlienRace
             private bool VisibleForBodyTypeOf(ExtendedGraphicsPawnWrapper pawn) => 
                 this.bodyTypeRequirement == null || pawn.HasBodyType(this.bodyTypeRequirement);
 
+            private bool VisibleForDrafted(ExtendedGraphicsPawnWrapper pawn) =>
+                this.drawDrafted   && this.drawUndrafted ||
+                this.drawDrafted   && pawn.Drafted       ||
+                this.drawUndrafted && !pawn.Drafted;
+
+            public bool VisibleForJob(ExtendedGraphicsPawnWrapper pawn) => 
+                pawn.CurJob == null ? 
+                    this.jobs.drawNoJob : 
+                    !this.jobs.JobMap.TryGetValue(pawn.CurJob.def, out BodyAddonJobConfig.BodyAddonJobConfigJob jobConfig) || jobConfig.IsApplicable(pawn);
+
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 this.CanDrawAddon(new ExtendedGraphicsPawnWrapper(pawn));
 
@@ -175,7 +190,9 @@ namespace AlienRace
                 this.VisibleForRotStageOf(pawn)      &&
                 this.RequiredBodyPartExistsFor(pawn) &&
                 this.VisibleForGenderOf(pawn)        &&
-                this.VisibleForBodyTypeOf(pawn);
+                this.VisibleForBodyTypeOf(pawn)      &&
+                this.VisibleForDrafted(pawn)         &&
+                this.VisibleForJob(pawn);
 
             public virtual Graphic GetGraphic(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
@@ -193,6 +210,30 @@ namespace AlienRace
                                                                                                                                                                                       drawRotated = !this.drawRotated
                                                                                                                                                                                   }) :
                            null;
+            }
+
+            public class BodyAddonJobConfig
+            {
+                public bool drawNoJob = true;
+
+                public List<BodyAddonJobConfigJob> jobs;
+
+                private Dictionary<JobDef, BodyAddonJobConfigJob> jobMap;
+
+                public Dictionary<JobDef, BodyAddonJobConfigJob> JobMap => this.jobMap ??= this.jobs.ToDictionary(bajcj => bajcj.job);
+
+                public class BodyAddonJobConfigJob
+                {
+                    public JobDef                        job;
+                    public Dictionary<PawnPosture, bool> drawPostures;
+                    public bool                          drawMoving = true;
+                    public bool                          drawUnmoving = true;
+
+                    public bool IsApplicable(ExtendedGraphicsPawnWrapper pawn) =>
+                        (!this.drawPostures.TryGetValue(pawn.GetPosture(), out bool postureDraw) || postureDraw) && 
+                        (this.drawMoving   && pawn.Moving || 
+                         this.drawUnmoving && !pawn.Moving);
+                }
             }
         }
 

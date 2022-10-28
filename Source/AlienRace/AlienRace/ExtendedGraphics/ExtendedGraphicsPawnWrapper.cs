@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
 using Verse;
+using Verse.AI;
 
 /**
  * Encapsulates pawn access for the purpose of BodyAddon access.
@@ -101,4 +102,10 @@ public class ExtendedGraphicsPawnWrapper
         this.WrappedPawn.story?.AllBackstories ?? Enumerable.Empty<BackstoryDef>();
 
     public virtual TraitSet GetTraits() => this.WrappedPawn.story?.traits ?? new TraitSet(this.WrappedPawn);
+
+    public virtual bool Drafted => this.WrappedPawn.Drafted;
+
+    public virtual Job CurJob => this.WrappedPawn.CurJob;
+
+    public virtual bool Moving => this.WrappedPawn.pather.MovingNow;
 }
