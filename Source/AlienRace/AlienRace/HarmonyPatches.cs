@@ -3014,7 +3014,7 @@ namespace AlienRace
                         GeneDef geneDef  = PawnHairColors.ClosestHairColorGene(alien.story.HairColor, alien.story.SkinColor);
 
                         Gene    hairGene = genes.FirstOrDefault(g => g.def.endogeneCategory == EndogeneCategory.HairColor);
-                        if (geneDef != hairGene?.def)
+                        if (hairGene != null && geneDef != hairGene.def)
                         {
                             reinit = true;
                             alien.genes.RemoveGene(hairGene);
