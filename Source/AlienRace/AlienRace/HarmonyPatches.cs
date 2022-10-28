@@ -274,8 +274,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), nameof(Pawn_AgeTracker.TryChildGrowthMoment)), new HarmonyMethod(patchType,             nameof(TryChildGrowthMomentPrefix)));
             harmony.Patch(AccessTools.Method(typeof(Gizmo_GrowthTier), "GrowthTierTooltip"), new HarmonyMethod(patchType,             nameof(GrowthTierTooltipPrefix)));
 
-            harmony.Patch(AccessTools.Method(typeof(Pawn_StyleTracker), nameof(Pawn_StyleTracker.FinalizeHairColor)),  postfix: new HarmonyMethod(patchType, nameof(FinalizeHairColorPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(Toils_StyleChange), nameof(Toils_StyleChange.FinalizeLookChange)), postfix: new HarmonyMethod(patchType, nameof(FinalizeLookChangePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_StyleTracker),             nameof(Pawn_StyleTracker.FinalizeHairColor)),  postfix: new HarmonyMethod(patchType,    nameof(FinalizeHairColorPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Toils_StyleChange),             nameof(Toils_StyleChange.FinalizeLookChange)), postfix: new HarmonyMethod(patchType,    nameof(FinalizeLookChangePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(StatPart_FertilityByGenderAge), "AgeFactor"),                                  transpiler: new HarmonyMethod(patchType, nameof(FertilityAgeFactorTranspiler)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -425,9 +426,38 @@ namespace AlienRace
             AlienRaceMod.settings.UpdateSettings();
         }
 
+        public static IEnumerable<CodeInstruction> FertilityAgeFactorTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo maleInfo = AccessTools.Field(typeof(StatPart_FertilityByGenderAge), "maleFertilityAgeFactor");
+            FieldInfo femaleInfo = AccessTools.Field(typeof(StatPart_FertilityByGenderAge), "femaleFertilityAgeFactor");
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+
+                if (instruction.LoadsField(maleInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+                    yield return CodeInstruction.Call(patchType, nameof(FertilityCurveHelper));
+                } else if (instruction.LoadsField(femaleInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_2);
+                    yield return CodeInstruction.Call(patchType, nameof(FertilityCurveHelper));
+                }
+            }
+        }
+
+        public static SimpleCurve FertilityCurveHelper(SimpleCurve original, Pawn pawn, Gender gender) =>
+            pawn.def is ThingDef_AlienRace alienProps ?
+                gender == Gender.Female ?
+                    alienProps.alienRace.generalSettings.femaleFertilityAgeFactor :
+                    alienProps.alienRace.generalSettings.maleFertilityAgeFactor :
+                original;
+
         public static void FinalizeLookChangePostfix(ref Toil __result)
         {
-            
             Action initAction = __result.initAction;
             Toil   toil       = __result;
             __result.initAction = () =>
