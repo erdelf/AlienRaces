@@ -477,7 +477,7 @@ namespace AlienRace
         }
 
         public static int[] GrowthMomentHelper() =>
-            (growthMomentPawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.growthAges ?? GrowthUtility.GrowthMomentAges;
+            (growthMomentPawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.growthAges?.ToArray() ?? GrowthUtility.GrowthMomentAges;
 
         public static IEnumerable<CodeInstruction> NotifyGenesChangedTranspiler(IEnumerable<CodeInstruction> instructions)
         {
