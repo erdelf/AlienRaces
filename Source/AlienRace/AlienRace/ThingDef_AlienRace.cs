@@ -202,7 +202,24 @@
         public bool humanRecipeImport = false;
 
         public SimpleCurve lovinIntervalHoursFromAge;
-        public List<int>      growthAges = new() { 7, 10, 13 };
+        public List<int>   growthAges = new() { 7, 10, 13 };
+        public SimpleCurve maleFertilityAgeFactor = new(new []
+                                                        {
+                                                            new CurvePoint(14, 0),
+                                                            new CurvePoint(18, 1),
+                                                            new CurvePoint(50, 1),
+                                                            new CurvePoint(90, 0)
+                                                        });
+        public SimpleCurve femaleFertilityAgeFactor = new(new[]
+                                                          {
+                                                              new CurvePoint(14, 0),
+                                                              new CurvePoint(20, 1),
+                                                              new CurvePoint(28, 1),
+                                                              new CurvePoint(35, 0.5f),
+                                                              new CurvePoint(40, 0.1f),
+                                                              new CurvePoint(45, 0.02f),
+                                                              new CurvePoint(50, 0),
+                                                          });
     }
 
     public class FactionRelationSettings
