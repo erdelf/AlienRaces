@@ -161,8 +161,11 @@
                     
                     ExtendedHeadtypeGraphic headtypeGraphic = new()
                                                               {
-                                                                  headType = headType,
-                                                                  path     = headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath,
+                                                                  headType       = headType,
+                                                                  paths          = new List<string>
+                                                                                   {
+                                                                                       headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath
+                                                                                   },
                                                                   genderGraphics = new List<ExtendedGenderGraphic>()
                                                               };
 

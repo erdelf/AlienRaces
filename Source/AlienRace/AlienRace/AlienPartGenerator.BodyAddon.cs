@@ -75,7 +75,6 @@ namespace AlienRace
             {
                 IExtendedGraphic bestGraphic = this.GetBestGraphic(new ExtendedGraphicsPawnWrapper(pawn), this.bodyPart, this.bodyPartLabel); //finds deepest match
 
-                string returnPath      = bestGraphic.GetPath() ?? string.Empty;
                 int    variantCounting = bestGraphic.GetVariantCount();
 
                 if (variantCounting <= 0)
@@ -83,7 +82,12 @@ namespace AlienRace
                 
                 savedIndex ??= this.linkVariantIndexWithPrevious ? sharedIndex % this.VariantCountMax : Rand.Range(0, this.VariantCountMax);
 
-                return returnPath + pathAppendix + ((sharedIndex = savedIndex.Value % variantCounting) == 0 ? "" : sharedIndex.ToString());
+                sharedIndex = savedIndex.Value % variantCounting;
+
+                int    actualIndex = sharedIndex;
+                string returnPath  = bestGraphic.GetPathFromVariant(ref actualIndex, out bool zero) ?? string.Empty;
+
+                return returnPath + pathAppendix + (zero ? "" : actualIndex.ToString());
             }
             
             // Top level so always considered applicable

@@ -9,9 +9,12 @@ using Verse;
 
 public abstract class AbstractExtendedGraphic : IExtendedGraphic
 {
-    public string path;
-    public int variantCount = 0;
-    
+    public string       path;
+    public List<string> paths = new List<string>();
+
+    public int       variantCount  = 0;
+    public List<int> variantCounts = new List<int>();
+
     // Not unused, users can define their own order in XML which takes priority.
     
     #pragma warning disable CS0649
@@ -31,10 +34,47 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     protected List<AlienPartGenerator.ExtendedGraphicsPrioritization> Prioritization =>
         this.prioritization ?? GetPrioritiesByDeclarationOrder().ToList();
 
-    public string GetPath() => this.path;
+    public void Init()
+    {
+        if (this.paths.NullOrEmpty() && !this.path.NullOrEmpty())
+            this.paths.Add(this.path);
+        if (!this.paths.NullOrEmpty() && this.path.NullOrEmpty())
+            this.path = this.paths[0];
 
-    public int GetVariantCount() => this.variantCount;
-    public int IncrementVariantCount() => this.variantCount++;
+        for (int i = 0; i < this.paths.Count; i++)
+            this.variantCounts.Add(0);
+    }
+
+    public string GetPath()          => this.GetPathCount() > 0 ? this.GetPath(0) : this.path;
+    public string GetPath(int index) => this.paths[index];
+
+    public int GetPathCount() => this.paths.Count;
+
+    public string GetPathFromVariant(ref int variantIndex, out bool zero)
+    {
+        zero = true;
+        for (int index = 0; index < this.variantCounts.Count; index++)
+        {
+            int count = this.variantCounts[index];
+            if (variantIndex < count)
+            {
+                zero = variantIndex == 0;
+                return this.paths[index];
+            }
+
+            variantIndex -= count;
+        }
+        return this.path;
+    }
+
+    public int GetVariantCount()       => this.variantCount;
+    public int GetVariantCount(int index)       => this.variantCounts[index];
+    public int IncrementVariantCount() => this.IncrementVariantCount(0);
+    public int IncrementVariantCount(int index)
+    {
+        this.variantCount++;
+        return this.variantCounts[index]++;
+    }
 
     public abstract bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel);
 
