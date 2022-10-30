@@ -31,16 +31,19 @@ public class DefaultGraphicsLoader : IGraphicsLoader
                                              string           source,
                                              bool             shouldLog = false)
     {
-
+        graphic.Init();
         LogFor(logBuilder, $"Loading variants for {graphic.GetPath()}");
 
         // Load all variant paths until we find one that doesn't exist
-        while (this.graphicFinder2D.GetByPath(graphic.GetPath(), graphic.GetVariantCount(), "north", false) != null)
+
+        for (int i = 0; i < graphic.GetPathCount(); i++)
         {
-            graphic.IncrementVariantCount();
+            while (this.graphicFinder2D.GetByPath(graphic.GetPath(i), graphic.GetVariantCount(i), "north", false) != null)
+                graphic.IncrementVariantCount(i);
+            LogFor(logBuilder, $"Variants found for {graphic.GetPath(i)}: {graphic.GetVariantCount(i)}", shouldLog);
         }
 
-        LogFor(logBuilder, $"Variants found for {graphic.GetPath()}: {graphic.GetVariantCount()}", shouldLog);
+        LogFor(logBuilder, $"Total variants found for {graphic.GetPath()}: {graphic.GetVariantCount()}", shouldLog);
 
         // If we didn't find any, warn about it
         if (graphic.GetVariantCount() == 0)
