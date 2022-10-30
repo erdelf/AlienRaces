@@ -89,30 +89,9 @@
 
                     AlienPartGenerator.ExtendedHeadtypeGraphic headtypeGraphic = new()
                                                                                  {
-                                                                                     headType = headType
+                                                                                     headType = headType,
+                                                                                     path = headType.graphicPath
                                                                                  };
-
-                    bool gaunt = headType.defName == "Gaunt";
-                    int  ind;
-                    if (gaunt)
-                    {
-                        headtypeGraphic.path = GraphicPaths.VANILLA_HEAD_PATH + "Genes/" + headTypePath;
-                    }
-                    else if ((ind = headTypePath.IndexOf('_')) >= 0 && Enum.TryParse(headTypePath.Substring(0, ind), out Gender gender))
-                    {
-                        headtypeGraphic.genderGraphics = new List<AlienPartGenerator.ExtendedGenderGraphic>()
-                                                         {
-                                                             new()
-                                                             {
-                                                                 gender = gender,
-                                                                 path   = $"{GraphicPaths.VANILLA_HEAD_PATH}{gender}/{headTypePath}"
-                                                             }
-                                                         };
-                    }
-                    else
-                    {
-                        headtypeGraphic.path = GraphicPaths.VANILLA_HEAD_PATH + headTypePath;
-                    }
 
                     this.alienRace.graphicPaths.head.headtypeGraphics.Add(headtypeGraphic);
                     //this.alienRace.graphicPaths.head.debug = false;
