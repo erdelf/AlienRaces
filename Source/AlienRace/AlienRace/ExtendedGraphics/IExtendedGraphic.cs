@@ -5,9 +5,16 @@ using Verse;
 
 public interface IExtendedGraphic
 {
+    public void Init();
+
     public string GetPath();
+    public string GetPath(int index);
+    public int    GetPathCount();
+    public string GetPathFromVariant(ref int variantIndex, out bool zero);
     public int    GetVariantCount();
+    public int    GetVariantCount(int index);
     public int    IncrementVariantCount();
+    public int    IncrementVariantCount(int index);
 
     /*
      * Get all sub-graphics with no restrictions
