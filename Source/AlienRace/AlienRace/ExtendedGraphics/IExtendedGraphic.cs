@@ -16,6 +16,8 @@ public interface IExtendedGraphic
     public int    IncrementVariantCount();
     public int    IncrementVariantCount(int index);
 
+    public bool UseFallback();
+
     /*
      * Get all sub-graphics with no restrictions
      */
