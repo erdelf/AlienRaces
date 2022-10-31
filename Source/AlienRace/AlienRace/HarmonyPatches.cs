@@ -278,6 +278,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Toils_StyleChange),             nameof(Toils_StyleChange.FinalizeLookChange)), postfix: new HarmonyMethod(patchType,    nameof(FinalizeLookChangePostfix)));
             harmony.Patch(AccessTools.Method(typeof(StatPart_FertilityByGenderAge), "AgeFactor"),                                  transpiler: new HarmonyMethod(patchType, nameof(FertilityAgeFactorTranspiler)));
 
+            harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker), nameof(Pawn_GeneTracker.AddGene), new[] { typeof(Gene), typeof(bool) }), new HarmonyMethod(patchType, nameof(AddGenePrefix)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -350,6 +352,12 @@ namespace AlienRace
                     RaceRestrictionSettings.researchRestrictionDict[projectDef].Add(ar);
                 }
 
+                foreach (GeneDef geneDef in ar.alienRace.raceRestriction.geneList)
+                {
+                    if (!RaceRestrictionSettings.geneRestricted.Contains(geneDef))
+                        RaceRestrictionSettings.geneRestricted.Add(geneDef);
+                    ar.alienRace.raceRestriction.whiteGeneList.Add(geneDef);
+                }
 
                 ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(ar.race.corpseDef);
                 ar.race.corpseDef.thingCategories = new List<ThingCategoryDef> {AlienDefOf.alienCorpseCategory};
@@ -424,6 +432,16 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static bool AddGenePrefix(Gene gene, Pawn ___pawn, ref Gene __result)
+        {
+            if (!RaceRestrictionSettings.CanHaveGene(gene.def, ___pawn.def))
+            {
+                __result = null;
+                return false;
+            }
+            return true;
         }
 
         public static IEnumerable<CodeInstruction> FertilityAgeFactorTranspiler(IEnumerable<CodeInstruction> instructions)
