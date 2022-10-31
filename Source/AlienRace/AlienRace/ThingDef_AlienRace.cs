@@ -544,6 +544,32 @@
         public List<ConceptDef> conceptList = new List<ConceptDef>();
 
         public List<WorkGiverDef> workGiverList = new List<WorkGiverDef>();
+
+        public bool          onlyHaveRaceRestrictedGenes = false;
+        public List<GeneDef> geneList                    = new List<GeneDef>();
+        public List<GeneDef> whiteGeneList               = new List<GeneDef>();
+        public List<string>  whiteGeneTags               = new List<string>();
+        public List<GeneDef> blackGeneList               = new List<GeneDef>();
+        public List<string>  blackGeneTags               = new List<string>();
+
+        public List<EndogeneCategory> blackEndoCategories = new List<EndogeneCategory>();
+
+        public static HashSet<GeneDef> geneRestricted = new HashSet<GeneDef>();
+
+        public static bool CanHaveGene(GeneDef gene, ThingDef race)
+        {
+            RaceRestrictionSettings raceRestriction = (race as ThingDef_AlienRace)?.alienRace.raceRestriction;
+            bool                    result          = true;
+
+            if (geneRestricted.Contains(gene) || (raceRestriction?.onlyHaveRaceRestrictedGenes ?? false))
+                result = (raceRestriction?.whiteGeneList.Contains(gene) ?? false) ||
+                         (gene.exclusionTags.Any(t => raceRestriction?.whiteGeneTags.Contains(t) ?? false));
+
+            return result && 
+                   !(raceRestriction?.blackGeneList.Contains(gene) ?? false) && 
+                   !(gene.exclusionTags.Any(t => raceRestriction?.blackGeneTags.Contains(t) ?? false)) &&
+                   !(raceRestriction?.blackEndoCategories.Contains(gene.endogeneCategory) ?? false);
+        }
     }
 
     public class ResearchProjectRestrictions
