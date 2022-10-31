@@ -563,11 +563,11 @@
 
             if (geneRestricted.Contains(gene) || (raceRestriction?.onlyHaveRaceRestrictedGenes ?? false))
                 result = (raceRestriction?.whiteGeneList.Contains(gene) ?? false) ||
-                         (gene.exclusionTags.Any(t => raceRestriction?.whiteGeneTags.Contains(t) ?? false));
+                         (gene.exclusionTags?.Any(t => raceRestriction?.whiteGeneTags.Contains(t) ?? false) ?? false);
 
             return result && 
                    !(raceRestriction?.blackGeneList.Contains(gene) ?? false) && 
-                   !(gene.exclusionTags.Any(t => raceRestriction?.blackGeneTags.Contains(t) ?? false)) &&
+                   !(gene.exclusionTags?.Any(t => raceRestriction?.blackGeneTags.Contains(t) ?? false) ?? false) &&
                    !(raceRestriction?.blackEndoCategories.Contains(gene.endogeneCategory) ?? false);
         }
     }
