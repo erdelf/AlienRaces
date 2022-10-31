@@ -169,6 +169,8 @@
                                                                   genderGraphics = new List<ExtendedGenderGraphic>()
                                                               };
 
+                    if(!headType.requiredGenes.NullOrEmpty())
+                        headtypeGraphic.pathsFallback.Add(headType.graphicPath);
                     
                     Gender firstGender = genderIncluded ? headType.gender : Gender.Male;
                     
