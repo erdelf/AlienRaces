@@ -32,6 +32,7 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     public List<AlienPartGenerator.ExtendedTraitGraphic>     traitGraphics;
     public List<AlienPartGenerator.ExtendedBodytypeGraphic>  bodytypeGraphics;
     public List<AlienPartGenerator.ExtendedHeadtypeGraphic>  headtypeGraphics;
+    public List<AlienPartGenerator.ExtendedGeneGraphic>      geneGraphics;
 
 
     protected List<AlienPartGenerator.ExtendedGraphicsPrioritization> Prioritization =>
@@ -115,6 +116,7 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
         AlienPartGenerator.ExtendedGraphicsPrioritization.Hediff => this.hediffGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
         AlienPartGenerator.ExtendedGraphicsPrioritization.Age => this.ageGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
         AlienPartGenerator.ExtendedGraphicsPrioritization.Damage => this.damageGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
+        AlienPartGenerator.ExtendedGraphicsPrioritization.Gene => this.geneGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
         _ => Enumerable.Empty<IExtendedGraphic>()
     };
 
