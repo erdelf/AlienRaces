@@ -108,4 +108,6 @@ public class ExtendedGraphicsPawnWrapper
     public virtual Job CurJob => this.WrappedPawn.CurJob;
 
     public virtual bool Moving => this.WrappedPawn.pather.MovingNow;
+
+    public virtual bool HasGene(GeneDef gene) => this.WrappedPawn.genes.HasGene(gene);
 }

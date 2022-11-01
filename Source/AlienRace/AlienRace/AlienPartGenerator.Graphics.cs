@@ -218,4 +218,21 @@ public partial class AlienPartGenerator
         public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
             pawn.HasHeadTypeNamed(this.headType);
     }
+
+    //Gene Graphics
+    public class ExtendedGeneGraphic : AbstractExtendedGraphic
+    {
+        public GeneDef gene;
+
+        [UsedImplicitly]
+        public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+        {
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.gene), xmlRoot.Name);
+
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
+        }
+
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+            pawn.HasGene(this.gene);
+    }
 }
