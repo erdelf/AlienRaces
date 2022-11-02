@@ -186,7 +186,7 @@ namespace AlienRace
                     !this.jobs.JobMap.TryGetValue(pawn.CurJob.def, out BodyAddonJobConfig.BodyAddonJobConfigJob jobConfig) || jobConfig.IsApplicable(pawn);
 
             public bool VisibleWithGene(ExtendedGraphicsPawnWrapper pawn) =>
-                !ModsConfig.BiotechActive || pawn.HasGene(this.geneRequirement);
+                !ModsConfig.BiotechActive || this.geneRequirement == null || pawn.HasGene(this.geneRequirement);
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 this.CanDrawAddon(new ExtendedGraphicsPawnWrapper(pawn));
