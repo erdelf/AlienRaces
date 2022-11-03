@@ -2948,11 +2948,14 @@ namespace AlienRace
                     alienComp.bodyVariant = sharedIndex;
                     string bodyMask = graphicPaths.bodyMasks.GetPath(alien, ref sharedIndex, alienComp.bodyMaskVariant < 0 ? null : alienComp.bodyMaskVariant);
                     alienComp.bodyMaskVariant = sharedIndex;
-                    
+
                     __instance.nakedGraphic = !bodyPath.NullOrEmpty() ?
-                                                  GraphicDatabase.Get<Graphic_Multi>(bodyPath, bodyMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
-                                                                                                   graphicPaths.skinShader?.Shader ?? ShaderDatabase.CutoutSkin : ShaderDatabase.CutoutComplex, 
-                                                                                     Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false), null, bodyMask) :
+                                                  CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi), 
+                                                                                           bodyPath, bodyMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
+                                                                                                                                graphicPaths.skinShader?.Shader ?? ShaderDatabase.CutoutSkin :
+                                                                                                                                ShaderDatabase.CutoutComplex,
+                                                                                           Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false), null, 
+                                                                                           0, new List<ShaderParameter> { graphicPaths.SkinColoringParameter }, bodyMask)) :
                                                   null;
                     
                     __instance.rottingGraphic = !bodyPath.NullOrEmpty() ?
@@ -2973,10 +2976,13 @@ namespace AlienRace
                     string headMask = graphicPaths.headMasks.GetPath(alien, ref sharedIndex, alienComp.headMaskVariant < 0 ? null : alienComp.headMaskVariant);
                     alienComp.headMaskVariant = sharedIndex;
 
-                    __instance.headGraphic = alien.health.hediffSet.HasHead && !headPath.NullOrEmpty() ? 
-                                                 GraphicDatabase.Get<Graphic_Multi>(headPath, headMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(headPath + "_northm", reportFailure: false) == null ? 
-                                                                                                         graphicPaths.skinShader?.Shader ?? ShaderDatabase.CutoutSkin : ShaderDatabase.CutoutComplex, 
-                                                                                    Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false), null, headMask)
+                    __instance.headGraphic = alien.health.hediffSet.HasHead && !headPath.NullOrEmpty() ?
+                                                 CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi),
+                                                                                               headPath, headMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(headPath + "_northm", reportFailure: false) == null ?
+                                                                                                             graphicPaths.skinShader?.Shader ?? ShaderDatabase.CutoutSkin :
+                                                                                                             ShaderDatabase.CutoutComplex,
+                                                                                               Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false), null,
+                                                                                               0, new List<ShaderParameter> { graphicPaths.SkinColoringParameter }, headMask))
                                                  : null;
                     
                     __instance.desiccatedHeadGraphic = alien.health.hediffSet.HasHead && !headPath.NullOrEmpty() ? 
