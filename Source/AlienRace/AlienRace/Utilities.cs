@@ -143,5 +143,10 @@
 
         public static readonly AccessTools.FieldRef<Dictionary<Type, MethodInfo>> customDataLoadMethodCacheInfo =
             AccessTools.StaticFieldRefAccess<Dictionary<Type, MethodInfo>>(AccessTools.Field(typeof(DirectXmlToObject), "customDataLoadMethodCache"));
+
+        public delegate Graphic_Multi GetGraphic(GraphicRequest req);
+
+        public static GetGraphic getInnerGraphic =
+            AccessTools.MethodDelegate<GetGraphic>(AccessTools.Method(typeof(GraphicDatabase), "GetInner", new []{typeof(GraphicRequest)}, new []{typeof(Graphic_Multi)}));
     }
 }
