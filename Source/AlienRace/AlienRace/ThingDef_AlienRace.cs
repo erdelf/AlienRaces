@@ -239,7 +239,26 @@
         public AlienPartGenerator.ExtendedGraphicTop skull    = new() { path = "Things/Pawn/Humanlike/Heads/None_Average_Skull" };
         public AlienPartGenerator.ExtendedGraphicTop stump    = new() { path = "Things/Pawn/Humanlike/Heads/None_Average_Stump" };
 
-        public ShaderTypeDef skinShader;
+        public ShaderTypeDef   skinShader;
+        public Color           skinColor = new Color(1f, 0f, 0f, 1f);
+
+        private ShaderParameter skinColoringParameter;
+        public ShaderParameter SkinColoringParameter
+        {
+            get
+            {
+                if (this.skinColoringParameter == null)
+                {
+                    ShaderParameter parameter = new ShaderParameter();
+                    Traverse        traverse  = Traverse.Create(parameter);
+                    traverse.Field("name").SetValue("_ShadowColor");
+                    traverse.Field("value").SetValue(new Vector4(this.skinColor.r, this.skinColor.g, this.skinColor.b, this.skinColor.a));
+                    traverse.Field("type").SetValue(1);
+                    this.skinColoringParameter = parameter;
+                }
+                return this.skinColoringParameter;
+            }
+        }
     }
 
     public class DirectionOffset
