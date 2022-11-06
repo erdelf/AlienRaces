@@ -148,5 +148,10 @@
 
         public static GetGraphic getInnerGraphic =
             AccessTools.MethodDelegate<GetGraphic>(AccessTools.Method(typeof(GraphicDatabase), "GetInner", new []{typeof(GraphicRequest)}, new []{typeof(Graphic_Multi)}));
+
+        public delegate void PawnMethod(Pawn pawn);
+
+        public static readonly PawnMethod generateStartingPossessions =
+            AccessTools.MethodDelegate<PawnMethod>(AccessTools.Method(typeof(StartingPawnUtility), "GeneratePossessions"));
     }
 }
