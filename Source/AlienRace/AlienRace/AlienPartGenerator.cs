@@ -343,7 +343,7 @@
 
                         this.colorChannels.Add(key: "base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
                         this.colorChannels.Add(key: "hair", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
-                        Color skinColor = pawn.story.SkinColorBase;
+                        Color skinColor = alienProps.alienRace.raceRestriction.blackEndoCategories.Contains(EndogeneCategory.Melanin) ? PawnSkinColors.RandomSkinColorGene(pawn).skinColorBase!.Value :  pawn.story.SkinColorBase;
 
                         this.colorChannels.Add(key: "skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
 
@@ -355,7 +355,9 @@
                                 this.colorChannels.Add(channel.name, new ExposableValueTuple<Color, Color>(Color.white, Color.white));
                             this.colorChannels[channel.name] = this.GenerateChannel(channel, this.colorChannels[channel.name]);
                         }
-                        
+
+                        pawn.story.SkinColorBase = this.colorChannels["skin"].first;
+
                         ExposableValueTuple<Color, Color> hairColors = this.colorChannels[key: "hair"];
 
                         if (hairColors.first == Color.clear)
