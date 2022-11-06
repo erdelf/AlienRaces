@@ -2300,13 +2300,20 @@ namespace AlienRace
                 __result = -50f;
         }
 
-        public static void PrepForMapGenPrefix(GameInitData __instance) => Find.Scenario.AllParts.OfType<ScenPart_StartingHumanlikes>().Select(selector: sp => sp.GetPawns()).ToList().ForEach(
-            action: sp =>
-            {
-                IEnumerable<Pawn> spa = sp as Pawn[] ?? sp.ToArray();
-                __instance.startingAndOptionalPawns.InsertRange(__instance.startingPawnCount, spa);
-                __instance.startingPawnCount += spa.Count();
-            });
+        public static void PrepForMapGenPrefix(GameInitData __instance)
+        {
+            foreach (ScenPart part in Find.Scenario.AllParts)
+                if (part is ScenPart_StartingHumanlikes sp1)
+                {
+                    IEnumerable<Pawn> sp  = sp1.GetPawns();
+                    Pawn[] spa = sp as Pawn[] ?? sp.ToArray();
+                    __instance.startingAndOptionalPawns.InsertRange(__instance.startingPawnCount, spa);
+                    __instance.startingPawnCount += spa.Length;
+
+                    foreach (Pawn pawn in spa)
+                        CachedData.generateStartingPossessions(pawn);
+                }
+        }
 
         public static bool TryGainMemoryPrefix(ref Thought_Memory newThought, MemoryThoughtHandler __instance)
         {
