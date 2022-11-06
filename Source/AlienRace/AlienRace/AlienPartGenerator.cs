@@ -347,9 +347,7 @@
 
                         this.colorChannels.Add(key: "skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
 
-                        Color tattooColor = skinColor;
-                        tattooColor.a *= 0.8f;
-                        this.colorChannels.Add(key: "tattoo", new ExposableValueTuple<Color, Color>(tattooColor, tattooColor));
+                        this.colorChannels.Add(key: "tattoo", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
                         
                         foreach (ColorChannelGenerator channel in apg.colorChannels)
                         {
@@ -366,7 +364,18 @@
                             hairColors.first  = color;
                             hairColors.second = color;
                         }
-                        
+
+                        ExposableValueTuple<Color, Color> tattooColors = this.colorChannels[key: "tattoo"];
+
+                        if (tattooColors.first == Color.clear)
+                        {
+                            Color tattooColor = skinColor;
+                            tattooColor.a *= 0.8f;
+
+                            tattooColors.first = tattooColors.second = tattooColor;
+                        }
+
+
                         if (pawn.Corpse?.GetRotStage() == RotStage.Rotting)
                             this.colorChannels["skin"].first = PawnGraphicSet.RottingColorDefault;
                         CachedData.hairColor(pawn.story) = hairColors.first;
