@@ -277,6 +277,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn_StyleTracker), nameof(Pawn_StyleTracker.FinalizeHairColor)),  postfix: new HarmonyMethod(patchType, nameof(FinalizeHairColorPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Toils_StyleChange), nameof(Toils_StyleChange.FinalizeLookChange)), postfix: new HarmonyMethod(patchType, nameof(FinalizeLookChangePostfix)));
 
+            harmony.Patch(AccessTools.Method(typeof(ApparelGraphicRecordGetter), nameof(ApparelGraphicRecordGetter.TryGetGraphicApparel)), transpiler: new HarmonyMethod(patchType, nameof(TryGetGraphicApparelTranspiler)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -3221,6 +3223,31 @@ namespace AlienRace
         public static void DrawAddonsFinalHook(Pawn pawn, AlienPartGenerator.BodyAddon addon, Rot4 rot, ref Graphic graphic, ref Vector3 offsetVector, ref float angle, ref Material mat)
         {
 
+        }
+
+        public static IEnumerable<CodeInstruction> TryGetGraphicApparelTranspiler(IEnumerable<CodeInstruction> codeInstructions)
+        {
+            MethodInfo originalMethod = AccessTools.Method(
+                typeof(GraphicDatabase),
+                "Get",
+                new Type[] { typeof(string), typeof(Shader), typeof(Vector2), typeof(Color) },
+                new Type[] { typeof(Graphic_Multi) }
+            );
+            MethodInfo newMethod = AccessTools.Method(typeof(ApparelGraphics.ApparelGraphicUtility), nameof(ApparelGraphics.ApparelGraphicUtility.GetGraphic));
+            foreach(CodeInstruction instruction in codeInstructions)
+            {
+                if (instruction.Calls(originalMethod))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0); // apparel
+                    yield return new CodeInstruction(OpCodes.Ldarg_1); // bodyType
+                    yield return new CodeInstruction(OpCodes.Call, newMethod);
+
+                }
+                else
+                {
+                    yield return instruction;
+                }
+            }
         }
     }
 }

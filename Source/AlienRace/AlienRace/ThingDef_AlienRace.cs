@@ -243,6 +243,8 @@
         public AlienPartGenerator.ExtendedGraphicTop skull    = new() { path = "Things/Pawn/Humanlike/Heads/None_Average_Skull" };
         public AlienPartGenerator.ExtendedGraphicTop stump    = new() { path = "Things/Pawn/Humanlike/Heads/None_Average_Stump" };
 
+        public ApparelGraphics.ApparelGraphicsOverrides apparel = new();
+
         public ShaderTypeDef skinShader;
     }
 
