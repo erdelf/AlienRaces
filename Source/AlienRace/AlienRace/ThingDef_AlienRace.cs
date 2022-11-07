@@ -239,6 +239,8 @@
         public AlienPartGenerator.ExtendedGraphicTop skull    = new() { path = "Things/Pawn/Humanlike/Heads/None_Average_Skull" };
         public AlienPartGenerator.ExtendedGraphicTop stump    = new() { path = "Things/Pawn/Humanlike/Heads/None_Average_Stump" };
 
+        public ApparelGraphics.ApparelGraphicsOverrides apparel = new();
+
         public ShaderTypeDef   skinShader;
         public Color           skinColor = new Color(1f, 0f, 0f, 1f);
 
@@ -584,8 +586,8 @@
                 result = (raceRestriction?.whiteGeneList.Contains(gene) ?? false) ||
                          (gene.exclusionTags?.Any(t => raceRestriction?.whiteGeneTags.Contains(t) ?? false) ?? false);
 
-            return result && 
-                   !(raceRestriction?.blackGeneList.Contains(gene) ?? false) && 
+            return result &&
+                   !(raceRestriction?.blackGeneList.Contains(gene) ?? false) &&
                    !(gene.exclusionTags?.Any(t => raceRestriction?.blackGeneTags.Contains(t) ?? false) ?? false) &&
                    !(raceRestriction?.blackEndoCategories.Contains(gene.endogeneCategory) ?? false);
         }
