@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 using RimWorld;
 using Verse;
@@ -29,6 +25,12 @@ namespace AlienRace.ApparelGraphics
                     return overridePath;
                 }
             }
+            return null;
+        }
+
+        public string GetFallbackPath(Apparel apparel)
+        {
+            if (apparel == null || apparel.def == null) return null;
             if (!fallbacks.NullOrEmpty())
             {
                 foreach(ApparelFallbackOption option in fallbacks)
