@@ -3144,7 +3144,8 @@ namespace AlienRace
 
         public static void SkinColorPostfix(Pawn ___pawn, ref Color __result)
         {
-            if (___pawn.def is ThingDef_AlienRace alienProps) __result = alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(___pawn);
+            if (___pawn.def is ThingDef_AlienRace alienProps) 
+                __result = alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(___pawn);
         }
 
         public static void GenerateBodyTypePostfix(ref Pawn pawn)

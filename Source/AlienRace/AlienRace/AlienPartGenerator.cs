@@ -70,8 +70,11 @@
         {
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
 
+            if (alien.story.SkinColorOverriden)
+                return alien.story.skinColorOverride!.Value;
+
             if (alienComp == null) 
-                return alien.story.SkinColorBase;
+                return CachedData.skinColorBase(alien.story) ?? Color.clear;
 
             ExposableValueTuple<Color, Color> skinColors = alienComp.GetChannel(channel: "skin");
             return first ? skinColors.first : skinColors.second;
@@ -335,15 +338,18 @@
                 {
                     if (this.colorChannels == null || !this.colorChannels.Any())
                     {
+                        Pawn               pawn       = (Pawn)this.parent;
+                        ThingDef_AlienRace alienProps = ((ThingDef_AlienRace)this.parent.def);
+                        AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
+
                         this.colorChannels     = new Dictionary<string, ExposableValueTuple<Color, Color>>();
                         this.colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
-                        Pawn               pawn       = (Pawn) this.parent;
-                        ThingDef_AlienRace alienProps = ((ThingDef_AlienRace) this.parent.def);
-                        AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
 
                         this.colorChannels.Add(key: "base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
                         this.colorChannels.Add(key: "hair", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
-                        Color skinColor = alienProps.alienRace.raceRestriction.blackEndoCategories.Contains(EndogeneCategory.Melanin) ? PawnSkinColors.RandomSkinColorGene(pawn).skinColorBase!.Value :  pawn.story.SkinColorBase;
+                        Color skinColor = alienProps.alienRace.raceRestriction.blackEndoCategories.Contains(EndogeneCategory.Melanin) ? 
+                                              PawnSkinColors.RandomSkinColorGene(pawn).skinColorBase!.Value : 
+                                              pawn.story.SkinColorBase;
 
                         this.colorChannels.Add(key: "skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
 
