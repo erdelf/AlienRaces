@@ -3146,7 +3146,8 @@ namespace AlienRace
 
         public static void SkinColorPostfix(Pawn ___pawn, ref Color __result)
         {
-            if (___pawn.def is ThingDef_AlienRace alienProps) __result = alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(___pawn);
+            if (___pawn.def is ThingDef_AlienRace alienProps) 
+                __result = alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(___pawn);
         }
 
         public static void GenerateBodyTypePostfix(ref Pawn pawn)
@@ -3323,13 +3324,12 @@ namespace AlienRace
 
         public static IEnumerable<CodeInstruction> TryGetGraphicApparelTranspiler(IEnumerable<CodeInstruction> codeInstructions)
         {
-            MethodInfo originalMethod = AccessTools.Method(
-                typeof(GraphicDatabase),
-                "Get",
-                new Type[] { typeof(string), typeof(Shader), typeof(Vector2), typeof(Color) },
-                new Type[] { typeof(Graphic_Multi) }
+            MethodInfo originalMethod = AccessTools.Method(typeof(GraphicDatabase), "Get",
+                                                           new[] { typeof(string), typeof(Shader), typeof(Vector2), typeof(Color) }, new[] { typeof(Graphic_Multi) }
             );
+
             MethodInfo newMethod = AccessTools.Method(typeof(ApparelGraphics.ApparelGraphicUtility), nameof(ApparelGraphics.ApparelGraphicUtility.GetGraphic));
+
             foreach(CodeInstruction instruction in codeInstructions)
             {
                 if (instruction.Calls(originalMethod))
@@ -3337,7 +3337,6 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Ldarg_0); // apparel
                     yield return new CodeInstruction(OpCodes.Ldarg_1); // bodyType
                     yield return new CodeInstruction(OpCodes.Call, newMethod);
-
                 }
                 else
                 {

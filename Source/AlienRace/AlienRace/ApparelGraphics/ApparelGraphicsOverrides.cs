@@ -8,83 +8,70 @@ namespace AlienRace.ApparelGraphics
 {
     public class ApparelGraphicsOverrides
     {
-        public string pathPrefix = null;
-        public Dictionary<ThingDef, string> individualFallbackPaths;
-        public List<ApparelFallbackOption> fallbacks;
-        public BodyTypeDef bodyTypeFallback = null;
-        public BodyTypeDef femaleBodyTypeFallback = null;
+        public AlienPartGenerator.ExtendedGraphicTop                       pathPrefix              = new() { path = string.Empty };
+        public Dictionary<ThingDef, AlienPartGenerator.ExtendedGraphicTop> individualFallbackPaths = new();
+        public List<ApparelFallbackOption>                                 fallbacks               = new();
+        public BodyTypeDef                                                 bodyTypeFallback        = null;
+        public BodyTypeDef                                                 femaleBodyTypeFallback  = null;
 
-        public string GetOverridePath(Apparel apparel)
+        public AlienPartGenerator.ExtendedGraphicTop GetOverride(Apparel apparel)
         {
-            if (apparel == null || apparel.def == null) return null;
+            if (apparel?.def == null)
+                return null;
 
-            if (!individualFallbackPaths.NullOrEmpty())
-            {
-                if (individualFallbackPaths.TryGetValue(apparel.def, out string overridePath))
-                {
-                    return overridePath;
-                }
-            }
-            return null;
+            return !this.individualFallbackPaths.NullOrEmpty() && this.individualFallbackPaths.TryGetValue(apparel.def, out AlienPartGenerator.ExtendedGraphicTop overridePath) ?
+                       overridePath :
+                       null;
         }
 
-        public string GetFallbackPath(Apparel apparel)
+        public AlienPartGenerator.ExtendedGraphicTop GetFallbackPath(Apparel apparel)
         {
-            if (apparel == null || apparel.def == null) return null;
-            if (!fallbacks.NullOrEmpty())
-            {
-                foreach(ApparelFallbackOption option in fallbacks)
-                {
-                    if (option.IsSuitableFallBackFor(apparel.def))
-                    {
-                        return option.wornGraphicPath;
-                    }
-                }
-            }
-            return null;
+            if (apparel?.def == null)
+                return null;
+
+            return !this.fallbacks.NullOrEmpty() ?
+                       this.fallbacks.FirstOrDefault(option => option.IsSuitableFallBackFor(apparel.def))?.GetGraphics(apparel.def) :
+                       null;
         }
 
         public bool TryGetBodyTypeFallback(Pawn pawn, out BodyTypeDef def)
         {
             def = null;
-            if (pawn == null) return false;
-            if (pawn.gender == Gender.Female && femaleBodyTypeFallback != null)
-            {
-                def = femaleBodyTypeFallback;
-                return true;
-            }
-            def = bodyTypeFallback;
+            if (pawn == null)
+                return false;
+
+            def = pawn.gender == Gender.Female && this.femaleBodyTypeFallback != null ?
+                      this.femaleBodyTypeFallback :
+                      this.bodyTypeFallback;
+
             return def != null;
         }
     }
 
     public class ApparelFallbackOption
     {
-        public string wornGraphicPath = "";
-        public List<string> wornGraphicPaths;
+        public AlienPartGenerator.ExtendedGraphicTop       wornGraphicPath = new() { path = string.Empty };
+        public List<AlienPartGenerator.ExtendedGraphicTop> wornGraphicPaths = new();
 
-        public List<string> apparelTags;
-        public List<BodyPartGroupDef> bodyPartGroups = new List<BodyPartGroupDef>();
-        public List<ApparelLayerDef> layers = new List<ApparelLayerDef>();
+        public List<string>           apparelTags;
+        public List<BodyPartGroupDef> bodyPartGroups = new();
+        public List<ApparelLayerDef>  layers         = new();
 
-        public string GetGraphicPath(ThingDef apparelDef)
-        {
-            if (!wornGraphicPaths.NullOrEmpty())
-            {
-                return wornGraphicPaths[apparelDef.GetHashCode() % wornGraphicPaths.Count];
-            }
-            return wornGraphicPath;
-        }
+        public AlienPartGenerator.ExtendedGraphicTop GetGraphics(ThingDef apparelDef) =>
+            !this.wornGraphicPaths.NullOrEmpty() ?
+                this.wornGraphicPaths[apparelDef.GetHashCode() % this.wornGraphicPaths.Count] :
+                this.wornGraphicPath;
+
         public bool IsSuitableFallBackFor(ThingDef apparelDef)
         {
-            if (apparelDef == null || apparelDef.apparel == null) return false;
+            if (apparelDef?.apparel == null)
+                return false;
+
             ApparelProperties props = apparelDef.apparel;
 
-            if (!apparelTags.NullOrEmpty() && (props.tags.NullOrEmpty() || !props.tags.Intersect(apparelTags).Any())) return false;
-            if (!bodyPartGroups.NullOrEmpty() && (props.bodyPartGroups.NullOrEmpty() || !props.bodyPartGroups.Intersect(bodyPartGroups).Any())) return false;
-            if (!layers.NullOrEmpty() && (props.layers.NullOrEmpty() || !props.layers.Intersect(layers).Any())) return false;
-
-            return true;
+            return (this.apparelTags.NullOrEmpty()    || !props.tags.NullOrEmpty()           && props.tags.Intersect(this.apparelTags).Any())              &&
+                   (this.bodyPartGroups.NullOrEmpty() || !props.bodyPartGroups.NullOrEmpty() && props.bodyPartGroups.Intersect(this.bodyPartGroups).Any()) &&
+                   (this.layers.NullOrEmpty()         || !props.layers.NullOrEmpty()         && props.layers.Intersect(this.layers).Any());
         }
     }
 }

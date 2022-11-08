@@ -153,5 +153,8 @@
 
         public static readonly PawnMethod generateStartingPossessions =
             AccessTools.MethodDelegate<PawnMethod>(AccessTools.Method(typeof(StartingPawnUtility), "GeneratePossessions"));
+
+        public static readonly AccessTools.FieldRef<Pawn_StoryTracker, Color?> skinColorBase =
+            AccessTools.FieldRefAccess<Pawn_StoryTracker, Color?>(AccessTools.Field(typeof(Pawn_StoryTracker), "skinColorBase"));
     }
 }
