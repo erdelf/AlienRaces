@@ -20,10 +20,10 @@ namespace AlienRace.ApparelGraphics
             if (wearer?.def is ThingDef_AlienRace alienRace)
             {
                 int index      = 0;
-                int savedIndex = apparel.Wearer.HashOffset();
+                int savedIndex = wearer.HashOffset();
 
                 if (apparelCache.TryGetValue((apparel.def, alienRace, bodyType), out AlienPartGenerator.ExtendedGraphicTop cachedGraphic))
-                    return cachedGraphic.GetPath(apparel.Wearer, ref index, savedIndex);
+                    return cachedGraphic.GetPath(wearer, ref index, savedIndex);
 
                 AlienPartGenerator.ExtendedGraphicTop overrideEGraphic;
                 string                                overridePath;
@@ -32,7 +32,7 @@ namespace AlienRace.ApparelGraphics
                 // Check first for specific Def overrides
                 if ((overrideEGraphic = overrides.GetOverride(apparel)) != null) // default initialize bodytypes
                 {
-                    overridePath = overrideEGraphic.GetPath(apparel.Wearer, ref index, savedIndex);
+                    overridePath = overrideEGraphic.GetPath(wearer, ref index, savedIndex);
                     return overridePath;
                 }
 
@@ -40,7 +40,7 @@ namespace AlienRace.ApparelGraphics
 
                 if (overrideEGraphic != null)
                 {
-                    overridePath = overrideEGraphic.GetPath(apparel.Wearer, ref index, savedIndex);
+                    overridePath = overrideEGraphic.GetPath(wearer, ref index, savedIndex);
 
                     // Blanket prefixes take precedence over vanilla path
                     if (!overridePath.NullOrEmpty() && ValidTexturesExist(overridePath = overrides.pathPrefix + path))
@@ -54,7 +54,7 @@ namespace AlienRace.ApparelGraphics
                 // If regular textures cannot be found, attempt to find a valid fallback
                 if ((overrideEGraphic = overrides.GetFallbackPath(apparel)) != null)
                 {
-                    overridePath = overrideEGraphic.GetPath(apparel.Wearer, ref index, savedIndex);
+                    overridePath = overrideEGraphic.GetPath(wearer, ref index, savedIndex);
                     return overridePath;
                 }
 
