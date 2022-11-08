@@ -230,7 +230,7 @@
             }
 
             {
-                foreach (ExtendedGraphicTop graphicTop in this.alienProps.alienRace.graphicPaths.apparel.individualFallbackPaths.Values)
+                foreach (ExtendedGraphicTop graphicTop in this.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values)
                 {
                     if (!graphicTop.GetSubGraphics().MoveNext())
                     {
@@ -322,7 +322,7 @@
                                            this.alienProps.alienRace.graphicPaths.headMasks);
 
             graphicsLoader.LoadAllGraphics(this.alienProps.defName, 
-                                           this.alienProps.alienRace.graphicPaths.apparel.individualFallbackPaths.Values.Concat(
+                                           this.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values.Concat(
                                                                                                                                 this.alienProps.alienRace.graphicPaths.apparel.fallbacks.SelectMany(afo => 
                                                                                                                                     afo.wornGraphicPaths.Concat(afo.wornGraphicPath)) ).ToArray());
 

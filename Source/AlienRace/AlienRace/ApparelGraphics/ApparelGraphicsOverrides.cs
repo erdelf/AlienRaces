@@ -9,7 +9,7 @@ namespace AlienRace.ApparelGraphics
     public class ApparelGraphicsOverrides
     {
         public AlienPartGenerator.ExtendedGraphicTop                       pathPrefix              = new() { path = string.Empty };
-        public Dictionary<ThingDef, AlienPartGenerator.ExtendedGraphicTop> individualFallbackPaths = new();
+        public Dictionary<ThingDef, AlienPartGenerator.ExtendedGraphicTop> individualPaths = new();
         public List<ApparelFallbackOption>                                 fallbacks               = new();
         public BodyTypeDef                                                 bodyTypeFallback        = null;
         public BodyTypeDef                                                 femaleBodyTypeFallback  = null;
@@ -19,7 +19,7 @@ namespace AlienRace.ApparelGraphics
             if (apparel?.def == null)
                 return null;
 
-            return !this.individualFallbackPaths.NullOrEmpty() && this.individualFallbackPaths.TryGetValue(apparel.def, out AlienPartGenerator.ExtendedGraphicTop overridePath) ?
+            return !this.individualPaths.NullOrEmpty() && this.individualPaths.TryGetValue(apparel.def, out AlienPartGenerator.ExtendedGraphicTop overridePath) ?
                        overridePath :
                        null;
         }
