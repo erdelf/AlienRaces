@@ -319,6 +319,8 @@
     <Compile Include="ExtendedGraphics\IExtendedGraphic.cs" />
     <Compile Include="ExtendedGraphics\IGraphicFinder.cs" />
     <Compile Include="ExtendedGraphics\IGraphicsLoader.cs" />
+    <Compile Include="ApparelGraphics\ApparelGraphicUtility.cs"/>
+    <Compile Include="ApparelGraphics\ApparelGraphicsOverrides.cs"/>
     <Compile Include="ColorGenerators.cs" />
     <Compile Include="Scribe_NestedCollections.cs" />
     <Compile Include="HarmonyPatches.cs" />
@@ -335,6 +337,7 @@
       <Version>2.2.2</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
