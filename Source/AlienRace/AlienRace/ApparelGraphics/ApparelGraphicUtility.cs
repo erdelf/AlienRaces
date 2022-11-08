@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using System;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 using RimWorld;
@@ -27,6 +21,12 @@ namespace AlienRace.ApparelGraphics
                 string overridePath;
                 ApparelGraphicsOverrides overrides = alienRace.alienRace.graphicPaths.apparel;
 
+                // Check first for specific Def overrides
+                if ((overridePath = overrides.GetOverridePath(apparel)) != null)
+                {
+                    if (bodyType != null) overridePath += "_" + bodyType.defName;
+                    return CacheNewGraphic(overridePath);
+                }
                 // Blanket prefixes take precedence over vanilla path
                 if (!overrides.pathPrefix.NullOrEmpty() && ValidTexturesExist(overridePath = overrides.pathPrefix + path))
                 {
@@ -38,14 +38,15 @@ namespace AlienRace.ApparelGraphics
                 {
                     return CacheNewGraphic(path);
                 }
+
                 // If regular textures cannot be found, attempt to find a valid fallback
-                else if ((overridePath = overrides.GetOverridePath(apparel)) != null)
+                if ((overridePath = overrides.GetFallbackPath(apparel)) != null)
                 {
                     if (bodyType != null) overridePath += "_" + bodyType.defName;
                     return CacheNewGraphic(overridePath);
                 }
-                // If no specific overrides exist, attempt to use a fallback body type
-                else if (bodyType != null && path.EndsWith(overridePath = "_" + bodyType.defName) && overrides.TryGetBodyTypeFallback(wearer, out BodyTypeDef overrideBodyType))
+                // If no specific fallbacks exist, attempt to use a fallback body type
+                if (bodyType != null && path.EndsWith(overridePath = "_" + bodyType.defName) && overrides.TryGetBodyTypeFallback(wearer, out BodyTypeDef overrideBodyType))
                 {
                     overridePath = ReplaceBodyType(path, overridePath, overrideBodyType);
                     return CacheNewGraphic(overridePath);
