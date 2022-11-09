@@ -230,17 +230,20 @@
             }
 
             {
+                
                 foreach (ExtendedGraphicTop graphicTop in this.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values)
                 {
                     if (!graphicTop.GetSubGraphics().MoveNext())
                     {
                         string path = graphicTop.path;
+
+                        graphicTop.bodytypeGraphics = new List<ExtendedBodytypeGraphic>();
                         foreach (BodyTypeDef bodyType in this.bodyTypes)
                             graphicTop.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
                                                             {
                                                                 bodytype = bodyType,
                                                                 path     = $"{path}_{bodyType.defName}",
-                                                                genderGraphics = new List<ExtendedGenderGraphic>()
+                                                                genderGraphics = new List<ExtendedGenderGraphic>
                                                                                  {
                                                                                      new()
                                                                                      {
@@ -265,6 +268,7 @@
                         if (!graphicTop.GetSubGraphics().MoveNext())
                         {
                             string path = graphicTop.path;
+                            graphicTop.bodytypeGraphics = new List<ExtendedBodytypeGraphic>();
                             foreach (BodyTypeDef bodyType in this.bodyTypes)
                                 graphicTop.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
                                                                 {
@@ -320,12 +324,12 @@
                                            this.alienProps.alienRace.graphicPaths.stump,
                                            this.alienProps.alienRace.graphicPaths.bodyMasks,
                                            this.alienProps.alienRace.graphicPaths.headMasks);
-
+            
             graphicsLoader.LoadAllGraphics(this.alienProps.defName, 
                                            this.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values.Concat(
                                                                                                                                 this.alienProps.alienRace.graphicPaths.apparel.fallbacks.SelectMany(afo => 
                                                                                                                                     afo.wornGraphicPaths.Concat(afo.wornGraphicPath)) ).ToArray());
-
+            
             graphicsLoader.LoadAllGraphics(this.alienProps.defName + " Addons", this.bodyAddons.Cast<ExtendedGraphicTop>().ToArray());
 
             foreach (BodyAddon bodyAddon in this.bodyAddons)
