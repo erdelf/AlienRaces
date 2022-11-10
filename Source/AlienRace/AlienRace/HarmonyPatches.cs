@@ -2792,7 +2792,7 @@ namespace AlienRace
                 //Log.Message(pawn.LabelCap);
 
                 AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
-                CachedData.hairColor(pawn.story) = alienComp.GetChannel(channel: "hair").first;
+                pawn.story.HairColor = alienComp.GetChannel(channel: "hair").first;
             }
         }
 
@@ -2939,6 +2939,45 @@ namespace AlienRace
                         alienComp.fixGenderPostSpawn = false;
                     }
 
+                    if (ModsConfig.BiotechActive)
+                    {
+                        bool reinit = false;
+
+                        List<Gene> genes = alien.genes.GenesListForReading;
+
+                        int ColorDiff(Color c1, Color c2) =>
+                            (int)Math.Sqrt((c1.r - c2.r) * (c1.r - c2.r)
+                                       + (c1.g - c2.g) * (c1.g - c2.g)
+                                       + (c1.b - c2.b) * (c1.b - c2.b));
+
+                        IEnumerable<(GeneDef gd, int)> valueTuples = PawnSkinColors.SkinColorGenesInOrder.Select(gd => (gd, ColorDiff(gd.skinColorBase ?? Color.clear, alien.story.SkinColor)));
+                        (GeneDef gd, int) valueTuple = valueTuples.MinBy(n => n.Item2);
+
+                        Gene skinGene = genes.FirstOrDefault(g => g.def.endogeneCategory == EndogeneCategory.Melanin);
+                        if (valueTuple.gd != skinGene.def)
+                        {
+                            reinit = true;
+                            alien.genes.RemoveGene(skinGene);
+                        }
+
+                        GeneDef geneDef = PawnHairColors.ClosestHairColorGene(alien.story.HairColor, alien.story.SkinColor);
+
+                        Gene hairGene = genes.FirstOrDefault(g => g.def.endogeneCategory == EndogeneCategory.HairColor);
+                        if (hairGene != null && geneDef != hairGene.def)
+                        {
+                            reinit = true;
+                            alien.genes.RemoveGene(hairGene);
+                        }
+
+
+                        if (reinit)
+                        {
+                            alien.genes.InitializeGenesFromOldSave(valueTuple.gd.minMelanin);
+                            return false;
+                        }
+                    }
+
+
                     GraphicPaths      graphicPaths = alienProps.alienRace.graphicPaths;
                     LifeStageAgeAlien lsaa         = (alien.ageTracker.CurLifeStageRace as LifeStageAgeAlien)!;
 
@@ -2949,7 +2988,7 @@ namespace AlienRace
                     alienComp.customPortraitDrawSize     = lsaa.customPortraitDrawSize;
                     alienComp.customPortraitHeadDrawSize = lsaa.customPortraitHeadDrawSize;
 
-                    CachedData.hairColor(alien.story) = alienComp.GetChannel("hair").first;
+                    alien.story.HairColor = alienComp.GetChannel("hair").first;
 
                     int sharedIndex = 0;
 
@@ -2958,20 +2997,24 @@ namespace AlienRace
                     string bodyMask = graphicPaths.bodyMasks.GetPath(alien, ref sharedIndex, alienComp.bodyMaskVariant < 0 ? null : alienComp.bodyMaskVariant);
                     alienComp.bodyMaskVariant = sharedIndex;
 
+                    Shader skinShader = graphicPaths.skinShader?.Shader ?? ShaderDatabase.CutoutSkin;
+
+                    if (skinShader == ShaderDatabase.CutoutSkin && alien.story.SkinColorOverriden)
+                        skinShader = ShaderDatabase.CutoutSkinColorOverride;
+
+
                     __instance.nakedGraphic = !bodyPath.NullOrEmpty() ?
                                                   CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi), 
                                                                                            bodyPath, bodyMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
-                                                                                                                                graphicPaths.skinShader?.Shader ?? ShaderDatabase.CutoutSkin :
-                                                                                                                                ShaderDatabase.CutoutComplex,
+                                                                                                              skinShader : ShaderDatabase.CutoutComplex,
                                                                                            Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false), null, 
                                                                                            0, new List<ShaderParameter> { graphicPaths.SkinColoringParameter }, bodyMask)) :
                                                   null;
                     
                     __instance.rottingGraphic = !bodyPath.NullOrEmpty() ?
                                                 GraphicDatabase.Get<Graphic_Multi>(bodyPath, ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
-                                                                                                 graphicPaths.skinShader?.Shader ?? ShaderDatabase.CutoutSkin :
-                                                                                                 ShaderDatabase.CutoutComplex, Vector2.one,
-                                                                                   PawnGraphicSet.RottingColorDefault, PawnGraphicSet.RottingColorDefault, null, bodyMask) :
+                                                                                                 skinShader : ShaderDatabase.CutoutComplex, 
+                                                                                   Vector2.one, PawnGraphicSet.RottingColorDefault, PawnGraphicSet.RottingColorDefault, null, bodyMask) :
                                                 null;
 
                     string skeletonPath = graphicPaths.skeleton.GetPath(alien, ref sharedIndex, alienComp.bodyVariant);
@@ -2988,8 +3031,7 @@ namespace AlienRace
                     __instance.headGraphic = alien.health.hediffSet.HasHead && !headPath.NullOrEmpty() ?
                                                  CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi),
                                                                                                headPath, headMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(headPath + "_northm", reportFailure: false) == null ?
-                                                                                                             graphicPaths.skinShader?.Shader ?? ShaderDatabase.CutoutSkin :
-                                                                                                             ShaderDatabase.CutoutComplex,
+                                                                                                             skinShader : ShaderDatabase.CutoutComplex,
                                                                                                Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false), null,
                                                                                                0, new List<ShaderParameter> { graphicPaths.SkinColoringParameter }, headMask))
                                                  : null;
@@ -3023,42 +3065,6 @@ namespace AlienRace
                     if (ModsConfig.BiotechActive)
                     {
                         __instance.swaddledBabyGraphic = GraphicDatabase.Get<Graphic_Multi>("Things/Pawn/Humanlike/Apparel/SwaddledBaby/Swaddled_Child", ShaderDatabase.Cutout, Vector2.one, CachedData.swaddleColor(__instance));
-
-
-                        bool reinit = false;
-
-                        List<Gene> genes = alien.genes.GenesListForReading;
-
-                        int ColorDiff(Color c1, Color c2) =>
-                            (int) Math.Sqrt((c1.r - c2.r) * (c1.r - c2.r)
-                                       + (c1.g   - c2.g) * (c1.g - c2.g)
-                                       + (c1.b   - c2.b) * (c1.b - c2.b));
-                        
-                        IEnumerable<(GeneDef gd, int)> valueTuples = PawnSkinColors.SkinColorGenesInOrder.Select(gd => (gd, ColorDiff(gd.skinColorBase ?? Color.clear, alien.story.SkinColor)));
-                        (GeneDef gd, int)              valueTuple  = valueTuples.MinBy(n => n.Item2);
-
-                        Gene skinGene = genes.FirstOrDefault(g => g.def.endogeneCategory == EndogeneCategory.Melanin);
-                        if (valueTuple.gd != skinGene.def)
-                        {
-                            reinit = true;
-                            alien.genes.RemoveGene(skinGene);
-                        }
-
-                        GeneDef geneDef  = PawnHairColors.ClosestHairColorGene(alien.story.HairColor, alien.story.SkinColor);
-
-                        Gene    hairGene = genes.FirstOrDefault(g => g.def.endogeneCategory == EndogeneCategory.HairColor);
-                        if (hairGene != null && geneDef != hairGene.def)
-                        {
-                            reinit = true;
-                            alien.genes.RemoveGene(hairGene);
-                        }
-
-
-                        if (reinit)
-                        {
-                            alien.genes.InitializeGenesFromOldSave(valueTuple.gd.minMelanin);
-                            return false;
-                        }
                     }
                     
                     if (alien.style != null && ModsConfig.IdeologyActive && (!ModLister.BiotechInstalled || alien.genes == null || !alien.genes.GenesListForReading.Any(x => x.def.graphicData is { tattoosVisible: false } && x.Active)))
