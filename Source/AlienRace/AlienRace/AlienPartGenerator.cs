@@ -296,22 +296,23 @@
             this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.Init();
             if (!this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.GetPath().NullOrEmpty())
                 this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.IncrementVariantCount();
-            Stack<Pair<int, IEnumerator<IExtendedGraphic>>> stack = new();
-
-            stack.Push(new Pair<int, IEnumerator<IExtendedGraphic>>(1, this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.GetSubGraphics()));
+            Stack<IEnumerator<IExtendedGraphic>> stack = new();
+            
+            stack.Push(this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.GetSubGraphics());
             while (stack.Count > 0)
             {
-                Pair<int, IEnumerator<IExtendedGraphic>> currentGraphicSet = stack.Pop();
+                IEnumerator<IExtendedGraphic> currentGraphicSet = stack.Pop();
 
-                while (currentGraphicSet.Second.MoveNext())
+                while (currentGraphicSet.MoveNext())
                 {
-                    IExtendedGraphic current = currentGraphicSet.Second.Current;
+                    IExtendedGraphic current = currentGraphicSet.Current;
                     if (current != null)
                     {
                         current.Init();
                         if(!current.GetPath().NullOrEmpty())
                             current.IncrementVariantCount();
-                        currentGraphicSet = new Pair<int, IEnumerator<IExtendedGraphic>>(currentGraphicSet.First + 1, current.GetSubGraphics());
+                        
+                        stack.Push(current.GetSubGraphics());
                     }
                 }
             }
@@ -480,7 +481,7 @@
 
                         if (pawn.Corpse?.GetRotStage() == RotStage.Rotting)
                             this.colorChannels["skin"].first = PawnGraphicSet.RottingColorDefault;
-                        CachedData.hairColor(pawn.story) = hairColors.first;
+                        pawn.story.HairColor = hairColors.first;
 
                         this.RegenerateColorChannelLink("skin");
 
@@ -495,7 +496,7 @@
                             {
                                 float grey = Rand.Range(min: 0.65f, max: 0.85f);
                                 hairColors.first                 = new Color(grey, grey, grey);
-                                CachedData.hairColor(pawn.story) = hairColors.first;
+                                pawn.story.HairColor = hairColors.first;
                             }
                         }
                     }

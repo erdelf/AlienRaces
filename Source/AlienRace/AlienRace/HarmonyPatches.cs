@@ -2976,7 +2976,7 @@ namespace AlienRace
                             return false;
                         }
                     }
-
+                    
 
                     GraphicPaths      graphicPaths = alienProps.alienRace.graphicPaths;
                     LifeStageAgeAlien lsaa         = (alien.ageTracker.CurLifeStageRace as LifeStageAgeAlien)!;
@@ -3005,10 +3005,10 @@ namespace AlienRace
 
                     __instance.nakedGraphic = !bodyPath.NullOrEmpty() ?
                                                   CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi), 
-                                                                                           bodyPath, bodyMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
+                                                                                                bodyPath, bodyMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
                                                                                                               skinShader : ShaderDatabase.CutoutComplex,
-                                                                                           Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false), null, 
-                                                                                           0, new List<ShaderParameter> { graphicPaths.SkinColoringParameter }, bodyMask)) :
+                                                                                                Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false), null, 
+                                                                                                0, new List<ShaderParameter> { graphicPaths.SkinColoringParameter }, bodyMask)) :
                                                   null;
                     
                     __instance.rottingGraphic = !bodyPath.NullOrEmpty() ?
