@@ -28,8 +28,7 @@ namespace AlienRace
 
         static HarmonyPatches()
         {
-            Harmony harmony = new Harmony(id: "rimworld.erdelf.alien_race.main");
-
+            Harmony harmony = new Harmony(id: "rimworld.erdelf.alien_race.main");            
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.GenerationChance)), 
                           postfix: new HarmonyMethod(patchType, nameof(GenerationChanceChildPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), nameof(PawnRelationWorker_ExLover.GenerationChance)), 
@@ -562,12 +561,11 @@ namespace AlienRace
                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
             return drawSize * headFactor;
         }
-
         public static IEnumerable<CodeInstruction> GetHumanlikeHeadSetForPawnTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            MethodInfo getMeshInfo       = AccessTools.Method(typeof(MeshPool), nameof(MeshPool.GetMeshSetForWidth), new[] { typeof(float) });
-            FieldInfo  humanlikeBodyInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeHeadSet));
-            MethodInfo helperInfo        = AccessTools.Method(patchType, nameof(GetHumanlikeHeadSetForPawnHelper));
+            MethodInfo getMeshInfo = AccessTools.Method(typeof(MeshPool), nameof(MeshPool.GetMeshSetForWidth), new[] { typeof(float) });
+            FieldInfo humanlikeBodyInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeHeadSet));
+            MethodInfo helperInfo = AccessTools.Method(patchType, nameof(GetHumanlikeHeadSetForPawnHelper));
 
 
             List<CodeInstruction> instructionList = instructions.ToList();
@@ -577,12 +575,14 @@ namespace AlienRace
                 CodeInstruction instruction = instructionList[i];
                 if (instruction.Calls(getMeshInfo))
                 {
+                    yield return new CodeInstruction(OpCodes.Box, typeof(float));                    
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Call, helperInfo);
                 }
                 else if (instruction.LoadsField(humanlikeBodyInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Ldc_R4, 1.5f).WithLabels(instruction.ExtractLabels());
+                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Call, helperInfo);
                 }
@@ -591,15 +591,19 @@ namespace AlienRace
                     yield return instruction;
                 }
             }
-        }
+        }       
 
-        public static GraphicMeshSet GetHumanlikeHeadSetForPawnHelper(float lifestageFactor, Pawn pawn)
+
+        public static GraphicMeshSet GetHumanlikeHeadSetForPawnHelper(object lifestageFactor, Pawn pawn)
         {
             Vector2 drawSize = (portraitRender.First.Target as Pawn == pawn && portraitRender.Second ?
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitHeadDrawSize :
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
-
-            return MeshPool.GetMeshSetForWidth(drawSize.x * lifestageFactor, drawSize.y * lifestageFactor);
+            if (lifestageFactor is Vector2 vector)
+            {
+                return MeshPool.GetMeshSetForWidth(drawSize.x * vector.x, drawSize.y * vector.y);
+            }
+            return MeshPool.GetMeshSetForWidth(drawSize.x * (float)lifestageFactor, drawSize.y * (float)lifestageFactor);
         }
 
         public static IEnumerable<CodeInstruction> GetHumanlikeBodySetForPawnTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -616,12 +620,14 @@ namespace AlienRace
                 CodeInstruction instruction = instructionList[i];
                 if (instruction.Calls(getMeshInfo))
                 {
+                    yield return new CodeInstruction(OpCodes.Box, typeof(float));                    
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Call, helperInfo);
                 }
                 else if (instruction.LoadsField(humanlikeBodyInfo))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldc_R4, 1.5f).WithLabels(instruction.ExtractLabels());
+                    yield return new CodeInstruction(OpCodes.Ldc_R4, 1.5f).WithLabels(instruction.ExtractLabels());                    
+                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Call, helperInfo);
                 }
@@ -632,13 +638,17 @@ namespace AlienRace
             }
         }
 
-        public static GraphicMeshSet GetHumanlikeBodySetForPawnHelper(float lifestageFactor, Pawn pawn)
+        public static GraphicMeshSet GetHumanlikeBodySetForPawnHelper(object lifestageFactor, Pawn pawn)
         {
             Vector2 drawSize = (portraitRender.First.Target as Pawn == pawn && portraitRender.Second ?
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitDrawSize :
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customDrawSize) ?? Vector2.one;
 
-            return MeshPool.GetMeshSetForWidth(drawSize.x * lifestageFactor, drawSize.y * lifestageFactor);
+            if (lifestageFactor is Vector2 vector)
+            {
+                return MeshPool.GetMeshSetForWidth(drawSize.x * vector.x, drawSize.y * vector.y);
+            }
+            return MeshPool.GetMeshSetForWidth(drawSize.x * (float)lifestageFactor, drawSize.y * (float)lifestageFactor);
         }
 
 
