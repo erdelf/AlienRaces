@@ -258,13 +258,13 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PreceptComp_UnwillingToDo_Gendered), nameof(PreceptComp.MemberWillingToDo)), transpiler: new HarmonyMethod(patchType, nameof(UnwillingWillingToDoGenderedTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(JobDriver_Lovin), "GenerateRandomMinTicksToNextLovin"), transpiler: new HarmonyMethod(patchType, nameof(GenerateRandomMinTicksToNextLovinTranspiler)));
-            
+            Harmony.DEBUG = true;
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn)),  transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeBodySetForPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn)),  transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)),  transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBeardSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer),             nameof(PawnRenderer.GetBodyOverlayMeshSet)),                   postfix: new HarmonyMethod(patchType, nameof(GetBodyOverlayMeshSetPostfix)));
-
+            Harmony.DEBUG = false;
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateSkills"), new HarmonyMethod(patchType, nameof(GenerateSkillsPrefix)), postfix: new HarmonyMethod(patchType, nameof(GenerateSkillsPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnInternalTranspiler)));
@@ -622,17 +622,18 @@ namespace AlienRace
 
             List<CodeInstruction> instructionList = instructions.ToList();
 
-            for (int i = 0; i < instructionList.Count; i++)
+            foreach (CodeInstruction instruction in instructionList)
             {
-                CodeInstruction instruction = instructionList[i];
                 if (instruction.Calls(getMeshInfo))
                 {
+                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Call, helperInfo);
                 }
                 else if (instruction.LoadsField(humanlikeBodyInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Ldc_R4, 1.5f).WithLabels(instruction.ExtractLabels());
+                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Call, helperInfo);
                 }
@@ -643,13 +644,19 @@ namespace AlienRace
             }
         }
 
-        public static GraphicMeshSet GetHumanlikeHeadSetForPawnHelper(float lifestageFactor, Pawn pawn)
+        public static GraphicMeshSet GetHumanlikeHeadSetForPawnHelper(object lifestageFactor, Pawn pawn)
         {
             Vector2 drawSize = (portraitRender.First.Target as Pawn == pawn && portraitRender.Second ?
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitHeadDrawSize :
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
 
-            return MeshPool.GetMeshSetForWidth(drawSize.x * lifestageFactor, drawSize.y * lifestageFactor);
+            Vector2 scaleFactor = lifestageFactor is Vector2 lifestageFactorV2 ?
+                                      lifestageFactorV2 :
+                                      lifestageFactor is float lifestageFactorF ?
+                                          new Vector2(lifestageFactorF, lifestageFactorF) :
+                                          Vector2.one;
+
+            return MeshPool.GetMeshSetForWidth(drawSize.x * scaleFactor.x, drawSize.y * scaleFactor.y);
         }
 
         public static IEnumerable<CodeInstruction> GetHumanlikeBodySetForPawnTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -661,17 +668,18 @@ namespace AlienRace
 
             List<CodeInstruction> instructionList = instructions.ToList();
 
-            for (int i = 0; i < instructionList.Count; i++)
+            foreach (CodeInstruction instruction in instructionList)
             {
-                CodeInstruction instruction = instructionList[i];
                 if (instruction.Calls(getMeshInfo))
                 {
+                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Call, helperInfo);
                 }
                 else if (instruction.LoadsField(humanlikeBodyInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Ldc_R4, 1.5f).WithLabels(instruction.ExtractLabels());
+                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Call, helperInfo);
                 }
@@ -682,13 +690,19 @@ namespace AlienRace
             }
         }
 
-        public static GraphicMeshSet GetHumanlikeBodySetForPawnHelper(float lifestageFactor, Pawn pawn)
+        public static GraphicMeshSet GetHumanlikeBodySetForPawnHelper(object lifestageFactor, Pawn pawn)
         {
             Vector2 drawSize = (portraitRender.First.Target as Pawn == pawn && portraitRender.Second ?
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitDrawSize :
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customDrawSize) ?? Vector2.one;
 
-            return MeshPool.GetMeshSetForWidth(drawSize.x * lifestageFactor, drawSize.y * lifestageFactor);
+            Vector2 scaleFactor = lifestageFactor is Vector2 lifestageFactorV2 ?
+                                      lifestageFactorV2 :
+                                      lifestageFactor is float lifestageFactorF ?
+                                          new Vector2(lifestageFactorF, lifestageFactorF) :
+                                          Vector2.one;
+
+            return MeshPool.GetMeshSetForWidth(drawSize.x * scaleFactor.x, drawSize.y * scaleFactor.y);
         }
 
 
