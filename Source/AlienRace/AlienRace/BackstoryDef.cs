@@ -16,7 +16,7 @@
         public float                         femaleCommonality      = 100f;
         public BackstoryDef                  linkedBackstory;
         public RelationSettings              relationSettings = new RelationSettings();
-        public List<string>                  forcedHediffs    = new List<string>();
+        public List<HediffDef>               forcedHediffs    = new List<HediffDef>();
         public List<SkillGain>               passions         = new List<SkillGain>();
         public IntRange                      bioAgeRange;
         public IntRange                      chronoAgeRange;

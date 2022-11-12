@@ -12,7 +12,7 @@
         public NameTriple name;
         public List<ThingDef> validRaces;
         public bool factionLeader;
-        public List<string> forcedHediffs = new List<string>();
+        public List<HediffDef> forcedHediffs = new List<HediffDef>();
         public List<ThingDefCountRangeClass> forcedItems = new List<ThingDefCountRangeClass>();
 
         public override IEnumerable<string> ConfigErrors()
