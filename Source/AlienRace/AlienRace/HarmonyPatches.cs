@@ -1650,17 +1650,18 @@ namespace AlienRace
         public static void HasHeadPostfix(BodyPartRecord x, ref bool __result) =>
             __result = headPawnDef != null ? x.def == headPawnDef : __result;
 
-        public static void GenerateInitialHediffsPostfix(Pawn pawn) =>
-            pawn.story?.AllBackstories?.OfType<AlienBackstoryDef>()
-               .SelectMany(selector: bd => bd.forcedHediffs).Concat(bioReference?.forcedHediffs ?? new List<string>(capacity: 0)).Select(DefDatabase<HediffDef>.GetNamedSilentFail)
-               .ToList().ForEach(action: hd =>
-                {
-                    BodyPartRecord bodyPartRecord = null;
-                    DefDatabase<RecipeDef>.AllDefs.FirstOrDefault(predicate: rd => rd.addsHediff == hd)?.appliedOnFixedBodyParts.SelectMany(selector: bpd =>
-                            pawn.health.hediffSet.GetNotMissingParts().Where(predicate: bpr => bpr.def == bpd && !pawn.health.hediffSet.hediffs.Any(predicate: h => h.def == hd && h.Part == bpr)))
-                       .TryRandomElement(out bodyPartRecord);
-                    pawn.health.AddHediff(hd, bodyPartRecord);
-                });
+        public static void GenerateInitialHediffsPostfix(Pawn pawn)
+        {
+            foreach (HediffDef hd in pawn.story?.AllBackstories?.OfType<AlienBackstoryDef>().SelectMany(selector: bd => bd.forcedHediffs).Concat(bioReference?.forcedHediffs ?? new List<HediffDef>(capacity: 0)) ?? Array.Empty<HediffDef>())
+            {
+                BodyPartRecord bodyPartRecord = null;
+                DefDatabase<RecipeDef>.AllDefs.FirstOrDefault(predicate: rd => rd.addsHediff == hd)?.
+                                       appliedOnFixedBodyParts.SelectMany(bpd => pawn.health.hediffSet.GetNotMissingParts().Where(bpr =>
+                                        bpr.def == bpd && !pawn.health.hediffSet.hediffs.Any(predicate: h => h.def == hd && h.Part == bpr))).
+                                            TryRandomElement(out bodyPartRecord);
+                pawn.health.AddHediff(hd, bodyPartRecord);
+            }
+        }
 
         public static void GenerateStartingApparelForPostfix() =>
             CachedData.allApparelPairs().AddRange(apparelList);
