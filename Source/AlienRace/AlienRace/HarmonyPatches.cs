@@ -2954,45 +2954,6 @@ namespace AlienRace
                         alienComp.fixGenderPostSpawn = false;
                     }
 
-                    if (ModsConfig.BiotechActive)
-                    {
-                        bool reinit = false;
-
-                        List<Gene> genes = alien.genes.GenesListForReading;
-
-                        int ColorDiff(Color c1, Color c2) =>
-                            (int)Math.Sqrt((c1.r - c2.r) * (c1.r - c2.r)
-                                       + (c1.g - c2.g) * (c1.g - c2.g)
-                                       + (c1.b - c2.b) * (c1.b - c2.b));
-
-                        IEnumerable<(GeneDef gd, int)> valueTuples = PawnSkinColors.SkinColorGenesInOrder.Select(gd => (gd, ColorDiff(gd.skinColorBase ?? Color.clear, alien.story.SkinColor)));
-                        (GeneDef gd, int) valueTuple = valueTuples.MinBy(n => n.Item2);
-
-                        Gene skinGene = genes.FirstOrDefault(g => g.def.endogeneCategory == EndogeneCategory.Melanin);
-                        if (valueTuple.gd != skinGene.def)
-                        {
-                            reinit = true;
-                            alien.genes.RemoveGene(skinGene);
-                        }
-
-                        GeneDef geneDef = PawnHairColors.ClosestHairColorGene(alien.story.HairColor, alien.story.SkinColor);
-
-                        Gene hairGene = genes.FirstOrDefault(g => g.def.endogeneCategory == EndogeneCategory.HairColor);
-                        if (hairGene != null && geneDef != hairGene.def)
-                        {
-                            reinit = true;
-                            alien.genes.RemoveGene(hairGene);
-                        }
-
-
-                        if (reinit)
-                        {
-                            alien.genes.InitializeGenesFromOldSave(valueTuple.gd.minMelanin);
-                            return false;
-                        }
-                    }
-                    
-
                     GraphicPaths      graphicPaths = alienProps.alienRace.graphicPaths;
                     LifeStageAgeAlien lsaa         = (alien.ageTracker.CurLifeStageRace as LifeStageAgeAlien)!;
 
@@ -3003,7 +2964,7 @@ namespace AlienRace
                     alienComp.customPortraitDrawSize     = lsaa.customPortraitDrawSize;
                     alienComp.customPortraitHeadDrawSize = lsaa.customPortraitHeadDrawSize;
 
-                    alien.story.HairColor = alienComp.GetChannel("hair").first;
+                    alienComp.GetChannel("hair").first = alien.story.HairColor;
 
                     int sharedIndex = 0;
 
