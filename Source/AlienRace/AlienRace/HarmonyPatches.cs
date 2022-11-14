@@ -282,6 +282,8 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(ApparelGraphicRecordGetter), nameof(ApparelGraphicRecordGetter.TryGetGraphicApparel)), transpiler: new HarmonyMethod(patchType, nameof(TryGetGraphicApparelTranspiler)));
 
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility), nameof(PregnancyUtility.PregnancyChanceForPartners)), prefix: new HarmonyMethod(patchType, nameof(PregnancyChanceForPartnersPrefix)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -359,6 +361,13 @@ namespace AlienRace
                     if (!RaceRestrictionSettings.geneRestricted.Contains(geneDef))
                         RaceRestrictionSettings.geneRestricted.Add(geneDef);
                     ar.alienRace.raceRestriction.whiteGeneList.Add(geneDef);
+                }
+
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.reproductionList)
+                {
+                    if (!RaceRestrictionSettings.reproductionRestricted.Contains(thingDef))
+                        RaceRestrictionSettings.reproductionRestricted.Add(thingDef);
+                    ar.alienRace.raceRestriction.whiteReproductionList.Add(thingDef);
                 }
 
                 ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(ar.race.corpseDef);
@@ -3325,6 +3334,16 @@ namespace AlienRace
                     yield return instruction;
                 }
             }
+        }
+
+        public static bool PregnancyChanceForPartnersPrefix(Pawn woman, Pawn man, ref float __result)
+        {
+            if (!RaceRestrictionSettings.CanReproduce(woman.def, man.def))
+            {
+                __result = 0f;
+                return false;
+            }
+            return true;
         }
     }
 }

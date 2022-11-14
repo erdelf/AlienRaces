@@ -591,6 +591,28 @@
                    !(gene.exclusionTags?.Any(t => raceRestriction?.blackGeneTags.Contains(t) ?? false) ?? false) &&
                    !(raceRestriction?.blackEndoCategories.Contains(gene.endogeneCategory) ?? false);
         }
+
+        public bool           canGetPregnant                   = true;
+        public bool           canReproduceWithSelf             = true;
+        public bool           onlyReproduceWithRestrictedRaces = false;
+        public List<ThingDef> reproductionList                 = new List<ThingDef>();
+        public List<ThingDef> whiteReproductionList            = new List<ThingDef>();
+        public List<ThingDef> blackReproductionList            = new List<ThingDef>();
+
+        public static HashSet<ThingDef> reproductionRestricted = new HashSet<ThingDef>();
+
+        public static bool CanReproduce(ThingDef race, ThingDef partnerRace)
+        {
+            RaceRestrictionSettings raceRestriction = (race as ThingDef_AlienRace)?.alienRace.raceRestriction;
+            if (!(raceRestriction?.canGetPregnant??true)) return false;
+            if (race == partnerRace) return raceRestriction?.canReproduceWithSelf??true;
+
+            bool result = true;
+            if (reproductionRestricted.Contains(partnerRace) || (raceRestriction?.onlyReproduceWithRestrictedRaces ?? false))
+                result = raceRestriction?.whiteReproductionList.Contains(partnerRace) ?? false;
+
+            return result && !(raceRestriction?.blackReproductionList.Contains(partnerRace) ?? false);
+        }
     }
 
     public class ResearchProjectRestrictions
