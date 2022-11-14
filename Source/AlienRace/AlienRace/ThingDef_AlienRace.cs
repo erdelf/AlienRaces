@@ -601,15 +601,21 @@
 
         public static HashSet<ThingDef> reproductionRestricted = new HashSet<ThingDef>();
 
-        public static bool CanReproduce(ThingDef race, ThingDef partnerRace)
+        public static bool CanReproduce(ThingDef race, ThingDef partnerRace) => 
+            CanReproduceWith(race, partnerRace) && CanReproduceWith(partnerRace, race);
+
+        private static bool CanReproduceWith(ThingDef race, ThingDef partnerRace)
         {
             RaceRestrictionSettings raceRestriction = (race as ThingDef_AlienRace)?.alienRace.raceRestriction;
-            if (!(raceRestriction?.canGetPregnant??true)) return false;
-            if (race == partnerRace) return raceRestriction?.canReproduceWithSelf??true;
+            if (!(raceRestriction?.canGetPregnant ?? true))
+                return false;
+
+            if (race == partnerRace)
+                return raceRestriction?.canReproduceWithSelf ?? true;
 
             bool result = true;
             if (reproductionRestricted.Contains(partnerRace) || (raceRestriction?.onlyReproduceWithRestrictedRaces ?? false))
-                result = raceRestriction?.whiteReproductionList.Contains(partnerRace) ?? false;
+                result = raceRestriction?.whiteReproductionList.Contains(partnerRace)                              ?? false;
 
             return result && !(raceRestriction?.blackReproductionList.Contains(partnerRace) ?? false);
         }

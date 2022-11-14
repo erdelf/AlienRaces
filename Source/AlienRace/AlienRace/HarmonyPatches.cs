@@ -258,13 +258,13 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PreceptComp_UnwillingToDo_Gendered), nameof(PreceptComp.MemberWillingToDo)), transpiler: new HarmonyMethod(patchType, nameof(UnwillingWillingToDoGenderedTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(JobDriver_Lovin), "GenerateRandomMinTicksToNextLovin"), transpiler: new HarmonyMethod(patchType, nameof(GenerateRandomMinTicksToNextLovinTranspiler)));
-            Harmony.DEBUG = true;
+            
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn)),  transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeBodySetForPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn)),  transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)),  transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBeardSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer),             nameof(PawnRenderer.GetBodyOverlayMeshSet)),                   postfix: new HarmonyMethod(patchType, nameof(GetBodyOverlayMeshSetPostfix)));
-            Harmony.DEBUG = false;
+            
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateSkills"), new HarmonyMethod(patchType, nameof(GenerateSkillsPrefix)), postfix: new HarmonyMethod(patchType, nameof(GenerateSkillsPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnInternalTranspiler)));
@@ -443,6 +443,16 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static bool PregnancyChanceForPartnersPrefix(Pawn woman, Pawn man, ref float __result)
+        {
+            if (!RaceRestrictionSettings.CanReproduce(woman.def, man.def))
+            {
+                __result = 0f;
+                return false;
+            }
+            return true;
         }
 
         public static bool AddGenePrefix(Gene gene, Pawn ___pawn, ref Gene __result)
@@ -3334,16 +3344,6 @@ namespace AlienRace
                     yield return instruction;
                 }
             }
-        }
-
-        public static bool PregnancyChanceForPartnersPrefix(Pawn woman, Pawn man, ref float __result)
-        {
-            if (!RaceRestrictionSettings.CanReproduce(woman.def, man.def))
-            {
-                __result = 0f;
-                return false;
-            }
-            return true;
         }
     }
 }
