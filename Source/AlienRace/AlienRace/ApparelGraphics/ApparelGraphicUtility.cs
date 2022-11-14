@@ -43,7 +43,7 @@ namespace AlienRace.ApparelGraphics
                     overridePath = overrideEGraphic.GetPath(wearer, ref index, savedIndex);
 
                     // Blanket prefixes take precedence over vanilla path
-                    if (!overridePath.NullOrEmpty() && ValidTexturesExist(overridePath = overrides.pathPrefix + path))
+                    if (!overridePath.NullOrEmpty() && ValidTexturesExist(overridePath += path))
                         return overridePath;
                 }
 
