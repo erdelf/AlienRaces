@@ -283,6 +283,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(ApparelGraphicRecordGetter), nameof(ApparelGraphicRecordGetter.TryGetGraphicApparel)), transpiler: new HarmonyMethod(patchType, nameof(TryGetGraphicApparelTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(PregnancyUtility), nameof(PregnancyUtility.PregnancyChanceForPartners)), prefix: new HarmonyMethod(patchType, nameof(PregnancyChanceForPartnersPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility), nameof(PregnancyUtility.CanEverProduceChild)), transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -445,9 +446,35 @@ namespace AlienRace
             AlienRaceMod.settings.UpdateSettings();
         }
 
+        public static IEnumerable<CodeInstruction> CanEverProduceChildTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            FieldInfo genderInfo = AccessTools.Field(typeof(Pawn), nameof(Pawn.gender));
+
+            bool                  done            = false;
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                if (!done && instruction.LoadsField(genderInfo))
+                {
+                    done = true;
+                    yield return instructionList[i + 1];
+                    yield return CodeInstruction.Call(typeof(RaceRestrictionSettings), nameof(RaceRestrictionSettings.CanReproduce), new[] { typeof(Pawn), typeof(Pawn) });
+                    yield return new CodeInstruction(OpCodes.Brtrue, instructionList[i + 3].operand);
+                    i += 3;
+                } else
+                {
+                    yield return instruction;
+                }
+            }
+        }
+
         public static bool PregnancyChanceForPartnersPrefix(Pawn woman, Pawn man, ref float __result)
         {
-            if (!RaceRestrictionSettings.CanReproduce(woman.def, man.def))
+            if (!RaceRestrictionSettings.CanReproduce(woman, man))
             {
                 __result = 0f;
                 return false;
