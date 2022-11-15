@@ -592,7 +592,7 @@
                    !(raceRestriction?.blackEndoCategories.Contains(gene.endogeneCategory) ?? false);
         }
 
-        public bool           canGetPregnant                   = true;
+        public bool           canReproduce                     = true;
         public bool           canReproduceWithSelf             = true;
         public bool           onlyReproduceWithRestrictedRaces = false;
         public List<ThingDef> reproductionList                 = new List<ThingDef>();
@@ -601,13 +601,16 @@
 
         public static HashSet<ThingDef> reproductionRestricted = new HashSet<ThingDef>();
 
+        public static bool CanReproduce(Pawn pawn, Pawn partnerPawn) => 
+            CanReproduce(pawn.def, partnerPawn.def);
+
         public static bool CanReproduce(ThingDef race, ThingDef partnerRace) => 
             CanReproduceWith(race, partnerRace) && CanReproduceWith(partnerRace, race);
 
         private static bool CanReproduceWith(ThingDef race, ThingDef partnerRace)
         {
             RaceRestrictionSettings raceRestriction = (race as ThingDef_AlienRace)?.alienRace.raceRestriction;
-            if (!(raceRestriction?.canGetPregnant ?? true))
+            if (!(raceRestriction?.canReproduce ?? true))
                 return false;
 
             if (race == partnerRace)
