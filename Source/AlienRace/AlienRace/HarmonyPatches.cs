@@ -286,7 +286,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.CanEverProduceChild)),        transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Recipe_ExtractOvum), nameof(Recipe_ExtractOvum.AvailableReport)),          postfix: new HarmonyMethod(patchType,    nameof(ExtractOvumAvailableReportPostfix)));
             harmony.Patch(AccessTools.Method(typeof(HumanOvum),          "CanFertilizeReport"),                                postfix: new HarmonyMethod(patchType,    nameof(HumanOvumCanFertilizeReportPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(HumanEmbryo), "ImplantPawnValid"),                                postfix: new HarmonyMethod(patchType,    nameof(EmbryoImplantPawnPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanEmbryo),        "ImplantPawnValid"),                                  postfix: new HarmonyMethod(patchType,    nameof(EmbryoImplantPawnPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanEmbryo),        "CanImplantReport"),                                  postfix: new HarmonyMethod(patchType,    nameof(EmbryoImplantReportPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeChild), nameof(LifeStageWorker_HumanlikeChild.Notify_LifeStageStarted)), transpiler: new HarmonyMethod(patchType, nameof(ChildLifeStageStartedTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeAdult), nameof(LifeStageWorker_HumanlikeAdult.Notify_LifeStageStarted)), transpiler: new HarmonyMethod(patchType, nameof(AdultLifeStageStartedTranspiler)));
@@ -452,6 +453,17 @@ namespace AlienRace
             AlienRaceMod.settings.UpdateSettings();
         }
 
+        public static void EmbryoImplantReportPostfix(HumanEmbryo __instance, Pawn pawn, ref AcceptanceReport __result)
+        {
+            if (__result.Accepted)
+            {
+                Pawn second = pawn.TryGetComp<CompHasPawnSources>()?.pawnSources?.FirstOrDefault();
+
+                if(second != null && pawn != null && second != pawn)
+                    __result = false;
+            }
+        }
+
         public static void EmbryoImplantPawnPostfix(HumanEmbryo __instance, ref bool __result)
         {
             if(__result)
@@ -528,8 +540,11 @@ namespace AlienRace
             {
                 Pawn second = pawn.TryGetComp<CompHasPawnSources>()?.pawnSources?.FirstOrDefault();
 
-                if (second != null ? RaceRestrictionSettings.CanReproduce(second, pawn) : (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.canReproduce ?? true)
+                if(second != null ? 
+                       !RaceRestrictionSettings.CanReproduce(second, pawn) : 
+                       !(pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.canReproduce ?? true)
                     __result = false;
+                
             }
         }
 
