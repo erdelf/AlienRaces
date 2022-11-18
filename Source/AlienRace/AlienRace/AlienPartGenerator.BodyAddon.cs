@@ -139,9 +139,10 @@ namespace AlienRace
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
             public List<string>           hiddenUnderApparelTag = new List<string>();
 
-            public BackstoryDef backstoryRequirement;
-            public BodyTypeDef  bodyTypeRequirement;
-            public GeneDef      geneRequirement;
+            public BackstoryDef   backstoryRequirement;
+            public BodyTypeDef    bodyTypeRequirement;
+            public GeneDef        geneRequirement;
+            public List<ThingDef> raceRequirement;
 
             private ShaderTypeDef shaderType;
 
@@ -188,6 +189,9 @@ namespace AlienRace
             public bool VisibleWithGene(ExtendedGraphicsPawnWrapper pawn) =>
                 !ModsConfig.BiotechActive || this.geneRequirement == null || pawn.HasGene(this.geneRequirement);
 
+            public bool VisibleForRace(ExtendedGraphicsPawnWrapper pawn) =>
+                this.raceRequirement.NullOrEmpty() || this.raceRequirement.Any(pawn.IsRace);
+
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 this.CanDrawAddon(new ExtendedGraphicsPawnWrapper(pawn));
 
@@ -201,7 +205,8 @@ namespace AlienRace
                 this.VisibleForBodyTypeOf(pawn)      &&
                 this.VisibleForDrafted(pawn)         &&
                 this.VisibleForJob(pawn)             &&
-                this.VisibleWithGene(pawn);
+                this.VisibleWithGene(pawn)           &&
+                this.VisibleForRace(pawn);
 
             public virtual Graphic GetGraphic(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
@@ -257,7 +262,8 @@ namespace AlienRace
             Trait,
             Age,
             Damage,
-            Gene
+            Gene,
+            Race
         }
     }
 }
