@@ -47,6 +47,21 @@
             one != two                                                                                                && one != null && two != null && one.race.Humanlike && two.race.Humanlike &&
             !(one is ThingDef_AlienRace oneAr && oneAr.alienRace.generalSettings.notXenophobistTowards.Contains(two)) &&
             !(two is ThingDef_AlienRace twoAr && twoAr.alienRace.generalSettings.immuneToXenophobia);
+
+        private static List<AlienPartGenerator.BodyAddon> universalBodyAddons;
+
+        public static List<AlienPartGenerator.BodyAddon> UniversalBodyAddons
+        {
+            get
+            {
+                if (universalBodyAddons == null)
+                {
+                    universalBodyAddons = new List<AlienPartGenerator.BodyAddon>();
+                    universalBodyAddons.AddRange(DefDatabase<RaceSettings>.AllDefsListForReading.SelectMany(rs => rs.universalBodyAddons));
+                }
+                return universalBodyAddons;
+            }
+        }
     }
 
     [UsedImplicitly]
