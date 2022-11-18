@@ -3216,14 +3216,21 @@ namespace AlienRace
                     alienComp.addonVariants ??= new List<int>();
 
                     sharedIndex = 0;
-                    for (int i = 0; i < apg.bodyAddons.Count; i++)
+
+                    using (IEnumerator<AlienPartGenerator.BodyAddon> bodyAddons = apg.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator())
                     {
-                        Graphic g = apg.bodyAddons[i].GetGraphic(alien, ref sharedIndex, alienComp.addonVariants.Count > i ? alienComp.addonVariants[i] : null);
-                        alienComp.addonGraphics.Add(g);
-                        if (alienComp.addonVariants.Count <= i)
-                            alienComp.addonVariants.Add(sharedIndex);
+                        int addonIndex = 0;
+                        while (bodyAddons.MoveNext())
+                        {
+                            Graphic g = bodyAddons.Current.GetGraphic(alien, ref sharedIndex, alienComp.addonVariants.Count > addonIndex ? alienComp.addonVariants[addonIndex] : null);
+                            alienComp.addonGraphics.Add(g);
+                            if (alienComp.addonVariants.Count <= addonIndex)
+                                alienComp.addonVariants.Add(sharedIndex);
+
+                            addonIndex++;
+                        }
                     }
-                    
+
                     __instance.ResolveApparelGraphics();
                     __instance.ResolveGeneGraphics();
 
@@ -3366,9 +3373,8 @@ namespace AlienRace
 
         public static void DrawAddons(PawnRenderFlags renderFlags, Vector3 vector, Vector3 headOffset, Pawn pawn, Quaternion quat, Rot4 rotation)
         {
-            if (!(pawn.def is ThingDef_AlienRace alienProps)) return;
+            if (pawn.def is not ThingDef_AlienRace alienProps) return;
 
-            List<AlienPartGenerator.BodyAddon> addons    = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons;
             AlienPartGenerator.AlienComp       alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
 
             if (alienComp != null)
@@ -3376,63 +3382,69 @@ namespace AlienRace
                 bool isPortrait  = renderFlags.FlagSet(PawnRenderFlags.Portrait);
                 bool isInvisible = renderFlags.FlagSet(PawnRenderFlags.Invisible);
 
-                for (int i = 0; i < addons.Count; i++)
+                using (IEnumerator<AlienPartGenerator.BodyAddon> bodyAddons = alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator())
                 {
-                    AlienPartGenerator.BodyAddon ba = addons[i];
-                    if (!ba.CanDrawAddon(pawn)) continue;
-
-                    Vector3 offsetVector = (ba.defaultOffsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story.bodyType,pawn.story.headType) ?? Vector3.zero) +
-                                           (ba.offsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story.bodyType, pawn.story.headType)        ?? Vector3.zero);
-
-                    //Defaults for tails 
-                    //south 0.42f, -0.3f, -0.22f
-                    //north     0f,  0.3f, -0.55f
-                    //east -0.42f, -0.3f, -0.22f   
-
-                    offsetVector.y = ba.inFrontOfBody ? 0.3f + offsetVector.y : -0.3f - offsetVector.y;
-
-                    float num = ba.angle;
-
-                    if (rotation == Rot4.North)
+                    int addonIndex = 0;
+                    while (bodyAddons.MoveNext())
                     {
-                        if (ba.layerInvert)
-                            offsetVector.y = -offsetVector.y;
-                        num = 0;
+                        AlienPartGenerator.BodyAddon ba = bodyAddons.Current;
+
+                        if (ba == null || !ba.CanDrawAddon(pawn)) 
+                            continue;
+
+                        Vector3 offsetVector = (ba.defaultOffsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story.bodyType, pawn.story.headType) ?? Vector3.zero) +
+                                               (ba.offsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story.bodyType, pawn.story.headType)        ?? Vector3.zero);
+
+                        //Defaults for tails 
+                        //south 0.42f, -0.3f, -0.22f
+                        //north     0f,  0.3f, -0.55f
+                        //east -0.42f, -0.3f, -0.22f   
+
+                        offsetVector.y = ba.inFrontOfBody ? 0.3f + offsetVector.y : -0.3f - offsetVector.y;
+
+                        float num = ba.angle;
+
+                        if (rotation == Rot4.North)
+                        {
+                            if (ba.layerInvert)
+                                offsetVector.y = -offsetVector.y;
+                            num = 0;
+                        }
+
+                        if (rotation == Rot4.East)
+                        {
+                            num            = -num; //Angle
+                            offsetVector.x = -offsetVector.x;
+                        }
+
+                        Graphic addonGraphic = alienComp.addonGraphics[addonIndex];
+
+                        addonGraphic.drawSize = (isPortrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) *
+                                                (ba.scaleWithPawnDrawsize ?
+                                                     (ba.alignWithHead ?
+                                                          (isPortrait ?
+                                                               alienComp.customPortraitHeadDrawSize :
+                                                               alienComp.customHeadDrawSize) :
+                                                          (isPortrait ?
+                                                               alienComp.customPortraitDrawSize :
+                                                               alienComp.customDrawSize)
+                                                     ) * (ModsConfig.BiotechActive ? pawn.ageTracker.CurLifeStage.bodyWidth ?? 1.5f : 1.5f) :
+                                                     Vector2.one * 1.5f);
+
+                        Material mat = addonGraphic.MatAt(rotation);
+                        if (!isPortrait && isInvisible)
+                            mat = InvisibilityMatPool.GetInvisibleMat(mat);
+
+                        DrawAddonsFinalHook(pawn, ba, rotation, ref addonGraphic, ref offsetVector, ref num, ref mat);
+
+                        //                                                                                   Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
+                        GenDraw.DrawMeshNowOrLater(
+                                                   addonGraphic.MeshAt(rotation),
+                                                   vector + (ba.alignWithHead ? headOffset : Vector3.zero) + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
+                                                   Quaternion.AngleAxis(num, Vector3.up) * quat, mat, renderFlags.FlagSet(PawnRenderFlags.DrawNow));
+
+                        addonIndex++;
                     }
-
-                    if (rotation == Rot4.East)
-                    {
-                        num            = -num; //Angle
-                        offsetVector.x = -offsetVector.x;
-                    }
-
-                    Graphic addonGraphic = alienComp.addonGraphics[i];
-                    
-                    
-
-                    addonGraphic.drawSize = (isPortrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) *
-                                            (ba.scaleWithPawnDrawsize ? 
-                                                 (ba.alignWithHead ? 
-                                                     (isPortrait ? 
-                                                         alienComp.customPortraitHeadDrawSize : 
-                                                         alienComp.customHeadDrawSize) :
-                                                     (isPortrait ? 
-                                                         alienComp.customPortraitDrawSize : 
-                                                         alienComp.customDrawSize)
-                                                     ) * (ModsConfig.BiotechActive ? pawn.ageTracker.CurLifeStage.bodyWidth ?? 1.5f : 1.5f)
-                                                 : Vector2.one * 1.5f);
-
-                    Material mat = addonGraphic.MatAt(rotation);
-                    if (!isPortrait && isInvisible)
-                        mat = InvisibilityMatPool.GetInvisibleMat(mat);
-
-                    DrawAddonsFinalHook(pawn, ba, rotation, ref addonGraphic, ref offsetVector, ref num, ref mat);
-
-                    //                                                                                   Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
-                    GenDraw.DrawMeshNowOrLater(
-                                               addonGraphic.MeshAt(rotation),
-                                               vector + (ba.alignWithHead ? headOffset : Vector3.zero) + offsetVector.RotatedBy(Mathf.Acos(Quaternion.Dot(Quaternion.identity, quat)) * 2f * 57.29578f),
-                                               Quaternion.AngleAxis(num, Vector3.up) * quat, mat, renderFlags.FlagSet(PawnRenderFlags.DrawNow));
                 }
             }
         }
