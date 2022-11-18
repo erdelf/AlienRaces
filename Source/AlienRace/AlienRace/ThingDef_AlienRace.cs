@@ -242,6 +242,7 @@
         public AlienPartGenerator.ExtendedGraphicTop skeleton = new() { path = VANILLA_SKELETON_PATH };
         public AlienPartGenerator.ExtendedGraphicTop skull    = new() { path = "Things/Pawn/Humanlike/Heads/None_Average_Skull" };
         public AlienPartGenerator.ExtendedGraphicTop stump    = new() { path = "Things/Pawn/Humanlike/Heads/None_Average_Stump" };
+        public AlienPartGenerator.ExtendedGraphicTop swaddle  = new() { path = "Things/Pawn/Humanlike/Apparel/SwaddledBaby/Swaddled_Child" };
 
         public ApparelGraphics.ApparelGraphicsOverrides apparel = new();
 
