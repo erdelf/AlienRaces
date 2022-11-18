@@ -235,4 +235,20 @@ public partial class AlienPartGenerator
         public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
             pawn.HasGene(this.gene);
     }
+
+    public class ExtendedRaceGraphic : AbstractExtendedGraphic
+    {
+        public ThingDef race;
+
+        [UsedImplicitly]
+        public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+        {
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.race), xmlRoot.Name);
+
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
+        }
+
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+            pawn.IsRace(this.race);
+    }
 }

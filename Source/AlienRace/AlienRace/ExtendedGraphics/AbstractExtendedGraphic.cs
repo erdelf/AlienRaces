@@ -33,6 +33,7 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     public List<AlienPartGenerator.ExtendedBodytypeGraphic>  bodytypeGraphics;
     public List<AlienPartGenerator.ExtendedHeadtypeGraphic>  headtypeGraphics;
     public List<AlienPartGenerator.ExtendedGeneGraphic>      geneGraphics;
+    public List<AlienPartGenerator.ExtendedRaceGraphic>      raceGraphics;
 
 
     protected List<AlienPartGenerator.ExtendedGraphicsPrioritization> Prioritization =>
@@ -108,15 +109,16 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
 
     public virtual IEnumerable<IExtendedGraphic> GetSubGraphicsOfPriority(AlienPartGenerator.ExtendedGraphicsPrioritization priority) => priority switch
     {
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Headtype => this.headtypeGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Bodytype => this.bodytypeGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Trait => this.traitGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Gender => this.genderGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
+        AlienPartGenerator.ExtendedGraphicsPrioritization.Headtype => this.headtypeGraphics   ?? Enumerable.Empty<IExtendedGraphic>(),
+        AlienPartGenerator.ExtendedGraphicsPrioritization.Bodytype => this.bodytypeGraphics   ?? Enumerable.Empty<IExtendedGraphic>(),
+        AlienPartGenerator.ExtendedGraphicsPrioritization.Trait => this.traitGraphics         ?? Enumerable.Empty<IExtendedGraphic>(),
+        AlienPartGenerator.ExtendedGraphicsPrioritization.Gender => this.genderGraphics       ?? Enumerable.Empty<IExtendedGraphic>(),
         AlienPartGenerator.ExtendedGraphicsPrioritization.Backstory => this.backstoryGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Hediff => this.hediffGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Age => this.ageGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Damage => this.damageGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Gene => this.geneGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
+        AlienPartGenerator.ExtendedGraphicsPrioritization.Hediff => this.hediffGraphics       ?? Enumerable.Empty<IExtendedGraphic>(),
+        AlienPartGenerator.ExtendedGraphicsPrioritization.Age => this.ageGraphics             ?? Enumerable.Empty<IExtendedGraphic>(),
+        AlienPartGenerator.ExtendedGraphicsPrioritization.Damage => this.damageGraphics       ?? Enumerable.Empty<IExtendedGraphic>(),
+        AlienPartGenerator.ExtendedGraphicsPrioritization.Gene => this.geneGraphics           ?? Enumerable.Empty<IExtendedGraphic>(),
+        AlienPartGenerator.ExtendedGraphicsPrioritization.Race => this.raceGraphics           ?? Enumerable.Empty<IExtendedGraphic>(),
         _ => Enumerable.Empty<IExtendedGraphic>()
     };
 

@@ -109,5 +109,7 @@ public class ExtendedGraphicsPawnWrapper
 
     public virtual bool Moving => this.WrappedPawn.pather.MovingNow;
 
-    public virtual bool HasGene(GeneDef gene) => this.WrappedPawn.genes.HasGene(gene);
+    public virtual bool HasGene(GeneDef gene) => this.WrappedPawn.genes.GetGene(gene)?.Active ?? false;
+
+    public virtual bool IsRace(ThingDef race) => this.WrappedPawn.def == race;
 }
