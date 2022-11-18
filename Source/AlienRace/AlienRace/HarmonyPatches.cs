@@ -282,11 +282,15 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(ApparelGraphicRecordGetter), nameof(ApparelGraphicRecordGetter.TryGetGraphicApparel)), transpiler: new HarmonyMethod(patchType, nameof(TryGetGraphicApparelTranspiler)));
 
-            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.PregnancyChanceForPartners)), prefix: new HarmonyMethod(patchType,     nameof(PregnancyChanceForPartnersPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.CanEverProduceChild)),        transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(Recipe_ExtractOvum), nameof(Recipe_ExtractOvum.AvailableReport)),          postfix: new HarmonyMethod(patchType,    nameof(ExtractOvumAvailableReportPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(HumanOvum), "CanFertilizeReport"),  postfix: new HarmonyMethod(patchType,    nameof(HumanOvumCanFertilizeReportPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),               nameof(PregnancyUtility.PregnancyChanceForPartners)),            prefix: new HarmonyMethod(patchType,     nameof(PregnancyChanceForPartnersPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),               nameof(PregnancyUtility.CanEverProduceChild)),                   transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Recipe_ExtractOvum),             nameof(Recipe_ExtractOvum.AvailableReport)),                     postfix: new HarmonyMethod(patchType,    nameof(ExtractOvumAvailableReportPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanOvum),                      "CanFertilizeReport"),                                           postfix: new HarmonyMethod(patchType,    nameof(HumanOvumCanFertilizeReportPostfix)));
 
+            Harmony.DEBUG = true;
+            harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeChild), nameof(LifeStageWorker_HumanlikeChild.Notify_LifeStageStarted)), transpiler: new HarmonyMethod(patchType, nameof(ChildLifeStageStartedTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeAdult), nameof(LifeStageWorker_HumanlikeAdult.Notify_LifeStageStarted)), transpiler: new HarmonyMethod(patchType, nameof(AdultLifeStageStartedTranspiler)));
+            Harmony.DEBUG = false;
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -447,6 +451,66 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> AdultLifeStageStartedTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo backstoryFilters = AccessTools.Field(typeof(LifeStageWorker_HumanlikeAdult), "VatgrowBackstoryFilter");
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.opcode == OpCodes.Stloc_1)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels()};
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+                    yield return CodeInstruction.Call(patchType, nameof(LifeStageStartedHelper));
+                }
+
+                yield return instruction;
+
+                if (instruction.LoadsField(backstoryFilters))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_2);
+                    yield return CodeInstruction.Call(patchType, nameof(LifeStageStartedHelper));
+                }
+            }
+        }
+
+        public static IEnumerable<CodeInstruction> ChildLifeStageStartedTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo backstoryFilters = AccessTools.Field(typeof(LifeStageWorker_HumanlikeChild), "ChildBackstoryFilters");
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+                if (instruction.LoadsField(backstoryFilters))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_0);
+                    yield return CodeInstruction.Call(patchType, nameof(LifeStageStartedHelper));
+                }
+            }
+        }
+
+        public static List<BackstoryCategoryFilter> LifeStageStartedHelper(List<BackstoryCategoryFilter> filters, Pawn pawn, int backstoryKind)
+        {
+            if (pawn.def is ThingDef_AlienRace alienProps)
+            {
+                List<BackstoryCategoryFilter> filtersNew = backstoryKind switch
+                {
+                    0 => alienProps.alienRace.generalSettings.childBackstoryFilter,
+                    1 => alienProps.alienRace.generalSettings.adultBackstoryFilter,
+                    2 => alienProps.alienRace.generalSettings.adultVatBackstoryFilter,
+                    _ => null
+                };
+
+                return filtersNew.NullOrEmpty() ? 
+                           filters : 
+                           filtersNew;
+            }
+
+            return filters;
         }
 
         public static void HumanOvumCanFertilizeReportPostfix(Pawn pawn, ref AcceptanceReport __result)

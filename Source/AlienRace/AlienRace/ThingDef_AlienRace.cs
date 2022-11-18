@@ -199,6 +199,10 @@
                                                               new CurvePoint(45, 0.02f),
                                                               new CurvePoint(50, 0),
                                                           });
+
+        public List<BackstoryCategoryFilter> childBackstoryFilter;
+        public List<BackstoryCategoryFilter> adultBackstoryFilter;
+        public List<BackstoryCategoryFilter> adultVatBackstoryFilter;
     }
 
     public class FactionRelationSettings
