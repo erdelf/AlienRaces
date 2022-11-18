@@ -282,8 +282,11 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(ApparelGraphicRecordGetter), nameof(ApparelGraphicRecordGetter.TryGetGraphicApparel)), transpiler: new HarmonyMethod(patchType, nameof(TryGetGraphicApparelTranspiler)));
 
-            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility), nameof(PregnancyUtility.PregnancyChanceForPartners)), prefix: new HarmonyMethod(patchType, nameof(PregnancyChanceForPartnersPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility), nameof(PregnancyUtility.CanEverProduceChild)), transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.PregnancyChanceForPartners)), prefix: new HarmonyMethod(patchType,     nameof(PregnancyChanceForPartnersPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.CanEverProduceChild)),        transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Recipe_ExtractOvum), nameof(Recipe_ExtractOvum.AvailableReport)),          postfix: new HarmonyMethod(patchType,    nameof(ExtractOvumAvailableReportPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanOvum), "CanFertilizeReport"),  postfix: new HarmonyMethod(patchType,    nameof(HumanOvumCanFertilizeReportPostfix)));
+
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -444,6 +447,23 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static void HumanOvumCanFertilizeReportPostfix(Pawn pawn, ref AcceptanceReport __result)
+        {
+            if (__result.Accepted)
+            {
+                Pawn second = pawn.TryGetComp<CompHasPawnSources>().pawnSources.First();
+
+                if (RaceRestrictionSettings.CanReproduce(second, pawn))
+                    __result = false;
+            }
+        }
+
+        public static void ExtractOvumAvailableReportPostfix(Thing thing, ref AcceptanceReport __result)
+        {
+            if (__result.Accepted && thing.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.raceRestriction.canReproduce)
+                __result = false;
         }
 
         public static IEnumerable<CodeInstruction> CanEverProduceChildTranspiler(IEnumerable<CodeInstruction> instructions)
