@@ -282,15 +282,14 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(ApparelGraphicRecordGetter), nameof(ApparelGraphicRecordGetter.TryGetGraphicApparel)), transpiler: new HarmonyMethod(patchType, nameof(TryGetGraphicApparelTranspiler)));
 
-            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),               nameof(PregnancyUtility.PregnancyChanceForPartners)),            prefix: new HarmonyMethod(patchType,     nameof(PregnancyChanceForPartnersPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),               nameof(PregnancyUtility.CanEverProduceChild)),                   transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(Recipe_ExtractOvum),             nameof(Recipe_ExtractOvum.AvailableReport)),                     postfix: new HarmonyMethod(patchType,    nameof(ExtractOvumAvailableReportPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(HumanOvum),                      "CanFertilizeReport"),                                           postfix: new HarmonyMethod(patchType,    nameof(HumanOvumCanFertilizeReportPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.PregnancyChanceForPartners)), prefix: new HarmonyMethod(patchType,     nameof(PregnancyChanceForPartnersPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.CanEverProduceChild)),        transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Recipe_ExtractOvum), nameof(Recipe_ExtractOvum.AvailableReport)),          postfix: new HarmonyMethod(patchType,    nameof(ExtractOvumAvailableReportPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanOvum),          "CanFertilizeReport"),                                postfix: new HarmonyMethod(patchType,    nameof(HumanOvumCanFertilizeReportPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanEmbryo), "ImplantPawnValid"),                                postfix: new HarmonyMethod(patchType,    nameof(EmbryoImplantPawnPostfix)));
 
-            Harmony.DEBUG = true;
             harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeChild), nameof(LifeStageWorker_HumanlikeChild.Notify_LifeStageStarted)), transpiler: new HarmonyMethod(patchType, nameof(ChildLifeStageStartedTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeAdult), nameof(LifeStageWorker_HumanlikeAdult.Notify_LifeStageStarted)), transpiler: new HarmonyMethod(patchType, nameof(AdultLifeStageStartedTranspiler)));
-            Harmony.DEBUG = false;
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -453,6 +452,16 @@ namespace AlienRace
             AlienRaceMod.settings.UpdateSettings();
         }
 
+        public static void EmbryoImplantPawnPostfix(HumanEmbryo __instance, ref bool __result)
+        {
+            if(__result)
+                if (__instance.implantTarget is Pawn pawn)
+                {
+                    Pawn second = pawn.TryGetComp<CompHasPawnSources>()?.pawnSources?.FirstOrDefault();
+                    __result = second == null || second == pawn;
+                }
+        }
+
         public static IEnumerable<CodeInstruction> AdultLifeStageStartedTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             FieldInfo backstoryFilters = AccessTools.Field(typeof(LifeStageWorker_HumanlikeAdult), "VatgrowBackstoryFilter");
@@ -517,9 +526,9 @@ namespace AlienRace
         {
             if (__result.Accepted)
             {
-                Pawn second = pawn.TryGetComp<CompHasPawnSources>().pawnSources.First();
+                Pawn second = pawn.TryGetComp<CompHasPawnSources>()?.pawnSources?.FirstOrDefault();
 
-                if (RaceRestrictionSettings.CanReproduce(second, pawn))
+                if (second != null ? RaceRestrictionSettings.CanReproduce(second, pawn) : (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.canReproduce ?? true)
                     __result = false;
             }
         }
