@@ -291,6 +291,7 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeChild), nameof(LifeStageWorker_HumanlikeChild.Notify_LifeStageStarted)), transpiler: new HarmonyMethod(patchType, nameof(ChildLifeStageStartedTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeAdult), nameof(LifeStageWorker_HumanlikeAdult.Notify_LifeStageStarted)), transpiler: new HarmonyMethod(patchType, nameof(AdultLifeStageStartedTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GetBackstoryCategoryFiltersFor"), postfix: new HarmonyMethod(patchType, nameof(GetBackstoryCategoryFiltersForPostfix)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -477,6 +478,7 @@ namespace AlienRace
         public static IEnumerable<CodeInstruction> AdultLifeStageStartedTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             FieldInfo backstoryFilters = AccessTools.Field(typeof(LifeStageWorker_HumanlikeAdult), "VatgrowBackstoryFilter");
+            MethodInfo IsPlayerColonyChildBackstory = AccessTools.PropertyGetter(typeof(BackstoryDef), nameof(BackstoryDef.IsPlayerColonyChildBackstory));
 
             foreach (CodeInstruction instruction in instructions)
             {
@@ -485,15 +487,23 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels()};
                     yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                     yield return CodeInstruction.Call(patchType, nameof(LifeStageStartedHelper));
+                    yield return instruction;
                 }
-
-                yield return instruction;
-
-                if (instruction.LoadsField(backstoryFilters))
+                else if (instruction.LoadsField(backstoryFilters))
                 {
+                    yield return instruction;
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
                     yield return new CodeInstruction(OpCodes.Ldc_I4_2);
                     yield return CodeInstruction.Call(patchType, nameof(LifeStageStartedHelper));
+                }
+                else if (instruction.Calls(IsPlayerColonyChildBackstory))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels()};
+                    yield return CodeInstruction.Call(patchType, nameof(IsPlayerColonyChildBackstoryHelper));
+                }
+                else
+                {
+                    yield return instruction;
                 }
             }
         }
@@ -523,6 +533,7 @@ namespace AlienRace
                     0 => alienProps.alienRace.generalSettings.childBackstoryFilter,
                     1 => alienProps.alienRace.generalSettings.adultBackstoryFilter,
                     2 => alienProps.alienRace.generalSettings.adultVatBackstoryFilter,
+                    3 => alienProps.alienRace.generalSettings.newbornBackstoryFilter,
                     _ => null
                 };
 
@@ -532,6 +543,31 @@ namespace AlienRace
             }
 
             return filters;
+        }
+
+        public static bool IsPlayerColonyChildBackstoryHelper(BackstoryDef backstory, Pawn pawn)
+        {
+            if (pawn.def is ThingDef_AlienRace alienProps)
+            {
+                if (alienProps.alienRace.generalSettings.childBackstoryFilter.Any((BackstoryCategoryFilter bcf) => bcf.Matches(backstory)))
+                {
+                    return true;
+                }
+            }
+            return backstory.IsPlayerColonyChildBackstory;
+        }
+
+        public static void GetBackstoryCategoryFiltersForPostfix(Pawn pawn, FactionDef faction, ref List<BackstoryCategoryFilter> __result)
+        {
+            if (pawn.def is ThingDef_AlienRace && pawn.DevelopmentalStage.Juvenile())
+            {
+                int index = 0;
+                if (pawn.DevelopmentalStage.Baby())
+                {
+                    index = 3;
+                }
+                __result = LifeStageStartedHelper(__result, pawn, index);
+            }
         }
 
         public static void HumanOvumCanFertilizeReportPostfix(Pawn pawn, ref AcceptanceReport __result)
