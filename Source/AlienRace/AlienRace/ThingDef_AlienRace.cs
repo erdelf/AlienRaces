@@ -203,6 +203,7 @@
         public List<BackstoryCategoryFilter> childBackstoryFilter;
         public List<BackstoryCategoryFilter> adultBackstoryFilter;
         public List<BackstoryCategoryFilter> adultVatBackstoryFilter;
+        public List<BackstoryCategoryFilter> newbornBackstoryFilter;
     }
 
     public class FactionRelationSettings
