@@ -442,9 +442,18 @@
 
                         this.colorChannels.Add(key: "base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
                         this.colorChannels.Add(key: "hair", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
-                        Color skinColor = alienProps.alienRace.raceRestriction.blackEndoCategories.Contains(EndogeneCategory.Melanin) ? 
-                                              PawnSkinColors.RandomSkinColorGene(pawn).skinColorBase!.Value : 
-                                              pawn.story.SkinColorBase;
+                        
+                        Color skinColor;
+                        try
+                        {
+                            skinColor = alienProps.alienRace.raceRestriction.blackEndoCategories.Contains(EndogeneCategory.Melanin) ?
+                                            PawnSkinColors.RandomSkinColorGene(pawn).skinColorBase!.Value :
+                                            pawn.story.SkinColorBase;
+                        }
+                        catch (NullReferenceException)
+                        {
+                            skinColor = PawnSkinColors.RandomSkinColorGene(pawn).skinColorBase!.Value;
+                        }
 
                         this.colorChannels.Add(key: "skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
 
@@ -564,6 +573,14 @@
                 Scribe_Values.Look(ref this.bodyVariant, nameof(this.bodyVariant), -1);
                 Scribe_Values.Look(ref this.headMaskVariant, nameof(this.headMaskVariant), -1);
                 Scribe_Values.Look(ref this.bodyMaskVariant, nameof(this.bodyMaskVariant), -1);
+
+                Pawn   pawn          = (Pawn)this.parent;
+                if (Scribe.mode is LoadSaveMode.ResolvingCrossRefs or LoadSaveMode.Saving)
+                {
+                    Color? skinColorBase = CachedData.skinColorBase(pawn.story);
+                    Scribe_Values.Look(ref skinColorBase, nameof(skinColorBase));
+                    pawn.story.SkinColorBase = skinColorBase ?? this.GetChannel("skin").first;
+                }
 
                 this.colorChannelLinks ??= new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
             }
