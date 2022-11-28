@@ -450,7 +450,7 @@
                                             PawnSkinColors.RandomSkinColorGene(pawn).skinColorBase!.Value :
                                             pawn.story.SkinColorBase;
                         }
-                        catch (NullReferenceException)
+                        catch (InvalidOperationException)
                         {
                             skinColor = PawnSkinColors.RandomSkinColorGene(pawn).skinColorBase!.Value;
                         }
