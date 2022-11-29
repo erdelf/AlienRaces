@@ -463,13 +463,10 @@ namespace AlienRace
 
         public static void EmbryoImplantReportPostfix(HumanEmbryo __instance, Pawn pawn, ref AcceptanceReport __result)
         {
-            if (__result.Accepted)
-            {
-                Pawn second = __instance.TryGetComp<CompHasPawnSources>().pawnSources?.FirstOrDefault();
+            Pawn second = __instance.TryGetComp<CompHasPawnSources>().pawnSources?.FirstOrDefault();
 
-                if(second != null && pawn != null && second.def != pawn.def)
-                    __result = false;
-            }
+            if(second != null && pawn != null && second.def != pawn.def)
+                __result = false;
         }
 
         public static void EmbryoImplantPawnPrefix(HumanEmbryo __instance, ref bool cancel)
