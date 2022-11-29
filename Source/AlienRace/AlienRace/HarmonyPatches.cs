@@ -466,9 +466,9 @@ namespace AlienRace
         {
             if (__result.Accepted)
             {
-                Pawn second = pawn.TryGetComp<CompHasPawnSources>().pawnSources?.FirstOrDefault();
+                Pawn second = __instance.TryGetComp<CompHasPawnSources>().pawnSources?.FirstOrDefault();
 
-                if(second != null && pawn != null && second != pawn)
+                if(second != null && pawn != null && second.def != pawn.def)
                     __result = false;
             }
         }
@@ -477,8 +477,8 @@ namespace AlienRace
         {
             if (__instance.implantTarget is Pawn pawn)
             {
-                Pawn second = pawn.TryGetComp<CompHasPawnSources>().pawnSources?.FirstOrDefault();
-                cancel = second != null && second != pawn;
+                Pawn second = __instance.TryGetComp<CompHasPawnSources>().pawnSources?.FirstOrDefault();
+                cancel = second != null && second.def != pawn.def;
             }
         }
 
