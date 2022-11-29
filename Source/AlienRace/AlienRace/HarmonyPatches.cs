@@ -378,9 +378,17 @@ namespace AlienRace
                     ar.alienRace.raceRestriction.whiteReproductionList.Add(thingDef);
                 }
 
-                ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(ar.race.corpseDef);
-                ar.race.corpseDef.thingCategories = new List<ThingCategoryDef> {AlienDefOf.alienCorpseCategory};
-                AlienDefOf.alienCorpseCategory.childThingDefs.Add(ar.race.corpseDef);
+                if (ar.alienRace.generalSettings.corpseCategory != ThingCategoryDefOf.CorpsesHumanlike)
+                {
+                    ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(ar.race.corpseDef);
+                    if (ar.alienRace.generalSettings.corpseCategory != null)
+                    {
+                        ar.race.corpseDef.thingCategories = new List<ThingCategoryDef> { ar.alienRace.generalSettings.corpseCategory };
+                        ar.alienRace.generalSettings.corpseCategory.childThingDefs.Add(ar.race.corpseDef);
+                        ar.alienRace.generalSettings.corpseCategory.ResolveReferences();
+                    }
+                    ThingCategoryDefOf.CorpsesHumanlike.ResolveReferences();
+                }
 
                 ar.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
 
