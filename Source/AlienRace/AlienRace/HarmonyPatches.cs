@@ -286,7 +286,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.CanEverProduceChild)),        transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Recipe_ExtractOvum), nameof(Recipe_ExtractOvum.AvailableReport)),          postfix: new HarmonyMethod(patchType,    nameof(ExtractOvumAvailableReportPostfix)));
             harmony.Patch(AccessTools.Method(typeof(HumanOvum),          "CanFertilizeReport"),                                postfix: new HarmonyMethod(patchType,    nameof(HumanOvumCanFertilizeReportPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(HumanEmbryo),        "ImplantPawnValid"),                                  postfix: new HarmonyMethod(patchType,    nameof(EmbryoImplantPawnPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanEmbryo),        "ImplantPawnValid"),                                  prefix: new HarmonyMethod(patchType,    nameof(EmbryoImplantPawnPrefix)));
             harmony.Patch(AccessTools.Method(typeof(HumanEmbryo),        "CanImplantReport"),                                  postfix: new HarmonyMethod(patchType,    nameof(EmbryoImplantReportPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeChild), nameof(LifeStageWorker_HumanlikeChild.Notify_LifeStageStarted)), transpiler: new HarmonyMethod(patchType, nameof(ChildLifeStageStartedTranspiler)));
@@ -465,21 +465,20 @@ namespace AlienRace
         {
             if (__result.Accepted)
             {
-                Pawn second = pawn.TryGetComp<CompHasPawnSources>()?.pawnSources?.FirstOrDefault();
+                Pawn second = pawn.TryGetComp<CompHasPawnSources>().pawnSources?.FirstOrDefault();
 
                 if(second != null && pawn != null && second != pawn)
                     __result = false;
             }
         }
 
-        public static void EmbryoImplantPawnPostfix(HumanEmbryo __instance, ref bool __result)
+        public static void EmbryoImplantPawnPrefix(HumanEmbryo __instance, ref bool cancel)
         {
-            if(__result)
-                if (__instance.implantTarget is Pawn pawn)
-                {
-                    Pawn second = pawn.TryGetComp<CompHasPawnSources>()?.pawnSources?.FirstOrDefault();
-                    __result = second == null || second == pawn;
-                }
+            if (__instance.implantTarget is Pawn pawn)
+            {
+                Pawn second = pawn.TryGetComp<CompHasPawnSources>().pawnSources?.FirstOrDefault();
+                cancel = second != null && second != pawn;
+            }
         }
 
         public static IEnumerable<CodeInstruction> AdultLifeStageStartedTranspiler(IEnumerable<CodeInstruction> instructions)
