@@ -180,6 +180,9 @@
         public List<ThingDef> notXenophobistTowards = new List<ThingDef>();
         public bool humanRecipeImport = false;
 
+        [LoadDefFromField(nameof(AlienDefOf.alienCorpseCategory))]
+        public ThingCategoryDef corpseCategory;
+
         public SimpleCurve lovinIntervalHoursFromAge;
         public List<int>   growthAges = new() { 7, 10, 13 };
         public SimpleCurve maleFertilityAgeFactor = new(new []
