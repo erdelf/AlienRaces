@@ -1740,7 +1740,7 @@ namespace AlienRace
         }
 
         public static Vector2 BaseHeadOffsetAtHelper(Vector2 offset, Pawn pawn) => 
-            offset + (pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien)?.headOffset ?? Vector2.zero;
+            offset + ((pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien)?.headOffset ?? Vector2.zero);
 
         public static void BaseHeadOffsetAtPostfix(ref Vector3 __result, Rot4 rotation, Pawn ___pawn)
         {
