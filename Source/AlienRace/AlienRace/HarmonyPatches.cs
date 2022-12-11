@@ -3339,9 +3339,8 @@ namespace AlienRace
             if (AlienBackstoryDef.checkBodyType.Contains(pawn.story.GetBackstory(BackstorySlot.Adulthood)))
                 pawn.story.bodyType = DefDatabase<BodyTypeDef>.GetRandom();
 
-            if (pawn.def is ThingDef_AlienRace alienProps &&
-                !alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.NullOrEmpty() &&
-                !alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.Contains(pawn.story.bodyType))
+            if (pawn.def is ThingDef_AlienRace alienProps && 
+                !alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.NullOrEmpty())
             {
                 List<BodyTypeDef> bodyTypeDefs = alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.Except(BodyTypeDefOf.Baby).Except(BodyTypeDefOf.Child).ToList();
 
@@ -3350,8 +3349,9 @@ namespace AlienRace
 
                 if (pawn.gender == Gender.Female && bodyTypeDefs.Contains(BodyTypeDefOf.Male) && bodyTypeDefs.Count > 1)
                     bodyTypeDefs.Remove(BodyTypeDefOf.Male);
-                
-                pawn.story.bodyType = bodyTypeDefs.RandomElement();
+
+                if(!bodyTypeDefs.Contains(pawn.story.bodyType))
+                    pawn.story.bodyType = bodyTypeDefs.RandomElement();
             }
         }
 
