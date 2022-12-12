@@ -533,7 +533,7 @@ namespace AlienRace
         public static IEnumerable<CodeInstruction> AdultLifeStageStartedTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             FieldInfo backstoryFilters = AccessTools.Field(typeof(LifeStageWorker_HumanlikeAdult), "VatgrowBackstoryFilter");
-            MethodInfo IsPlayerColonyChildBackstory = AccessTools.PropertyGetter(typeof(BackstoryDef), nameof(BackstoryDef.IsPlayerColonyChildBackstory));
+            MethodInfo isPlayerColonyChildBackstory = AccessTools.PropertyGetter(typeof(BackstoryDef), nameof(BackstoryDef.IsPlayerColonyChildBackstory));
 
             foreach (CodeInstruction instruction in instructions)
             {
@@ -542,23 +542,24 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels()};
                     yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                     yield return CodeInstruction.Call(patchType, nameof(LifeStageStartedHelper));
-                    yield return instruction;
                 }
-                else if (instruction.LoadsField(backstoryFilters))
+
+                if (instruction.Calls(isPlayerColonyChildBackstory))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels() };
+                    yield return CodeInstruction.Call(patchType, nameof(IsPlayerColonyChildBackstoryHelper));
+                } else
                 {
                     yield return instruction;
+                }
+
+
+                if (instruction.LoadsField(backstoryFilters))
+                {
+                    
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
                     yield return new CodeInstruction(OpCodes.Ldc_I4_2);
                     yield return CodeInstruction.Call(patchType, nameof(LifeStageStartedHelper));
-                }
-                else if (instruction.Calls(IsPlayerColonyChildBackstory))
-                {
-                    yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels()};
-                    yield return CodeInstruction.Call(patchType, nameof(IsPlayerColonyChildBackstoryHelper));
-                }
-                else
-                {
-                    yield return instruction;
                 }
             }
         }
@@ -600,27 +601,17 @@ namespace AlienRace
             return filters;
         }
 
-        public static bool IsPlayerColonyChildBackstoryHelper(BackstoryDef backstory, Pawn pawn)
-        {
-            if (pawn.def is ThingDef_AlienRace alienProps)
-            {
-                if (alienProps.alienRace.generalSettings.childBackstoryFilter.Any((BackstoryCategoryFilter bcf) => bcf.Matches(backstory)))
-                {
-                    return true;
-                }
-            }
-            return backstory.IsPlayerColonyChildBackstory;
-        }
+        public static bool IsPlayerColonyChildBackstoryHelper(BackstoryDef backstory, Pawn pawn) =>
+            ((pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.childBackstoryFilter.Any(bcf => bcf.Matches(backstory)) ?? false) || 
+            backstory.IsPlayerColonyChildBackstory;
 
-        public static void GetBackstoryCategoryFiltersForPostfix(Pawn pawn, FactionDef faction, ref List<BackstoryCategoryFilter> __result)
+        public static void GetBackstoryCategoryFiltersForPostfix(Pawn pawn, ref List<BackstoryCategoryFilter> __result)
         {
             if (pawn.def is ThingDef_AlienRace && pawn.DevelopmentalStage.Juvenile())
             {
                 int index = 0;
                 if (pawn.DevelopmentalStage.Baby())
-                {
                     index = 3;
-                }
                 __result = LifeStageStartedHelper(__result, pawn, index);
             }
         }
