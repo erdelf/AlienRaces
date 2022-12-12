@@ -1911,17 +1911,15 @@ namespace AlienRace
         {
             List<CodeInstruction> instructionList = instructions.ToList();
             MethodInfo            defListInfo     = AccessTools.Property(typeof(DefDatabase<TraitDef>), nameof(DefDatabase<TraitDef>.AllDefsListForReading)).GetGetMethod();
-            MethodInfo            validatorInfo   = AccessTools.Method(patchType, nameof(GenerateTraitsValidator));
 
             foreach (CodeInstruction instruction in instructionList)
             {
+                yield return instruction;
                 if (instruction.opcode == OpCodes.Call && instruction.OperandIs(defListInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    instruction.operand = validatorInfo;
+                    yield return CodeInstruction.Call(patchType, nameof(GenerateTraitsValidator));
                 }
-
-                yield return instruction;
             }
         }
 
@@ -1953,8 +1951,11 @@ namespace AlienRace
             return count;
         }
 
-        public static IEnumerable<TraitDef> GenerateTraitsValidator(Pawn p) => 
-            DefDatabase<TraitDef>.AllDefs.Where(predicate: tr => RaceRestrictionSettings.CanGetTrait(tr, p.def));
+        public static IEnumerable<TraitDef> GenerateTraitsValidator(List<TraitDef> traits, Pawn p)
+        {
+            traits.RemoveAll(tr => !RaceRestrictionSettings.CanGetTrait(tr, p.def));
+            return traits;
+        }
 
         public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, CompAssignableToPawn __instance) =>
             __result = __instance.parent.def.building.bed_humanlike ? __result.Where(predicate: p => RestUtility.CanUseBedEver(p, __instance.parent.def)) : __result;
@@ -2310,23 +2311,15 @@ namespace AlienRace
 
         public static bool GainTraitPrefix(Trait trait, Pawn ___pawn)
         {
-            if (!(___pawn.def is ThingDef_AlienRace alienProps)) return true;
+            if (___pawn.def is not ThingDef_AlienRace alienProps) 
+                return true;
 
-            if(!alienProps.alienRace.generalSettings.disallowedTraits.NullOrEmpty())
-                foreach (AlienTraitEntry traitEntry in alienProps.alienRace.generalSettings.disallowedTraits)
-                {
-                    if (traitEntry.defName == trait.def)
-                    {
-                        if (trait.Degree == traitEntry.degree || traitEntry.degree == 0)
-                        {
-                            if (Rand.Range(min: 0, max: 100) < traitEntry.chance)
-                                return false;
-                        }
-                    }
-                }
+            if (RaceRestrictionSettings.CanGetTrait(trait.def, alienProps, trait.Degree))
+                return false;
 
             AlienTraitEntry ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(predicate: at => at.defName == trait.def);
-            if (ate == null) return true;
+            if (ate == null) 
+                return true;
 
             return Rand.Range(min: 0, max: 100) < ate.chance;
         }
