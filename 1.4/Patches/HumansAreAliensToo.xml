@@ -17,6 +17,7 @@
                     <alienRace>
                         <generalSettings>
                             <allowHumanBios>true</allowHumanBios>
+                            <corpseCategory>CorpsesHumanlike</corpseCategory>
                             <alienPartGenerator>
                                 <headTypes>
                                     <li>Male_AverageNormal</li>
