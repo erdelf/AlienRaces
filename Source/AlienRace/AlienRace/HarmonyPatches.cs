@@ -290,8 +290,10 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(HumanEmbryo),        "ImplantPawnValid"),                                  prefix: new HarmonyMethod(patchType,    nameof(EmbryoImplantPawnPrefix)));
             harmony.Patch(AccessTools.Method(typeof(HumanEmbryo),        "CanImplantReport"),                                  postfix: new HarmonyMethod(patchType,    nameof(EmbryoImplantReportPostfix)));
 
-            harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeChild), nameof(LifeStageWorker_HumanlikeChild.Notify_LifeStageStarted)), transpiler: new HarmonyMethod(patchType, nameof(ChildLifeStageStartedTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeAdult), nameof(LifeStageWorker_HumanlikeAdult.Notify_LifeStageStarted)), transpiler: new HarmonyMethod(patchType, nameof(AdultLifeStageStartedTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeChild), nameof(LifeStageWorker_HumanlikeChild.Notify_LifeStageStarted)), 
+                          postfix: new HarmonyMethod(patchType, nameof(ChildLifeStageStartedPostfix)), transpiler: new HarmonyMethod(patchType, nameof(ChildLifeStageStartedTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeAdult), nameof(LifeStageWorker_HumanlikeAdult.Notify_LifeStageStarted)),
+                          postfix: new HarmonyMethod(patchType, nameof(AdultLifeStageStartedPostfix)), transpiler: new HarmonyMethod(patchType, nameof(AdultLifeStageStartedTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(QuestNode_Root_WandererJoin_WalkIn), nameof(QuestNode_Root_WandererJoin_WalkIn.GeneratePawn)), transpiler: new HarmonyMethod(patchType, nameof(WandererJoinTranspiler)));
 
@@ -462,6 +464,26 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static void AdultLifeStageStartedPostfix(Pawn pawn)
+        {
+            List<BackstoryTrait> forcedTraits = pawn.story.Adulthood.forcedTraits;
+            foreach (BackstoryTrait te2 in forcedTraits)
+                if (te2.def == null)
+                    Log.Error("Null forced trait def on " + pawn.story.Adulthood);
+                else if (!pawn.story.traits.HasTrait(te2.def))
+                    pawn.story.traits.GainTrait(new Trait(te2.def, te2.degree));
+        }
+
+        public static void ChildLifeStageStartedPostfix(Pawn pawn)
+        {
+            List<BackstoryTrait> forcedTraits = pawn.story.Childhood.forcedTraits;
+            foreach (BackstoryTrait te2 in forcedTraits)
+                if (te2.def == null)
+                    Log.Error("Null forced trait def on " + pawn.story.Childhood);
+                else if (!pawn.story.traits.HasTrait(te2.def))
+                    pawn.story.traits.GainTrait(new Trait(te2.def, te2.degree));
         }
 
         public static IEnumerable<CodeInstruction> WandererJoinTranspiler(IEnumerable<CodeInstruction> instructions)
