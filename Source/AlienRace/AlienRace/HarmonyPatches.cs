@@ -11,6 +11,7 @@ namespace AlienRace
     using System.Runtime.InteropServices;
     using HarmonyLib;
     using RimWorld;
+    using RimWorld.QuestGen;
     using UnityEngine;
     using Verse;
     using Verse.AI;
@@ -293,6 +294,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeAdult), nameof(LifeStageWorker_HumanlikeAdult.Notify_LifeStageStarted)), transpiler: new HarmonyMethod(patchType, nameof(AdultLifeStageStartedTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GetBackstoryCategoryFiltersFor"), postfix: new HarmonyMethod(patchType, nameof(GetBackstoryCategoryFiltersForPostfix)));
 
+            harmony.Patch(AccessTools.Method(typeof(QuestNode_Root_WandererJoin_WalkIn), nameof(QuestNode_Root_WandererJoin_WalkIn.GeneratePawn)), transpiler: new HarmonyMethod(patchType, nameof(WandererJoinTranspiler)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -460,6 +463,32 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> WandererJoinTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+                if(instruction.opcode == OpCodes.Ldloc_1)
+                    yield return CodeInstruction.Call(patchType, nameof(WandererJoinHelper));
+            }
+        }
+
+        public static PawnGenerationRequest WandererJoinHelper(PawnGenerationRequest request)
+        {
+            PawnKindDef kindDef = request.KindDef;
+
+            if (kindDef.race != Faction.OfPlayerSilentFail?.def.basicMemberKind.race)
+                kindDef = Faction.OfPlayerSilentFail?.def.basicMemberKind ?? kindDef;
+            
+            if (DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.alienwandererkinds.NullOrEmpty())
+                                      .SelectMany(selector: rs => rs.pawnKindSettings.alienwandererkinds).Where(predicate: fpke => fpke.factionDefs.Contains(Faction.OfPlayer.def))
+                                      .SelectMany(selector: fpke => fpke.pawnKindEntries).TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk))
+                kindDef = pk.kindDefs.RandomElement();
+
+            request.KindDef = kindDef;
+            return request;
         }
 
         public static void EmbryoImplantReportPostfix(HumanEmbryo __instance, Pawn pawn, ref AcceptanceReport __result)
@@ -3362,10 +3391,8 @@ namespace AlienRace
             if (request.AllowedDevelopmentalStages.Newborn())
                 return;
 
-            if (Faction.OfPlayerSilentFail != null && kindDef == PawnKindDefOf.Villager && (request.Faction?.IsPlayer ?? false) && kindDef.race != Faction.OfPlayer?.def.basicMemberKind.race)
+            if (Faction.OfPlayerSilentFail != null && kindDef == PawnKindDefOf.Colonist && (request.Faction?.IsPlayer ?? false) && kindDef.race != Faction.OfPlayer?.def.basicMemberKind.race)
                 kindDef = Faction.OfPlayer?.def.basicMemberKind;
-
-
 
             IEnumerable<RaceSettings> settings = DefDatabase<RaceSettings>.AllDefsListForReading;
             PawnKindEntry             pk;
@@ -3379,13 +3406,6 @@ namespace AlienRace
             {
                 if (settings.Where(predicate: r => !r.pawnKindSettings.alienslavekinds.NullOrEmpty()).SelectMany(selector: r => r.pawnKindSettings.alienslavekinds)
                          .TryRandomElementByWeight(weightSelector: pke => pke.chance, out pk))
-                    kindDef = pk.kindDefs.RandomElement();
-            }
-            else if (request.KindDef == PawnKindDefOf.Villager)
-            {
-                if (DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.alienwandererkinds.NullOrEmpty())
-                                          .SelectMany(selector: rs => rs.pawnKindSettings.alienwandererkinds).Where(predicate: fpke => fpke.factionDefs.Contains(Faction.OfPlayer.def))
-                                          .SelectMany(selector: fpke => fpke.pawnKindEntries).TryRandomElementByWeight(pke => pke.chance, out pk))
                     kindDef = pk.kindDefs.RandomElement();
             }
 
