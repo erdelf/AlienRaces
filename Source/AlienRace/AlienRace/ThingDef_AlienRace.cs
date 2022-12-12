@@ -521,13 +521,18 @@
 
         public static HashSet<TraitDef> traitRestricted = new HashSet<TraitDef>();
 
-        public static bool CanGetTrait(TraitDef trait, ThingDef race)
+        public static bool CanGetTrait(TraitDef trait, ThingDef race, int degree = 0)
         {
-            RaceRestrictionSettings raceRestriction = (race as ThingDef_AlienRace)?.alienRace.raceRestriction;
+            ThingDef_AlienRace.AlienSettings           alienProps   = (race as ThingDef_AlienRace)?.alienRace;
+            RaceRestrictionSettings raceRestriction = alienProps?.raceRestriction;
             bool                    result          = true;
 
             if (traitRestricted.Contains(trait) || (raceRestriction?.onlyGetRaceRestrictedTraits ?? false))
-                result = raceRestriction?.whiteTraitList.Contains(trait)                        ?? false;
+                result &= raceRestriction?.whiteTraitList.Contains(trait)                        ?? false;
+
+            if (!alienProps?.generalSettings.disallowedTraits.NullOrEmpty() ?? false)
+                result &= !alienProps.generalSettings.disallowedTraits.Where(traitEntry => traitEntry.defName == trait && (degree == traitEntry.degree || traitEntry.degree == 0)).
+                                      Any(traitEntry => Rand.Range(min: 0, max: 100) < traitEntry.chance);
 
             return result && !(raceRestriction?.blackTraitList.Contains(trait) ?? false);
         }
