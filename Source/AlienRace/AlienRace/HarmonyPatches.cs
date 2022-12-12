@@ -1551,7 +1551,8 @@ namespace AlienRace
                         Widgets.Label(rect2, label2);
                         Widgets.Label(rect3, addonLabel);
 
-                        float num = Widgets.HorizontalSlider(rect5, value, leftValue: -1, rightValue: 1);
+                        float num = value;
+                        Widgets.HorizontalSlider(rect5, ref value, new FloatRange(-1, 1));
 
                         Rect valueFieldRect = rect4;
 
@@ -1596,8 +1597,10 @@ namespace AlienRace
                         if (!tweakValuesSaved.ContainsKey(offsetDictKey))
                             tweakValuesSaved.Add(offsetDictKey, ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.FirstIndexOf(on => on.name == ba.defaultOffset));
 
-                        int offsetNew = (int) Widgets.HorizontalSlider(rect5, ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.FirstIndexOf(on => on.name == ba.defaultOffset), leftValue: 0,
-                                                                       rightValue: ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.Count - 1, roundTo: 1);
+
+                        float offsetNew = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.FirstIndexOf(on => on.name == ba.defaultOffset);
+                        Widgets.HorizontalSlider(rect5, ref offsetNew, new FloatRange(0, ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.Count - 1), roundTo: 1);
+                        offsetNew = Mathf.RoundToInt(offsetNew);
 
                         Rect valueFieldRect = rect4;
 
@@ -1615,7 +1618,7 @@ namespace AlienRace
                             GlobalTextureAtlasManager.FreeAllRuntimeAtlases();
                         }
 
-                        AlienPartGenerator.OffsetNamed newOffsets = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[offsetNew];
+                        AlienPartGenerator.OffsetNamed newOffsets = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[(int) offsetNew];
                         Widgets.Label(valueFieldRect, newOffsets.name);
                         ba.defaultOffset  = newOffsets.name;
                         ba.defaultOffsets = newOffsets.offsets;
