@@ -469,22 +469,24 @@ namespace AlienRace
 
         public static void AdultLifeStageStartedPostfix(Pawn pawn)
         {
-            List<BackstoryTrait> forcedTraits = pawn.story.Adulthood.forcedTraits;
-            foreach (BackstoryTrait te2 in forcedTraits)
-                if (te2.def == null)
-                    Log.Error("Null forced trait def on " + pawn.story.Adulthood);
-                else if (!pawn.story.traits.HasTrait(te2.def))
-                    pawn.story.traits.GainTrait(new Trait(te2.def, te2.degree));
+            List<BackstoryTrait> forcedTraits = pawn.story?.Adulthood?.forcedTraits;
+            if(!forcedTraits.NullOrEmpty())
+                foreach (BackstoryTrait te2 in forcedTraits!)
+                    if (te2.def == null)
+                        Log.Error("Null forced trait def on " + pawn.story.Adulthood);
+                    else if (!pawn.story.traits.HasTrait(te2.def))
+                        pawn.story.traits.GainTrait(new Trait(te2.def, te2.degree));
         }
 
         public static void ChildLifeStageStartedPostfix(Pawn pawn)
         {
-            List<BackstoryTrait> forcedTraits = pawn.story.Childhood.forcedTraits;
-            foreach (BackstoryTrait te2 in forcedTraits)
-                if (te2.def == null)
-                    Log.Error("Null forced trait def on " + pawn.story.Childhood);
-                else if (!pawn.story.traits.HasTrait(te2.def))
-                    pawn.story.traits.GainTrait(new Trait(te2.def, te2.degree));
+            List<BackstoryTrait> forcedTraits = pawn.story?.Childhood?.forcedTraits;
+            if (!forcedTraits.NullOrEmpty())
+                foreach (BackstoryTrait te2 in forcedTraits!)
+                    if (te2.def == null)
+                        Log.Error("Null forced trait def on " + pawn.story.Childhood);
+                    else if (!pawn.story.traits.HasTrait(te2.def))
+                        pawn.story.traits.GainTrait(new Trait(te2.def, te2.degree));
         }
 
         public static IEnumerable<CodeInstruction> WandererJoinTranspiler(IEnumerable<CodeInstruction> instructions)
