@@ -83,7 +83,7 @@
     [AttributeUsage(AttributeTargets.Field)]
     public class LoadDefFromField : Attribute
     {
-        private string defName;
+        public string defName;
 
         public LoadDefFromField(string defName)
         {
