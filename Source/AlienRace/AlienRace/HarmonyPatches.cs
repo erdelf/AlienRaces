@@ -297,6 +297,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GetBackstoryCategoryFiltersFor"), postfix: new HarmonyMethod(patchType, nameof(GetBackstoryCategoryFiltersForPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(QuestNode_Root_WandererJoin_WalkIn), nameof(QuestNode_Root_WandererJoin_WalkIn.GeneratePawn)), transpiler: new HarmonyMethod(patchType, nameof(WandererJoinTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),                   nameof(PregnancyUtility.ApplyBirthOutcome)), transpiler: new HarmonyMethod(patchType, nameof(ApplyBirthOutcomeTranspiler)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -465,6 +466,41 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> ApplyBirthOutcomeTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo pawnKindInfo = AccessTools.Field(typeof(Pawn), nameof(Pawn.kindDef));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+                yield return instruction;
+                if (instruction.opcode == OpCodes.Ldarg_S && instructionList[i+1].LoadsField(pawnKindInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg, 6);
+                    yield return CodeInstruction.Call(patchType, nameof(BirthOutcomeHelper));
+                    i ++;
+                }
+            }
+        }
+
+        public static PawnKindDef BirthOutcomeHelper(Pawn mother, Pawn partner)
+        {
+            if (mother?.def is not ThingDef_AlienRace alienProps)
+                return mother?.kindDef;
+
+            PawnKindDef kindDef = alienProps.alienRace.generalSettings.reproduction.childKindDef;
+
+            if (partner != null)
+            {
+                List<HybridSpecificSettings> hybrids = alienProps.alienRace.generalSettings.reproduction.hybridSpecific.Where(hss => hss.partnerRace == partner.def).ToList();
+                if (hybrids.Any() && hybrids.TryRandomElementByWeight(hss => hss.probability, out HybridSpecificSettings res))
+                    kindDef = res.childKindDef;
+            }
+
+            return kindDef ?? mother.kindDef;
         }
 
         public static void AdultLifeStageStartedPostfix(Pawn pawn) =>
@@ -3384,7 +3420,11 @@ namespace AlienRace
             if (pawn.def is ThingDef_AlienRace alienProps && 
                 !alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.NullOrEmpty())
             {
-                List<BodyTypeDef> bodyTypeDefs = alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.Except(BodyTypeDefOf.Baby).Except(BodyTypeDefOf.Child).ToList();
+                List<BodyTypeDef> bodyTypeDefs = alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes;
+                if(!pawn.ageTracker.CurLifeStage.developmentalStage.Baby())
+                    bodyTypeDefs.Remove(BodyTypeDefOf.Baby);
+                if (!pawn.ageTracker.CurLifeStage.developmentalStage.Child())
+                    bodyTypeDefs.Remove(BodyTypeDefOf.Child);
 
                 if (pawn.gender == Gender.Male && bodyTypeDefs.Contains(BodyTypeDefOf.Female) && bodyTypeDefs.Count > 1)
                     bodyTypeDefs.Remove(BodyTypeDefOf.Female);
