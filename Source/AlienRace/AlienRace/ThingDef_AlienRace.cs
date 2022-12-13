@@ -133,13 +133,13 @@
                             }
                     }
 
-                    if (field.FieldType.Assembly == typeof(ThingDef_AlienRace).Assembly) 
+                    if (field.FieldType.Assembly == typeof(ThingDef_AlienRace).Assembly)
                         RecursiveAttributeCheck(field.FieldType, instanceNew);
 
                     LoadDefFromField attribute = field.GetCustomAttribute<LoadDefFromField>();
                     if (attribute != null)
                         if (instanceNew.GetValue() == null)
-                            instanceNew.SetValue(attribute.GetDef(field.FieldType));
+                            instanceNew.SetValue(attribute.defName == "this" ? this : attribute.GetDef(field.FieldType));
                 }
             }
             RecursiveAttributeCheck(typeof(AlienSettings), Traverse.Create(this.alienRace));
@@ -207,6 +207,22 @@
         public List<BackstoryCategoryFilter> adultBackstoryFilter;
         public List<BackstoryCategoryFilter> adultVatBackstoryFilter;
         public List<BackstoryCategoryFilter> newbornBackstoryFilter;
+
+        public ReproductionSettings reproduction = new ReproductionSettings();
+    }
+
+    public class ReproductionSettings
+    {
+        public PawnKindDef childKindDef;
+
+        public List<HybridSpecificSettings> hybridSpecific = new();
+    }
+
+    public class HybridSpecificSettings
+    {
+        public ThingDef    partnerRace;
+        public float       probability;
+        public PawnKindDef childKindDef;
     }
 
     public class FactionRelationSettings
