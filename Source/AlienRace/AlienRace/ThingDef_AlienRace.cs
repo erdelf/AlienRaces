@@ -609,11 +609,11 @@
         public bool           canReproduce                     = true;
         public bool           canReproduceWithSelf             = true;
         public bool           onlyReproduceWithRestrictedRaces = false;
-        public List<ThingDef> reproductionList                 = new List<ThingDef>();
-        public List<ThingDef> whiteReproductionList            = new List<ThingDef>();
-        public List<ThingDef> blackReproductionList            = new List<ThingDef>();
+        public List<ThingDef> reproductionList                 = new();
+        public List<ThingDef> whiteReproductionList            = new();
+        public List<ThingDef> blackReproductionList            = new();
 
-        public static HashSet<ThingDef> reproductionRestricted = new HashSet<ThingDef>();
+        public static HashSet<ThingDef> reproductionRestricted = new();
 
         public static bool CanReproduce(Pawn pawn, Pawn partnerPawn) => 
             CanReproduce(pawn.def, partnerPawn.def);
