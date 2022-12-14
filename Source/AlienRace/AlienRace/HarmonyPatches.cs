@@ -748,8 +748,8 @@ namespace AlienRace
         public static SimpleCurve FertilityCurveHelper(SimpleCurve original, Pawn pawn, Gender gender) =>
             pawn.def is ThingDef_AlienRace alienProps ?
                 gender == Gender.Female ?
-                    alienProps.alienRace.generalSettings.femaleFertilityAgeFactor :
-                    alienProps.alienRace.generalSettings.maleFertilityAgeFactor :
+                    alienProps.alienRace.generalSettings.reproduction.femaleFertilityAgeFactor :
+                    alienProps.alienRace.generalSettings.reproduction.maleFertilityAgeFactor :
                 original;
 
         public static void FinalizeLookChangePostfix(ref Toil __result)
