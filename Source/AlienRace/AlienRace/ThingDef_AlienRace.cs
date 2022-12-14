@@ -221,7 +221,7 @@
     public class HybridSpecificSettings
     {
         public ThingDef    partnerRace;
-        public float       probability;
+        public float       probability = 100;
         public PawnKindDef childKindDef;
     }
 
