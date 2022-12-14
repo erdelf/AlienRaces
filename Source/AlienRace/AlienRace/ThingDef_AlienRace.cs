@@ -185,7 +185,20 @@
 
         public SimpleCurve lovinIntervalHoursFromAge;
         public List<int>   growthAges = new() { 7, 10, 13 };
-        public SimpleCurve maleFertilityAgeFactor = new(new []
+
+        public List<BackstoryCategoryFilter> childBackstoryFilter;
+        public List<BackstoryCategoryFilter> adultBackstoryFilter;
+        public List<BackstoryCategoryFilter> adultVatBackstoryFilter;
+        public List<BackstoryCategoryFilter> newbornBackstoryFilter;
+
+        public ReproductionSettings reproduction = new ReproductionSettings();
+    }
+
+    public class ReproductionSettings
+    {
+        public PawnKindDef childKindDef;
+
+        public SimpleCurve maleFertilityAgeFactor = new(new[]
                                                         {
                                                             new CurvePoint(14, 0),
                                                             new CurvePoint(18, 1),
@@ -202,18 +215,6 @@
                                                               new CurvePoint(45, 0.02f),
                                                               new CurvePoint(50, 0),
                                                           });
-
-        public List<BackstoryCategoryFilter> childBackstoryFilter;
-        public List<BackstoryCategoryFilter> adultBackstoryFilter;
-        public List<BackstoryCategoryFilter> adultVatBackstoryFilter;
-        public List<BackstoryCategoryFilter> newbornBackstoryFilter;
-
-        public ReproductionSettings reproduction = new ReproductionSettings();
-    }
-
-    public class ReproductionSettings
-    {
-        public PawnKindDef childKindDef;
 
         public List<HybridSpecificSettings> hybridSpecific = new();
     }
