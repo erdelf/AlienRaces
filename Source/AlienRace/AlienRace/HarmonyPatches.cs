@@ -468,9 +468,12 @@ namespace AlienRace
             AlienRaceMod.settings.UpdateSettings();
         }
 
-        public static IEnumerable<CodeInstruction> ApplyBirthOutcomeTranspiler(IEnumerable<CodeInstruction> instructions)
+        public static int currentBirthCount = int.MinValue;
+
+        public static IEnumerable<CodeInstruction> ApplyBirthOutcomeTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg, MethodBase originalMethod)
         {
             FieldInfo pawnKindInfo = AccessTools.Field(typeof(Pawn), nameof(Pawn.kindDef));
+            FieldInfo countInfo    = AccessTools.Field(patchType,    nameof(currentBirthCount));
 
             List<CodeInstruction> instructionList = instructions.ToList();
             for (int i = 0; i < instructionList.Count; i++)
@@ -483,8 +486,38 @@ namespace AlienRace
                     yield return CodeInstruction.Call(patchType, nameof(BirthOutcomeHelper));
                     i ++;
                 }
+
+                if (instruction.opcode == OpCodes.Stloc_0)
+                {
+                    Label loop    = ilg.DefineLabel();
+                    Label loopEnd = ilg.DefineLabel();
+                    Label loopSkip = ilg.DefineLabel();
+                    yield return new CodeInstruction(OpCodes.Ldsfld, countInfo);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4, int.MinValue);
+                    yield return new CodeInstruction(OpCodes.Bne_Un, loopSkip);
+                    yield return new CodeInstruction(OpCodes.Ldarg,  4);
+                    yield return CodeInstruction.Call(patchType, nameof(BirthOutcomeMultiplier));
+                    yield return new CodeInstruction(OpCodes.Stsfld, countInfo);
+                    yield return new CodeInstruction(OpCodes.Ldsfld, countInfo) {labels = new List<Label>{loop}};
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+                    yield return new CodeInstruction(OpCodes.Sub);
+                    yield return new CodeInstruction(OpCodes.Dup);
+                    yield return new CodeInstruction(OpCodes.Stsfld, countInfo);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_0);
+                    yield return new CodeInstruction(OpCodes.Blt_S, loopEnd);
+                    for (int j = 0; j < originalMethod.GetParameters().Length; j++)
+                        yield return new CodeInstruction(OpCodes.Ldarg, j);
+                    yield return new CodeInstruction(OpCodes.Call,   originalMethod);
+                    yield return new CodeInstruction(OpCodes.Br, loop);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4, int.MinValue) { labels = new List<Label> { loopEnd } };
+                    yield return new CodeInstruction(OpCodes.Stsfld, countInfo);
+                    yield return new CodeInstruction(OpCodes.Nop) { labels = new List<Label> { loopSkip } };
+                }
             }
         }
+
+        public static int BirthOutcomeMultiplier(Pawn mother) => 
+            mother != null ? Mathf.RoundToInt(Rand.ByCurve(mother.RaceProps.litterSizeCurve)) - 1 : 0;
 
         public static PawnKindDef BirthOutcomeHelper(Pawn mother, Pawn partner)
         {
