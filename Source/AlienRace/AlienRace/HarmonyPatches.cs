@@ -3453,20 +3453,30 @@ namespace AlienRace
             if (pawn.def is ThingDef_AlienRace alienProps && 
                 !alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.NullOrEmpty())
             {
-                List<BodyTypeDef> bodyTypeDefs = alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes;
-                if(!pawn.ageTracker.CurLifeStage.developmentalStage.Baby())
+                List<BodyTypeDef> bodyTypeDefs = alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.ListFullCopy();
+                
+                if((pawn.ageTracker.CurLifeStage.developmentalStage.Baby() || pawn.ageTracker.CurLifeStage.developmentalStage.Newborn()) && bodyTypeDefs.Contains(BodyTypeDefOf.Baby))
+                {
+                    pawn.story.bodyType = BodyTypeDefOf.Baby;
+                }
+                else if (pawn.ageTracker.CurLifeStage.developmentalStage.Juvenile() && bodyTypeDefs.Contains(BodyTypeDefOf.Child))
+                {
+                    pawn.story.bodyType = BodyTypeDefOf.Child;
+                }
+                else
+                {
                     bodyTypeDefs.Remove(BodyTypeDefOf.Baby);
-                if (!pawn.ageTracker.CurLifeStage.developmentalStage.Child())
                     bodyTypeDefs.Remove(BodyTypeDefOf.Child);
 
-                if (pawn.gender == Gender.Male && bodyTypeDefs.Contains(BodyTypeDefOf.Female) && bodyTypeDefs.Count > 1)
-                    bodyTypeDefs.Remove(BodyTypeDefOf.Female);
+                    if (pawn.gender == Gender.Male && bodyTypeDefs.Contains(BodyTypeDefOf.Female) && bodyTypeDefs.Count > 1)
+                        bodyTypeDefs.Remove(BodyTypeDefOf.Female);
 
-                if (pawn.gender == Gender.Female && bodyTypeDefs.Contains(BodyTypeDefOf.Male) && bodyTypeDefs.Count > 1)
-                    bodyTypeDefs.Remove(BodyTypeDefOf.Male);
+                    if (pawn.gender == Gender.Female && bodyTypeDefs.Contains(BodyTypeDefOf.Male) && bodyTypeDefs.Count > 1)
+                        bodyTypeDefs.Remove(BodyTypeDefOf.Male);
 
-                if(!bodyTypeDefs.Contains(pawn.story.bodyType))
-                    pawn.story.bodyType = bodyTypeDefs.RandomElement();
+                    if (!bodyTypeDefs.Contains(pawn.story.bodyType))
+                        pawn.story.bodyType = bodyTypeDefs.RandomElement();
+                }
             }
         }
 
