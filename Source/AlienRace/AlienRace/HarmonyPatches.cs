@@ -675,7 +675,7 @@ namespace AlienRace
         }
 
         public static bool IsPlayerColonyChildBackstoryHelper(BackstoryDef backstory, Pawn pawn) =>
-            ((pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.childBackstoryFilter.Any(bcf => bcf.Matches(backstory)) ?? false) || 
+            ((pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.childBackstoryFilter?.Any(bcf => bcf.Matches(backstory)) ?? false) || 
             backstory.IsPlayerColonyChildBackstory;
 
         public static void GetBackstoryCategoryFiltersForPostfix(Pawn pawn, ref List<BackstoryCategoryFilter> __result)
