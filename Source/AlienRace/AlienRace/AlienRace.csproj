@@ -311,6 +311,7 @@
     <Compile Include="AlienPartGenerator.cs" />
     <Compile Include="AlienPartGenerator.Offsets.cs" />
     <Compile Include="AlienRaceMod.cs" />
+    <Compile Include="AnimalComp.cs" />
     <Compile Include="BackstoryDef.cs" />
     <Compile Include="ExtendedGraphics\AbstractExtendedGraphic.cs" />
     <Compile Include="ExtendedGraphics\ExtendedGraphicsPawnWrapper.cs" />
