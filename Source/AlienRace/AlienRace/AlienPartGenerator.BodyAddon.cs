@@ -31,6 +31,8 @@ namespace AlienRace
 
             public BodyPartDef bodyPart;
             public string      bodyPartLabel;
+            public bool drawWithoutPart = false;
+
 
             private const string REWIND_PATH = "void";
 
@@ -135,6 +137,9 @@ namespace AlienRace
                 get => this.colorChannel ??= "skin";
                 set => this.colorChannel = value ?? "skin";
             }
+            public Color? colorOverrideOne;
+            public Color? colorOverrideTwo;
+            public float colorPostFactor;
 
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
             public List<string>           hiddenUnderApparelTag = new List<string>();
@@ -143,11 +148,16 @@ namespace AlienRace
             public BodyTypeDef    bodyTypeRequirement;
             public GeneDef        geneRequirement;
             public List<ThingDef> raceRequirement;
+            public List<ThingDef> raceBlacklist;
+
 
             private ShaderTypeDef shaderType;
 
-            public ShaderTypeDef ShaderType => this.shaderType ??= ShaderTypeDefOf.Cutout;
-            
+            public ShaderTypeDef ShaderType
+            {
+                get => this.shaderType ??= ShaderTypeDefOf.Cutout;
+                set => this.shaderType = value ?? ShaderTypeDefOf.Cutout;
+            }
             private bool VisibleUnderApparelOf(ExtendedGraphicsPawnWrapper pawn) =>
                 !pawn.HasApparelGraphics()                                                             ||
                 (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
@@ -166,7 +176,7 @@ namespace AlienRace
                 this.drawnDesiccated || pawn.GetRotStage() != RotStage.Dessicated;
 
             private bool RequiredBodyPartExistsFor(ExtendedGraphicsPawnWrapper pawn) =>
-                pawn.HasNamedBodyPart(this.bodyPart, this.bodyPartLabel) ||
+                (pawn.HasNamedBodyPart(this.bodyPart, this.bodyPartLabel) || pawn.LinkToCorePart(this.drawWithoutPart, this.alignWithHead, this.bodyPart, this.bodyPartLabel)) ||
                 (this.hediffGraphics?.Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false);
                 //any missing part textures need to be done on the first branch level
 
@@ -190,7 +200,7 @@ namespace AlienRace
                 !ModsConfig.BiotechActive || this.geneRequirement == null || pawn.HasGene(this.geneRequirement);
 
             public bool VisibleForRace(ExtendedGraphicsPawnWrapper pawn) =>
-                this.raceRequirement.NullOrEmpty() || this.raceRequirement.Any(pawn.IsRace);
+                (this.raceRequirement.NullOrEmpty() || this.raceRequirement.Any(pawn.IsRace)) && (this.raceBlacklist.NullOrEmpty() || !this.raceBlacklist.Any(pawn.IsRace));
 
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 this.CanDrawAddon(new ExtendedGraphicsPawnWrapper(pawn));
@@ -214,10 +224,25 @@ namespace AlienRace
 
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
 
+                if (colorOverrideOne != null)
+                {
+                    channel.first = (Color)colorOverrideOne;
+                }
+
+                if (colorOverrideTwo != null)
+                {
+                    channel.second = (Color)colorOverrideTwo;
+                }
+                if (colorPostFactor != 1f)
+                {
+                    channel.first *= colorPostFactor;
+                    channel.second *= colorPostFactor;
+                }
+                
                 string returnPath = this.GetPath(pawn, ref sharedIndex, savedIndex);
 
                 return !returnPath.NullOrEmpty() ?
-                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, ContentFinder<Texture2D>.Get(returnPath + "_northm", reportFailure: false) == null ?
+                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, ContentFinder<Texture2D>.Get(returnPath + "_southm", reportFailure: false) == null ?
                                                                                                this.ShaderType.Shader : 
                                                                                                ShaderDatabase.CutoutComplex, this.drawSize * 1.5f, channel.first, channel.second, new GraphicData
                                                                                                                                                                                   {
@@ -255,6 +280,7 @@ namespace AlienRace
         {
             Severity,
             Hediff,
+            Race,
             Gender,
             Bodytype,
             Headtype,
@@ -262,8 +288,7 @@ namespace AlienRace
             Trait,
             Age,
             Damage,
-            Gene,
-            Race
+            Gene
         }
     }
 }

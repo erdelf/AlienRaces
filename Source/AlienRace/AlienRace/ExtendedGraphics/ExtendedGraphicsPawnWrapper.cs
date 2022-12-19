@@ -76,6 +76,25 @@ public class ExtendedGraphicsPawnWrapper
 
     public virtual bool IsBodyPart(BodyPartRecord bpr, BodyPartDef part, string partLabel) =>
         (partLabel.NullOrEmpty() || bpr.untranslatedCustomLabel == partLabel) && (part == null || bpr.def == part);
+    public virtual bool LinkToCorePart(bool drawWithoutPart, bool alignWithHead, BodyPartDef part, string partLabel)
+    {
+        if (!drawWithoutPart || this.NamedBodyPartExists(part, partLabel))
+        {
+            return false;
+        }
+        if (alignWithHead)
+        {
+            return this.HasNamedBodyPart((this.WrappedPawn.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator.headBodyPartDef, null);
+        }
+        return true;
+
+    }
+
+    public virtual bool NamedBodyPartExists(BodyPartDef part, string partLabel) =>
+        (part == null && partLabel.NullOrEmpty()) || this.GetAnyBodyPart(part, partLabel) != null;
+
+    public virtual BodyPartRecord GetAnyBodyPart(BodyPartDef part, string partLabel) =>
+        this.WrappedPawn.RaceProps.body.AllParts.Find(bpr => IsBodyPart(bpr, part, partLabel));
 
     public virtual Gender GetGender() => this.WrappedPawn.gender;
 
