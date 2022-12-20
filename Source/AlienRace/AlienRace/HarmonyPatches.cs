@@ -297,7 +297,10 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GetBackstoryCategoryFiltersFor"), postfix: new HarmonyMethod(patchType, nameof(GetBackstoryCategoryFiltersForPostfix)));
             
             harmony.Patch(AccessTools.Method(typeof(QuestNode_Root_WandererJoin_WalkIn), nameof(QuestNode_Root_WandererJoin_WalkIn.GeneratePawn)), transpiler: new HarmonyMethod(patchType, nameof(WandererJoinTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),                   nameof(PregnancyUtility.ApplyBirthOutcome)), transpiler: new HarmonyMethod(patchType, nameof(ApplyBirthOutcomeTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),                   nameof(PregnancyUtility.ApplyBirthOutcome)),              transpiler: new HarmonyMethod(patchType, nameof(ApplyBirthOutcomeTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator),                      nameof(PawnGenerator.XenotypesAvailableFor)) ,            postfix: new HarmonyMethod(patchType,    nameof(XenotypesAvailableForPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator),                      nameof(PawnGenerator.GetXenotypeForGeneratedPawn)),       transpiler: new HarmonyMethod(patchType, nameof(GetXenotypeForGeneratedPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker),                   nameof(Pawn_GeneTracker.SetXenotype)), new HarmonyMethod(patchType, nameof(SetXenotypePrefix)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -376,6 +379,13 @@ namespace AlienRace
                     if (!RaceRestrictionSettings.geneRestricted.Contains(geneDef))
                         RaceRestrictionSettings.geneRestricted.Add(geneDef);
                     ar.alienRace.raceRestriction.whiteGeneList.Add(geneDef);
+                }
+
+                foreach (XenotypeDef xenotypeDef in ar.alienRace.raceRestriction.xenotypeList)
+                {
+                    if (!RaceRestrictionSettings.xenotypeRestricted.Contains(xenotypeDef))
+                        RaceRestrictionSettings.xenotypeRestricted.Add(xenotypeDef);
+                    ar.alienRace.raceRestriction.whiteXenotypeList.Add(xenotypeDef);
                 }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.reproductionList)
@@ -466,6 +476,42 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static bool SetXenotypePrefix(XenotypeDef xenotype, Pawn ___pawn) => 
+            RaceRestrictionSettings.CanUseXenotype(xenotype, ___pawn.def);
+
+        public static IEnumerable<CodeInstruction> GetXenotypeForGeneratedPawnTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            MethodInfo pawnGenAllowedXenotypeInfo = AccessTools.PropertyGetter(typeof(PawnGenerationRequest), nameof(PawnGenerationRequest.AllowedXenotypes));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                yield return instruction;
+
+                if (instruction.Calls(pawnGenAllowedXenotypeInfo) && instructionList[i+1].opcode == OpCodes.Ldloca_S)
+                {
+                    yield return new CodeInstruction(instructionList[i-1]);
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.PropertyGetter(typeof(PawnGenerationRequest), nameof(PawnGenerationRequest.KindDef)));
+                    yield return CodeInstruction.LoadField(typeof(PawnKindDef), nameof(PawnKindDef.race));
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(FilterXenotypeHelper)));
+                }
+            }
+        }
+
+        public static List<XenotypeDef> FilterXenotypeHelper(List<XenotypeDef> xenotypes, ThingDef race) => 
+            RaceRestrictionSettings.FilterXenotypes(xenotypes, race, out _).ToList();
+
+        public static void XenotypesAvailableForPostfix(PawnKindDef kind, ref Dictionary<XenotypeDef, float> __result)
+        {
+            RaceRestrictionSettings.FilterXenotypes(__result.Keys, kind.race, out HashSet<XenotypeDef> forbidden);
+
+            foreach (XenotypeDef xenotypeDef in forbidden)
+                __result.Remove(xenotypeDef);
         }
 
         public static int currentBirthCount = int.MinValue;
