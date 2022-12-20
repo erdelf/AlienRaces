@@ -623,6 +623,38 @@
                    !(raceRestriction?.blackEndoCategories.Contains(gene.endogeneCategory) ?? false);
         }
 
+        public bool              onlyUseRaceRestrictedXenotypes = false;
+        public List<XenotypeDef> xenotypeList                    = new List<XenotypeDef>();
+        public List<XenotypeDef> whiteXenotypeList               = new List<XenotypeDef>();
+        public List<XenotypeDef> blackXenotypeList               = new List<XenotypeDef>();
+
+        public static HashSet<XenotypeDef> xenotypeRestricted = new HashSet<XenotypeDef>();
+
+        public static HashSet<XenotypeDef> FilterXenotypes(IEnumerable<XenotypeDef> xenotypes, ThingDef race, out HashSet<XenotypeDef> removedXenotypes)
+        {
+            HashSet<XenotypeDef> xenotypeDefs = new();
+            removedXenotypes = new HashSet<XenotypeDef>();
+
+            foreach (XenotypeDef xenotypeDef in xenotypes)
+                if (CanUseXenotype(xenotypeDef, race))
+                    xenotypeDefs.Add(xenotypeDef);
+                else
+                    removedXenotypes.Add(xenotypeDef);
+
+            return xenotypeDefs;
+        }
+
+        public static bool CanUseXenotype(XenotypeDef xenotype, ThingDef race)
+        {
+            RaceRestrictionSettings raceRestriction = (race as ThingDef_AlienRace)?.alienRace.raceRestriction;
+            bool                    result          = true;
+
+            if (xenotypeRestricted.Contains(xenotype) || (raceRestriction?.onlyUseRaceRestrictedXenotypes ?? false))
+                result = raceRestriction?.whiteXenotypeList.Contains(xenotype)                        ?? false;
+
+            return result && !(raceRestriction?.blackXenotypeList.Contains(xenotype) ?? false);
+        }
+
         public bool           canReproduce                     = true;
         public bool           canReproduceWithSelf             = true;
         public bool           onlyReproduceWithRestrictedRaces = false;
