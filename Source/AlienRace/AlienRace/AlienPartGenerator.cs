@@ -19,19 +19,19 @@
         public List<HeadTypeDef> HeadTypes => 
             this.headTypes ?? CachedData.DefaultHeadTypeDefs;
 
-        public List<BodyTypeDef> bodyTypes = new List<BodyTypeDef>();
+        public List<BodyTypeDef> bodyTypes = new();
 
         public int getsGreyAt = 40;
 
 
-        public List<ColorChannelGenerator> colorChannels  = new List<ColorChannelGenerator>();
-        public List<OffsetNamed>      offsetDefaults = new List<OffsetNamed>();
+        public List<ColorChannelGenerator> colorChannels  = new();
+        public List<OffsetNamed>           offsetDefaults = new();
         
 
-        public List<WoundAnchorReplacement> anchorReplacements = new List<WoundAnchorReplacement>();
+        public List<WoundAnchorReplacement> anchorReplacements = new();
 
         public Vector2 headOffset = Vector2.zero;
-        public DirectionOffset headOffsetDirectional = new DirectionOffset();
+        public DirectionOffset headOffsetDirectional = new();
 
         public float borderScale = 1f;
         public int atlasScale = 1;
@@ -45,7 +45,7 @@
 
         public BodyPartDef headBodyPartDef;
 
-        public List<BodyAddon> bodyAddons = new List<BodyAddon>();
+        public List<BodyAddon> bodyAddons = new();
 
         public ThingDef_AlienRace alienProps;
         /*
@@ -153,8 +153,6 @@
                     ExtendedGraphicTop headGraphic = this.alienProps.alienRace.graphicPaths.head;
                     string             headPath    = headGraphic.path;
 
-                    this.alienProps.alienRace.graphicPaths.head.headtypeGraphics = new List<ExtendedHeadtypeGraphic>();
-
                     foreach (HeadTypeDef headType in this.HeadTypes.Concat(DefDatabase<HeadTypeDef>.AllDefs.Where(htd => !htd.requiredGenes.NullOrEmpty())))
                     {
                         string headTypePath = Path.GetFileName(headType.graphicPath);
@@ -169,8 +167,7 @@
                                                                       paths = new List<string>
                                                                               {
                                                                                   headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath
-                                                                              },
-                                                                      genderGraphics = new List<ExtendedGenderGraphic>()
+                                                                              }
                                                                   };
 
                         if (!headType.requiredGenes.NullOrEmpty())
@@ -200,8 +197,6 @@
                 {
                     ExtendedGraphicTop bodyGraphic = this.alienProps.alienRace.graphicPaths.body;
                     string             bodyPath    = bodyGraphic.path;
-
-                    bodyGraphic.bodytypeGraphics = new List<ExtendedBodytypeGraphic>();
 
                     foreach (BodyTypeDef bodyTypeRaw in this.bodyTypes)
                     {
@@ -237,7 +232,6 @@
                     {
                         string path = graphicTop.path;
 
-                        graphicTop.bodytypeGraphics = new List<ExtendedBodytypeGraphic>();
                         foreach (BodyTypeDef bodyType in this.bodyTypes)
                             graphicTop.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
                                                             {
@@ -268,7 +262,6 @@
                         if (!graphicTop.GetSubGraphics().MoveNext())
                         {
                             string path = graphicTop.path;
-                            graphicTop.bodytypeGraphics = new List<ExtendedBodytypeGraphic>();
                             foreach (BodyTypeDef bodyType in this.bodyTypes)
                                 graphicTop.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
                                                                 {
@@ -368,7 +361,7 @@
         public class ColorChannelGenerator
         {
             public string                              name = "";
-            public List<ColorChannelGeneratorCategory> entries = new List<ColorChannelGeneratorCategory>();
+            public List<ColorChannelGeneratorCategory> entries = new();
 
 
             [UsedImplicitly]
@@ -425,7 +418,7 @@
             public int lastAlienMeatIngestedTick = 0;
 
             private Dictionary<string, ExposableValueTuple<Color, Color>> colorChannels;
-            private Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>   colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
+            private Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>   colorChannelLinks = new();
 
             public Dictionary<string, ExposableValueTuple<Color, Color>> ColorChannels
             {

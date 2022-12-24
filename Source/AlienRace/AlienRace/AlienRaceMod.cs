@@ -23,7 +23,7 @@
         public override void DoSettingsWindowContents(Rect inRect)
         {
             base.DoSettingsWindowContents(inRect);
-            Listing_Standard listingStandard = new Listing_Standard();
+            Listing_Standard listingStandard = new();
             listingStandard.Begin(inRect);
             listingStandard.CheckboxLabeled(label: "Use central melanin for factions", ref settings.centralMelanin, tooltip: "True: Pawns of the same factions will have more or less the same skin color.\nFalse: Skin color is not bound by factions.\nNote: Race authors may decide to override skin colors.");
             listingStandard.End();
