@@ -10,13 +10,13 @@ using Verse;
 public abstract class AbstractExtendedGraphic : IExtendedGraphic
 {
     public string       path;
-    public List<string> paths = new List<string>();
-    public List<string> pathsFallback = new List<string>();
+    public List<string> paths         = new();
+    public List<string> pathsFallback = new();
 
     private bool useFallback = false;
 
     public int       variantCount  = 0;
-    public List<int> variantCounts = new List<int>();
+    public List<int> variantCounts = new();
 
     // Not unused, users can define their own order in XML which takes priority.
     
@@ -24,16 +24,16 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     private List<AlienPartGenerator.ExtendedGraphicsPrioritization>   prioritization;
     #pragma warning restore CS0649
 
-    public List<AlienPartGenerator.ExtendedHediffGraphic>    hediffGraphics;
-    public List<AlienPartGenerator.ExtendedBackstoryGraphic> backstoryGraphics;
-    public List<AlienPartGenerator.ExtendedAgeGraphic>       ageGraphics;
-    public List<AlienPartGenerator.ExtendedDamageGraphic>    damageGraphics;
-    public List<AlienPartGenerator.ExtendedGenderGraphic>    genderGraphics;
-    public List<AlienPartGenerator.ExtendedTraitGraphic>     traitGraphics;
-    public List<AlienPartGenerator.ExtendedBodytypeGraphic>  bodytypeGraphics;
-    public List<AlienPartGenerator.ExtendedHeadtypeGraphic>  headtypeGraphics;
-    public List<AlienPartGenerator.ExtendedGeneGraphic>      geneGraphics;
-    public List<AlienPartGenerator.ExtendedRaceGraphic>      raceGraphics;
+    public List<AlienPartGenerator.ExtendedHediffGraphic>    hediffGraphics    = new();
+    public List<AlienPartGenerator.ExtendedBackstoryGraphic> backstoryGraphics = new();
+    public List<AlienPartGenerator.ExtendedAgeGraphic>       ageGraphics       = new();
+    public List<AlienPartGenerator.ExtendedDamageGraphic>    damageGraphics    = new();
+    public List<AlienPartGenerator.ExtendedGenderGraphic>    genderGraphics    = new();
+    public List<AlienPartGenerator.ExtendedTraitGraphic>     traitGraphics     = new();
+    public List<AlienPartGenerator.ExtendedBodytypeGraphic>  bodytypeGraphics  = new();
+    public List<AlienPartGenerator.ExtendedHeadtypeGraphic>  headtypeGraphics  = new();
+    public List<AlienPartGenerator.ExtendedGeneGraphic>      geneGraphics      = new();
+    public List<AlienPartGenerator.ExtendedRaceGraphic>      raceGraphics      = new();
 
 
     protected List<AlienPartGenerator.ExtendedGraphicsPrioritization> Prioritization =>

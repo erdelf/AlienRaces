@@ -85,10 +85,8 @@
     {
         public string defName;
 
-        public LoadDefFromField(string defName)
-        {
+        public LoadDefFromField(string defName) => 
             this.defName = defName;
-        }
 
         public Def GetDef(Type defType) => 
             GenDefDatabase.GetDef(defType, this.defName);
@@ -102,7 +100,7 @@
 
     public static class CachedData
     {
-        private static Dictionary<RaceProperties, ThingDef> racePropsToRaceDict = new Dictionary<RaceProperties, ThingDef>();
+        private static Dictionary<RaceProperties, ThingDef> racePropsToRaceDict = new();
 
         public static ThingDef GetRaceFromRaceProps(RaceProperties props)
         {
