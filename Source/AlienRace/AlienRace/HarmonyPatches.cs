@@ -119,8 +119,8 @@ namespace AlienRace
                 postfix: new HarmonyMethod(patchType, nameof(PostIngestedPostfix)));
             harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), 
                 postfix: new HarmonyMethod(patchType, nameof(CanBingeNowPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateBodyType"), 
-                          postfix: new HarmonyMethod(patchType, nameof(GenerateBodyTypePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateBodyType"), postfix: new HarmonyMethod(patchType, nameof(GenerateBodyTypePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: nameof(PawnGenerator.GetBodyTypeFor)), postfix: new HarmonyMethod(patchType, nameof(GetBodyTypeForPostfix)));
             harmony.Patch(AccessTools.Property(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.SkinColor)).GetGetMethod(), 
                 postfix: new HarmonyMethod(patchType, nameof(SkinColorPostfix)));
 
@@ -3444,24 +3444,31 @@ namespace AlienRace
                 __result = alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(___pawn);
         }
 
-        public static void GenerateBodyTypePostfix(ref Pawn pawn)
+        public static void GetBodyTypeForPostfix(Pawn pawn, ref BodyTypeDef __result) =>
+            __result = CheckBodyType(pawn);
+
+        public static void GenerateBodyTypePostfix(Pawn pawn) => 
+            pawn.story.bodyType = CheckBodyType(pawn);
+
+        public static BodyTypeDef CheckBodyType(Pawn pawn)
         {
+            BodyTypeDef bodyType = pawn.story.bodyType;
 
             if (AlienBackstoryDef.checkBodyType.Contains(pawn.story.GetBackstory(BackstorySlot.Adulthood)))
-                pawn.story.bodyType = DefDatabase<BodyTypeDef>.GetRandom();
+                bodyType = DefDatabase<BodyTypeDef>.GetRandom();
 
-            if (pawn.def is ThingDef_AlienRace alienProps && 
+            if (pawn.def is ThingDef_AlienRace alienProps &&
                 !alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.NullOrEmpty())
             {
                 List<BodyTypeDef> bodyTypeDefs = alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.ListFullCopy();
-                
-                if((pawn.ageTracker.CurLifeStage.developmentalStage.Baby() || pawn.ageTracker.CurLifeStage.developmentalStage.Newborn()) && bodyTypeDefs.Contains(BodyTypeDefOf.Baby))
+
+                if ((pawn.ageTracker.CurLifeStage.developmentalStage.Baby() || pawn.ageTracker.CurLifeStage.developmentalStage.Newborn()) && bodyTypeDefs.Contains(BodyTypeDefOf.Baby))
                 {
-                    pawn.story.bodyType = BodyTypeDefOf.Baby;
+                    bodyType = BodyTypeDefOf.Baby;
                 }
                 else if (pawn.ageTracker.CurLifeStage.developmentalStage.Juvenile() && bodyTypeDefs.Contains(BodyTypeDefOf.Child))
                 {
-                    pawn.story.bodyType = BodyTypeDefOf.Child;
+                    bodyType = BodyTypeDefOf.Child;
                 }
                 else
                 {
@@ -3474,10 +3481,12 @@ namespace AlienRace
                     if (pawn.gender == Gender.Female && bodyTypeDefs.Contains(BodyTypeDefOf.Male) && bodyTypeDefs.Count > 1)
                         bodyTypeDefs.Remove(BodyTypeDefOf.Male);
 
-                    if (!bodyTypeDefs.Contains(pawn.story.bodyType))
-                        pawn.story.bodyType = bodyTypeDefs.RandomElement();
+                    if (!bodyTypeDefs.Contains(bodyType))
+                        bodyType = bodyTypeDefs.RandomElement();
                 }
             }
+
+            return bodyType;
         }
 
         public static void GeneratePawnPrefix(ref PawnGenerationRequest request)
