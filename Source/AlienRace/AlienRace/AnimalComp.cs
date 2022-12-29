@@ -57,47 +57,47 @@ namespace AlienRace
             });
             offsetDefaults.Add(new OffsetNamed
             {
-                name = "Tail",
+                name = "Tail",//rough estimate of tail location, lower on body, and to the rear
                 offsets = new BodyAddonOffsets
                 {
                     south = new RotationOffset
                     {
-                        offset = new Vector2(0.42f, -0.22f)
+                        offset = new Vector2(0f, -0.15f)
                     },
                     north = new RotationOffset
                     {
-                        offset = new Vector2(0f, -0.55f)
+                        offset = new Vector2(0f, 0f)
                     },
                     east = new RotationOffset
                     {
-                        offset = new Vector2(0.42f, -0.22f)
+                        offset = new Vector2(0.42f, -0.15f)
                     },
                     west = new RotationOffset
                     {
-                        offset = new Vector2(0.42f, -0.22f)
+                        offset = new Vector2(0.42f, -0.15f)
                     }
                 }
             });
             offsetDefaults.Add(new OffsetNamed
             {
-                name = "Head",
+                name = "Head",//rough estimate of location, higher on body and to the front
                 offsets = new BodyAddonOffsets
                 {
                     south = new RotationOffset
                     {
-                        offset = new Vector2(0f, 0.5f)
+                        offset = new Vector2(0f, 0.35f)
                     },
                     north = new RotationOffset
                     {
-                        offset = new Vector2(0f, 0.35f)
+                        offset = new Vector2(0f, 0.5f)
                     },
                     east = new RotationOffset
                     {
-                        offset = new Vector2(-0.07f, 0.5f)
+                        offset = new Vector2(-0.47f, 0.35f)
                     },
                     west = new RotationOffset
                     {
-                        offset = new Vector2(-0.07f, 0.5f)
+                        offset = new Vector2(-0.47f, 0.35f)
                     }
                 }
             });
