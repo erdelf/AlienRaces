@@ -84,7 +84,7 @@ public class ExtendedGraphicsPawnWrapper
         }
         if (alignWithHead)
         {
-            return this.HasNamedBodyPart((this.WrappedPawn.def as ThingDef_AlienRace).alienRace.generalSettings.alienPartGenerator.headBodyPartDef, null);
+            return this.GetHediffSet().HasHead;
         }
         return true;
 
