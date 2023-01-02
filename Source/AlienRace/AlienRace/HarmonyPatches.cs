@@ -2119,11 +2119,8 @@ namespace AlienRace
             return count;
         }
 
-        public static IEnumerable<TraitDef> GenerateTraitsValidator(List<TraitDef> traits, Pawn p)
-        {
-            traits.RemoveAll(tr => !RaceRestrictionSettings.CanGetTrait(tr, p.def));
-            return traits;
-        }
+        public static IEnumerable<TraitDef> GenerateTraitsValidator(List<TraitDef> traits, Pawn p) => 
+            traits.Where(tr => RaceRestrictionSettings.CanGetTrait(tr, p.def));
 
         public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, CompAssignableToPawn __instance) =>
             __result = __instance.parent.def.building.bed_humanlike ? __result.Where(predicate: p => RestUtility.CanUseBedEver(p, __instance.parent.def)) : __result;
