@@ -284,7 +284,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(ApparelGraphicRecordGetter), nameof(ApparelGraphicRecordGetter.TryGetGraphicApparel)), transpiler: new HarmonyMethod(patchType, nameof(TryGetGraphicApparelTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.PregnancyChanceForPartners)), prefix: new HarmonyMethod(patchType,     nameof(PregnancyChanceForPartnersPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.CanEverProduceChild)),        transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.CanEverProduceChild)), 
+                          postfix: new HarmonyMethod(patchType, nameof(CanEverProduceChildPostfix)), transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Recipe_ExtractOvum), nameof(Recipe_ExtractOvum.AvailableReport)),          postfix: new HarmonyMethod(patchType,    nameof(ExtractOvumAvailableReportPostfix)));
             harmony.Patch(AccessTools.Method(typeof(HumanOvum),          "CanFertilizeReport"),                                postfix: new HarmonyMethod(patchType,    nameof(HumanOvumCanFertilizeReportPostfix)));
             harmony.Patch(AccessTools.Method(typeof(HumanEmbryo),        "ImplantPawnValid"),                                  prefix: new HarmonyMethod(patchType,    nameof(EmbryoImplantPawnPrefix)));
@@ -715,23 +716,52 @@ namespace AlienRace
 
             FieldInfo genderInfo = AccessTools.Field(typeof(Pawn), nameof(Pawn.gender));
 
-            bool                  done            = false;
+            int step = 0;
 
             for (int i = 0; i < instructionList.Count; i++)
             {
                 CodeInstruction instruction = instructionList[i];
 
-                if (!done && instruction.LoadsField(genderInfo))
+                if (instruction.LoadsField(genderInfo))
                 {
-                    done = true;
-                    yield return instructionList[i + 1];
-                    yield return CodeInstruction.Call(typeof(RaceRestrictionSettings), nameof(RaceRestrictionSettings.CanReproduce), new[] { typeof(Pawn), typeof(Pawn) });
-                    yield return new CodeInstruction(OpCodes.Brtrue, instructionList[i + 3].operand);
-                    i += 3;
-                } else
+                    switch (step)
+                    {
+                        case 0:
+                            step++;
+                            yield return instructionList[i + 1];
+                            yield return CodeInstruction.Call(typeof(ReproductionSettings), nameof(ReproductionSettings.GenderReproductionCheck));
+                            yield return new CodeInstruction(OpCodes.Brtrue, instructionList[i + 3].operand);
+                            i += 3;
+                            break;
+                        case 1:
+                            step++;
+                            yield return new CodeInstruction(OpCodes.Ldc_I4_0);
+                            yield return CodeInstruction.Call(typeof(ReproductionSettings), nameof(ReproductionSettings.ApplicableGender), new[] { typeof(Pawn), typeof(bool) });
+                            yield return new CodeInstruction(OpCodes.Brtrue, instructionList[i + 2].operand);
+                            i += 2;
+                            break;
+                        case 2:
+                            step++;
+                            yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+                            yield return CodeInstruction.Call(typeof(ReproductionSettings), nameof(ReproductionSettings.ApplicableGender), new[] { typeof(Pawn), typeof(bool) });
+                            yield return new CodeInstruction(OpCodes.Brtrue, instructionList[i + 2].operand);
+                            i += 2;
+                            break;
+                    }
+                }
+                else
                 {
                     yield return instruction;
                 }
+            }
+        }
+
+        public static void CanEverProduceChildPostfix(Pawn first, Pawn second, ref AcceptanceReport __result)
+        {
+            if (__result.Accepted)
+            {
+                if (!RaceRestrictionSettings.CanReproduce(first, second))
+                    __result = $"{first.gender} {first.def.LabelCap} can not reproduce with {second.gender} {second.def.LabelCap}"; // todo Translationkey
             }
         }
 

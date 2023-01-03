@@ -43,6 +43,15 @@
 
     public static class Utilities
     {
+        public static bool IsGenderApplicable(this GenderPossibility possibility, Gender gender) =>
+            possibility switch
+            {
+                GenderPossibility.Either => true,
+                GenderPossibility.Male => gender   == Gender.Male,
+                GenderPossibility.Female => gender == Gender.Female,
+                _ => false
+            };
+
         public static bool DifferentRace(ThingDef one, ThingDef two) =>
             one != two                                                                                                && one != null && two != null && one.race.Humanlike && two.race.Humanlike &&
             !(one is ThingDef_AlienRace oneAr && oneAr.alienRace.generalSettings.notXenophobistTowards.Contains(two)) &&

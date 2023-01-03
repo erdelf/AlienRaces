@@ -7,6 +7,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using RimWorld.BaseGen;
     using UnityEngine;
     using Verse;
 
@@ -211,6 +212,34 @@
                                                           });
 
         public List<HybridSpecificSettings> hybridSpecific = new();
+
+        public GenderPossibility fertilizingGender   = GenderPossibility.Male;
+        public GenderPossibility gestatingGender = GenderPossibility.Female;
+
+        public static bool ApplicableGender(Pawn pawn, bool gestating)
+        {
+            ReproductionSettings reproduction = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.reproduction ?? new ReproductionSettings();
+            return ApplicableGender(pawn.gender, reproduction, gestating);
+        }
+
+        public static bool ApplicableGender(Gender gender, ReproductionSettings reproduction, bool gestating) =>
+            gestating switch
+            {
+                true when reproduction.gestatingGender.IsGenderApplicable(gender) => true,
+                false when reproduction.fertilizingGender.IsGenderApplicable(gender) => true,
+                _ => false
+            };
+
+        public static bool GenderReproductionCheck(Pawn pawn, Pawn partnerPawn)
+        {
+            ReproductionSettings pawnReproduction    = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.reproduction        ?? new ReproductionSettings();
+            ReproductionSettings partnerReproduction = (partnerPawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.reproduction ?? new ReproductionSettings();
+
+            return (ApplicableGender(pawn.gender, pawnReproduction, false) &&
+                    ApplicableGender(partnerPawn.gender, partnerReproduction, true)) ||
+                   (ApplicableGender(pawn.gender,        pawnReproduction,    true) &&
+                    ApplicableGender(partnerPawn.gender, partnerReproduction, false));
+        }
     }
 
     public class HybridSpecificSettings
@@ -658,7 +687,8 @@
 
         public static HashSet<ThingDef> reproductionRestricted = new();
 
-        public static bool CanReproduce(Pawn pawn, Pawn partnerPawn) => 
+        public static bool CanReproduce(Pawn pawn, Pawn partnerPawn) =>
+            ReproductionSettings.GenderReproductionCheck(pawn, partnerPawn) &&
             CanReproduce(pawn.def, partnerPawn.def);
 
         public static bool CanReproduce(ThingDef race, ThingDef partnerRace) => 
