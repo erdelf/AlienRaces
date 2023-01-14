@@ -19,10 +19,10 @@ public class DefaultGraphicsLoader : IGraphicsLoader
     }
 
     public DefaultGraphicsLoader(IGraphicFinder<Texture2D> graphicFinder2D) => this.graphicFinder2D = graphicFinder2D;
-
+    public static bool Texturelogging;
     private static void LogFor(StringBuilder logBuilder, string logLine, bool shouldLog = false)
     {
-        if (shouldLog) 
+        if (shouldLog && Texturelogging) 
             logBuilder.AppendLine(logLine);
     }
 
@@ -38,7 +38,7 @@ public class DefaultGraphicsLoader : IGraphicsLoader
 
         for (int i = 0; i < graphic.GetPathCount(); i++)
         {
-            while (this.graphicFinder2D.GetByPath(graphic.GetPath(i), graphic.GetVariantCount(i), "north", false) != null)
+            while (this.graphicFinder2D.GetByPath(graphic.GetPath(i), graphic.GetVariantCount(i), "south", false) != null)
                 graphic.IncrementVariantCount(i);
             LogFor(logBuilder, $"Variants found for {graphic.GetPath(i)}: {graphic.GetVariantCount(i)}", shouldLog);
         }
@@ -47,7 +47,7 @@ public class DefaultGraphicsLoader : IGraphicsLoader
             if(graphic.UseFallback())
                 for (int i = 0; i < graphic.GetPathCount(); i++)
                 {
-                    while (this.graphicFinder2D.GetByPath(graphic.GetPath(i), graphic.GetVariantCount(i), "north", false) != null)
+                    while (this.graphicFinder2D.GetByPath(graphic.GetPath(i), graphic.GetVariantCount(i), "south", false) != null)
                         graphic.IncrementVariantCount(i);
                     LogFor(logBuilder, $"Variants found for {graphic.GetPath(i)}: {graphic.GetVariantCount(i)}", shouldLog);
                 }
