@@ -637,13 +637,13 @@
             bool                    result          = true;
 
             if (geneRestricted.Contains(gene) || (raceRestriction?.onlyHaveRaceRestrictedGenes ?? false))
-                result = (raceRestriction?.whiteGeneList.Contains(gene) ?? false) ||
-                         (gene.exclusionTags?.Any(t => raceRestriction?.whiteGeneTags.Contains(t) ?? false) ?? false);
+                result = (raceRestriction?.whiteGeneList.Contains(gene)                                           ?? false) ||
+                         (gene.exclusionTags?.Any(t => raceRestriction?.whiteGeneTags.Any(t.StartsWith) ?? false) ?? false);
 
-            return result &&
-                   !(raceRestriction?.blackGeneList.Contains(gene) ?? false) &&
-                   !(gene.exclusionTags?.Any(t => raceRestriction?.blackGeneTags.Contains(t) ?? false) ?? false) &&
-                   !(raceRestriction?.blackEndoCategories.Contains(gene.endogeneCategory) ?? false);
+            return result                                                                                        &&
+                   !(raceRestriction?.blackGeneList.Contains(gene)                                     ?? false) &&
+                   !(gene.exclusionTags?.Any(t => raceRestriction?.blackGeneTags.Any(t.StartsWith) ?? false) ?? false) &&
+                   !(raceRestriction?.blackEndoCategories.Contains(gene.endogeneCategory)              ?? false);
         }
 
         public bool              onlyUseRaceRestrictedXenotypes = false;
