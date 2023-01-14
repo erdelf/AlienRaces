@@ -260,12 +260,14 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(JobDriver_Lovin), "GenerateRandomMinTicksToNextLovin"), transpiler: new HarmonyMethod(patchType, nameof(GenerateRandomMinTicksToNextLovinTranspiler)));
             
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn)),  transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeBodySetForPawnTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn)),  transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)),  transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBeardSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderer),             nameof(PawnRenderer.GetBodyOverlayMeshSet)),                   postfix: new HarmonyMethod(patchType, nameof(GetBodyOverlayMeshSetPostfix)));
-            
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn)),                 transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeBodySetForPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn)),                 transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)),                 transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBeardSetForPawn)),                transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderer),             nameof(PawnRenderer.GetBodyOverlayMeshSet)),                                  postfix: new HarmonyMethod(patchType,    nameof(GetBodyOverlayMeshSetPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(MeshPool),                 nameof(MeshPool.GetMeshSetForWidth), new[] { typeof(float), typeof(float) }), transpiler: new HarmonyMethod(patchType, nameof(GetMeshSetForWidthTranspiler)));
+
+
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateSkills"), new HarmonyMethod(patchType, nameof(GenerateSkillsPrefix)), postfix: new HarmonyMethod(patchType, nameof(GenerateSkillsPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnInternalTranspiler)));
@@ -467,6 +469,57 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> GetMeshSetForWidthTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.opcode == OpCodes.Newobj)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Newobj, AccessTools.Constructor(typeof(GraphicMeshSet), new[] { typeof(float), typeof(float) }));
+                } else
+                {
+                    yield return instruction;
+                }
+            }
+        }
+
+        public static bool SetXenotypePrefix(XenotypeDef xenotype, Pawn ___pawn) => 
+            RaceRestrictionSettings.CanUseXenotype(xenotype, ___pawn.def);
+
+        public static IEnumerable<CodeInstruction> GetXenotypeForGeneratedPawnTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            MethodInfo pawnGenAllowedXenotypeInfo = AccessTools.PropertyGetter(typeof(PawnGenerationRequest), nameof(PawnGenerationRequest.AllowedXenotypes));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                yield return instruction;
+
+                if (instruction.Calls(pawnGenAllowedXenotypeInfo) && instructionList[i+1].opcode == OpCodes.Ldloca_S)
+                {
+                    yield return new CodeInstruction(instructionList[i-1]);
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.PropertyGetter(typeof(PawnGenerationRequest), nameof(PawnGenerationRequest.KindDef)));
+                    yield return CodeInstruction.LoadField(typeof(PawnKindDef), nameof(PawnKindDef.race));
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(FilterXenotypeHelper)));
+                }
+            }
+        }
+
+        public static List<XenotypeDef> FilterXenotypeHelper(List<XenotypeDef> xenotypes, ThingDef race) => 
+            RaceRestrictionSettings.FilterXenotypes(xenotypes, race, out _).ToList();
+
+        public static void XenotypesAvailableForPostfix(PawnKindDef kind, ref Dictionary<XenotypeDef, float> __result)
+        {
+            RaceRestrictionSettings.FilterXenotypes(__result.Keys, kind.race, out HashSet<XenotypeDef> forbidden);
+
+            foreach (XenotypeDef xenotypeDef in forbidden)
+                __result.Remove(xenotypeDef);
         }
 
         public static int currentBirthCount = int.MinValue;
