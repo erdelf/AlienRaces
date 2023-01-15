@@ -3448,7 +3448,7 @@ namespace AlienRace
                     
                     if (ModLister.BiotechInstalled)
                     {
-                        __instance.furCoveredGraphic = alien.story.furDef != null ? GraphicDatabase.Get<Graphic_Multi>(alien.story.furDef.GetFurBodyGraphicPath(alien), ShaderDatabase.CutoutSkinOverlay, Vector2.one, alien.story.HairColor) : null;
+                        __instance.furCoveredGraphic = alien.story.furDef != null ? GraphicDatabase.Get<Graphic_Multi>(alien.story.furDef.GetFurBodyGraphicPath(alien), ShaderDatabase.CutoutSkinOverlay, Vector2.one, alien.story.HairColor, alienComp.GetChannel(channel: "hair").second) : null;
                     }
                     if (ModsConfig.BiotechActive)
                     {
