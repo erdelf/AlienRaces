@@ -223,21 +223,24 @@ namespace AlienRace
             {
                 ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>()?.GetChannel(this.ColorChannel) ?? new ExposableValueTuple<Color, Color>(Color.white, Color.white);
 
+                Color first  = pawn.story?.skinColorOverride.HasValue ?? false ? pawn.story.skinColorOverride.Value : channel.first;
+                Color second = channel.second;
+
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
 
                 if (this.colorOverrideOne.HasValue)
                 {
-                    channel.first = this.colorOverrideOne.Value;
+                    first = this.colorOverrideOne.Value;
                 }
 
                 if (this.colorOverrideTwo.HasValue)
                 {
-                    channel.second = this.colorOverrideTwo.Value;
+                    second = this.colorOverrideTwo.Value;
                 }
                 if (Math.Abs(this.colorPostFactor - 1f) > float.Epsilon)
                 {
-                    channel.first  *= this.colorPostFactor;
-                    channel.second *= this.colorPostFactor;
+                    first  *= this.colorPostFactor;
+                    second *= this.colorPostFactor;
                 }
                 
                 string returnPath = this.GetPath(pawn, ref sharedIndex, savedIndex);
@@ -245,7 +248,7 @@ namespace AlienRace
                 return !returnPath.NullOrEmpty() ?
                            GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, ContentFinder<Texture2D>.Get(returnPath + "_southm", reportFailure: false) == null ?
                                                                                                this.ShaderType.Shader : 
-                                                                                               ShaderDatabase.CutoutComplex, this.drawSize * 1.5f, channel.first, channel.second, new GraphicData
+                                                                                               ShaderDatabase.CutoutComplex, this.drawSize * 1.5f, first, second, new GraphicData
                                                                                                                                                                                   {
                                                                                                                                                                                       drawRotated = !this.drawRotated
                                                                                                                                                                                   }) :

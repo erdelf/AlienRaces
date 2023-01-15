@@ -48,6 +48,7 @@
                                         <first Class="AlienRace.ColorGenerator_SkinColorMelanin">
                                             <minMelanin>0</minMelanin>
                                             <maxMelanin>1</maxMelanin>
+                                            <naturalMelanin>true</naturalMelanin>
                                         </first>
                                         <second Class="AlienRace.ColorGenerator_CustomAlienChannel">
                                             <colorChannel>skin_1</colorChannel>

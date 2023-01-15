@@ -80,6 +80,7 @@
             ExposableValueTuple<Color, Color> skinColors = alienComp.GetChannel(channel: "skin");
             return first ? skinColors.first : skinColors.second;
         }
+
         public void GenericOffsets()
         {
             this.GenerateOffsetDefaults();
@@ -572,12 +573,8 @@
                 Scribe_Values.Look(ref this.bodyMaskVariant, nameof(this.bodyMaskVariant), -1);
 
                 Pawn   pawn          = (Pawn)this.parent;
-                if (Scribe.mode is LoadSaveMode.ResolvingCrossRefs or LoadSaveMode.Saving)
-                {
-                    Color? skinColorBase = CachedData.skinColorBase(pawn.story);
-                    Scribe_Values.Look(ref skinColorBase, nameof(skinColorBase));
-                    pawn.story.SkinColorBase = skinColorBase ?? this.GetChannel("skin").first;
-                }
+                if (Scribe.mode is LoadSaveMode.ResolvingCrossRefs)
+                    pawn.story.SkinColorBase = this.GetChannel("skin").first;
 
                 this.colorChannelLinks ??= new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
             }
