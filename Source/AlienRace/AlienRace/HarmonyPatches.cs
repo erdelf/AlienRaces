@@ -3763,7 +3763,7 @@ namespace AlienRace
                         mat = InvisibilityMatPool.GetInvisibleMat(mat);
 
                     DrawAddonsFinalHook(pawn, ba, rotation, ref addonGraphic, ref offsetVector, ref num, ref mat);
-
+                    
                     //                                                                                   Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
                     GenDraw.DrawMeshNowOrLater(
                                                addonGraphic.MeshAt(rotation),

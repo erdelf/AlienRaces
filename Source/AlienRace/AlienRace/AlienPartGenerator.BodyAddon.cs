@@ -140,7 +140,7 @@ namespace AlienRace
             }
             public Color? colorOverrideOne;
             public Color? colorOverrideTwo;
-            public float colorPostFactor;
+            public float  colorPostFactor = 1f;
 
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
             public List<string>           hiddenUnderApparelTag = new List<string>();
