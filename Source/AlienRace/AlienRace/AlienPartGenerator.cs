@@ -425,15 +425,16 @@
             private Dictionary<string, ExposableValueTuple<Color, Color>> colorChannels;
             private Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>   colorChannelLinks = new();
 
+            private Pawn               Pawn       => (Pawn) this.parent;
+            private ThingDef_AlienRace AlienProps => (ThingDef_AlienRace)this.Pawn.def;
+
             public Dictionary<string, ExposableValueTuple<Color, Color>> ColorChannels
             {
                 get
                 {
                     if (this.colorChannels == null || !this.colorChannels.Any())
                     {
-                        Pawn               pawn       = (Pawn)this.parent;
-                        ThingDef_AlienRace alienProps = ((ThingDef_AlienRace)this.parent.def);
-                        AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
+                        AlienPartGenerator apg        = this.AlienProps.alienRace.generalSettings.alienPartGenerator;
 
                         this.colorChannels     = new Dictionary<string, ExposableValueTuple<Color, Color>>();
                         this.colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
@@ -444,13 +445,13 @@
                         Color skinColor;
                         try
                         {
-                            skinColor = alienProps.alienRace.raceRestriction.blackEndoCategories.Contains(EndogeneCategory.Melanin) ?
-                                            PawnSkinColors.RandomSkinColorGene(pawn).skinColorBase!.Value :
-                                            pawn.story.SkinColorBase;
+                            skinColor = this.AlienProps.alienRace.raceRestriction.blackEndoCategories.Contains(EndogeneCategory.Melanin) ?
+                                            PawnSkinColors.RandomSkinColorGene(this.Pawn).skinColorBase!.Value :
+                                            this.Pawn.story.SkinColorBase;
                         }
                         catch (InvalidOperationException)
                         {
-                            skinColor = PawnSkinColors.RandomSkinColorGene(pawn).skinColorBase!.Value;
+                            skinColor = PawnSkinColors.RandomSkinColorGene(this.Pawn).skinColorBase!.Value;
                         }
 
                         this.colorChannels.Add(key: "skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
@@ -464,13 +465,13 @@
                             this.colorChannels[channel.name] = this.GenerateChannel(channel, this.colorChannels[channel.name]);
                         }
 
-                        pawn.story.SkinColorBase = this.colorChannels["skin"].first;
+                        this.Pawn.story.SkinColorBase = this.colorChannels["skin"].first;
 
                         ExposableValueTuple<Color, Color> hairColors = this.colorChannels[key: "hair"];
 
                         if (hairColors.first == Color.clear)
                         {
-                            Color color = PawnHairColors.RandomHairColor(pawn, pawn.story.SkinColor, pawn.ageTracker.AgeBiologicalYears);
+                            Color color = PawnHairColors.RandomHairColor(this.Pawn, this.Pawn.story.SkinColor, this.Pawn.ageTracker.AgeBiologicalYears);
                             hairColors.first  = color;
                             hairColors.second = color;
                         }
@@ -486,24 +487,24 @@
                         }
 
 
-                        if (pawn.Corpse?.GetRotStage() == RotStage.Rotting)
+                        if (this.Pawn.Corpse?.GetRotStage() == RotStage.Rotting)
                             this.colorChannels["skin"].first = PawnGraphicSet.RottingColorDefault;
-                        pawn.story.HairColor = hairColors.first;
+                        this.Pawn.story.HairColor = hairColors.first;
 
                         this.RegenerateColorChannelLink("skin");
 
 
-                        if (alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
+                        if (this.AlienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt <= this.Pawn.ageTracker.AgeBiologicalYears)
                         {
-                            if (Rand.Value < GenMath.SmootherStep(alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt,
-                                                                  pawn.RaceProps.ageGenerationCurve.Points.Count < 3
-                                                                             ? alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt + alienProps.race.lifeExpectancy / 3f
-                                                                             : pawn.RaceProps.ageGenerationCurve.Points.Skip(pawn.RaceProps.ageGenerationCurve.Points.Count - 3).First().x,
-                                                                  pawn.ageTracker.AgeBiologicalYears))
+                            if (Rand.Value < GenMath.SmootherStep(this.AlienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt, 
+                                                                  this.Pawn.RaceProps.ageGenerationCurve.Points.Count < 3 ?
+                                                                      this.AlienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt + this.AlienProps.race.lifeExpectancy / 3f :
+                                                                      this.Pawn.RaceProps.ageGenerationCurve.Points.Skip(this.Pawn.RaceProps.ageGenerationCurve.Points.Count - 3).First().x, 
+                                                                  this.Pawn.ageTracker.AgeBiologicalYears))
                             {
                                 float grey = Rand.Range(min: 0.65f, max: 0.85f);
-                                hairColors.first                 = new Color(grey, grey, grey);
-                                pawn.story.HairColor = hairColors.first;
+                                hairColors.first       = new Color(grey, grey, grey);
+                                this.Pawn.story.HairColor = hairColors.first;
                             }
                         }
                     }
@@ -511,7 +512,6 @@
                     return this.colorChannels;
                 }
             }
-
 
             public ExposableValueTuple<Color, Color> GenerateChannel(ColorChannelGenerator channel, ExposableValueTuple<Color, Color> colors = null)
             {
@@ -544,6 +544,8 @@
                         return cm.naturalMelanin ? 
                                    ((Pawn) this.parent).story.SkinColorBase : 
                                    gen.NewRandomizedColor();
+                    case ColorGenerator_PawnBased pb:
+                        return pb.NewRandomizedColor(this.Pawn);
                     default:
                         return gen.NewRandomizedColor();
                 }
@@ -572,9 +574,8 @@
                 Scribe_Values.Look(ref this.headMaskVariant, nameof(this.headMaskVariant), -1);
                 Scribe_Values.Look(ref this.bodyMaskVariant, nameof(this.bodyMaskVariant), -1);
 
-                Pawn   pawn          = (Pawn)this.parent;
                 if (Scribe.mode is LoadSaveMode.ResolvingCrossRefs)
-                    pawn.story.SkinColorBase = this.GetChannel("skin").first;
+                    this.Pawn.story.SkinColorBase = this.GetChannel("skin").first;
 
                 this.colorChannelLinks ??= new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
             }
@@ -584,8 +585,7 @@
                 if (this.ColorChannels.ContainsKey(channel))
                     return this.ColorChannels[channel];
 
-                ThingDef_AlienRace alienProps = ((ThingDef_AlienRace)this.parent.def);
-                AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
+                AlienPartGenerator apg        = AlienProps.alienRace.generalSettings.alienPartGenerator;
 
                 foreach (ColorChannelGenerator apgChannel in apg.colorChannels)
                     if (apgChannel.name == channel)
