@@ -21,4 +21,12 @@
         public override Color NewRandomizedColor() => 
             Color.clear;
     }
+
+    public abstract class ColorGenerator_PawnBased : ColorGenerator
+    {
+        public override Color NewRandomizedColor() => 
+            Color.clear;
+
+        public abstract Color NewRandomizedColor(Pawn pawn);
+    }
 }
