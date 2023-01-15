@@ -19,10 +19,10 @@ public class DefaultGraphicsLoader : IGraphicsLoader
     }
 
     public DefaultGraphicsLoader(IGraphicFinder<Texture2D> graphicFinder2D) => this.graphicFinder2D = graphicFinder2D;
-    public static bool Texturelogging;
+    
     private static void LogFor(StringBuilder logBuilder, string logLine, bool shouldLog = false)
     {
-        if (shouldLog && Texturelogging) 
+        if (shouldLog && AlienRaceMod.settings.textureLogs) 
             logBuilder.AppendLine(logLine);
     }
 

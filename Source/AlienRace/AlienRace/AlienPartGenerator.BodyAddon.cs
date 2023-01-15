@@ -1,5 +1,6 @@
 namespace AlienRace
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Xml;
@@ -73,7 +74,7 @@ namespace AlienRace
                 return bestGraphic.Second;
             }
 
-            public virtual string GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?(), string pathAppendix = null)
+            public virtual string GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new(), string pathAppendix = null)
             {
                 IExtendedGraphic bestGraphic = this.GetBestGraphic(new ExtendedGraphicsPawnWrapper(pawn), this.bodyPart, this.bodyPartLabel); //finds deepest match
 
@@ -224,19 +225,19 @@ namespace AlienRace
 
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
 
-                if (colorOverrideOne != null)
+                if (this.colorOverrideOne.HasValue)
                 {
-                    channel.first = (Color)colorOverrideOne;
+                    channel.first = this.colorOverrideOne.Value;
                 }
 
-                if (colorOverrideTwo != null)
+                if (this.colorOverrideTwo.HasValue)
                 {
-                    channel.second = (Color)colorOverrideTwo;
+                    channel.second = this.colorOverrideTwo.Value;
                 }
-                if (colorPostFactor != 1f)
+                if (Math.Abs(this.colorPostFactor - 1f) > float.Epsilon)
                 {
-                    channel.first *= colorPostFactor;
-                    channel.second *= colorPostFactor;
+                    channel.first  *= this.colorPostFactor;
+                    channel.second *= this.colorPostFactor;
                 }
                 
                 string returnPath = this.GetPath(pawn, ref sharedIndex, savedIndex);

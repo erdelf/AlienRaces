@@ -28,7 +28,7 @@ public class ExtendedGraphicsPawnWrapper
 
     public virtual IEnumerable<float> SeverityOfHediffsOnPart(HediffDef hediffDef, BodyPartDef part, string partLabel) =>
         this.GetHediffList()
-         .Where(h => IsHediffOfDefAndPart(h, hediffDef, part, partLabel))
+         .Where(h => this.IsHediffOfDefAndPart(h, hediffDef, part, partLabel))
          .Select(h => h.Severity);
 
     //hediff isApplicable
@@ -76,19 +76,10 @@ public class ExtendedGraphicsPawnWrapper
 
     public virtual bool IsBodyPart(BodyPartRecord bpr, BodyPartDef part, string partLabel) =>
         (partLabel.NullOrEmpty() || bpr.untranslatedCustomLabel == partLabel) && (part == null || bpr.def == part);
-    public virtual bool LinkToCorePart(bool drawWithoutPart, bool alignWithHead, BodyPartDef part, string partLabel)
-    {
-        if (!drawWithoutPart || this.NamedBodyPartExists(part, partLabel))
-        {
-            return false;
-        }
-        if (alignWithHead)
-        {
-            return this.GetHediffSet().HasHead;
-        }
-        return true;
-
-    }
+    public virtual bool LinkToCorePart(bool drawWithoutPart, bool alignWithHead, BodyPartDef part, string partLabel) => 
+        drawWithoutPart && 
+        !this.NamedBodyPartExists(part, partLabel) && 
+        (!alignWithHead || this.GetHediffSet().HasHead);
 
     public virtual bool NamedBodyPartExists(BodyPartDef part, string partLabel) =>
         (part == null && partLabel.NullOrEmpty()) || this.GetAnyBodyPart(part, partLabel) != null;

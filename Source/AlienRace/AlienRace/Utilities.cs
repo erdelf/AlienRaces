@@ -75,34 +75,31 @@
         }
         public static void GeneBodyAddonPatcher(this List<AlienPartGenerator.BodyAddon> universal)
         {
-            List<AlienPartGenerator.BodyAddon> geneAddons = new List<AlienPartGenerator.BodyAddon>();
+            List<AlienPartGenerator.BodyAddon> geneAddons  = new();
+            AlienPartGenerator                 partHandler = new();
+            partHandler.GenericOffsets();
 
             foreach (GeneDef gene in (DefDatabase<GeneDef>.AllDefsListForReading))
             {
                 if (!gene.HasModExtension<BodyAddonGene>())
-                {
                     continue;
-                }
-                AlienPartGenerator PartHandler = new AlienPartGenerator();
-                PartHandler.GenericOffsets();
-                BodyAddonGene har = gene.GetModExtension<BodyAddonGene>() ?? null;
+                BodyAddonGene har = gene.GetModExtension<BodyAddonGene>();
                 har.addon.geneRequirement = gene;
-                har.addon.defaultOffsets = PartHandler.offsetDefaults.Find(on => on.name == har.addon.defaultOffset).offsets;
+                har.addon.defaultOffsets = partHandler.offsetDefaults.Find(on => on.name == har.addon.defaultOffset).offsets;
                 geneAddons.Add(har.addon);
 
                 if (!har.addons.NullOrEmpty())
                 {
-                    foreach (AlienPartGenerator.BodyAddon addonlist in har.addons)
+                    foreach (AlienPartGenerator.BodyAddon addons in har.addons)
                     {
-                        addonlist.defaultOffsets = PartHandler.offsetDefaults.Find(on => on.name == addonlist.defaultOffset).offsets;
-                        addonlist.geneRequirement = gene;
+                        addons.defaultOffsets = partHandler.offsetDefaults.Find(on => on.name == addons.defaultOffset).offsets;
+                        addons.geneRequirement = gene;
                     }
                     geneAddons.AddRange(har.addons);
                 }
             }
             new DefaultGraphicsLoader().LoadAllGraphics("universal genes", geneAddons.Cast<AlienPartGenerator.ExtendedGraphicTop>().ToArray());
             universal.AddRange(geneAddons);
-            return;
         }
 
         public class BodyAddonGene : DefModExtension
