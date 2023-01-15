@@ -3369,7 +3369,14 @@ namespace AlienRace
                     alienComp.customPortraitDrawSize     = lsaa.customPortraitDrawSize;
                     alienComp.customPortraitHeadDrawSize = lsaa.customPortraitHeadDrawSize;
 
-                    alienComp.GetChannel("hair").first = alien.story.HairColor;
+
+                    alienComp.OverwriteColorChannel("hair", alien.story.HairColor);
+                    alienComp.OverwriteColorChannel("skin", alien.story.SkinColorBase);
+
+                    if (alien.Corpse?.GetRotStage() == RotStage.Rotting)
+                        alienComp.OverwriteColorChannel("skin", PawnGraphicSet.RottingColorDefault);
+
+                    alienComp.RegenerateColorChannelLinks();
 
                     int sharedIndex = 0;
 
@@ -3472,11 +3479,7 @@ namespace AlienRace
                     if (!(alien.style?.beardDef?.texPath?.NullOrEmpty() ?? true))
                         __instance.beardGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.beardDef.texPath, alienProps.alienRace.styleSettings[typeof(BeardDef)].shader?.Shader ?? ShaderDatabase.Transparent, 
                                                                                      Vector2.one, alien.story.HairColor);
-                    //alienComp.OverwriteColorChannel("hair", alien.story.HairColor);
-                    if (alien.Corpse?.GetRotStage() == RotStage.Rotting)
-                        alienComp.OverwriteColorChannel("skin", PawnGraphicSet.RottingColorDefault);
-
-                    alienComp.RegenerateColorChannelLinks();
+                    
                     alienComp.addonGraphics = new List<Graphic>();
 
                     alienComp.addonVariants ??= new List<int>();
