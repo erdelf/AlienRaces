@@ -84,6 +84,7 @@
         {
             this.GenerateOffsetDefaults();
         }
+
         private void GenerateOffsetDefaults()
         {
             this.offsetDefaults.Add(new OffsetNamed
