@@ -223,7 +223,7 @@ namespace AlienRace
             {
                 ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>()?.GetChannel(this.ColorChannel) ?? new ExposableValueTuple<Color, Color>(Color.white, Color.white);
 
-                Color first  = pawn.story?.skinColorOverride.HasValue ?? false ? pawn.story.skinColorOverride.Value : channel.first;
+                Color first  = this.ColorChannel == "skin" ? pawn.story?.skinColorOverride.HasValue ?? false ? pawn.story.skinColorOverride.Value : channel.first : channel.first;
                 Color second = channel.second;
 
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
