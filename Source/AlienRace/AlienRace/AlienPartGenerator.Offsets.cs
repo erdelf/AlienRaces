@@ -9,16 +9,16 @@ using Verse;
 
 public partial class AlienPartGenerator
 {
-    public class BodyAddonOffsets
+    public class DirectionalOffset
     {
         public RotationOffset GetOffset(Rot4 rotation) =>
             rotation == Rot4.South ? this.south :
             rotation == Rot4.North ? this.north :
             rotation == Rot4.East  ? this.east : this.west;
 
-        public RotationOffset south = new RotationOffset();
-        public RotationOffset north = new RotationOffset();
-        public RotationOffset east  = new RotationOffset();
+        public RotationOffset south = new();
+        public RotationOffset north = new();
+        public RotationOffset east  = new();
         public RotationOffset west;
     }
 
