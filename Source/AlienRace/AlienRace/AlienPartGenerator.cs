@@ -30,8 +30,9 @@
 
         public List<WoundAnchorReplacement> anchorReplacements = new();
 
-        public Vector2 headOffset = Vector2.zero;
-        public DirectionOffset headOffsetDirectional = new();
+        public Vector2           headOffset            = Vector2.zero;
+        public DirectionOffset   headOffsetDirectional = new();
+        public DirectionalOffset headOffsetSpecific    = new();
 
         public float borderScale = 1f;
         public int atlasScale = 1;
@@ -91,12 +92,12 @@
             this.offsetDefaults.Add(new OffsetNamed
                                     {
                                         name = "Center",
-                                        offsets = new BodyAddonOffsets()
+                                        offsets = new DirectionalOffset()
                                     });
             this.offsetDefaults.Add(new OffsetNamed
                                     {
                                         name = "Tail",
-                                        offsets = new BodyAddonOffsets
+                                        offsets = new DirectionalOffset
                                                   {
                                                       south = new RotationOffset
                                                               {
@@ -119,7 +120,7 @@
             this.offsetDefaults.Add(new OffsetNamed
                                     {
                                         name = "Head",
-                                        offsets = new BodyAddonOffsets
+                                        offsets = new DirectionalOffset
                                                   {
                                                       south = new RotationOffset
                                                               {
@@ -342,7 +343,7 @@
             public BodyPartGroupDef originalGroup;
 
             public BodyTypeDef.WoundAnchor replacement;
-            public BodyAddonOffsets        offsets;
+            public DirectionalOffset        offsets;
 
             public bool ValidReplacement(BodyTypeDef.WoundAnchor original)
             {
@@ -360,7 +361,7 @@
         public class OffsetNamed
         {
             public string           name = "";
-            public BodyAddonOffsets offsets;
+            public DirectionalOffset offsets;
         }
 
         public class ColorChannelGenerator

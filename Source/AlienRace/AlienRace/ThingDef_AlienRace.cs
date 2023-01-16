@@ -74,6 +74,8 @@
                     lsaa.headOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
 
                 lsaa.headOffsetDirectional ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetDirectional;
+
+                lsaa.headOffsetSpecific ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetSpecific;
             }
 
             //if (this.alienRace.graphicPaths.body.path == GraphicPaths.VANILLA_BODY_PATH && !this.alienRace.graphicPaths.body.GetSubGraphics().MoveNext())
@@ -727,8 +729,9 @@
     {
         public BodyDef body;
 
-        public Vector2         headOffset = Vector2.zero;
-        public DirectionOffset headOffsetDirectional;
+        public Vector2                              headOffset = Vector2.zero;
+        public DirectionOffset                      headOffsetDirectional;
+        public AlienPartGenerator.DirectionalOffset headOffsetSpecific;
 
         public Vector2         customDrawSize             = Vector2.one;
         public Vector2         customPortraitDrawSize     = Vector2.one;

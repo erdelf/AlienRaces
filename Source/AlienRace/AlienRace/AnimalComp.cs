@@ -36,12 +36,12 @@ namespace AlienRace
             this.offsetDefaults.Add(new OffsetNamed
                                     {
                                         name = "Center",
-                                        offsets = new BodyAddonOffsets()
+                                        offsets = new DirectionalOffset()
                                     });
             this.offsetDefaults.Add(new OffsetNamed
                                     {
                                         name = "Tail",//rough estimate of tail location, lower on body, and to the rear
-                                        offsets = new BodyAddonOffsets
+                                        offsets = new DirectionalOffset
                                                   {
                                                       south = new RotationOffset
                                                               {
@@ -64,7 +64,7 @@ namespace AlienRace
             this.offsetDefaults.Add(new OffsetNamed
                                     {
                                         name = "Head",//rough estimate of location, higher on body and to the front
-                                        offsets = new BodyAddonOffsets
+                                        offsets = new DirectionalOffset
                                                   {
                                                       south = new RotationOffset
                                                               {

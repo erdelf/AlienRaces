@@ -106,9 +106,9 @@ namespace AlienRace
         public class BodyAddon : ExtendedGraphicTop
         {
             public           string           defaultOffset = "Center";
-            [Unsaved] public BodyAddonOffsets defaultOffsets;
+            [Unsaved] public DirectionalOffset defaultOffsets;
 
-            public BodyAddonOffsets offsets                      = new();
+            public DirectionalOffset offsets                      = new();
             
             public float            angle                        = 0f;
             public bool             inFrontOfBody                = false;
