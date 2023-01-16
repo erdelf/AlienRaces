@@ -2001,8 +2001,10 @@ namespace AlienRace
 
         public static void BaseHeadOffsetAtPostfix(ref Vector3 __result, Rot4 rotation, Pawn ___pawn)
         {
-            Vector2 offset = (___pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien)?.headOffsetDirectional?.GetOffset(rotation) ?? Vector2.zero;
-            __result += new Vector3(offset.x, y: 0, offset.y);
+            LifeStageAgeAlien stageAgeAlien  = (___pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien);
+            Vector2           offset         = stageAgeAlien?.headOffsetDirectional?.GetOffset(rotation)                                                               ?? Vector2.zero;
+            Vector3           offsetSpecific = stageAgeAlien?.headOffsetSpecific?.GetOffset(rotation).GetOffset(false, ___pawn.story.bodyType, ___pawn.story.headType) ?? Vector3.zero;
+            __result += new Vector3(offset.x + offsetSpecific.x, y: offsetSpecific.y, offset.y + offsetSpecific.y);
         }
 
         public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) =>
