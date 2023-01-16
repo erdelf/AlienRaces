@@ -1993,7 +1993,7 @@ namespace AlienRace
         {
             LifeStageAgeAlien stageAgeAlien  = (___pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien);
             Vector2           offset         = stageAgeAlien?.headOffsetDirectional?.GetOffset(rotation)                                                               ?? Vector2.zero;
-            Vector3           offsetSpecific = stageAgeAlien?.headOffsetSpecific?.GetOffset(rotation).GetOffset(false, ___pawn.story.bodyType, ___pawn.story.headType) ?? Vector3.zero;
+            Vector3           offsetSpecific = stageAgeAlien?.headOffsetSpecific?.GetOffset(rotation)?.GetOffset(false, ___pawn.story.bodyType, ___pawn.story.headType) ?? Vector3.zero;
             __result += new Vector3(offset.x + offsetSpecific.x, y: offsetSpecific.y, offset.y + offsetSpecific.y);
         }
 
