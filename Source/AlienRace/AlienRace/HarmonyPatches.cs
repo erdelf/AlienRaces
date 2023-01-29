@@ -176,8 +176,8 @@ namespace AlienRace
                 postfix: new HarmonyMethod(patchType, nameof(HasHeadPostfix)));
             harmony.Patch(AccessTools.Property(typeof(HediffSet), nameof(HediffSet.HasHead)).GetGetMethod(),
                 new HarmonyMethod(patchType, nameof(HasHeadPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), name: "RecalculateLifeStageIndex"), 
-                postfix: new HarmonyMethod(patchType, nameof(RecalculateLifeStageIndexPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), name: nameof(Pawn_AgeTracker.PostResolveLifeStageChange)), 
+                postfix: new HarmonyMethod(patchType, nameof(PostResolveLifeStageChangePostfix)));
             
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.FactionTick)), transpiler:
                           new HarmonyMethod(patchType, nameof(FactionTickTranspiler)));
@@ -2042,7 +2042,7 @@ namespace AlienRace
                        (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(f.def) ?? false) ?? false));
         }
         
-        public static void RecalculateLifeStageIndexPostfix(Pawn ___pawn)
+        public static void PostResolveLifeStageChangePostfix(Pawn ___pawn)
         {
             if (Current.ProgramState == ProgramState.Playing && (___pawn).def is ThingDef_AlienRace &&
                 ___pawn.Drawer.renderer.graphics.AllResolved)
