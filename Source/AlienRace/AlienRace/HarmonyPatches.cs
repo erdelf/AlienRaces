@@ -3363,7 +3363,8 @@ namespace AlienRace
 
 
                     alienComp.OverwriteColorChannel("hair", alien.story.HairColor);
-                    alienComp.OverwriteColorChannel("skin", alien.story.SkinColorBase);
+                    alienComp.OverwriteColorChannel("skin", alien.story.SkinColor);
+                    alienComp.OverwriteColorChannel("skinBase", alien.story.SkinColorBase);
 
                     if (alien.Corpse?.GetRotStage() == RotStage.Rotting)
                         alienComp.OverwriteColorChannel("skin", PawnGraphicSet.RottingColorDefault);
