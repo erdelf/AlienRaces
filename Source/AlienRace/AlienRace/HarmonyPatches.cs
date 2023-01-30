@@ -1675,10 +1675,9 @@ namespace AlienRace
             {
                 if (instruction.OperandIs(endScrollInfo))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldloca, 1) { labels = instruction.labels.ListFullCopy() };
-                    instruction.labels.Clear();
-                    yield return new CodeInstruction(OpCodes.Ldloca, 2);
-                    yield return new CodeInstruction(OpCodes.Ldloca, 3);
+                    yield return new CodeInstruction(OpCodes.Ldloca_S, 1) { labels = instruction.ExtractLabels()};
+                    yield return new CodeInstruction(OpCodes.Ldloca_S, 2);
+                    yield return new CodeInstruction(OpCodes.Ldloca_S, 3);
                     yield return new CodeInstruction(OpCodes.Ldloca_S, operand: 4);
                     yield return new CodeInstruction(OpCodes.Call, 
                         AccessTools.Method(patchType, nameof(TweakValuesInstanceBased)));
@@ -1703,10 +1702,12 @@ namespace AlienRace
             }
         }
 
-        private static Dictionary<string, float> tweakValuesSaved = new Dictionary<string, float>();
+        private static readonly Dictionary<string, float> TWEAKVALUES_SAVED = new();
 
         public static void TweakValuesInstanceBased(ref Rect refRect2, ref Rect refRect3, ref Rect refRect4, ref Rect refRect5)
         {
+            bool dirtyGraphics = false;
+
             Rect rect2 = refRect2;
             Rect rect3 = refRect3;
             Rect rect4 = refRect4;
@@ -1734,44 +1735,45 @@ namespace AlienRace
                     {
                         string addonLabel     = label3Addons + label;
                         string raceAddonLabel = label2       + "." + addonLabel;
-                        if(!tweakValuesSaved.ContainsKey(raceAddonLabel))
-                            tweakValuesSaved.Add(raceAddonLabel, value);
+                        if (!TWEAKVALUES_SAVED.ContainsKey(raceAddonLabel))
+                            TWEAKVALUES_SAVED.Add(raceAddonLabel, value);
 
                         Widgets.Label(rect2, label2);
                         Widgets.Label(rect3, addonLabel);
 
+
                         float num = value;
-                        Widgets.HorizontalSlider(rect5, ref value, new FloatRange(-1, 1));
+                        Widgets.HorizontalSlider(rect5, ref num, new FloatRange(-1, 1));
 
                         Rect valueFieldRect = rect4;
 
                         GUI.color = Color.red;
-                        string savedS = tweakValuesSaved[raceAddonLabel].ToString(CultureInfo.InvariantCulture) + " -> ";
-                        bool   changed      = Mathf.Abs(tweakValuesSaved[raceAddonLabel] - value) > float.Epsilon;
-                        float  width  = changed ? Text.CalcSize(savedS).x : 0f;
+                        string savedS  = TWEAKVALUES_SAVED[raceAddonLabel].ToString(CultureInfo.InvariantCulture) + " -> ";
+                        bool   changed = Mathf.Abs(TWEAKVALUES_SAVED[raceAddonLabel] - value) > float.Epsilon;
+                        float  width   = changed ? Text.CalcSize(savedS).x : 0f;
 
                         Rect savedRect = rect4.LeftPartPixels(width);
                         Widgets.Label(savedRect, savedS);
-                        GUI.color      = Color.white;
-                        if(changed)
+                        GUI.color = Color.white;
+                        if (changed)
                             valueFieldRect = rect4.RightPartPixels(rect4.width - width);
 
                         if (Widgets.ButtonInvisible(savedRect))
                         {
-                            GlobalTextureAtlasManager.FreeAllRuntimeAtlases();
-                            return num = tweakValuesSaved[raceAddonLabel];
+                            dirtyGraphics = true;
+                            return num = TWEAKVALUES_SAVED[raceAddonLabel];
                         }
 
                         string valueS = value.ToString(CultureInfo.InvariantCulture);
 
                         string num2 = Widgets.TextField(valueFieldRect.ContractedBy(margin: 2).LeftPartPixels(Text.CalcSize(valueS).x + 6), valueS);
 
-                        if (Mathf.Abs(num-value)<float.Epsilon)
+                        if (Mathf.Abs(num - value) < float.Epsilon)
                             if (float.TryParse(num2, out float num3))
                                 num = num3;
 
-                        if(Mathf.Abs(num - value) > float.Epsilon)
-                            GlobalTextureAtlasManager.FreeAllRuntimeAtlases();
+                        if (Mathf.Abs(num - value) > float.Epsilon)
+                            dirtyGraphics = true;
 
                         //Widgets.Label(rect: rect4, label: value.ToString(provider: CultureInfo.InvariantCulture));
                         return Mathf.Clamp(num, min: -1, max: 1);
@@ -1783,8 +1785,8 @@ namespace AlienRace
                         string offsetDictKey = label2       + "." + offsetLabel;
                         Widgets.Label(rect3, offsetLabel);
 
-                        if (!tweakValuesSaved.ContainsKey(offsetDictKey))
-                            tweakValuesSaved.Add(offsetDictKey, ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.FirstIndexOf(on => on.name == ba.defaultOffset));
+                        if (!TWEAKVALUES_SAVED.ContainsKey(offsetDictKey))
+                            TWEAKVALUES_SAVED.Add(offsetDictKey, ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.FirstIndexOf(on => on.name == ba.defaultOffset));
 
 
                         float offsetNew = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.FirstIndexOf(on => on.name == ba.defaultOffset);
@@ -1794,8 +1796,8 @@ namespace AlienRace
                         Rect valueFieldRect = rect4;
 
                         GUI.color = Color.red;
-                        string savedS  = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[(int)tweakValuesSaved[offsetDictKey]].name + " -> ";
-                        bool   changed = Math.Abs(offsetNew - tweakValuesSaved[offsetDictKey]) > float.Epsilon;
+                        string savedS  = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[(int)TWEAKVALUES_SAVED[offsetDictKey]].name + " -> ";
+                        bool   changed = Math.Abs(offsetNew - TWEAKVALUES_SAVED[offsetDictKey]) > float.Epsilon;
                         float  width   = changed ? Text.CalcSize(savedS).x : 0f;
 
                         Rect savedRect = rect4.LeftPartPixels(width);
@@ -1804,7 +1806,7 @@ namespace AlienRace
                         if (changed)
                         {
                             valueFieldRect = rect4.RightPartPixels(rect4.width - width);
-                            GlobalTextureAtlasManager.FreeAllRuntimeAtlases();
+                            dirtyGraphics = true;
                         }
 
                         AlienPartGenerator.OffsetNamed newOffsets = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[(int) offsetNew];
@@ -1815,33 +1817,24 @@ namespace AlienRace
                         NextLine();
                     }
 
-                    List<AlienPartGenerator.RotationOffset> rotationOffsets = new List<AlienPartGenerator.RotationOffset>
+                    List<AlienPartGenerator.RotationOffset> rotationOffsets = new()
                                                                               {
-                                                                                  ba.offsets.north,
-                                                                                  ba.offsets.south,
-                                                                                  ba.offsets.west,
-                                                                                  ba.offsets.east                        
-                                                                              };
+                                                                                        ba.offsets.north,
+                                                                                        ba.offsets.south,
+                                                                                        ba.offsets.west,
+                                                                                        ba.offsets.east                        
+                                                                                    };
 
                     for (int i = 0; i < rotationOffsets.Count; i++)
                     {
-                        string                            label3Rotation;
                         AlienPartGenerator.RotationOffset ro = rotationOffsets[i];
-                        switch (i)
+                        string label3Rotation = i switch
                         {
-                            case 0:
-                                label3Rotation = "north.";
-                                break;
-                            case 1:
-                                label3Rotation = "south.";
-                                break;
-                            case 2:
-                                label3Rotation = "west.";
-                                break;
-                            default:
-                                label3Rotation = "east.";
-                                break;
-                        }
+                            0 => "north.",
+                            1 => "south.",
+                            2 => "west.",
+                            _ => "east."
+                        };
 
                         ro.layerOffset = WriteLine(ro.layerOffset, label3Rotation + "layerOffset");
                         NextLine();
@@ -1894,6 +1887,9 @@ namespace AlienRace
             refRect3 = rect3;
             refRect4 = rect4;
             refRect5 = rect5;
+
+            if(dirtyGraphics)
+                GlobalTextureAtlasManager.FreeAllRuntimeAtlases();
         }
 
         public static IEnumerable<CodeInstruction> PostureTranspiler(IEnumerable<CodeInstruction> instructions)
