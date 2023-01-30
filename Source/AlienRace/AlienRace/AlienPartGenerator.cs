@@ -441,23 +441,17 @@
                         this.colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
 
                         this.colorChannels.Add(key: "base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
-                        this.colorChannels.Add(key: "hair", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
-                        
-                        Color skinColor;
-                        try
+
                         {
-                            skinColor = this.AlienProps.alienRace.raceRestriction.blackEndoCategories.Contains(EndogeneCategory.Melanin) ?
-                                            PawnSkinColors.RandomSkinColorGene(this.Pawn).skinColorBase!.Value :
-                                            this.Pawn.story.SkinColorBase;
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            skinColor = PawnSkinColors.RandomSkinColorGene(this.Pawn).skinColorBase!.Value;
+                            this.colorChannels.Add(key: "hair", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
                         }
 
-                        this.colorChannels.Add(key: "skin", new ExposableValueTuple<Color, Color>(skinColor, skinColor));
+                        {
+                            this.colorChannels.Add("skin",     new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
+                            this.colorChannels.Add("skinBase", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
+                        }
 
-                        this.colorChannels.Add(key: "tattoo", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
+                        this.colorChannels.Add("tattoo", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
                         
                         foreach (ColorChannelGenerator channel in apg.colorChannels)
                         {
@@ -466,31 +460,40 @@
                             this.colorChannels[channel.name] = this.GenerateChannel(channel, this.colorChannels[channel.name]);
                         }
 
-                        this.Pawn.story.SkinColorBase = this.colorChannels["skin"].first;
-
-                        ExposableValueTuple<Color, Color> hairColors = this.colorChannels[key: "hair"];
-
-                        if (hairColors.first == Color.clear)
+                        try
                         {
-                            Color color = PawnHairColors.RandomHairColor(this.Pawn, this.Pawn.story.SkinColor, this.Pawn.ageTracker.AgeBiologicalYears);
-                            hairColors.first  = color;
-                            hairColors.second = color;
+                            if (!this.AlienProps.alienRace.raceRestriction.blackEndoCategories.Contains(EndogeneCategory.Melanin))
+                                if (this.Pawn.story.SkinColorBase != Color.clear)
+                                    this.OverwriteColorChannel("skin", this.Pawn.story.SkinColorBase);
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // No skin color gene on this person for one reason or another, without blocking category
                         }
 
-                        ExposableValueTuple<Color, Color> tattooColors = this.colorChannels[key: "tattoo"];
+                        ExposableValueTuple<Color, Color> skinColors = this.colorChannels["skin"];
+                        this.OverwriteColorChannel("skinBase", skinColors.first, skinColors.second);
+                        this.Pawn.story.SkinColorBase = skinColors.first;
 
-                        if (tattooColors.first == Color.clear)
+
+                        if (this.colorChannels["hair"].first == Color.clear)
+                            this.OverwriteColorChannel("hair", this.Pawn.story.HairColor);
+
+
+                        if (this.colorChannels[key: "tattoo"].first == Color.clear)
                         {
-                            Color tattooColor = skinColor;
+                            Color tattooColor = skinColors.first;
                             tattooColor.a *= 0.8f;
 
-                            tattooColors.first = tattooColors.second = tattooColor;
+                            Color tattooColorSecond = skinColors.second;
+                            tattooColorSecond.a *= 0.8f;
+
+                            this.OverwriteColorChannel("tattoo", tattooColor, tattooColorSecond);
                         }
 
-
                         if (this.Pawn.Corpse?.GetRotStage() == RotStage.Rotting)
-                            this.colorChannels["skin"].first = PawnGraphicSet.RottingColorDefault;
-                        this.Pawn.story.HairColor = hairColors.first;
+                            this.OverwriteColorChannel("skin", PawnGraphicSet.RottingColorDefault);
+                        this.Pawn.story.HairColor = this.colorChannels["hair"].first;
 
                         this.RegenerateColorChannelLink("skin");
 
@@ -504,8 +507,8 @@
                                                                   this.Pawn.ageTracker.AgeBiologicalYears))
                             {
                                 float grey = Rand.Range(min: 0.65f, max: 0.85f);
-                                hairColors.first       = new Color(grey, grey, grey);
-                                this.Pawn.story.HairColor = hairColors.first;
+                                this.OverwriteColorChannel("hair", new Color(grey, grey, grey));
+                                this.Pawn.story.HairColor = this.colorChannels["hair"].first;
                             }
                         }
                     }
@@ -653,11 +656,15 @@
             // ReSharper disable once UnusedMember.Local
             private static void ReresolveGraphic(Pawn p)
             {
-                p.Drawer?.renderer?.graphics?.SetAllGraphicsDirty();
+                if (p != null)
+                {
+                    FleckMaker.ThrowSmoke(p.Position.ToVector3(), p.Map, 5f);
+                    p.Drawer?.renderer?.graphics?.SetAllGraphicsDirty();
+                }
             }
         }
 
-        public class ExposableValueTuple<TK, TV> : IExposable, IEquatable<ExposableValueTuple<TK,TV>>
+        public class ExposableValueTuple<TK, TV> : IExposable, IEquatable<ExposableValueTuple<TK,TV>>, ICloneable
         {
             public TK first;
             public TV second;
@@ -676,7 +683,11 @@
                 other != null && this.first.Equals(other.first) && this.second.Equals(other.second);
 
             // ReSharper disable twice NonReadonlyMemberInGetHashCode
-            public override int GetHashCode() => this.first.GetHashCode() + this.second.GetHashCode();
+            public override int    GetHashCode() => 
+                this.first.GetHashCode() + this.second.GetHashCode();
+
+            public          object Clone()       => 
+                new ExposableValueTuple<TK, TV>(this.first, this.second);
 
             public void ExposeData()
             {
