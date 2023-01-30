@@ -1687,22 +1687,16 @@ namespace AlienRace
 
                 if (instruction.OperandIs(countInfo))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldc_I4, DefDatabase<ThingDef_AlienRace>.AllDefs.SelectMany(selector: ar =>
-                            ar.alienRace.generalSettings.alienPartGenerator.bodyAddons).Sum(selector: ba =>
-                                                                                                          new List<AlienPartGenerator.RotationOffset>
-                                                                                                          {
-                                                                                                              ba.offsets.east,
-                                                                                                              ba.offsets.west,
-                                                                                                              ba.offsets.north,
-                                                                                                              ba.offsets.south,
-                                                                                                          }.Sum(selector: ro => (ro.bodyTypes?.Count ?? 0) * 2 + (ro.headTypes?.Count ?? 0) * 2 + 3/* + (ro.portraitBodyTypes?.Count ?? 0) * 2 + 
-                                                   (ro.crownTypes?.Count ?? 0) * 2 + (ro.portraitCrownTypes?.Count ?? 0) * 2*/) + 2) + 1);
+                    yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(patchType, nameof(tweakvalues_lineCount)));
                     yield return new CodeInstruction(OpCodes.Add);
                 }
             }
         }
 
         private static readonly Dictionary<string, float> TWEAKVALUES_SAVED = new();
+        private static          int                       tweakvalues_lineCount;
+        private static          ThingDef_AlienRace        tweakvalues_race;
+        private static          int                       tweakvalues_addonIndex;
 
         public static void TweakValuesInstanceBased(ref Rect refRect2, ref Rect refRect3, ref Rect refRect4, ref Rect refRect5)
         {
@@ -1713,27 +1707,70 @@ namespace AlienRace
             Rect rect4 = refRect4;
             Rect rect5 = refRect5;
 
+            tweakvalues_lineCount = 0;
+
             void NextLine()
             {
+                tweakvalues_lineCount++;
                 rect2.y += rect2.height;
                 rect3.y += rect2.height;
                 rect4.y += rect2.height;
                 rect5.y += rect2.height;
             }
+
             NextLine();
 
-            rect5.y += rect2.height / 3f;
-
-            foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefs)
+            if (DefDatabase<ThingDef_AlienRace>.DefCount > 0)
             {
-                string label2 = ar.LabelCap;
-                foreach (AlienPartGenerator.BodyAddon ba in ar.alienRace.generalSettings.alienPartGenerator.bodyAddons)
+                //rect5.y += rect2.height / 3f;
+
+                Widgets.Label(rect2, "Alien Race");
+                Widgets.Label(rect3, "Select the race you wish to edit");
+
+                tweakvalues_race ??= DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.First();
+
+                Widgets.Dropdown(rect5, tweakvalues_race,
+                                 td => td, _ => DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Select((td) => 
+                                                                                                                                        new Widgets.DropdownMenuElement<ThingDef_AlienRace>
+                                                                                                                                        {
+                                                                                                                                            option  = new FloatMenuOption(td.LabelCap, () =>
+                                                                                                                                                                                       {
+                                                                                                                                                                                           tweakvalues_race       = td;
+                                                                                                                                                                                           tweakvalues_addonIndex = 0;
+                                                                                                                                                                                       }), 
+                                                                                                                                            payload = td
+                                                                                                                                        }), tweakvalues_race.LabelCap);
+
+                
+
+                ThingDef_AlienRace ar     = tweakvalues_race;
+                string             label2 = ar.LabelCap;
+                Widgets.Label(rect4, label2);
+
+                NextLine();
+
+                if (!(ar.alienRace.generalSettings.alienPartGenerator?.bodyAddons?.NullOrEmpty() ?? true))
                 {
-                    string label3Addons = $"{Path.GetFileName(ba.path)}.";
+                    Widgets.Label(rect2, label2);
+                    Widgets.Label(rect3, "Select the addon you wish to edit");
+
+                    Widgets.Dropdown(rect5, tweakvalues_addonIndex,
+                                     i => i, _ => ar.alienRace.generalSettings.alienPartGenerator.bodyAddons.Select((ba, i) =>
+                                                                                                                        new Widgets.DropdownMenuElement<int>
+                                                                                                                        {
+                                                                                                                            option  = new FloatMenuOption(Path.GetFileName(ba.path), () => tweakvalues_addonIndex = i),
+                                                                                                                            payload = i
+                                                                                                                        }), Path.GetFileName(ar.alienRace.generalSettings.alienPartGenerator.bodyAddons[tweakvalues_addonIndex].path));
+                    
+                    AlienPartGenerator.BodyAddon ba           = ar.alienRace.generalSettings.alienPartGenerator.bodyAddons[tweakvalues_addonIndex];
+                    string                       label3Addons = $"{Path.GetFileName(ba.path)}";
+                    Widgets.Label(rect4, label3Addons);
+
+                    NextLine();
 
                     float WriteLine(float value, string label)
                     {
-                        string addonLabel     = label3Addons + label;
+                        string addonLabel     = label3Addons + "." + label;
                         string raceAddonLabel = label2       + "." + addonLabel;
                         if (!TWEAKVALUES_SAVED.ContainsKey(raceAddonLabel))
                             TWEAKVALUES_SAVED.Add(raceAddonLabel, value);
@@ -1743,7 +1780,7 @@ namespace AlienRace
 
 
                         float num = value;
-                        Widgets.HorizontalSlider(rect5, ref num, new FloatRange(-1, 1));
+                        num = Widgets.HorizontalSlider_NewTemp(rect5, num, -1, 1);
 
                         Rect valueFieldRect = rect4;
 
@@ -1781,7 +1818,7 @@ namespace AlienRace
 
                     {
                         Widgets.Label(rect2, label2);
-                        string offsetLabel   = label3Addons + "DefaultOffsets";
+                        string offsetLabel   = label3Addons + ".DefaultOffsets";
                         string offsetDictKey = label2       + "." + offsetLabel;
                         Widgets.Label(rect3, offsetLabel);
 
@@ -1790,8 +1827,7 @@ namespace AlienRace
 
 
                         float offsetNew = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.FirstIndexOf(on => on.name == ba.defaultOffset);
-                        Widgets.HorizontalSlider(rect5, ref offsetNew, new FloatRange(0, ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.Count - 1), roundTo: 1);
-                        offsetNew = Mathf.RoundToInt(offsetNew);
+                        offsetNew = Mathf.RoundToInt(Widgets.HorizontalSlider_NewTemp(rect5, offsetNew, 0, ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.Count - 1, roundTo: 1));
 
                         Rect valueFieldRect = rect4;
 
@@ -1806,10 +1842,10 @@ namespace AlienRace
                         if (changed)
                         {
                             valueFieldRect = rect4.RightPartPixels(rect4.width - width);
-                            dirtyGraphics = true;
+                            dirtyGraphics  = true;
                         }
 
-                        AlienPartGenerator.OffsetNamed newOffsets = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[(int) offsetNew];
+                        AlienPartGenerator.OffsetNamed newOffsets = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[(int)offsetNew];
                         Widgets.Label(valueFieldRect, newOffsets.name);
                         ba.defaultOffset  = newOffsets.name;
                         ba.defaultOffsets = newOffsets.offsets;
@@ -1819,11 +1855,11 @@ namespace AlienRace
 
                     List<AlienPartGenerator.RotationOffset> rotationOffsets = new()
                                                                               {
-                                                                                        ba.offsets.north,
-                                                                                        ba.offsets.south,
-                                                                                        ba.offsets.west,
-                                                                                        ba.offsets.east                        
-                                                                                    };
+                                                                                  ba.offsets.north,
+                                                                                  ba.offsets.south,
+                                                                                  ba.offsets.west,
+                                                                                  ba.offsets.east
+                                                                              };
 
                     for (int i = 0; i < rotationOffsets.Count; i++)
                     {
@@ -1846,12 +1882,12 @@ namespace AlienRace
                         if (!ro.bodyTypes.NullOrEmpty())
                             foreach (AlienPartGenerator.BodyTypeOffset bodyTypeOffset in ro.bodyTypes)
                             {
-                                string label3Type = bodyTypeOffset.bodyType.defName + ".";
-                                Vector2 offset = bodyTypeOffset.offset;
-                                float offsetX = offset.x;
-                                float offsetY = offset.y;
+                                string  label3Type = bodyTypeOffset.bodyType.defName + ".";
+                                Vector2 offset     = bodyTypeOffset.offset;
+                                float   offsetX    = offset.x;
+                                float   offsetY    = offset.y;
 
-                                float WriteAddonLine(float value, bool x) => 
+                                float WriteAddonLine(float value, bool x) =>
                                     WriteLine(value, label3Rotation + label3Type + (x ? "x" : "y"));
 
 
@@ -1861,7 +1897,7 @@ namespace AlienRace
                                 NextLine();
                             }
 
-                        if(!ro.headTypes.NullOrEmpty())
+                        if (!ro.headTypes.NullOrEmpty())
                             foreach (AlienPartGenerator.HeadTypeOffsets headTypeOffsets in ro.headTypes)
                             {
                                 string  label3Type = headTypeOffsets.headType + ".";
@@ -1879,16 +1915,18 @@ namespace AlienRace
                                 NextLine();
                             }
                     }
-                    NextLine();
                 }
             }
+
+            NextLine();
+
 
             refRect2 = rect2;
             refRect3 = rect3;
             refRect4 = rect4;
             refRect5 = rect5;
 
-            if(dirtyGraphics)
+            if (dirtyGraphics)
                 GlobalTextureAtlasManager.FreeAllRuntimeAtlases();
         }
 
