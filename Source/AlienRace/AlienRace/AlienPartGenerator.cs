@@ -21,7 +21,23 @@
 
         public List<BodyTypeDef> bodyTypes = new();
 
+        [Obsolete]
         public int getsGreyAt = 40;
+
+        public FloatRange  oldHairAgeRange = new(-1f, -1f);
+        public SimpleCurve oldHairAgeCurve = new();
+
+        public ColorGenerator oldHairColorGen = new ColorGenerator_Options
+                                             {
+                                                 options = new List<ColorOption>
+                                                           {
+                                                               new()
+                                                               {
+                                                                         min = new Color(0.65f, 0.65f, 0.65f),
+                                                                         max = new Color(0.85f, 0.85f, 0.85f)
+                                                               }
+                                                           }
+                                             };
 
 
         public List<ColorChannelGenerator> colorChannels  = new();
@@ -145,6 +161,32 @@
 
         public void GenerateMeshsAndMeshPools()
         {
+            if (this.oldHairAgeCurve.PointsCount <= 0)
+            {
+            #pragma warning disable CS0612
+                float minAge = this.oldHairAgeRange.min <= 0 ? 
+                                   this.getsGreyAt :
+                                   this.oldHairAgeRange.TrueMin;
+
+                float maxAge = this.oldHairAgeRange.max <= 0 ? 
+                                   this.alienProps.race.ageGenerationCurve.Points.Count < 3 ? 
+                                       this.alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt + this.alienProps.race.lifeExpectancy / 3f :
+                                       this.alienProps.race.ageGenerationCurve.Points.Skip(this.alienProps.race.ageGenerationCurve.Points.Count - 3).First().x : 
+                                   this.oldHairAgeRange.TrueMax;
+            #pragma warning restore CS0612
+
+                this.oldHairAgeCurve.Add(0f, 0f);
+                this.oldHairAgeCurve.Add(minAge, 0f);
+
+
+                float ageDiff = maxAge - minAge;
+                float step    = ageDiff / 5f;
+                for (float i = minAge + step; i < maxAge; i += ageDiff / step)
+                    this.oldHairAgeCurve.Add(i, GenMath.SmootherStep(minAge, maxAge, i));
+
+                this.oldHairAgeCurve.Add(maxAge, 1f);
+            }
+
             this.GenerateMeshsAndMeshPools(new DefaultGraphicsLoader());
         }
 
@@ -497,17 +539,14 @@
 
                         this.RegenerateColorChannelLink("skin");
 
-
-                        if (this.AlienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt <= this.Pawn.ageTracker.AgeBiologicalYears)
+                        
+                        if (this.AlienProps.alienRace.generalSettings.alienPartGenerator.oldHairColorGen != null)
                         {
-                            if (Rand.Value < GenMath.SmootherStep(this.AlienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt, 
-                                                                  this.Pawn.RaceProps.ageGenerationCurve.Points.Count < 3 ?
-                                                                      this.AlienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt + this.AlienProps.race.lifeExpectancy / 3f :
-                                                                      this.Pawn.RaceProps.ageGenerationCurve.Points.Skip(this.Pawn.RaceProps.ageGenerationCurve.Points.Count - 3).First().x, 
-                                                                  this.Pawn.ageTracker.AgeBiologicalYears))
+                            if (Rand.Value < this.AlienProps.alienRace.generalSettings.alienPartGenerator.oldHairAgeCurve.Evaluate(this.Pawn.ageTracker.AgeBiologicalYearsFloat))
                             {
-                                float grey = Rand.Range(min: 0.65f, max: 0.85f);
-                                this.OverwriteColorChannel("hair", new Color(grey, grey, grey));
+                                Color oldAgeColor = this.GenerateColor(this.AlienProps.alienRace.generalSettings.alienPartGenerator.oldHairColorGen);
+
+                                this.OverwriteColorChannel("hair", oldAgeColor);
                                 this.Pawn.story.HairColor = this.colorChannels["hair"].first;
                             }
                         }
@@ -544,16 +583,18 @@
                         if (this.colorChannelLinks[split[0]].All(evt => evt.first.first != channel.name))
                             this.colorChannelLinks[split[0]].Add(new ExposableValueTuple<ExposableValueTuple<string, int>, bool>(new ExposableValueTuple<string, int>(channel.name, channel.entries.IndexOf(category)), first));
                         return split[1] == "1" ? this.ColorChannels[split[0]].first : this.ColorChannels[split[0]].second;
-                    case ColorGenerator_SkinColorMelanin cm:
-                        return cm.naturalMelanin ? 
-                                   ((Pawn) this.parent).story.SkinColorBase : 
-                                   gen.NewRandomizedColor();
-                    case ColorGenerator_PawnBased pb:
-                        return pb.NewRandomizedColor(this.Pawn);
                     default:
-                        return gen.NewRandomizedColor();
+                        return this.GenerateColor(gen);
                 }
             }
+
+            public Color GenerateColor(ColorGenerator gen) =>
+                gen switch
+                {
+                    ColorGenerator_SkinColorMelanin cm => cm.naturalMelanin ? ((Pawn)this.parent).story.SkinColorBase : gen.NewRandomizedColor(),
+                    ColorGenerator_PawnBased pb => pb.NewRandomizedColor(this.Pawn),
+                    _ => gen.NewRandomizedColor()
+                };
 
             public override void PostSpawnSetup(bool respawningAfterLoad)
             {
