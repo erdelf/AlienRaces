@@ -1758,19 +1758,21 @@ namespace AlienRace
 
                     NextLine();
 
-                    float WriteLine(float value, string label)
+                    float WriteLine(float value, float valueDefault, string label)
                     {
                         string addonLabel     = label3Addons + "." + label;
                         string raceAddonLabel = label2       + "." + addonLabel;
                         if (!TWEAKVALUES_SAVED.ContainsKey(raceAddonLabel))
                             TWEAKVALUES_SAVED.Add(raceAddonLabel, value);
 
-                        Widgets.Label(rect2, label2);
-                        Widgets.Label(rect3, addonLabel);
+                        Widgets.Label(rect2.Union(rect3.LeftPart(0.55f)), addonLabel);
+                        Widgets.Label(rect3.RightPart(0.4f), $"{ba.defaultOffset}: {valueDefault:+0.#####;-0.#####;0}");
 
 
-                        float num = value;
-                        num = Widgets.HorizontalSlider_NewTemp(rect5, num, -1, 1);
+                        float num        = value;
+                        Rect  sliderRect = rect5;
+                        sliderRect.y += rect2.height / 3f;
+                        num          =  Widgets.HorizontalSlider_NewTemp(sliderRect, num, -1, 1);
 
                         Rect valueFieldRect = rect4;
 
@@ -1816,7 +1818,7 @@ namespace AlienRace
                             TWEAKVALUES_SAVED.Add(offsetDictKey, ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.FirstIndexOf(on => on.name == ba.defaultOffset));
 
 
-                        AlienPartGenerator.OffsetNamed offsetOld = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[(int)TWEAKVALUES_SAVED[offsetDictKey]];
+                        AlienPartGenerator.OffsetNamed offsetOld = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[(int) TWEAKVALUES_SAVED[offsetDictKey]];
                         AlienPartGenerator.OffsetNamed offsetNew = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.First(on => on.name == ba.defaultOffset);
 
                         Widgets.Dropdown(rect5, offsetNew, on => on, _ => ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.Select(on =>
@@ -1849,17 +1851,10 @@ namespace AlienRace
                         NextLine();
                     }
 
-                    List<AlienPartGenerator.RotationOffset> rotationOffsets = new()
-                                                                              {
-                                                                                  ba.offsets.north,
-                                                                                  ba.offsets.south,
-                                                                                  ba.offsets.west,
-                                                                                  ba.offsets.east
-                                                                              };
-
-                    for (int i = 0; i < rotationOffsets.Count; i++)
+                    for (int i = 0; i < 4; i++)
                     {
-                        AlienPartGenerator.RotationOffset ro = rotationOffsets[i];
+                        AlienPartGenerator.RotationOffset roD = ba.defaultOffsets.GetOffset(new Rot4(i));
+                        AlienPartGenerator.RotationOffset ro  = ba.offsets.GetOffset(new Rot4(i));
                         string label3Rotation = i switch
                         {
                             0 => "north.",
@@ -1867,48 +1862,57 @@ namespace AlienRace
                             2 => "west.",
                             _ => "east."
                         };
-
-                        ro.layerOffset = WriteLine(ro.layerOffset, label3Rotation + "layerOffset");
+                        
+                        ro.layerOffset = WriteLine(ro.layerOffset, roD.layerOffset, label3Rotation + "layerOffset");
                         NextLine();
-                        ro.offset.x = WriteLine(ro.offset.x, label3Rotation + "offset.x");
+                        ro.offset.x = WriteLine(ro.offset.x, roD.offset.x, label3Rotation + "offset.x");
                         NextLine();
-                        ro.offset.y = WriteLine(ro.offset.y, label3Rotation + "offset.y");
+                        ro.offset.y = WriteLine(ro.offset.y, roD.offset.y, label3Rotation + "offset.y");
                         NextLine();
 
                         if (!ro.bodyTypes.NullOrEmpty())
-                            foreach (AlienPartGenerator.BodyTypeOffset bodyTypeOffset in ro.bodyTypes)
+                        {
+                            foreach (BodyTypeDef bodyTypeDef in DefDatabase<BodyTypeDef>.AllDefsListForReading)
                             {
-                                string  label3Type = bodyTypeOffset.bodyType.defName + ".";
-                                Vector2 offset     = bodyTypeOffset.offset;
-                                float   offsetX    = offset.x;
-                                float   offsetY    = offset.y;
+                                AlienPartGenerator.BodyTypeOffset bodyTypeOffset = ro.bodyTypes?.FirstOrDefault(bto => bto.bodyType == bodyTypeDef);
 
-                                float WriteAddonLine(float value, bool x) =>
-                                    WriteLine(value, label3Rotation + label3Type + (x ? "x" : "y"));
+                                if (bodyTypeOffset != null)
+                                {
+                                    AlienPartGenerator.BodyTypeOffset bodyTypeOffsetDefault = roD.bodyTypes?.FirstOrDefault(bto => bto.bodyType == bodyTypeDef);
 
+                                    string label3Type = bodyTypeOffset.bodyType.defName + ".";
 
-                                bodyTypeOffset.offset.x = WriteAddonLine(offsetX, x: true);
-                                NextLine();
-                                bodyTypeOffset.offset.y = WriteAddonLine(offsetY, x: false);
-                                NextLine();
+                                    float WriteAddonLine(float value, float valueDefault, bool x) =>
+                                        WriteLine(value, valueDefault, label3Rotation + label3Type + (x ? "x" : "y"));
+
+                                    bodyTypeOffset.offset.x = WriteAddonLine(bodyTypeOffset.offset.x, bodyTypeOffsetDefault?.offset.x ?? 0f, x: true);
+                                    NextLine();
+                                    bodyTypeOffset.offset.y = WriteAddonLine(bodyTypeOffset.offset.y, bodyTypeOffsetDefault?.offset.y ?? 0f, x: false);
+                                    NextLine();
+                                }
                             }
+                        }
 
                         if (!ro.headTypes.NullOrEmpty())
-                            foreach (AlienPartGenerator.HeadTypeOffsets headTypeOffsets in ro.headTypes)
+                            foreach (HeadTypeDef headTypeDef in DefDatabase<HeadTypeDef>.AllDefsListForReading)
                             {
-                                string  label3Type = headTypeOffsets.headType + ".";
-                                Vector2 offset     = headTypeOffsets.offset;
-                                float   offsetX    = offset.x;
-                                float   offsetY    = offset.y;
+                                AlienPartGenerator.HeadTypeOffsets headTypeOffsets        = ro.headTypes?.FirstOrDefault(hto => hto.headType  == headTypeDef);
 
-                                float WriteAddonLine(float value, bool x) =>
-                                    WriteLine(value, label3Rotation + label3Type + (x ? "x" : "y"));
+                                if (headTypeOffsets != null)
+                                {
+                                    AlienPartGenerator.HeadTypeOffsets headTypeOffsetsDefault = roD.headTypes?.FirstOrDefault(hto => hto.headType == headTypeDef);
+
+                                    string label3Type = headTypeOffsets.headType + ".";
+
+                                    float WriteAddonLine(float value, float valueDefault, bool x) =>
+                                        WriteLine(value, valueDefault, label3Rotation + label3Type + (x ? "x" : "y"));
 
 
-                                headTypeOffsets.offset.x = WriteAddonLine(offsetX, x: true);
-                                NextLine();
-                                headTypeOffsets.offset.y = WriteAddonLine(offsetY, x: false);
-                                NextLine();
+                                    headTypeOffsets.offset.x = WriteAddonLine(headTypeOffsets.offset.x, headTypeOffsetsDefault?.offset.x ?? 0, x: true);
+                                    NextLine();
+                                    headTypeOffsets.offset.y = WriteAddonLine(headTypeOffsets.offset.y, headTypeOffsetsDefault?.offset.y ?? 0, x: false);
+                                    NextLine();
+                                }
                             }
                     }
                 }
