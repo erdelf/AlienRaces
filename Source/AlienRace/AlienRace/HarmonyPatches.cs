@@ -1816,29 +1816,35 @@ namespace AlienRace
                             TWEAKVALUES_SAVED.Add(offsetDictKey, ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.FirstIndexOf(on => on.name == ba.defaultOffset));
 
 
-                        float offsetNew = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.FirstIndexOf(on => on.name == ba.defaultOffset);
-                        offsetNew = Mathf.RoundToInt(Widgets.HorizontalSlider_NewTemp(rect5, offsetNew, 0, ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.Count - 1, roundTo: 1));
+                        AlienPartGenerator.OffsetNamed offsetOld = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[(int)TWEAKVALUES_SAVED[offsetDictKey]];
+                        AlienPartGenerator.OffsetNamed offsetNew = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.First(on => on.name == ba.defaultOffset);
+
+                        Widgets.Dropdown(rect5, offsetNew, on => on, _ => ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults.Select(on =>
+                                                                                                                                                    new Widgets.DropdownMenuElement<AlienPartGenerator.OffsetNamed>
+                                                                                                                                                      {
+                                                                                                                                                          option  = new FloatMenuOption(on.name, () =>
+                                                                                                                                                                                        {
+                                                                                                                                                                                            ba.defaultOffset  = on.name;
+                                                                                                                                                                                            ba.defaultOffsets = on.offsets;
+                                                                                                                                                                                        }),
+                                                                                                                                                          payload = on
+                                                                                                                                                      }), offsetNew.name);
 
                         Rect valueFieldRect = rect4;
 
                         GUI.color = Color.red;
-                        string savedS  = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[(int)TWEAKVALUES_SAVED[offsetDictKey]].name + " -> ";
-                        bool   changed = Math.Abs(offsetNew - TWEAKVALUES_SAVED[offsetDictKey]) > float.Epsilon;
+                        string savedS  = offsetOld.name + " -> ";
+                        bool   changed = offsetOld.name != offsetNew.name;
                         float  width   = changed ? Text.CalcSize(savedS).x : 0f;
 
                         Rect savedRect = rect4.LeftPartPixels(width);
                         Widgets.Label(savedRect, savedS);
                         GUI.color = Color.white;
-                        if (changed)
-                        {
-                            valueFieldRect = rect4.RightPartPixels(rect4.width - width);
-                            dirtyGraphics  = true;
-                        }
 
-                        AlienPartGenerator.OffsetNamed newOffsets = ar.alienRace.generalSettings.alienPartGenerator.offsetDefaults[(int)offsetNew];
-                        Widgets.Label(valueFieldRect, newOffsets.name);
-                        ba.defaultOffset  = newOffsets.name;
-                        ba.defaultOffsets = newOffsets.offsets;
+                        if (changed)
+                            valueFieldRect = rect4.RightPartPixels(rect4.width - width);
+
+                        Widgets.Label(valueFieldRect, offsetNew.name);
 
                         NextLine();
                     }
