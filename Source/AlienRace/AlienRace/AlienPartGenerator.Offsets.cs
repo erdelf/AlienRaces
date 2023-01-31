@@ -14,12 +14,13 @@ public partial class AlienPartGenerator
         public RotationOffset GetOffset(Rot4 rotation) =>
             rotation == Rot4.South ? this.south :
             rotation == Rot4.North ? this.north :
-            rotation == Rot4.East  ? this.east : this.west;
+            rotation == Rot4.East  ? this.east : 
+                                     this.west;
 
         public RotationOffset south = new();
         public RotationOffset north = new();
         public RotationOffset east  = new();
-        public RotationOffset west;
+        public RotationOffset west  = new();
     }
 
     public class RotationOffset
