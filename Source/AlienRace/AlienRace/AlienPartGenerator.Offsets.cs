@@ -20,7 +20,7 @@ public partial class AlienPartGenerator
         public RotationOffset south = new();
         public RotationOffset north = new();
         public RotationOffset east  = new();
-        public RotationOffset west  = new();
+        public RotationOffset west;
     }
 
     public class RotationOffset
