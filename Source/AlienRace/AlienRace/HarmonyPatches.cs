@@ -1853,15 +1853,10 @@ namespace AlienRace
 
                     for (int i = 0; i < 4; i++)
                     {
-                        AlienPartGenerator.RotationOffset roD = ba.defaultOffsets.GetOffset(new Rot4(i));
-                        AlienPartGenerator.RotationOffset ro  = ba.offsets.GetOffset(new Rot4(i));
-                        string label3Rotation = i switch
-                        {
-                            0 => "north.",
-                            1 => "south.",
-                            2 => "west.",
-                            _ => "east."
-                        };
+                        Rot4                              rotation       = new(i);
+                        AlienPartGenerator.RotationOffset roD            = ba.defaultOffsets.GetOffset(rotation);
+                        AlienPartGenerator.RotationOffset ro             = ba.offsets.GetOffset(rotation);
+                        string                            label3Rotation = rotation.ToStringHuman() + ".";
                         
                         ro.layerOffset = WriteLine(ro.layerOffset, roD.layerOffset, label3Rotation + "layerOffset");
                         NextLine();
