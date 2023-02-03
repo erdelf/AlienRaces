@@ -169,7 +169,7 @@
                                    this.oldHairAgeRange.TrueMin;
 
                 float maxAge = this.oldHairAgeRange.max <= 0 ? 
-                                   this.alienProps.race.ageGenerationCurve.Points.Count < 3 ? 
+                                   this.alienProps.race.ageGenerationCurve == null || this.alienProps.race.ageGenerationCurve.Points.Count < 3 ? 
                                        this.alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt + this.alienProps.race.lifeExpectancy / 3f :
                                        this.alienProps.race.ageGenerationCurve.Points.Skip(this.alienProps.race.ageGenerationCurve.Points.Count - 3).First().x : 
                                    this.oldHairAgeRange.TrueMax;
