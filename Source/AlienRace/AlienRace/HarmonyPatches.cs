@@ -302,6 +302,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(QuestNode_Root_WandererJoin_WalkIn), nameof(QuestNode_Root_WandererJoin_WalkIn.GeneratePawn)), transpiler: new HarmonyMethod(patchType, nameof(WandererJoinTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),                   nameof(PregnancyUtility.ApplyBirthOutcome)), transpiler: new HarmonyMethod(patchType, nameof(ApplyBirthOutcomeTranspiler)));
 
+            harmony.Patch(AccessTools.Method(typeof(CharacterCardUtility), "LifestageAndXenotypeOptions"), transpiler: new HarmonyMethod(patchType, nameof(LifestageAndXenotypeOptionsTranspiler)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -492,6 +494,22 @@ namespace AlienRace
                 } else
                 {
                     yield return instruction;
+                }
+            }
+        }
+
+        public static IEnumerable<CodeInstruction> LifestageAndXenotypeOptionsTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo dbXenoInfo = AccessTools.PropertyGetter(typeof(DefDatabase<XenotypeDef>), nameof(DefDatabase<XenotypeDef>.AllDefs));
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+                if (instruction.Calls(dbXenoInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn), nameof(Pawn.def)));
+                    yield return new CodeInstruction(OpCodes.Call,  AccessTools.Method(patchType, nameof(FilterXenotypeHelper)));
                 }
             }
         }
@@ -3247,19 +3265,38 @@ namespace AlienRace
             }
         }
 
-        public static IEnumerable<CodeInstruction> DefaultStartingPawnTranspiler(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> DefaultStartingPawnTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
-            FieldInfo basicMemberInfo = AccessTools.Field(typeof(FactionDef), nameof(FactionDef.basicMemberKind));
+            FieldInfo basicMemberInfo = AccessTools.Field(typeof(FactionDef),    nameof(FactionDef.basicMemberKind));
+            FieldInfo baseLinerInfo   = AccessTools.Field(typeof(XenotypeDefOf), nameof(XenotypeDefOf.Baseliner));
 
-            foreach (CodeInstruction instruction in instructions)
+            LocalBuilder pawnKindDefLocal = ilg.DeclareLocal(typeof(PawnKindDef));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+            for (int i = 0; i < instructionList.Count; i++)
             {
+                CodeInstruction instruction = instructionList[i];
                 yield return instruction;
 
-                if (!instruction.LoadsField(basicMemberInfo)) continue;
-
-                yield return CodeInstruction.Call(patchType, nameof(NewGeneratedStartingPawnHelper));
+                if (instruction.LoadsField(basicMemberInfo))
+                {
+                    yield return CodeInstruction.Call(patchType, nameof(NewGeneratedStartingPawnHelper));
+                    yield return new CodeInstruction(OpCodes.Stloc, pawnKindDefLocal.LocalIndex) { labels = instructionList[i +1].ExtractLabels()};
+                    yield return new CodeInstruction(OpCodes.Ldloc, pawnKindDefLocal.LocalIndex);
+                } else if (instruction.LoadsField(baseLinerInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldloc, pawnKindDefLocal.LocalIndex);
+                    yield return CodeInstruction.Call(patchType, nameof(PickXenotypeForStartingPawn));
+                }
             }
         }
+
+        public static XenotypeDef PickXenotypeForStartingPawn(XenotypeDef xenotype, PawnKindDef kindDef) => 
+            RaceRestrictionSettings.CanUseXenotype(xenotype, kindDef.race) ? 
+                xenotype : 
+                RaceRestrictionSettings.FilterXenotypes(DefDatabase<XenotypeDef>.AllDefsListForReading, kindDef.race, out _).TryRandomElement(out XenotypeDef def) ? 
+                    def : 
+                    xenotype;
 
         public static PawnKindDef NewGeneratedStartingPawnHelper(PawnKindDef basicMember) =>
             DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.startingColonists.NullOrEmpty())
