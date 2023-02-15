@@ -305,8 +305,10 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator),                      nameof(PawnGenerator.GetXenotypeForGeneratedPawn)),       transpiler: new HarmonyMethod(patchType, nameof(GetXenotypeForGeneratedPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker),                   nameof(Pawn_GeneTracker.SetXenotype)), new HarmonyMethod(patchType, nameof(SetXenotypePrefix)));
 
-            harmony.Patch(AccessTools.Method(typeof(CharacterCardUtility), "LifestageAndXenotypeOptions"), transpiler: new HarmonyMethod(patchType, nameof(LifestageAndXenotypeOptionsTranspiler)));
-
+            harmony.Patch(AccessTools.Method(typeof(CharacterCardUtility), "LifestageAndXenotypeOptions"),                        transpiler: new HarmonyMethod(patchType, nameof(LifestageAndXenotypeOptionsTranspiler)));
+            Harmony.DEBUG = true;
+            harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility),  nameof(StartingPawnUtility.NewGeneratedStartingPawn)), transpiler: new HarmonyMethod(patchType, nameof(NewGeneratedStartingPawnTranspiler)));
+            Harmony.DEBUG = false;
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -491,6 +493,36 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+        
+        public static PawnGenerationRequest currentStartingRequest;
+        
+        public static IEnumerable<CodeInstruction> NewGeneratedStartingPawnTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg, MethodBase originalMethod)
+        {
+            MethodInfo getRequestInfo = AccessTools.Method(typeof(StartingPawnUtility), nameof(StartingPawnUtility.GetGenerationRequest));
+            
+            List<CodeInstruction> instructionList = instructions.ToList();
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+                if (instruction.Calls(getRequestInfo))
+                {
+                    yield return instruction;
+                    yield return CodeInstruction.LoadField(typeof(AlienRaceMod),      nameof(AlienRaceMod.settings));
+                    yield return CodeInstruction.LoadField(typeof(AlienRaceSettings), nameof(AlienRaceSettings.randomizeStartingPawnsOnReroll));
+                    yield return new CodeInstruction(OpCodes.Brfalse, instructionList[i + 1].operand);
+                    yield return new CodeInstruction(OpCodes.Stsfld,  AccessTools.Field(patchType, nameof(currentStartingRequest)));
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Call, instructionList[i + 2].operand);
+                    yield return new CodeInstruction(OpCodes.Dup);
+                    yield return new CodeInstruction(OpCodes.Stloc_0);
+                    yield return CodeInstruction.Call(typeof(StartingPawnUtility), nameof(StartingPawnUtility.SetGenerationRequest));
+                    yield return new CodeInstruction(OpCodes.Ldsflda,  AccessTools.Field(patchType, nameof(currentStartingRequest)));
+                    yield return new CodeInstruction(OpCodes.Initobj, typeof(PawnGenerationRequest));
+                    yield return new CodeInstruction(OpCodes.Ldloc_0);
+                } else
+                    yield return instruction;
+            }
         }
 
         public static IEnumerable<CodeInstruction> GetMeshSetForWidthTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -3301,12 +3333,17 @@ namespace AlienRace
             }
         }
 
-        public static XenotypeDef PickXenotypeForStartingPawn(XenotypeDef xenotype, PawnKindDef kindDef) => 
-            RaceRestrictionSettings.CanUseXenotype(xenotype, kindDef.race) ? 
-                xenotype : 
-                RaceRestrictionSettings.FilterXenotypes(DefDatabase<XenotypeDef>.AllDefsListForReading, kindDef.race, out _).TryRandomElement(out XenotypeDef def) ? 
-                    def : 
-                    xenotype;
+        public static XenotypeDef PickXenotypeForStartingPawn(XenotypeDef xenotype, PawnKindDef kindDef)
+        {
+            xenotype = currentStartingRequest.ForcedXenotype ?? xenotype;
+
+            XenotypeDef resultXenotype = RaceRestrictionSettings.CanUseXenotype(xenotype, kindDef.race) ?
+                                             xenotype :
+                                             RaceRestrictionSettings.FilterXenotypes(DefDatabase<XenotypeDef>.AllDefsListForReading, kindDef.race, out _).TryRandomElement(out XenotypeDef def) ?
+                                                 def :
+                                                 xenotype;
+            return resultXenotype;
+        }
 
         public static PawnKindDef NewGeneratedStartingPawnHelper(PawnKindDef basicMember) =>
             DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.startingColonists.NullOrEmpty())
