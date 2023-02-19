@@ -137,8 +137,10 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.PropertyGetter(typeof(StartingPawnUtility), "DefaultStartingPawnRequest"),
                           transpiler: new HarmonyMethod(patchType, nameof(DefaultStartingPawnTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo)), 
-                postfix: new HarmonyMethod(patchType, nameof(GiveAppropriateBioAndNameToPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo)),
+                          postfix: new HarmonyMethod(patchType, nameof(GiveAppropriateBioAndNameToPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateGenes"), 
+                postfix: new HarmonyMethod(patchType, nameof(GenerateGenesPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GeneratePawnName)),
                 new HarmonyMethod(patchType, nameof(GeneratePawnNamePrefix)));
             harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), name: "CanDoNext"), 
@@ -3290,9 +3292,18 @@ namespace AlienRace
         {
             if (pawn.def is ThingDef_AlienRace)
             {
-                //Log.Message(pawn.LabelCap);
-
                 AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
+                //We are generating color channels basically
+                pawn.story.HairColor = alienComp.GetChannel(channel: "hair").first;
+            }
+        }
+
+        public static void GenerateGenesPostfix(Pawn pawn)
+        {
+            if (pawn.def is ThingDef_AlienRace)
+            {
+                AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
+                //Genes did some nonsense, so actual assignment here
                 pawn.story.HairColor = alienComp.GetChannel(channel: "hair").first;
             }
         }
