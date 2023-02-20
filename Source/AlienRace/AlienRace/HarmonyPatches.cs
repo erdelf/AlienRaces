@@ -2871,7 +2871,7 @@ namespace AlienRace
                 __result = RaceRestrictionSettings.CanDoRecipe(recipe, p.def);
         }
 
-        private static HashSet<ThingDef> colonistRaces = new HashSet<ThingDef>();
+        private static HashSet<ThingDef> colonistRaces = new();
         private static int               colonistRacesTick;
         private const  int               COLONIST_RACES_TICK_TIMER = GenDate.TicksPerHour * 2;
 
@@ -2883,23 +2883,21 @@ namespace AlienRace
 
                 if (pawns.Count > 0)
                 {
-                    HashSet<ThingDef> newColonistRaces = new HashSet<ThingDef>(pawns.Select(selector: p => p.def));
+                    HashSet<ThingDef> newColonistRaces = new(pawns.Select(selector: p => p.def));
                     colonistRacesTick = Find.TickManager.TicksAbs;
                     //Log.Message(string.Join(" | ", colonistRaces.Select(td => td.defName)));
 
                     if (newColonistRaces.Count != colonistRaces.Count || newColonistRaces.Any(td => !colonistRaces.Contains(td)))
                     {
                         RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Clear();
-                        HashSet<ThingDef> buildingsRestrictedTemp = new HashSet<ThingDef>(RaceRestrictionSettings.buildingRestricted);
-                        buildingsRestrictedTemp.AddRange(newColonistRaces.SelectMany(ar => (ar as ThingDef_AlienRace)?.alienRace.raceRestriction.blackBuildingList));
+                        HashSet<ThingDef> buildingsRestrictedTemp = new(RaceRestrictionSettings.buildingRestricted);
+                        buildingsRestrictedTemp.AddRange(newColonistRaces.Where(td => td is ThingDef_AlienRace).SelectMany(td => (td as ThingDef_AlienRace)!.alienRace.raceRestriction.blackBuildingList));
                         foreach (ThingDef td in buildingsRestrictedTemp)
                         {
                             bool canBuild = false;
                             foreach (ThingDef race in newColonistRaces)
-                            {
                                 if (RaceRestrictionSettings.CanBuild(td, race))
                                     canBuild = true;
-                            }
                             if(!canBuild)
                                 RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Add(td);
                         }
