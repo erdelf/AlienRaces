@@ -2614,20 +2614,9 @@ namespace AlienRace
 
         }
 
-        public static bool GainTraitPrefix(Trait trait, Pawn ___pawn)
-        {
-            if (___pawn.def is not ThingDef_AlienRace alienProps) 
-                return true;
-
-            if (!RaceRestrictionSettings.CanGetTrait(trait.def, alienProps, trait.Degree))
-                return false;
-
-            AlienTraitEntry ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(predicate: at => at.defName == trait.def);
-            if (ate == null) 
-                return true;
-
-            return Rand.Range(min: 0, max: 100) < ate.chance;
-        }
+        public static bool GainTraitPrefix(Trait trait, Pawn ___pawn) => 
+            ___pawn.def is not ThingDef_AlienRace alienProps || 
+            RaceRestrictionSettings.CanGetTrait(trait.def, alienProps, trait.Degree);
 
         public static void TryMakeInitialRelationsWithPostfix(Faction __instance, Faction other)
         {
@@ -3657,17 +3646,16 @@ namespace AlienRace
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
                 if (!alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
-                    alienProps.alienRace.generalSettings.forcedRaceTraitEntries.ForEach(action: ate =>
-                                                                                                {
-                                                                                                    if ((pawn.gender != Gender.Male ||
-                                                                                                         !(Math.Abs(ate.commonalityMale - -1f) < 0.001f) && !(Rand.Range(min: 0, max: 100) < ate.commonalityMale))                                  &&
-                                                                                                        (pawn.gender != Gender.Female || Math.Abs(ate.commonalityFemale - -1f) > 0.001f && !(Rand.Range(min: 0, max: 100) < ate.commonalityFemale)) &&
-                                                                                                        pawn.gender != Gender.None) return;
-                                                                                                    if (!pawn.story.traits.allTraits.Any(predicate: tr => tr.def == ate.defName))
-                                                                                                        pawn.story.traits.GainTrait(new Trait(ate.defName, ate.degree, forced: true));
-                                                                                                });
+                    foreach (AlienTraitEntry ate in alienProps.alienRace.generalSettings.forcedRaceTraitEntries)
+                        if ((pawn.gender == Gender.Male   && ate.commonalityMale   >= 0 && Rand.Range(min: 0, max: 100) < ate.commonalityMale   ||
+                             pawn.gender == Gender.Female && ate.commonalityFemale >= 0 && Rand.Range(min: 0, max: 100) < ate.commonalityFemale ||
+                             pawn.gender == Gender.None)              &&
+                            Rand.Range(min: 0, max: 100) < ate.chance &&
+                            !pawn.story.traits.allTraits.Any(predicate: tr => tr.def == ate.defName))
 
-                int         traits            = alienProps.alienRace.generalSettings.additionalTraits.RandomInRange;
+                            pawn.story.traits.GainTrait(new Trait(ate.defName, ate.degree, forced: true));
+
+                int traits = alienProps.alienRace.generalSettings.additionalTraits.RandomInRange;
                 if (traits > 0)
                 {
                     List<Trait> traitList = PawnGenerator.GenerateTraitsFor(pawn, traits, request);
