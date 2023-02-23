@@ -3610,8 +3610,14 @@ namespace AlienRace
         {
             BodyTypeDef bodyType = pawn.story.bodyType;
 
-            if (AlienBackstoryDef.checkBodyType.Contains(pawn.story.GetBackstory(BackstorySlot.Adulthood)))
+            BackstoryDef backstory = pawn.story.GetBackstory(BackstorySlot.Adulthood);
+            if (AlienBackstoryDef.checkBodyType.Contains(backstory))
+            {
+                bodyType = backstory.BodyTypeFor(pawn.gender);
+            } else
+            {
                 bodyType = DefDatabase<BodyTypeDef>.GetRandom();
+            }
 
             if (pawn.def is ThingDef_AlienRace alienProps &&
                 !alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.NullOrEmpty())

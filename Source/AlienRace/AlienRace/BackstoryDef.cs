@@ -39,11 +39,11 @@
                                     Concat(this.disallowedTraitsChance.Where(predicate: trait => Rand.Range(min: 0, max: 100) < trait.chance).ToList().ConvertAll(converter: trait => new BackstoryTrait { def = trait.defName, degree = trait.degree })).ToList();
             this.workDisables = (this.workAllows & WorkTags.AllWork) != 0 ? this.workDisables : ~this.workAllows;
 
-            if (this.bodyTypeGlobal == null && this.bodyTypeFemale == null && this.bodyTypeMale == null)
+            if (!(this.bodyTypeGlobal == null && this.bodyTypeFemale == null && this.bodyTypeMale == null))
             {
                 checkBodyType.Add(this);
-                this.bodyTypeGlobal = DefDatabase<BodyTypeDef>.GetRandom();
-            }
+                // this.bodyTypeGlobal = DefDatabase<BodyTypeDef>.GetRandom();
+            } 
         }
     }
 }
