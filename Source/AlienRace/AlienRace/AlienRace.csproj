@@ -331,6 +331,7 @@
     <Compile Include="ScenPart_StartingHumanlikes.cs" />
     <Compile Include="ThingDef_AlienRace.cs" />
     <Compile Include="Thoughts.cs" />
+    <Compile Include="TweakValues.cs" />
     <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
