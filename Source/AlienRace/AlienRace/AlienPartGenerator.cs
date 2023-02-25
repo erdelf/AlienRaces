@@ -47,6 +47,7 @@
         public List<WoundAnchorReplacement> anchorReplacements = new();
 
         public Vector2           headOffset            = Vector2.zero;
+        [Obsolete("Type will be replaced by Directional Offset")]
         public DirectionOffset   headOffsetDirectional = new();
         public DirectionalOffset headOffsetSpecific    = new();
 
@@ -163,7 +164,6 @@
         {
             if (this.oldHairAgeCurve.PointsCount <= 0)
             {
-            #pragma warning disable CS0612
                 float minAge = this.oldHairAgeRange.min <= 0 ? 
                                    this.getsGreyAt :
                                    this.oldHairAgeRange.TrueMin;
@@ -173,7 +173,6 @@
                                        this.alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt + this.alienProps.race.lifeExpectancy / 3f :
                                        this.alienProps.race.ageGenerationCurve.Points.Skip(this.alienProps.race.ageGenerationCurve.Points.Count - 3).First().x : 
                                    this.oldHairAgeRange.TrueMax;
-            #pragma warning restore CS0612
 
                 this.oldHairAgeCurve.Add(0f, 0f);
                 this.oldHairAgeCurve.Add(minAge, 0f);

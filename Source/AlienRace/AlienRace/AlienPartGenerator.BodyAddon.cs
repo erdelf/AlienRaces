@@ -2,6 +2,7 @@ namespace AlienRace
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Xml;
     using ExtendedGraphics;
@@ -105,6 +106,9 @@ namespace AlienRace
 
         public class BodyAddon : ExtendedGraphicTop
         {
+            private string name;
+            public string Name => this.name ??= Path.GetFileName(this.path);
+
             public           string           defaultOffset = "Center";
             [Unsaved] public DirectionalOffset defaultOffsets;
 
