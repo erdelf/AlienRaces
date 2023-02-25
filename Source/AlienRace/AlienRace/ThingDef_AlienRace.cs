@@ -75,7 +75,8 @@
 
                 lsaa.headOffsetDirectional ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetDirectional;
 
-                lsaa.headOffsetSpecific ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetSpecific;
+                lsaa.headOffsetSpecific      ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetSpecific;
+                lsaa.headOffsetSpecific.west ??= lsaa.headOffsetSpecific.east;
             }
 
             //if (this.alienRace.graphicPaths.body.path == GraphicPaths.VANILLA_BODY_PATH && !this.alienRace.graphicPaths.body.GetSubGraphics().MoveNext())
@@ -730,6 +731,7 @@
         public BodyDef body;
 
         public Vector2                              headOffset = Vector2.zero;
+        [Obsolete("Type will be replaced by Directional Offset")]
         public DirectionOffset                      headOffsetDirectional;
         public AlienPartGenerator.DirectionalOffset headOffsetSpecific;
 
