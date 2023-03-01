@@ -31,11 +31,11 @@
                                              {
                                                  options = new List<ColorOption>
                                                            {
-                                                               new()
-                                                               {
-                                                                         min = new Color(0.65f, 0.65f, 0.65f),
-                                                                         max = new Color(0.85f, 0.85f, 0.85f)
-                                                               }
+                                                               new() { only = new Color(0.65f, 0.65f, 0.65f)},
+                                                               new() { only = new Color(0.70f, 0.70f, 0.70f)},
+                                                               new() { only = new Color(0.75f, 0.75f, 0.75f)},
+                                                               new() { only = new Color(0.80f, 0.80f, 0.80f)},
+                                                               new() { only = new Color(0.85f, 0.85f, 0.85f)},
                                                            }
                                              };
 
@@ -519,8 +519,7 @@
 
                         if (this.colorChannels["hair"].first == Color.clear)
                             this.OverwriteColorChannel("hair", this.Pawn.story.HairColor);
-
-
+                        
                         if (this.colorChannels[key: "tattoo"].first == Color.clear)
                         {
                             Color tattooColor = skinColors.first;
@@ -629,7 +628,7 @@
                 if (this.ColorChannels.ContainsKey(channel))
                     return this.ColorChannels[channel];
 
-                AlienPartGenerator apg        = AlienProps.alienRace.generalSettings.alienPartGenerator;
+                AlienPartGenerator apg = this.AlienProps.alienRace.generalSettings.alienPartGenerator;
 
                 foreach (ColorChannelGenerator apgChannel in apg.colorChannels)
                     if (apgChannel.name == channel)
