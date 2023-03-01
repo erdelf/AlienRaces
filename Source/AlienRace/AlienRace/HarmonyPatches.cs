@@ -2,8 +2,6 @@ namespace AlienRace
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
-    using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
@@ -137,7 +135,7 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.PropertyGetter(typeof(StartingPawnUtility), "DefaultStartingPawnRequest"),
                           transpiler: new HarmonyMethod(patchType, nameof(DefaultStartingPawnTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateGenes"), 
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateGenes"), prefix: new HarmonyMethod(patchType, nameof(GenerateGenesPrefix)),
                 postfix: new HarmonyMethod(patchType, nameof(GenerateGenesPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GeneratePawnName)),
                 new HarmonyMethod(patchType, nameof(GeneratePawnNamePrefix)));
@@ -3009,6 +3007,15 @@ namespace AlienRace
             if (alienComp != null && pawn.kindDef.skinColorOverride.HasValue)
                 alienComp.OverwriteColorChannel("skin", pawn.kindDef.skinColorOverride.Value);
 
+        }
+
+        public static void GenerateGenesPrefix(Pawn pawn)
+        {
+            if (pawn.def is ThingDef_AlienRace)
+            {
+                AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
+                pawn.story.SkinColorBase = alienComp.GetChannel(channel: "skin").first;
+            }
         }
 
         public static void GenerateGenesPostfix(Pawn pawn)
