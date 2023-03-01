@@ -3018,6 +3018,9 @@ namespace AlienRace
 
             LocalBuilder pawnKindDefLocal = ilg.DeclareLocal(typeof(PawnKindDef));
 
+            LocalBuilder xenotypeDefLocal = ilg.DeclareLocal(typeof(XenotypeDef));
+            LocalBuilder xenotypeCustomLocal = ilg.DeclareLocal(typeof(CustomXenotype));
+
             List<CodeInstruction> instructionList = instructions.ToList();
             for (int i = 0; i < instructionList.Count; i++)
             {
@@ -3031,22 +3034,28 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Ldloc, pawnKindDefLocal.LocalIndex);
                 } else if (instruction.LoadsField(baseLinerInfo))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldloc, pawnKindDefLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldloc,  pawnKindDefLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldloca, xenotypeDefLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldloca, xenotypeCustomLocal.LocalIndex);
                     yield return CodeInstruction.Call(patchType, nameof(PickXenotypeForStartingPawn));
+                    yield return new CodeInstruction(OpCodes.Ldloc, xenotypeDefLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldloc, xenotypeCustomLocal.LocalIndex).WithLabels(instructionList[i+1].labels);
+                    i++;
                 }
             }
         }
 
-        public static XenotypeDef PickXenotypeForStartingPawn(XenotypeDef xenotype, PawnKindDef kindDef)
+        public static void PickXenotypeForStartingPawn(XenotypeDef xenotype, PawnKindDef kindDef, out XenotypeDef xenotypeDef, out CustomXenotype xenotypeCustom)
         {
-            xenotype = currentStartingRequest.ForcedXenotype ?? xenotype;
+            xenotypeCustom = currentStartingRequest.ForcedCustomXenotype;
 
-            XenotypeDef resultXenotype = RaceRestrictionSettings.CanUseXenotype(xenotype, kindDef.race) ?
-                                             xenotype :
-                                             RaceRestrictionSettings.FilterXenotypes(DefDatabase<XenotypeDef>.AllDefsListForReading, kindDef.race, out _).TryRandomElement(out XenotypeDef def) ?
-                                                 def :
-                                                 xenotype;
-            return resultXenotype;
+            xenotypeDef = currentStartingRequest.ForcedXenotype ?? xenotype;
+
+            xenotypeDef = RaceRestrictionSettings.CanUseXenotype(xenotypeDef, kindDef.race) ?
+                              xenotypeDef :
+                              RaceRestrictionSettings.FilterXenotypes(DefDatabase<XenotypeDef>.AllDefsListForReading, kindDef.race, out _).TryRandomElement(out XenotypeDef def) ?
+                                  def :
+                                  xenotypeDef;
         }
 
         public static PawnKindDef NewGeneratedStartingPawnHelper(PawnKindDef basicMember) =>
