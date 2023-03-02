@@ -136,7 +136,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.PropertyGetter(typeof(StartingPawnUtility), "DefaultStartingPawnRequest"),
                           transpiler: new HarmonyMethod(patchType, nameof(DefaultStartingPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateGenes"), prefix: new HarmonyMethod(patchType, nameof(GenerateGenesPrefix)),
-                postfix: new HarmonyMethod(patchType, nameof(GenerateGenesPostfix)));
+                postfix: new HarmonyMethod(patchType, nameof(GenerateGenesPostfix)), transpiler: new HarmonyMethod(patchType, nameof(GenerateGenesTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnHairColors), nameof(PawnHairColors.RandomHairColor)), transpiler: new HarmonyMethod(patchType, nameof(GenerateGenesTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GeneratePawnName)),
                 new HarmonyMethod(patchType, nameof(GeneratePawnNamePrefix)));
             harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), name: "CanDoNext"), 
@@ -304,9 +305,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker),                   nameof(Pawn_GeneTracker.SetXenotype)), new HarmonyMethod(patchType, nameof(SetXenotypePrefix)));
 
             harmony.Patch(AccessTools.Method(typeof(CharacterCardUtility), "LifestageAndXenotypeOptions"),                        transpiler: new HarmonyMethod(patchType, nameof(LifestageAndXenotypeOptionsTranspiler)));
-            
             harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility),  nameof(StartingPawnUtility.NewGeneratedStartingPawn)), transpiler: new HarmonyMethod(patchType, nameof(NewGeneratedStartingPawnTranspiler)));
-            
+            harmony.Patch(AccessTools.Method(typeof(PawnHairColors),       nameof(PawnHairColors.HasGreyHair)),                   transpiler: new HarmonyMethod(patchType, nameof(HasGreyHairTranspiler)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -492,7 +493,33 @@ namespace AlienRace
 
             AlienRaceMod.settings.UpdateSettings();
         }
-        
+
+
+        public static IEnumerable<CodeInstruction> HasGreyHairTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                if (instruction.opcode == OpCodes.Ldc_I4_S)
+                    instruction.operand = -1;
+
+                if (instruction.opcode == OpCodes.Stloc_0)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return CodeInstruction.Call(patchType, nameof(HasOldHairHelper));
+                }
+                yield return instruction;
+            }
+        }
+
+        public static float HasOldHairHelper(float originalChance, Pawn pawn) =>
+            pawn.def is ThingDef_AlienRace alienProps ? 
+                alienProps.alienRace.generalSettings.alienPartGenerator.oldHairAgeCurve.Evaluate(pawn.ageTracker.AgeBiologicalYearsFloat) : 
+                originalChance;
+
         public static PawnGenerationRequest currentStartingRequest;
         
         public static IEnumerable<CodeInstruction> NewGeneratedStartingPawnTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg, MethodBase originalMethod)
@@ -3009,6 +3036,31 @@ namespace AlienRace
 
         }
 
+        public static IEnumerable<CodeInstruction> GenerateGenesTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            MethodInfo randomGreyColorInfo = AccessTools.Method(typeof(PawnHairColors), nameof(PawnHairColors.RandomGreyHairColor));
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                yield return instruction;
+
+                if (instructionList[i].Calls(randomGreyColorInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return CodeInstruction.Call(patchType, nameof(OldHairColorHelper));
+                }
+            }
+        }
+
+        public static Color OldHairColorHelper(Color originalColor, Pawn pawn) =>
+            pawn.def is ThingDef_AlienRace alienProps ?
+                pawn.GetComp<AlienPartGenerator.AlienComp>().GenerateColor(alienProps.alienRace.generalSettings.alienPartGenerator.oldHairColorGen) :
+                originalColor;
+
         public static void GenerateGenesPrefix(Pawn pawn)
         {
             if (pawn.def is ThingDef_AlienRace)
@@ -3601,6 +3653,7 @@ namespace AlienRace
 
                     //Defaults for tails 
                     //south 0.42f, -0.3f, -0.22f
+                    //south 0.42f, -0.3f, -0.22f    
                     //north     0f,  0.3f, -0.55f
                     //east -0.42f, -0.3f, -0.22f   
 
