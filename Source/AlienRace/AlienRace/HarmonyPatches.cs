@@ -3003,6 +3003,9 @@ namespace AlienRace
         {
             if (pawn.def is ThingDef_AlienRace)
             {
+                if (pawn.story.HairColor == Color.white)
+                    pawn.story.HairColor = Color.clear;
+
                 AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
                 pawn.story.SkinColorBase = alienComp.GetChannel(channel: "skin").first;
             }
@@ -3014,7 +3017,11 @@ namespace AlienRace
             {
                 AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
                 //Genes did some nonsense, so actual assignment here
-                pawn.story.HairColor = alienComp.GetChannel(channel: "hair").first;
+
+                if(pawn.story.HairColor == Color.clear)
+                    pawn.story.HairColor = alienComp.GetChannel(channel: "hair").first;
+                else if (alienComp.GetChannel(channel: "hair").first == Color.clear)
+                    alienComp.OverwriteColorChannel("hair", pawn.story.HairColor);
             }
         }
 
