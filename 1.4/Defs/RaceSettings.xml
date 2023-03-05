@@ -25,6 +25,34 @@
           <chance>50.0</chance>
         </li>
       </alienrefugeekinds>
+      <startingColonists>
+        <li>
+          <pawnKindEntries>
+            <li>
+              <kindDefs>
+                <li>Colonist</li>
+              </kindDefs>
+              <chance>100.0</chance>
+            </li>
+          </pawnKindEntries>
+          <factionDefs>
+            <li>PlayerColony</li>
+          </factionDefs>
+        </li>
+        <li>
+          <pawnKindEntries>
+            <li>
+              <kindDefs>
+                <li>Tribesperson</li>
+              </kindDefs>
+              <chance>100.0</chance>
+            </li>
+          </pawnKindEntries>
+          <factionDefs>
+            <li>PlayerTribe</li>
+          </factionDefs>
+        </li>
+      </startingColonists>
       <alienwandererkinds>
         <li>
           <pawnKindEntries>

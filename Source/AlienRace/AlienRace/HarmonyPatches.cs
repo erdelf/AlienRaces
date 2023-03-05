@@ -3156,7 +3156,7 @@ namespace AlienRace
         public static PawnKindDef NewGeneratedStartingPawnHelper(PawnKindDef basicMember) =>
             DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.startingColonists.NullOrEmpty())
                                   .SelectMany(selector: tdar => tdar.pawnKindSettings.startingColonists).Where(predicate: sce => sce.factionDefs.Contains(Faction.OfPlayer.def))
-                                  .SelectMany(selector: sce => sce.pawnKindEntries).AddItem(new PawnKindEntry {chance = 100f, kindDefs = new List<PawnKindDef> {basicMember}})
+                                  .SelectMany(selector: sce => sce.pawnKindEntries)
                                   .TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk)
                 ? pk.kindDefs.RandomElement()
                 : basicMember;
