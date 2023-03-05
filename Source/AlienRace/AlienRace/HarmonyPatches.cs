@@ -3092,10 +3092,12 @@ namespace AlienRace
             FieldInfo basicMemberInfo = AccessTools.Field(typeof(FactionDef),    nameof(FactionDef.basicMemberKind));
             FieldInfo baseLinerInfo   = AccessTools.Field(typeof(XenotypeDefOf), nameof(XenotypeDefOf.Baseliner));
 
-            LocalBuilder pawnKindDefLocal = ilg.DeclareLocal(typeof(PawnKindDef));
+            //LocalBuilder pawnKindDefLocal = ilg.DeclareLocal(typeof(PawnKindDef));
 
-            LocalBuilder xenotypeDefLocal = ilg.DeclareLocal(typeof(XenotypeDef));
-            LocalBuilder xenotypeCustomLocal = ilg.DeclareLocal(typeof(CustomXenotype));
+            LocalBuilder xenotypeDefLocal        = ilg.DeclareLocal(typeof(XenotypeDef));
+            LocalBuilder xenotypeCustomLocal     = ilg.DeclareLocal(typeof(CustomXenotype));
+            LocalBuilder developmentalStageLocal = ilg.DeclareLocal(typeof(DevelopmentalStage));
+            LocalBuilder allowDownedLocal        = ilg.DeclareLocal(typeof(bool));
 
             List<CodeInstruction> instructionList = instructions.ToList();
             for (int i = 0; i < instructionList.Count; i++)
@@ -3106,32 +3108,49 @@ namespace AlienRace
                 if (instruction.LoadsField(basicMemberInfo))
                 {
                     yield return CodeInstruction.Call(patchType, nameof(NewGeneratedStartingPawnHelper));
-                    yield return new CodeInstruction(OpCodes.Stloc, pawnKindDefLocal.LocalIndex) { labels = instructionList[i +1].ExtractLabels()};
-                    yield return new CodeInstruction(OpCodes.Ldloc, pawnKindDefLocal.LocalIndex);
-                } else if (instruction.LoadsField(baseLinerInfo))
-                {
-                    yield return new CodeInstruction(OpCodes.Ldloc,  pawnKindDefLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Dup);
+                    //yield return new CodeInstruction(OpCodes.Stloc, pawnKindDefLocal.LocalIndex) { labels = instructionList[i +1].ExtractLabels()};
+                    //yield return new CodeInstruction(OpCodes.Ldloc, pawnKindDefLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldloca, xenotypeDefLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldloca, xenotypeCustomLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldloca, developmentalStageLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldloca, allowDownedLocal.LocalIndex);
                     yield return CodeInstruction.Call(patchType, nameof(PickXenotypeForStartingPawn));
+                } else if (instruction.opcode == OpCodes.Ldc_I4_0 && instructionList[i - 1].opcode == OpCodes.Ldc_I4_0 && instructionList[i + 1].opcode == OpCodes.Ldc_I4_1)
+                {
+                    yield return new CodeInstruction(OpCodes.Pop);
+                    yield return new CodeInstruction(OpCodes.Ldloc, allowDownedLocal.LocalIndex);
+                } else if (instruction.LoadsField(baseLinerInfo))
+                {
+                    //yield return new CodeInstruction(OpCodes.Ldloc,  pawnKindDefLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Pop);
                     yield return new CodeInstruction(OpCodes.Ldloc, xenotypeDefLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldloc, xenotypeCustomLocal.LocalIndex).WithLabels(instructionList[i+1].labels);
-                    i++;
+                    yield return instructionList[i + 2];
+                    yield return instructionList[i + 3];
+                    yield return new CodeInstruction(OpCodes.Ldloc, developmentalStageLocal.LocalIndex);
+
+                    i +=4;
                 }
             }
         }
 
-        public static void PickXenotypeForStartingPawn(XenotypeDef xenotype, PawnKindDef kindDef, out XenotypeDef xenotypeDef, out CustomXenotype xenotypeCustom)
+        public static void PickXenotypeForStartingPawn(PawnKindDef kindDef, out XenotypeDef xenotypeDef, out CustomXenotype xenotypeCustom, out DevelopmentalStage devStage, out bool allowDowned)
         {
-            xenotypeCustom = currentStartingRequest.ForcedCustomXenotype;
-
-            xenotypeDef = currentStartingRequest.ForcedXenotype ?? xenotype;
-
+            xenotypeDef = currentStartingRequest.ForcedXenotype ?? XenotypeDefOf.Baseliner;
             xenotypeDef = RaceRestrictionSettings.CanUseXenotype(xenotypeDef, kindDef.race) ?
                               xenotypeDef :
                               RaceRestrictionSettings.FilterXenotypes(DefDatabase<XenotypeDef>.AllDefsListForReading, kindDef.race, out _).TryRandomElement(out XenotypeDef def) ?
                                   def :
                                   xenotypeDef;
+
+            xenotypeCustom = currentStartingRequest.ForcedCustomXenotype;
+
+            devStage = currentStartingRequest.AllowedDevelopmentalStages.Equals(DevelopmentalStage.None) ? 
+                           DevelopmentalStage.Adult : 
+                           currentStartingRequest.AllowedDevelopmentalStages;
+
+            allowDowned = currentStartingRequest.AllowDowned;
         }
 
         public static PawnKindDef NewGeneratedStartingPawnHelper(PawnKindDef basicMember) =>
