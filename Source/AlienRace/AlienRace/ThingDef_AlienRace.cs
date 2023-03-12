@@ -343,11 +343,14 @@
                      this.styleTagsOverride.NullOrEmpty() || this.styleTagsOverride.Any(s => styleItemDef.styleTags.Contains(s)) :
                      this.styleTags.NullOrEmpty()         || this.styleTags.Any(s => styleItemDef.styleTags.Contains(s))) &&
                 (this.bannedTags.NullOrEmpty() || !this.bannedTags.Any(s => styleItemDef.styleTags.Contains(s)))          &&
-                (!this.genderRespected                                                                               ||
-                 pawn.gender == Gender.None                                                                          ||
-                 styleItemDef.styleGender is StyleGender.Any or StyleGender.MaleUsually or StyleGender.FemaleUsually ||
-                 styleItemDef.styleGender == StyleGender.Male   && pawn.gender == Gender.Male                        ||
-                 styleItemDef.styleGender == StyleGender.Female && pawn.gender == Gender.Female);
+
+                (!this.genderRespected      ||
+                 pawn.gender == Gender.None ||
+                 (pawn.Ideo?.style.GetGender(styleItemDef) ?? styleItemDef.styleGender, pawn.gender) switch
+                 {
+                     (StyleGender.Any or StyleGender.MaleUsually or StyleGender.FemaleUsually, _) or (StyleGender.Male, Gender.Male) or (StyleGender.Female, Gender.Female) => true,
+                     _ => false
+                 });
     }
 
     public class ThoughtSettings
