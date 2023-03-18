@@ -3467,8 +3467,8 @@ namespace AlienRace
             {
                 if (!alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
                     foreach (AlienTraitEntry ate in alienProps.alienRace.generalSettings.forcedRaceTraitEntries)
-                        if ((pawn.gender == Gender.Male   && ate.commonalityMale   >= 0 && Rand.Range(min: 0, max: 100) < ate.commonalityMale   ||
-                             pawn.gender == Gender.Female && ate.commonalityFemale >= 0 && Rand.Range(min: 0, max: 100) < ate.commonalityFemale ||
+                        if ((pawn.gender == Gender.Male   && (ate.commonalityMale   < 0 || Rand.Range(min: 0, max: 100) < ate.commonalityMale)   ||
+                             pawn.gender == Gender.Female && (ate.commonalityFemale < 0 || Rand.Range(min: 0, max: 100) < ate.commonalityFemale) ||
                              pawn.gender == Gender.None)              &&
                             Rand.Range(min: 0, max: 100) < ate.chance &&
                             !pawn.story.traits.allTraits.Any(predicate: tr => tr.def == ate.defName))
