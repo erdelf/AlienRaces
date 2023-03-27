@@ -113,6 +113,7 @@ namespace AlienRace
             [Unsaved] public DirectionalOffset defaultOffsets;
 
             public DirectionalOffset offsets                      = new();
+            public DirectionalOffset femaleOffsets                = null;
             
             public float            angle                        = 0f;
             public bool             inFrontOfBody                = false;
