@@ -255,8 +255,15 @@ public static class TweakValues
                     lsaa.headOffset.y = WriteLine(ar.LabelCap, $"{"headOffset".Colorize(color1)}.y", $"{ar.defName}.headOffset.y", lsaa.headOffset.y);
                     NextLine();
 
+                    lsaa.headFemaleOffset.x = WriteLine(ar.LabelCap, $"{"headFemaleOffset".Colorize(color1)}.x", $"{ar.defName}.headFemaleOffset.x", lsaa.headFemaleOffset.x);
+                    NextLine();
+                    lsaa.headFemaleOffset.y = WriteLine(ar.LabelCap, $"{"headFemaleOffset".Colorize(color1)}.y", $"{ar.defName}.headFemaleOffset.y", lsaa.headFemaleOffset.y);
+                    NextLine();
+
                     WriteRotationOffset(lsaa.headOffsetSpecific, (value, _, label) => 
                                                                      WriteLine(ar.LabelCap, $"{"headOffsetSpecific".Colorize(color5)}.{label}", $"{ar.defName}.headOffsetSpecific.{label}", value));
+                    WriteRotationOffset(lsaa.headFemaleOffsetSpecific, (value, _, label) => 
+                                                                     WriteLine(ar.LabelCap, $"{"headFemaleOffsetSpecific".Colorize(color5)}.{label}", $"{ar.defName}.headFemaleOffsetSpecific.{label}", value));
                     break;
                 case TweakValueEditingMode.BodyAddon:
                     if (!(ar.alienRace.generalSettings.alienPartGenerator?.bodyAddons?.NullOrEmpty() ?? true))
