@@ -770,8 +770,8 @@
         public Vector2 headFemaleOffset = Vector2.zero;
         public AlienPartGenerator.DirectionalOffset headFemaleOffsetSpecific;
 
-        public Vector2         customDrawSize             = Vector2.one;
-        public Vector2         customPortraitDrawSize     = Vector2.one;
+        public Vector2         customDrawSize             = Vector2.zero;
+        public Vector2         customPortraitDrawSize     = Vector2.zero;
         public Vector2         customHeadDrawSize         = Vector2.zero;
         public Vector2         customPortraitHeadDrawSize = Vector2.zero;
 
