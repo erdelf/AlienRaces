@@ -1839,13 +1839,13 @@ namespace AlienRace
         }
 
         public static Vector2 BaseHeadOffsetAtHelper(Vector2 offset, Pawn pawn) => 
-            offset + ((pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien)?.headOffset ?? Vector2.zero);
+            offset + ((pawn.gender == Gender.Female ? ((pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien)?.headFemaleOffset) : ((pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien)?.headOffset)) ?? Vector2.zero);
 
         public static void BaseHeadOffsetAtPostfix(ref Vector3 __result, Rot4 rotation, Pawn ___pawn)
         {
             LifeStageAgeAlien stageAgeAlien  = (___pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien);
             Vector2           offset         = stageAgeAlien?.headOffsetDirectional?.GetOffset(rotation)                                                               ?? Vector2.zero;
-            Vector3           offsetSpecific = stageAgeAlien?.headOffsetSpecific?.GetOffset(rotation)?.GetOffset(false, ___pawn.story.bodyType, ___pawn.story.headType) ?? Vector3.zero;
+            Vector3           offsetSpecific = (___pawn.gender == Gender.Female ? (stageAgeAlien?.headFemaleOffsetSpecific) : (stageAgeAlien?.headOffsetSpecific))?.GetOffset(rotation)?.GetOffset(false, ___pawn.story.bodyType, ___pawn.story.headType) ?? Vector3.zero;
             __result += new Vector3(offset.x + offsetSpecific.x, y: offsetSpecific.y, offset.y + offsetSpecific.z);
         }
 
@@ -3286,11 +3286,20 @@ namespace AlienRace
                     LifeStageAgeAlien lsaa         = (alien.ageTracker.CurLifeStageRace as LifeStageAgeAlien)!;
 
 
-
-                    alienComp.customDrawSize             = lsaa.customDrawSize;
-                    alienComp.customHeadDrawSize         = lsaa.customHeadDrawSize;
-                    alienComp.customPortraitDrawSize     = lsaa.customPortraitDrawSize;
-                    alienComp.customPortraitHeadDrawSize = lsaa.customPortraitHeadDrawSize;
+                    if (alien.gender == Gender.Female)
+                    {
+                        alienComp.customDrawSize = lsaa.customFemaleDrawSize;
+                        alienComp.customHeadDrawSize = lsaa.customFemaleHeadDrawSize;
+                        alienComp.customPortraitDrawSize = lsaa.customFemalePortraitDrawSize;
+                        alienComp.customPortraitHeadDrawSize = lsaa.customFemalePortraitHeadDrawSize;
+                    }
+                    else
+                    {
+                        alienComp.customDrawSize = lsaa.customDrawSize;
+                        alienComp.customHeadDrawSize = lsaa.customHeadDrawSize;
+                        alienComp.customPortraitDrawSize = lsaa.customPortraitDrawSize;
+                        alienComp.customPortraitHeadDrawSize = lsaa.customPortraitHeadDrawSize;
+                    }
 
 
                     alienComp.OverwriteColorChannel("hair", alien.story.HairColor);
@@ -3667,8 +3676,9 @@ namespace AlienRace
             {
                 if (ba != null && ba.CanDrawAddon(pawn))
                 {
+                    AlienPartGenerator.DirectionalOffset offsets = (pawn.gender == Gender.Female ? ba.femaleOffsets : ba.offsets) ?? ba.offsets;
                     Vector3 offsetVector = (ba.defaultOffsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story?.bodyType ?? BodyTypeDefOf.Male, pawn.story?.headType ?? HeadTypeDefOf.Stump) ?? Vector3.zero) +
-                                           (ba.offsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story?.bodyType        ?? BodyTypeDefOf.Male, pawn.story?.headType ?? HeadTypeDefOf.Stump) ?? Vector3.zero);
+                                           (offsets.GetOffset(rotation)?.GetOffset(isPortrait, pawn.story?.bodyType           ?? BodyTypeDefOf.Male, pawn.story?.headType ?? HeadTypeDefOf.Stump) ?? Vector3.zero);
 
                     //Defaults for tails 
                     //south 0.42f, -0.3f, -0.22f
