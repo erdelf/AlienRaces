@@ -57,8 +57,8 @@
         public float borderScale = 1f;
         public int atlasScale = 1;
 
-        public Vector2 customDrawSize = Vector2.zero;
-        public Vector2 customPortraitDrawSize = Vector2.zero;
+        public Vector2 customDrawSize = Vector2.one;
+        public Vector2 customPortraitDrawSize = Vector2.one;
         public Vector2 customHeadDrawSize = Vector2.zero;
         public Vector2 customPortraitHeadDrawSize = Vector2.zero;
 
