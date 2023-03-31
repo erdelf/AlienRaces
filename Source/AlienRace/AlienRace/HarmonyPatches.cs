@@ -3108,14 +3108,14 @@ namespace AlienRace
                 if (instruction.LoadsField(basicMemberInfo))
                 {
                     yield return CodeInstruction.Call(patchType, nameof(NewGeneratedStartingPawnHelper));
-                    yield return new CodeInstruction(OpCodes.Dup);
+                    yield return new CodeInstruction(OpCodes.Dup) { labels = instructionList[i + 1].ExtractLabels() };
                     //yield return new CodeInstruction(OpCodes.Stloc, pawnKindDefLocal.LocalIndex) { labels = instructionList[i +1].ExtractLabels()};
                     //yield return new CodeInstruction(OpCodes.Ldloc, pawnKindDefLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldloca, xenotypeDefLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldloca, xenotypeCustomLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldloca, developmentalStageLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldloca, allowDownedLocal.LocalIndex);
-                    yield return CodeInstruction.Call(patchType, nameof(PickXenotypeForStartingPawn));
+                    yield return CodeInstruction.Call(patchType, nameof(PickStartingPawnConfig));
                 } else if (instruction.opcode == OpCodes.Ldc_I4_0 && instructionList[i - 1].opcode == OpCodes.Ldc_I4_0 && instructionList[i + 1].opcode == OpCodes.Ldc_I4_1)
                 {
                     yield return new CodeInstruction(OpCodes.Pop);
@@ -3135,7 +3135,7 @@ namespace AlienRace
             }
         }
 
-        public static void PickXenotypeForStartingPawn(PawnKindDef kindDef, out XenotypeDef xenotypeDef, out CustomXenotype xenotypeCustom, out DevelopmentalStage devStage, out bool allowDowned)
+        public static void PickStartingPawnConfig(PawnKindDef kindDef, out XenotypeDef xenotypeDef, out CustomXenotype xenotypeCustom, out DevelopmentalStage devStage, out bool allowDowned)
         {
             xenotypeDef = currentStartingRequest.ForcedXenotype ?? XenotypeDefOf.Baseliner;
             xenotypeDef = RaceRestrictionSettings.CanUseXenotype(xenotypeDef, kindDef.race) ?
@@ -3151,6 +3151,12 @@ namespace AlienRace
                            currentStartingRequest.AllowedDevelopmentalStages;
 
             allowDowned = currentStartingRequest.AllowDowned;
+
+            if (!CachedData.canBeChild(kindDef))
+            {
+                devStage    = DevelopmentalStage.Adult;
+                allowDowned = false;
+            }
         }
 
         public static PawnKindDef NewGeneratedStartingPawnHelper(PawnKindDef basicMember) =>
