@@ -157,6 +157,11 @@
             return racePropsToRaceDict[props];
         }
 
+        public delegate bool CanBeChild(PawnKindDef kindDef);
+
+        public static readonly CanBeChild canBeChild =
+            AccessTools.MethodDelegate<CanBeChild>(AccessTools.Method(typeof(ScenarioUtility), "CanBeChild"));
+
         public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allApparelPairs =
             AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnApparelGenerator), "allApparelPairs"));
 
