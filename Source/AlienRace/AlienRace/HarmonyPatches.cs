@@ -3235,24 +3235,26 @@ namespace AlienRace
 
         private static PawnBioDef bioReference;
 
-        public static void TryGetRandomUnusedSolidBioForPostfix(List<string> backstoryCategories, ref bool __result, ref PawnBio result, PawnKindDef kind, Gender gender, string requiredLastName)
+        public static void TryGetRandomUnusedSolidBioForPostfix(List<BackstoryCategoryFilter> backstoryCategories, ref bool __result, ref PawnBio result, PawnKindDef kind, Gender gender, string requiredLastName)
         {
+            BackstoryCategoryFilter bcf = backstoryCategories.RandomElementByWeight(bcf => bcf.commonality);
+
             if (SolidBioDatabase.allBios.Where(predicate: pb =>
-                (((kind.race as ThingDef_AlienRace)?.alienRace.generalSettings.allowHumanBios ?? true) && (kind.GetModExtension<Info>()?.allowHumanBios ?? true) ||
-                 (DefDatabase<PawnBioDef>.AllDefs.FirstOrDefault(predicate: pbd => pb.name.ConfusinglySimilarTo(pbd.name))?.validRaces.Contains(kind.race) ?? false)) &&
-                (pb.gender == GenderPossibility.Either || pb.gender == GenderPossibility.Male && gender == Gender.Male)                                                            &&
-                (requiredLastName.NullOrEmpty()        || pb.name.Last == requiredLastName)                                                                                        &&
-                (!kind.factionLeader                   || pb.pirateKing)                                                                                                           &&
-                pb.adulthood.spawnCategories.Any(backstoryCategories.Contains)                                                                                                     &&
-                !pb.name.UsedThisGame).TryRandomElement(out PawnBio bio))
+                  (((kind.race as ThingDef_AlienRace)?.alienRace.generalSettings.allowHumanBios ?? true) && (kind.GetModExtension<Info>()?.allowHumanBios ?? true) ||
+                   (DefDatabase<PawnBioDef>.AllDefs.FirstOrDefault(predicate: pbd => pb.name.ConfusinglySimilarTo(pbd.name))?.validRaces.Contains(kind.race) ?? false)) &&
+                  pb.gender.IsGenderApplicable(gender)                                                                                                                           &&
+                  (requiredLastName.NullOrEmpty() || pb.name.Last == requiredLastName)                                                                                           &&
+                  (!kind.factionLeader            || pb.pirateKing)                                                                                                              &&
+                  bcf.Matches(pb.adulthood) &&
+                  !pb.name.UsedThisGame).TryRandomElement(out PawnBio bio))
             {
-                result     = bio;
+                result       = bio;
                 bioReference = DefDatabase<PawnBioDef>.AllDefs.FirstOrDefault(predicate: pbd => bio.name.ConfusinglySimilarTo(pbd.name));
-                __result = true;
+                __result     = true;
             }
             else
             {
-                result = null;
+                result   = null;
                 __result = false;
             }
         }
