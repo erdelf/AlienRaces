@@ -319,57 +319,49 @@ namespace AlienRace
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.apparelList)
                 {
-                    if (!RaceRestrictionSettings.apparelRestricted.Contains(thingDef))
-                        RaceRestrictionSettings.apparelRestricted.Add(thingDef);
+                    RaceRestrictionSettings.apparelRestricted.Add(thingDef);
                     ar.alienRace.raceRestriction.whiteApparelList.Add(thingDef);
                 }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.weaponList)
                 {
-                    if (!RaceRestrictionSettings.weaponRestricted.Contains(thingDef))
-                        RaceRestrictionSettings.weaponRestricted.Add(thingDef);
+                    RaceRestrictionSettings.weaponRestricted.Add(thingDef);
                     ar.alienRace.raceRestriction.whiteWeaponList.Add(thingDef);
                 }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.buildingList)
                 {
-                    if (!RaceRestrictionSettings.buildingRestricted.Contains(thingDef))
-                        RaceRestrictionSettings.buildingRestricted.Add(thingDef);
+                    RaceRestrictionSettings.buildingRestricted.Add(thingDef);
                     ar.alienRace.raceRestriction.whiteBuildingList.Add(thingDef);
                 }
 
                 foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.recipeList)
                 {
-                    if (!RaceRestrictionSettings.recipeRestricted.Contains(recipeDef))
-                        RaceRestrictionSettings.recipeRestricted.Add(recipeDef);
+                    RaceRestrictionSettings.recipeRestricted.Add(recipeDef);
                     ar.alienRace.raceRestriction.whiteRecipeList.Add(recipeDef);
                 }
                 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.plantList)
                 {
-                    if (!RaceRestrictionSettings.plantRestricted.Contains(thingDef))
-                        RaceRestrictionSettings.plantRestricted.Add(thingDef);
+                    RaceRestrictionSettings.plantRestricted.Add(thingDef);
                     ar.alienRace.raceRestriction.whitePlantList.Add(thingDef);
                 }
                 
                 foreach (TraitDef traitDef in ar.alienRace.raceRestriction.traitList)
                 {
-                    if (!RaceRestrictionSettings.traitRestricted.Contains(traitDef))
-                        RaceRestrictionSettings.traitRestricted.Add(traitDef);
+                    RaceRestrictionSettings.traitRestricted.Add(traitDef);
                     ar.alienRace.raceRestriction.whiteTraitList.Add(traitDef);
                 }
                 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.foodList)
                 {
-                    if (!RaceRestrictionSettings.foodRestricted.Contains(thingDef))
-                        RaceRestrictionSettings.foodRestricted.Add(thingDef);
+                    RaceRestrictionSettings.foodRestricted.Add(thingDef);
                     ar.alienRace.raceRestriction.whiteFoodList.Add(thingDef);
                 }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.petList)
                 {
-                    if (!RaceRestrictionSettings.petRestricted.Contains(thingDef))
-                        RaceRestrictionSettings.petRestricted.Add(thingDef);
+                    RaceRestrictionSettings.petRestricted.Add(thingDef);
                     ar.alienRace.raceRestriction.whitePetList.Add(thingDef);
                 }
 
@@ -382,22 +374,19 @@ namespace AlienRace
 
                 foreach (GeneDef geneDef in ar.alienRace.raceRestriction.geneList)
                 {
-                    if (!RaceRestrictionSettings.geneRestricted.Contains(geneDef))
-                        RaceRestrictionSettings.geneRestricted.Add(geneDef);
+                    RaceRestrictionSettings.geneRestricted.Add(geneDef);
                     ar.alienRace.raceRestriction.whiteGeneList.Add(geneDef);
                 }
 
                 foreach (XenotypeDef xenotypeDef in ar.alienRace.raceRestriction.xenotypeList)
                 {
-                    if (!RaceRestrictionSettings.xenotypeRestricted.Contains(xenotypeDef))
-                        RaceRestrictionSettings.xenotypeRestricted.Add(xenotypeDef);
+                    RaceRestrictionSettings.xenotypeRestricted.Add(xenotypeDef);
                     ar.alienRace.raceRestriction.whiteXenotypeList.Add(xenotypeDef);
                 }
 
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.reproductionList)
                 {
-                    if (!RaceRestrictionSettings.reproductionRestricted.Contains(thingDef))
-                        RaceRestrictionSettings.reproductionRestricted.Add(thingDef);
+                    RaceRestrictionSettings.reproductionRestricted.Add(thingDef);
                     ar.alienRace.raceRestriction.whiteReproductionList.Add(thingDef);
                 }
 
