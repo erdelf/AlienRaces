@@ -20,20 +20,20 @@
             this.comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
             base.ResolveReferences();
 
-            if (this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize == Vector2.zero)
+            if (this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize.Equals(Vector2.zero))
                 this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
-            if (this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize == Vector2.zero)
+            if (this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize.Equals(Vector2.zero))
                 this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
 
-            if (this.alienRace.generalSettings.alienPartGenerator.customFemaleDrawSize == Vector2.zero)
+            if (this.alienRace.generalSettings.alienPartGenerator.customFemaleDrawSize.Equals(Vector2.zero))
                 this.alienRace.generalSettings.alienPartGenerator.customFemaleDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
-            if (this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitDrawSize == Vector2.zero)
+            if (this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitDrawSize.Equals(Vector2.zero))
                 this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
 
-            if (this.alienRace.generalSettings.alienPartGenerator.customFemaleHeadDrawSize == Vector2.zero)
-                this.alienRace.generalSettings.alienPartGenerator.customFemaleHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customFemaleDrawSize;
-            if (this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitHeadDrawSize == Vector2.zero)
-                this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitDrawSize;
+            if (this.alienRace.generalSettings.alienPartGenerator.customFemaleHeadDrawSize.Equals(Vector2.zero))
+                this.alienRace.generalSettings.alienPartGenerator.customFemaleHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize;
+            if (this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitHeadDrawSize.Equals(Vector2.zero))
+                this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize;
 
             if (this.alienRace.generalSettings.alienPartGenerator.headFemaleOffset.Equals(Vector2.negativeInfinity))
                 this.alienRace.generalSettings.alienPartGenerator.headFemaleOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
@@ -72,34 +72,34 @@
                     this.race.lifeStageAges[i] = lsaa;
                 }
 
-                if (lsaa.customDrawSize == Vector2.zero)
+                if (lsaa.customDrawSize.Equals(Vector2.zero))
                     lsaa.customDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
 
-                if (lsaa.customPortraitDrawSize == Vector2.zero)
+                if (lsaa.customPortraitDrawSize.Equals(Vector2.zero))
                     lsaa.customPortraitDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
 
-                if (lsaa.customHeadDrawSize == Vector2.zero)
+                if (lsaa.customHeadDrawSize.Equals(Vector2.zero))
                     lsaa.customHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize;
 
-                if (lsaa.customPortraitHeadDrawSize == Vector2.zero)
+                if (lsaa.customPortraitHeadDrawSize.Equals(Vector2.zero))
                     lsaa.customPortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize;
 
-                if (lsaa.customFemaleDrawSize == Vector2.zero)
+                if (lsaa.customFemaleDrawSize.Equals(Vector2.zero))
                     lsaa.customFemaleDrawSize = this.alienRace.generalSettings.alienPartGenerator.customFemaleDrawSize;
 
-                if (lsaa.customFemalePortraitDrawSize == Vector2.zero)
+                if (lsaa.customFemalePortraitDrawSize.Equals(Vector2.zero))
                     lsaa.customFemalePortraitDrawSize = this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitDrawSize;
 
-                if (lsaa.customFemaleHeadDrawSize == Vector2.zero)
+                if (lsaa.customFemaleHeadDrawSize.Equals(Vector2.zero))
                     lsaa.customFemaleHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customFemaleHeadDrawSize;
 
-                if (lsaa.customFemalePortraitHeadDrawSize == Vector2.zero)
+                if (lsaa.customFemalePortraitHeadDrawSize.Equals(Vector2.zero))
                     lsaa.customFemalePortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitHeadDrawSize;
 
-                if (lsaa.headOffset == Vector2.zero)
+                if (lsaa.headOffset.Equals(Vector2.zero))
                     lsaa.headOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
 
-                if (lsaa.headFemaleOffset == Vector2.zero)
+                if (lsaa.headFemaleOffset.Equals(Vector2.zero))
                     lsaa.headFemaleOffset = this.alienRace.generalSettings.alienPartGenerator.headFemaleOffset;
 
                 lsaa.headOffsetDirectional ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetDirectional;
