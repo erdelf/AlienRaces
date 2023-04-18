@@ -1834,7 +1834,7 @@ namespace AlienRace
                                                        _ => ageAlien.headOffset
                                                    });
 
-            Log.Message($"{ageAlien?.def.defName}: {alienHeadOffset.ToStringTwoDigits()}");
+            //Log.Message($"{ageAlien?.def.defName}: {alienHeadOffset.ToStringTwoDigits()}");
 
             return offset + alienHeadOffset;
         }
