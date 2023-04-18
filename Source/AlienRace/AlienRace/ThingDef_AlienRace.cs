@@ -25,19 +25,6 @@
             if (this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize.Equals(Vector2.zero))
                 this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
 
-            if (this.alienRace.generalSettings.alienPartGenerator.customFemaleDrawSize.Equals(Vector2.zero))
-                this.alienRace.generalSettings.alienPartGenerator.customFemaleDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
-            if (this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitDrawSize.Equals(Vector2.zero))
-                this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
-
-            if (this.alienRace.generalSettings.alienPartGenerator.customFemaleHeadDrawSize.Equals(Vector2.zero))
-                this.alienRace.generalSettings.alienPartGenerator.customFemaleHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize;
-            if (this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitHeadDrawSize.Equals(Vector2.zero))
-                this.alienRace.generalSettings.alienPartGenerator.customFemalePortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize;
-
-            if (this.alienRace.generalSettings.alienPartGenerator.headFemaleOffset.Equals(Vector2.negativeInfinity))
-                this.alienRace.generalSettings.alienPartGenerator.headFemaleOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
-
             this.alienRace.generalSettings.alienPartGenerator.headFemaleOffsetSpecific ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetSpecific;
 
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
@@ -99,7 +86,7 @@
                 if (lsaa.headOffset.Equals(Vector2.zero))
                     lsaa.headOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
 
-                if (lsaa.headFemaleOffset.Equals(Vector2.zero))
+                if (lsaa.headFemaleOffset.Equals(Vector2.negativeInfinity))
                     lsaa.headFemaleOffset = this.alienRace.generalSettings.alienPartGenerator.headFemaleOffset;
 
                 lsaa.headOffsetDirectional ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetDirectional;
@@ -770,7 +757,7 @@
         public DirectionOffset                      headOffsetDirectional;
         public AlienPartGenerator.DirectionalOffset headOffsetSpecific;
 
-        public Vector2 headFemaleOffset = Vector2.zero;
+        public Vector2 headFemaleOffset = Vector2.negativeInfinity;
         public AlienPartGenerator.DirectionalOffset headFemaleOffsetSpecific;
 
         public Vector2         customDrawSize             = Vector2.zero;
