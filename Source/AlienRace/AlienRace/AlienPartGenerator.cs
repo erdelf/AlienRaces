@@ -51,7 +51,7 @@
         public DirectionOffset   headOffsetDirectional = new();
         public DirectionalOffset headOffsetSpecific    = new();
 
-        public Vector2 headFemaleOffset = Vector2.zero;
+        public Vector2 headFemaleOffset = new Vector2(-9999f, -9999f);
         public DirectionalOffset headFemaleOffsetSpecific;
 
         public float borderScale = 1f;
