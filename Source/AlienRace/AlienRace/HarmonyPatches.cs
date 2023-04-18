@@ -1827,8 +1827,20 @@ namespace AlienRace
             }
         }
 
-        public static Vector2 BaseHeadOffsetAtHelper(Vector2 offset, Pawn pawn) => 
-            offset + ((pawn.gender == Gender.Female ? ((pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien)?.headFemaleOffset) : ((pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien)?.headOffset)) ?? Vector2.zero);
+        public static Vector2 BaseHeadOffsetAtHelper(Vector2 offset, Pawn pawn)
+        {
+            LifeStageAgeAlien ageAlien = (pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien);
+
+            Vector2 alienHeadOffset = (ageAlien == null ? Vector2.zero : pawn.gender switch
+                                                   {
+                                                       Gender.Female => ageAlien.headFemaleOffset.Equals(Vector2.negativeInfinity) ? ageAlien.headOffset : ageAlien.headFemaleOffset,
+                                                       _ => ageAlien.headOffset
+                                                   });
+
+            Log.Message($"{ageAlien?.def.defName}: {alienHeadOffset.ToStringTwoDigits()}");
+
+            return offset + alienHeadOffset;
+        }
 
         public static void BaseHeadOffsetAtPostfix(ref Vector3 __result, Rot4 rotation, Pawn ___pawn)
         {
@@ -3287,10 +3299,10 @@ namespace AlienRace
 
                     if (alien.gender == Gender.Female)
                     {
-                        alienComp.customDrawSize = lsaa.customFemaleDrawSize;
-                        alienComp.customHeadDrawSize = lsaa.customFemaleHeadDrawSize;
-                        alienComp.customPortraitDrawSize = lsaa.customFemalePortraitDrawSize;
-                        alienComp.customPortraitHeadDrawSize = lsaa.customFemalePortraitHeadDrawSize;
+                        alienComp.customDrawSize = lsaa.customFemaleDrawSize.Equals(Vector2.zero) ? lsaa.customDrawSize : lsaa.customFemaleDrawSize;
+                        alienComp.customHeadDrawSize = lsaa.customFemaleHeadDrawSize.Equals(Vector2.zero) ? lsaa.customHeadDrawSize : lsaa.customFemaleHeadDrawSize;
+                        alienComp.customPortraitDrawSize = lsaa.customFemalePortraitDrawSize.Equals(Vector2.zero) ? lsaa.customPortraitDrawSize : lsaa.customFemalePortraitDrawSize;
+                        alienComp.customPortraitHeadDrawSize = lsaa.customFemalePortraitHeadDrawSize.Equals(Vector2.zero) ? lsaa.customPortraitHeadDrawSize : lsaa.customFemalePortraitHeadDrawSize;
                     }
                     else
                     {
