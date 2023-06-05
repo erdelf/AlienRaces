@@ -130,6 +130,11 @@
                 }
             }
 
+            if (this.alienRace.generalSettings.alienPartGenerator.defaultMaleBodyType == null)
+                this.alienRace.generalSettings.alienPartGenerator.defaultMaleBodyType = BodyTypeDefOf.Male;
+            if (this.alienRace.generalSettings.alienPartGenerator.defaultFemaleBodyType == null)
+                this.alienRace.generalSettings.alienPartGenerator.defaultFemaleBodyType = BodyTypeDefOf.Female;
+
             void RecursiveAttributeCheck(Type type, Traverse instance)
             {
                 if (type == typeof(ThingDef_AlienRace))
