@@ -130,10 +130,8 @@
                 }
             }
 
-            if (this.alienRace.generalSettings.alienPartGenerator.defaultMaleBodyType == null)
-                this.alienRace.generalSettings.alienPartGenerator.defaultMaleBodyType = BodyTypeDefOf.Male;
-            if (this.alienRace.generalSettings.alienPartGenerator.defaultFemaleBodyType == null)
-                this.alienRace.generalSettings.alienPartGenerator.defaultFemaleBodyType = BodyTypeDefOf.Female;
+            this.alienRace.generalSettings.alienPartGenerator.defaultMaleBodyType   ??= BodyTypeDefOf.Male;
+            this.alienRace.generalSettings.alienPartGenerator.defaultFemaleBodyType ??= BodyTypeDefOf.Female;
 
             void RecursiveAttributeCheck(Type type, Traverse instance)
             {
@@ -190,6 +188,7 @@
         public List<ChemicalSettings> chemicalSettings;
         public List<AlienTraitEntry>  forcedRaceTraitEntries;
         public List<AlienTraitEntry>  disallowedTraits;
+        [Obsolete("Effectively replaced via growth moments, currently ineffective")]
         public IntRange               traitCount         = new(1, 3);
         public IntRange               additionalTraits   = IntRange.zero;
         public AlienPartGenerator     alienPartGenerator = new();
@@ -424,26 +423,26 @@
         public List<ThingDef> raceList;
 
         [LoadDefFromField(nameof(ThoughtDefOf.ButcheredHumanlikeCorpse))]
-        public ThoughtDef thought;// "ButcheredHumanlikeCorpse";
+        public ThoughtDef thought;
 
         [LoadDefFromField(nameof(ThoughtDefOf.KnowButcheredHumanlikeCorpse))]
-        public ThoughtDef knowThought;// "KnowButcheredHumanlikeCorpse";
+        public ThoughtDef knowThought;
     }
 
     public class AteThought
     {
         public List<ThingDef> raceList;
         [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatDirect))]
-        public ThoughtDef thought;// "AteHumanlikeMeatDirect";
+        public ThoughtDef thought;
 
         [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatDirectCannibal))]
-        public ThoughtDef thoughtCannibal; // "AteHumanlikeMeatDirectCannibal";
+        public ThoughtDef thoughtCannibal;
 
         [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredient))]
-        public ThoughtDef ingredientThought; // "AteHumanlikeMeatAsIngredient";
+        public ThoughtDef ingredientThought;
 
         [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))]
-        public ThoughtDef ingredientThoughtCannibal; // "AteHumanlikeMeatAsIngredientCannibal";
+        public ThoughtDef ingredientThoughtCannibal;
 
         public ThoughtDef GetThought(bool cannibal, bool ingredient) =>
             cannibal ? ingredient ? this.ingredientThoughtCannibal : this.thoughtCannibal : ingredient ? this.ingredientThought : this.thought;

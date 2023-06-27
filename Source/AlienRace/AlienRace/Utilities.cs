@@ -17,8 +17,11 @@
     public static class AlienDefOf
     {
         // ReSharper disable InconsistentNaming
+        [Obsolete("Prefixing")]
         public static TraitDef Xenophobia;
+        [Obsolete("Prefixing")]
         public static ThoughtDef XenophobiaVsAlien;
+        [Obsolete("Capitalizing and prefixing")]
         public static ThingCategoryDef alienCorpseCategory;
 
         [MayRequireIdeology]
@@ -146,7 +149,7 @@
 
     public static class CachedData
     {
-        private static Dictionary<RaceProperties, ThingDef> racePropsToRaceDict = new();
+        private static readonly Dictionary<RaceProperties, ThingDef> racePropsToRaceDict = new();
 
         public static ThingDef GetRaceFromRaceProps(RaceProperties props)
         {

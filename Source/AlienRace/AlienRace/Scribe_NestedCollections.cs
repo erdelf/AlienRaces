@@ -167,7 +167,7 @@
 
                             list = new List<HashSet<T>>(curXmlParent.ChildNodes.Count);
 
-                            foreach (XmlNode childNode in curXmlParent.ChildNodes)
+                            foreach (XmlNode _ in curXmlParent.ChildNodes)
                             {
                                 HashSet<T> li = null;
                                 Scribe_Collections.Look(ref li, "li");

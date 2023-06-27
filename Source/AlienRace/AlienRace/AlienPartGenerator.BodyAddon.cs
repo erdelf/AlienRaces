@@ -98,10 +98,8 @@ namespace AlienRace
             public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) => true;
 
             [UsedImplicitly]
-            public void LoadDataFromXmlCustom(XmlNode xmlRoot)
-            {
+            public void LoadDataFromXmlCustom(XmlNode xmlRoot) => 
                 this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
-            }
         }
 
         public class BodyAddon : ExtendedGraphicTop
@@ -128,7 +126,7 @@ namespace AlienRace
             public bool drawDrafted     = true;
             public bool drawUndrafted   = true;
 
-            public BodyAddonJobConfig jobs = new BodyAddonJobConfig();
+            public BodyAddonJobConfig jobs = new();
 
             public bool alignWithHead = false;
 
@@ -147,8 +145,8 @@ namespace AlienRace
             public Color? colorOverrideTwo;
             public float  colorPostFactor = 1f;
 
-            public List<BodyPartGroupDef> hiddenUnderApparelFor = new List<BodyPartGroupDef>();
-            public List<string>           hiddenUnderApparelTag = new List<string>();
+            public List<BodyPartGroupDef> hiddenUnderApparelFor = new();
+            public List<string>           hiddenUnderApparelTag = new();
 
             public BackstoryDef   backstoryRequirement;
             public BodyTypeDef    bodyTypeRequirement;
@@ -233,15 +231,12 @@ namespace AlienRace
 
                 //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
 
-                if (this.colorOverrideOne.HasValue)
-                {
+                if (this.colorOverrideOne.HasValue) 
                     first = this.colorOverrideOne.Value;
-                }
 
-                if (this.colorOverrideTwo.HasValue)
-                {
+                if (this.colorOverrideTwo.HasValue) 
                     second = this.colorOverrideTwo.Value;
-                }
+
                 if (Math.Abs(this.colorPostFactor - 1f) > float.Epsilon)
                 {
                     first  *= this.colorPostFactor;
@@ -264,7 +259,7 @@ namespace AlienRace
             {
                 public bool drawNoJob = true;
 
-                public List<BodyAddonJobConfigJob> jobs = new List<BodyAddonJobConfigJob>();
+                public List<BodyAddonJobConfigJob> jobs = new();
 
                 private Dictionary<JobDef, BodyAddonJobConfigJob> jobMap;
 
