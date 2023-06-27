@@ -20,6 +20,8 @@
             this.headTypes ?? CachedData.DefaultHeadTypeDefs;
 
         public List<BodyTypeDef> bodyTypes = new();
+        public BodyTypeDef defaultMaleBodyType;
+        public BodyTypeDef defaultFemaleBodyType;
 
         [Obsolete]
         public int getsGreyAt = 40;
