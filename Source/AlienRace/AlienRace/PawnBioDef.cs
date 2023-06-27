@@ -6,14 +6,14 @@
 
     public class PawnBioDef : Def
     {
-        public BackstoryDef childhood;
-        public BackstoryDef adulthood;
-        public GenderPossibility gender;
-        public NameTriple name;
-        public List<ThingDef> validRaces;
-        public bool factionLeader;
-        public List<HediffDef> forcedHediffs = new List<HediffDef>();
-        public List<ThingDefCountRangeClass> forcedItems = new List<ThingDefCountRangeClass>();
+        public BackstoryDef                  childhood;
+        public BackstoryDef                  adulthood;
+        public GenderPossibility             gender;
+        public NameTriple                    name;
+        public List<ThingDef>                validRaces;
+        public bool                          factionLeader;
+        public List<HediffDef>               forcedHediffs = new();
+        public List<ThingDefCountRangeClass> forcedItems   = new();
 
         public override IEnumerable<string> ConfigErrors()
         {
@@ -30,14 +30,14 @@
         {
             base.ResolveReferences();
             
-            PawnBio bio = new PawnBio
+            PawnBio bio = new()
                           {
-                              gender     = this.gender,
-                              name       = this.name,
-                              childhood  = this.childhood,
-                              adulthood  = this.adulthood,
-                              pirateKing = this.factionLeader
-                          };
+                                    gender     = this.gender,
+                                    name       = this.name,
+                                    childhood  = this.childhood,
+                                    adulthood  = this.adulthood,
+                                    pirateKing = this.factionLeader
+                                };
 
             if (this.adulthood.spawnCategories.Count == 1 && this.adulthood.spawnCategories[index: 0] == "Trader")
                 this.adulthood.spawnCategories.Add(item: "Civil");

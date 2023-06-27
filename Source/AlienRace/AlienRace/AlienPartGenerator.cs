@@ -20,7 +20,9 @@
             this.headTypes ?? CachedData.DefaultHeadTypeDefs;
 
         public List<BodyTypeDef> bodyTypes = new();
+        [LoadDefFromField("Male")]
         public BodyTypeDef defaultMaleBodyType;
+        [LoadDefFromField("Female")]
         public BodyTypeDef defaultFemaleBodyType;
 
         [Obsolete]
@@ -75,25 +77,7 @@
         public List<BodyAddon> bodyAddons = new();
 
         public ThingDef_AlienRace alienProps;
-        /*
-        public static string GetAlienHead(string userpath, Gender gender, HeadTypeDef headType)
-        {
-            string path         = userpath;
-            string headTypePath = Path.GetFileName(headType.graphicPath);
-
-            if (gender == Gender.None && headType.gender != Gender.None)
-                headTypePath = headTypePath.Substring(headTypePath.IndexOf('_')+1);
-            else
-                path = userpath + (userpath == GraphicPaths.VANILLA_HEAD_PATH ? gender + "/" : "");
-
-            return userpath.NullOrEmpty() ? string.Empty : path + headTypePath;
-        }*/
-        /*
-        public Graphic GetNakedGraphic(BodyTypeDef bodyType, Shader shader, Color skinColor, Color skinColorSecond, string userpath, string gender, string maskPath) =>
-            GraphicDatabase.Get(typeof(Graphic_Multi), GetNakedPath(bodyType, userpath, this.useGenderedBodies ? gender : ""), shader, Vector2.one, skinColor, skinColorSecond, data: null, shaderParameters: null, maskPath: maskPath);
-
-        public static string GetNakedPath(BodyTypeDef bodyType, string userpath, string gender) => userpath + (!gender.NullOrEmpty() ? gender + "_" : "") + "Naked_" + (bodyType == BodyTypeDefOf.Baby ? BodyTypeDefOf.Child : bodyType);
-        */
+        
         public Color SkinColor(Pawn alien, bool first = true)
         {
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
@@ -108,10 +92,8 @@
             return first ? skinColors.first : skinColors.second;
         }
 
-        public void GenericOffsets()
-        {
+        public void GenericOffsets() => 
             this.GenerateOffsetDefaults();
-        }
 
         private void GenerateOffsetDefaults()
         {
@@ -634,8 +616,8 @@
 
             public ExposableValueTuple<Color, Color> GetChannel(string channel)
             {
-                if (this.ColorChannels.ContainsKey(channel))
-                    return this.ColorChannels[channel];
+                if (this.ColorChannels.TryGetValue(channel, out ExposableValueTuple<Color, Color> colorChannel))
+                    return colorChannel;
 
                 AlienPartGenerator apg = this.AlienProps.alienRace.generalSettings.alienPartGenerator;
 
@@ -661,8 +643,8 @@
                 ThingDef_AlienRace alienProps = ((ThingDef_AlienRace)this.parent.def);
                 AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
 
-                if (this.colorChannelLinks.ContainsKey(channel))
-                    foreach (ExposableValueTuple<ExposableValueTuple<string, int>, bool> link in this.colorChannelLinks[channel])
+                if (this.colorChannelLinks.TryGetValue(channel, out HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>> colorChannelLink))
+                    foreach (ExposableValueTuple<ExposableValueTuple<string, int>, bool> link in colorChannelLink)
                     {
                         foreach (ColorChannelGenerator apgChannel in apg.colorChannels)
                         {
