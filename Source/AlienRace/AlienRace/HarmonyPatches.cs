@@ -3512,22 +3512,21 @@ namespace AlienRace
         }
 
         public static void GetBodyTypeForPostfix(Pawn pawn, ref BodyTypeDef __result) =>
-            __result = CheckBodyType(pawn);
+            __result = CheckBodyType(pawn, __result);
 
-        public static void GenerateBodyTypePostfix(Pawn pawn) => 
-            pawn.story.bodyType = CheckBodyType(pawn);
+        public static void GenerateBodyTypePostfix(Pawn pawn) =>
+            pawn.story.bodyType = CheckBodyType(pawn, pawn.story.bodyType);
 
-        public static BodyTypeDef CheckBodyType(Pawn pawn)
+        public static BodyTypeDef CheckBodyType(Pawn pawn, BodyTypeDef bodyType)
         {
-            BodyTypeDef bodyType = pawn.story.bodyType;
-
             if (AlienBackstoryDef.checkBodyType.Contains(pawn.story.GetBackstory(BackstorySlot.Adulthood)))
                 bodyType = DefDatabase<BodyTypeDef>.GetRandom();
 
             if (pawn.def is ThingDef_AlienRace alienProps &&
+                alienProps.alienRace.generalSettings.alienPartGenerator is AlienPartGenerator parts &&
                 !alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.NullOrEmpty())
             {
-                List<BodyTypeDef> bodyTypeDefs = alienProps.alienRace.generalSettings.alienPartGenerator.bodyTypes.ListFullCopy();
+                List<BodyTypeDef> bodyTypeDefs = parts.bodyTypes.ListFullCopy();
 
                 if ((pawn.ageTracker.CurLifeStage.developmentalStage.Baby() || pawn.ageTracker.CurLifeStage.developmentalStage.Newborn()) && bodyTypeDefs.Contains(BodyTypeDefOf.Baby))
                 {
@@ -3542,11 +3541,19 @@ namespace AlienRace
                     bodyTypeDefs.Remove(BodyTypeDefOf.Baby);
                     bodyTypeDefs.Remove(BodyTypeDefOf.Child);
 
-                    if (pawn.gender == Gender.Male && bodyTypeDefs.Contains(BodyTypeDefOf.Female) && bodyTypeDefs.Count > 1)
-                        bodyTypeDefs.Remove(BodyTypeDefOf.Female);
+                    if (pawn.gender == Gender.Male)
+                    {
+                        BodyTypeDef femaleBodyType = parts.defaultFemaleBodyType;
+                        if (bodyTypeDefs.Contains(femaleBodyType) && bodyTypeDefs.Count > 1)
+                            bodyTypeDefs.Remove(femaleBodyType);
+                    }
 
-                    if (pawn.gender == Gender.Female && bodyTypeDefs.Contains(BodyTypeDefOf.Male) && bodyTypeDefs.Count > 1)
-                        bodyTypeDefs.Remove(BodyTypeDefOf.Male);
+                    if (pawn.gender == Gender.Female)
+                    {
+                        BodyTypeDef maleBodyType = parts.defaultMaleBodyType;
+                        if (bodyTypeDefs.Contains(maleBodyType) && bodyTypeDefs.Count > 1)
+                            bodyTypeDefs.Remove(maleBodyType);
+                    }
 
                     if (!bodyTypeDefs.Contains(bodyType))
                         bodyType = bodyTypeDefs.RandomElement();
