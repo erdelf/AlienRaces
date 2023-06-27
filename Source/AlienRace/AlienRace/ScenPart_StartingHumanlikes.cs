@@ -41,7 +41,7 @@
             Rect scenPartRect = listing.GetScenPartRect(this, RowHeight * 3f);
             if (Widgets.ButtonText(scenPartRect.TopPart(pct: 0.45f), this.KindDef.label.CapitalizeFirst()))
             {
-                List<FloatMenuOption> list = new List<FloatMenuOption>();
+                List<FloatMenuOption> list = new();
                 list.AddRange(DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: ar => ar.pawnKindSettings.startingColonists != null)
                    .SelectMany(selector: ar => ar.pawnKindSettings.startingColonists.SelectMany(selector: ste => ste.pawnKindEntries.SelectMany(selector: pke => pke.kindDefs)))
                    .Where(predicate: s => s != null).Select(selector: pkd => new FloatMenuOption($"{pkd.label.CapitalizeFirst()} | {pkd.race.LabelCap}", action: () => this.KindDef = pkd)));
@@ -70,10 +70,8 @@
 
         public override bool TryMerge(ScenPart other)
         {
-            if (other is not ScenPart_StartingHumanlikes others || others.KindDef != this.KindDef)
-            {
+            if (other is not ScenPart_StartingHumanlikes others || others.KindDef != this.KindDef) 
                 return false;
-            }
 
             this.pawnCount += others.pawnCount;
             return true;
