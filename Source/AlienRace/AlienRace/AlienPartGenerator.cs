@@ -20,6 +20,7 @@
             this.headTypes ?? CachedData.DefaultHeadTypeDefs;
 
         public List<BodyTypeDef> bodyTypes = new();
+
         [LoadDefFromField("Male")]
         public BodyTypeDef defaultMaleBodyType;
         [LoadDefFromField("Female")]
