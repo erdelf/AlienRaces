@@ -3319,7 +3319,7 @@ namespace AlienRace
         public static bool ResolveAllGraphicsPrefix(PawnGraphicSet __instance)
         {
             Pawn alien = __instance.pawn;
-            if (alien.def is ThingDef_AlienRace alienProps)
+            if (alien.def is ThingDef_AlienRace alienProps && alien.story != null)
             {
                 AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
 
