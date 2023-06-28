@@ -588,7 +588,19 @@
 
         public static HashSet<TraitDef> traitRestricted = new();
 
-        public static bool CanGetTrait(TraitDef trait, ThingDef race, int degree = 0)
+        public static bool CanGetTrait(TraitDef trait, Pawn pawn, int degree = 0)
+        {
+            List<AlienTraitEntry> disallowedTraits = new();
+
+            foreach (BackstoryDef backstory in pawn.story.AllBackstories)
+                if (backstory is AlienBackstoryDef alienBackstory)
+                    if(!alienBackstory.disallowedTraitsChance.NullOrEmpty()) 
+                        disallowedTraits.AddRange(alienBackstory.disallowedTraitsChance);
+
+            return CanGetTrait(trait, pawn.def, degree, disallowedTraits);
+        }
+
+        public static bool CanGetTrait(TraitDef trait, ThingDef race, int degree = 0, List<AlienTraitEntry> disallowedTraits = null)
         {
             ThingDef_AlienRace.AlienSettings           alienProps   = (race as ThingDef_AlienRace)?.alienRace;
             RaceRestrictionSettings raceRestriction = alienProps?.raceRestriction;
@@ -597,9 +609,14 @@
             if (traitRestricted.Contains(trait) || (raceRestriction?.onlyGetRaceRestrictedTraits ?? false))
                 result &= raceRestriction?.whiteTraitList.Contains(trait)                        ?? false;
 
-            if (!alienProps?.generalSettings.disallowedTraits.NullOrEmpty() ?? false)
-                result &= !alienProps.generalSettings.disallowedTraits.Where(traitEntry => traitEntry.defName == trait && (degree == traitEntry.degree || traitEntry.degree == 0)).
-                                      Any(traitEntry => Rand.Range(min: 0, max: 100) < traitEntry.chance);
+            disallowedTraits ??= new List<AlienTraitEntry>();
+            if (!(alienProps?.generalSettings.disallowedTraits.NullOrEmpty() ?? true))
+                disallowedTraits.AddRange(alienProps.generalSettings.disallowedTraits);
+
+            if (!disallowedTraits.NullOrEmpty())
+                result &= !disallowedTraits.Where(traitEntry => traitEntry.defName == trait && (degree == traitEntry.degree || traitEntry.degree == 0))
+                                         .Any(traitEntry => Rand.Range(min: 0, max: 100) < traitEntry.chance);
+            
 
             return result && !(raceRestriction?.blackTraitList.Contains(trait) ?? false);
         }
