@@ -1787,20 +1787,25 @@ namespace AlienRace
         {
             MethodInfo postureInfo = AccessTools.Method(typeof(PawnUtility), nameof(PawnUtility.GetPosture));
 
-            CodeInstruction[] codeInstructions = instructions as CodeInstruction[] ?? instructions.ToArray();
-            foreach (CodeInstruction instruction in codeInstructions)
-                if (instruction.opcode == OpCodes.Call && instruction.OperandIs(postureInfo))
+            List<CodeInstruction> instructionList = instructions.ToList();
+            foreach (CodeInstruction instruction in instructionList)
+            {
+                bool found = instruction.Calls(postureInfo);
+
+                if (found) 
+                    yield return new CodeInstruction(OpCodes.Dup);
+
+                yield return instruction;
+
+                if (found) 
                     yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(PostureTweak)));
-                else
-                    yield return instruction;
+            }
         }
 
-        public static PawnPosture PostureTweak(Pawn pawn)
+        public static PawnPosture PostureTweak(Pawn pawn, PawnPosture posture)
         {
-            PawnPosture posture = pawn.GetPosture();
-
-            if (posture != PawnPosture.Standing && pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.canLayDown &&
-                !(pawn.CurrentBed()?.def.defName.EqualsIgnoreCase(B: "ET_Bed") ?? false)) //todo: just.. no
+            if (posture != PawnPosture.Standing && pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.canLayDown && 
+                !(pawn.CurrentBed()?.def.defName.EqualsIgnoreCase(B: "ET_Bed") ?? false)) //todo: how damn specific is this.. a race that can't lay down.. but isn't laying in their own specific bed..........
                 return PawnPosture.Standing;
             return posture;
         }
