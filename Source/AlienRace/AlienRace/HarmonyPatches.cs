@@ -303,8 +303,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator),                      nameof(PawnGenerator.XenotypesAvailableFor)) ,            postfix: new HarmonyMethod(patchType,    nameof(XenotypesAvailableForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator),                      nameof(PawnGenerator.GetXenotypeForGeneratedPawn)),       transpiler: new HarmonyMethod(patchType, nameof(GetXenotypeForGeneratedPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker),                   nameof(Pawn_GeneTracker.SetXenotype)), new HarmonyMethod(patchType, nameof(SetXenotypePrefix)));
-
             harmony.Patch(AccessTools.Method(typeof(CharacterCardUtility), "LifestageAndXenotypeOptions"),                        transpiler: new HarmonyMethod(patchType, nameof(LifestageAndXenotypeOptionsTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), nameof(PawnGenerator.AdjustXenotypeForFactionlessPawn)), transpiler: new HarmonyMethod(patchType, nameof(LifestageAndXenotypeOptionsTranspiler)));
+
             harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility),  nameof(StartingPawnUtility.NewGeneratedStartingPawn)), transpiler: new HarmonyMethod(patchType, nameof(NewGeneratedStartingPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnHairColors),       nameof(PawnHairColors.HasGreyHair)),                   transpiler: new HarmonyMethod(patchType, nameof(HasGreyHairTranspiler)));
 
@@ -553,7 +554,7 @@ namespace AlienRace
                 }
             }
         }
-
+        
         public static IEnumerable<CodeInstruction> LifestageAndXenotypeOptionsTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             MethodInfo dbXenoInfo = AccessTools.PropertyGetter(typeof(DefDatabase<XenotypeDef>), nameof(DefDatabase<XenotypeDef>.AllDefs));
