@@ -3420,11 +3420,11 @@ namespace AlienRace
                                                   ? GraphicDatabase.Get<Graphic_Multi>(skullPath, ShaderDatabase.Cutout, Vector2.one, Color.white)
                                                   : null;
 
-                    if (!(__instance.pawn.story.hairDef?.noGraphic ?? true) && alienProps.alienRace.styleSettings[typeof(HairDef)].hasStyle)
-                        __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ? 
-                                                                                                                               (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Transparent) : 
-                                                                                                                               ShaderDatabase.CutoutComplex, Vector2.one, alien.story.HairColor,
-                                                                                    alienComp.GetChannel(channel: "hair").second);
+                    
+                    __instance.hairGraphic = !(__instance.pawn.story.hairDef?.noGraphic ?? true) && alienProps.alienRace.styleSettings[typeof(HairDef)].hasStyle ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ? 
+                                                                                                                           (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Transparent) : 
+                                                                                                                           ShaderDatabase.CutoutComplex, Vector2.one, alien.story.HairColor,
+                                                                                alienComp.GetChannel(channel: "hair").second) : null;
 
                     string stumpPath = graphicPaths.stump.GetPath(alien, ref sharedIndex, alienComp.headVariant);
                     __instance.headStumpGraphic = !stumpPath.NullOrEmpty() ? 
