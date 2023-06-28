@@ -2081,7 +2081,7 @@ namespace AlienRace
         }
 
         public static IEnumerable<TraitDef> GenerateTraitsValidator(List<TraitDef> traits, Pawn p) => 
-            traits.Where(tr => RaceRestrictionSettings.CanGetTrait(tr, p.def));
+            traits.Where(tr => RaceRestrictionSettings.CanGetTrait(tr, p));
 
         public static void AssigningCandidatesPostfix(ref IEnumerable<Pawn> __result, CompAssignableToPawn __instance) =>
             __result = __instance.parent.def.building.bed_humanlike ? __result.Where(predicate: p => RestUtility.CanUseBedEver(p, __instance.parent.def)) : __result;
@@ -2439,8 +2439,7 @@ namespace AlienRace
         }
 
         public static bool GainTraitPrefix(Trait trait, Pawn ___pawn) => 
-            ___pawn.def is not ThingDef_AlienRace alienProps || 
-            RaceRestrictionSettings.CanGetTrait(trait.def, alienProps, trait.Degree);
+            RaceRestrictionSettings.CanGetTrait(trait.def, ___pawn, trait.Degree);
 
         public static void TryMakeInitialRelationsWithPostfix(Faction __instance, Faction other)
         {
@@ -3529,15 +3528,24 @@ namespace AlienRace
 
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
+                List<AlienTraitEntry> alienTraits = new();
                 if (!alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
-                    foreach (AlienTraitEntry ate in alienProps.alienRace.generalSettings.forcedRaceTraitEntries)
-                        if ((pawn.gender == Gender.Male   && (ate.commonalityMale   < 0 || Rand.Range(min: 0, max: 100) < ate.commonalityMale)   ||
-                             pawn.gender == Gender.Female && (ate.commonalityFemale < 0 || Rand.Range(min: 0, max: 100) < ate.commonalityFemale) ||
-                             pawn.gender == Gender.None)              &&
-                            Rand.Range(min: 0, max: 100) < ate.chance &&
-                            !pawn.story.traits.allTraits.Any(predicate: tr => tr.def == ate.defName))
+                    alienTraits.AddRange(alienProps.alienRace.generalSettings.forcedRaceTraitEntries);
 
-                            pawn.story.traits.GainTrait(new Trait(ate.defName, ate.degree, forced: true));
+                foreach (BackstoryDef backstory in pawn.story.AllBackstories)
+                    if (backstory is AlienBackstoryDef alienBackstory)
+                        if(!alienBackstory.forcedTraitsChance.NullOrEmpty())
+                            alienTraits.AddRange(alienBackstory.forcedTraitsChance);
+
+
+                foreach (AlienTraitEntry ate in alienTraits)
+                    if ((pawn.gender == Gender.Male   && (ate.commonalityMale   < 0 || Rand.Range(min: 0, max: 100) < ate.commonalityMale)   ||
+                         pawn.gender == Gender.Female && (ate.commonalityFemale < 0 || Rand.Range(min: 0, max: 100) < ate.commonalityFemale) ||
+                         pawn.gender == Gender.None)              &&
+                        Rand.Range(min: 0, max: 100) < ate.chance &&
+                        !pawn.story.traits.allTraits.Any(predicate: tr => tr.def == ate.defName))
+
+                        pawn.story.traits.GainTrait(new Trait(ate.defName, ate.degree, forced: true));
 
                 int traits = alienProps.alienRace.generalSettings.additionalTraits.RandomInRange;
                 if (traits > 0)
