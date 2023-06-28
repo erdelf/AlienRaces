@@ -3112,9 +3112,20 @@ namespace AlienRace
 
             MethodInfo randomGreyColorInfo = AccessTools.Method(typeof(PawnHairColors), nameof(PawnHairColors.RandomGreyHairColor));
 
+
+            bool foundForcedGeneEntry = false;
+
             for (int i = 0; i < instructionList.Count; i++)
             {
                 CodeInstruction instruction = instructionList[i];
+
+                if (!foundForcedGeneEntry && instruction.opcode == OpCodes.Ldarg_1)
+                {
+                    foundForcedGeneEntry = true;
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return CodeInstruction.Call(patchType, nameof(GenerateGenesForcedHelper));
+                }
+
 
                 yield return instruction;
 
@@ -3131,7 +3142,15 @@ namespace AlienRace
                 pawn.GetComp<AlienPartGenerator.AlienComp>().GenerateColor(alienProps.alienRace.generalSettings.alienPartGenerator.oldHairColorGen) :
                 originalColor;
 
-        public static void GenerateGenesPrefix(Pawn pawn)
+        public static void GenerateGenesForcedHelper(Pawn pawn)
+        {
+            if (pawn.def is ThingDef_AlienRace alienProps)
+                foreach (AlienChanceEntry<GeneDef> gene in alienProps.alienRace.generalSettings.raceGenes)
+                    if (gene.Approved(pawn))
+                        pawn.genes.AddGene(gene.defName, false);
+        }
+
+        public static void GenerateGenesPrefix(Pawn pawn, ref PawnGenerationRequest request)
         {
             if (pawn.def is ThingDef_AlienRace)
             {
@@ -3533,7 +3552,7 @@ namespace AlienRace
 
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
-                List<AlienTraitEntry> alienTraits = new();
+                List<AlienChanceEntry<TraitDef>> alienTraits = new();
                 if (!alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
                     alienTraits.AddRange(alienProps.alienRace.generalSettings.forcedRaceTraitEntries);
 
@@ -3543,12 +3562,8 @@ namespace AlienRace
                             alienTraits.AddRange(alienBackstory.forcedTraitsChance);
 
 
-                foreach (AlienTraitEntry ate in alienTraits)
-                    if ((pawn.gender == Gender.Male   && (ate.commonalityMale   < 0 || Rand.Range(min: 0, max: 100) < ate.commonalityMale)   ||
-                         pawn.gender == Gender.Female && (ate.commonalityFemale < 0 || Rand.Range(min: 0, max: 100) < ate.commonalityFemale) ||
-                         pawn.gender == Gender.None)              &&
-                        Rand.Range(min: 0, max: 100) < ate.chance &&
-                        !pawn.story.traits.allTraits.Any(predicate: tr => tr.def == ate.defName))
+                foreach (AlienChanceEntry<TraitDef> ate in alienTraits)
+                    if (ate.Approved(pawn) && !pawn.story.traits.allTraits.Any(predicate: tr => tr.def == ate.defName))
 
                         pawn.story.traits.GainTrait(new Trait(ate.defName, ate.degree, forced: true));
 

@@ -183,8 +183,8 @@
 
         public List<ThingDef>         validBeds;
         public List<ChemicalSettings> chemicalSettings;
-        public List<AlienTraitEntry>  forcedRaceTraitEntries;
-        public List<AlienTraitEntry>  disallowedTraits;
+        public List<AlienChanceEntry<TraitDef>>  forcedRaceTraitEntries;
+        public List<AlienChanceEntry<TraitDef>>  disallowedTraits;
         [Obsolete("Effectively replaced via growth moments, currently ineffective")]
         public IntRange               traitCount         = new(1, 3);
         public IntRange               additionalTraits   = IntRange.zero;
@@ -211,6 +211,8 @@
         public List<BackstoryCategoryFilter> newbornBackstoryFilter;
 
         public ReproductionSettings reproduction = new();
+
+        public List<AlienChanceEntry<GeneDef>> raceGenes = new();
     }
 
     public class ReproductionSettings
@@ -286,14 +288,27 @@
         public List<IngestionOutcomeDoer> reactions;
     }
 
-    public class AlienTraitEntry
+    public class AlienChanceEntry<T>
     {
-        public TraitDef defName;
-        public int degree = 0;
+        public T defName;
+        public int degree = 0; //mostly for traits, but maybe will find some other use later
         public float chance = 100;
 
         public float commonalityMale = -1f;
         public float commonalityFemale = -1f;
+
+        public bool Approved(int wantedDegree = 0) =>
+            (wantedDegree == this.degree || this.degree == 0) &&
+            Rand.Range(min: 0, max: 100) < this.chance;
+
+        public bool Approved(Gender gender, int wantedDegree = 0) =>
+            (gender == Gender.Male   && (this.commonalityMale   < 0 || Rand.Range(min: 0, max: 100) < this.commonalityMale)   ||
+             gender == Gender.Female && (this.commonalityFemale < 0 || Rand.Range(min: 0, max: 100) < this.commonalityFemale) ||
+             gender == Gender.None) && 
+            this.Approved(wantedDegree);
+
+        public bool Approved(Pawn pawn, int wantedDegree = 0) =>
+            this.Approved(pawn.gender, wantedDegree);
     }
 
     public class GraphicPaths
@@ -590,7 +605,7 @@
 
         public static bool CanGetTrait(TraitDef trait, Pawn pawn, int degree = 0)
         {
-            List<AlienTraitEntry> disallowedTraits = new();
+            List<AlienChanceEntry<TraitDef>> disallowedTraits = new();
 
             foreach (BackstoryDef backstory in pawn.story.AllBackstories)
                 if (backstory is AlienBackstoryDef alienBackstory)
@@ -600,7 +615,7 @@
             return CanGetTrait(trait, pawn.def, degree, disallowedTraits);
         }
 
-        public static bool CanGetTrait(TraitDef trait, ThingDef race, int degree = 0, List<AlienTraitEntry> disallowedTraits = null)
+        public static bool CanGetTrait(TraitDef trait, ThingDef race, int degree = 0, List<AlienChanceEntry<TraitDef>> disallowedTraits = null)
         {
             ThingDef_AlienRace.AlienSettings           alienProps   = (race as ThingDef_AlienRace)?.alienRace;
             RaceRestrictionSettings raceRestriction = alienProps?.raceRestriction;
@@ -609,12 +624,12 @@
             if (traitRestricted.Contains(trait) || (raceRestriction?.onlyGetRaceRestrictedTraits ?? false))
                 result &= raceRestriction?.whiteTraitList.Contains(trait)                        ?? false;
 
-            disallowedTraits ??= new List<AlienTraitEntry>();
+            disallowedTraits ??= new List<AlienChanceEntry<TraitDef>>();
             if (!(alienProps?.generalSettings.disallowedTraits.NullOrEmpty() ?? true))
                 disallowedTraits.AddRange(alienProps.generalSettings.disallowedTraits);
 
             if (!disallowedTraits.NullOrEmpty())
-                result &= !disallowedTraits.Where(traitEntry => traitEntry.defName == trait && (degree == traitEntry.degree || traitEntry.degree == 0))
+                result &= !disallowedTraits.Where(traitEntry => traitEntry.defName == trait && traitEntry.Approved(degree))
                                          .Any(traitEntry => Rand.Range(min: 0, max: 100) < traitEntry.chance);
             
 

@@ -9,18 +9,18 @@
     {
         public static HashSet<BackstoryDef> checkBodyType = new();
 
-        public List<AlienTraitEntry>         forcedTraitsChance     = new();
-        public List<AlienTraitEntry>         disallowedTraitsChance = new();
-        public WorkTags                      workAllows             = WorkTags.AllWork;
-        public float                         maleCommonality        = 100f;
-        public float                         femaleCommonality      = 100f;
-        public BackstoryDef                  linkedBackstory;
-        public RelationSettings              relationSettings = new();
-        public List<HediffDef>               forcedHediffs    = new();
-        public List<SkillGain>               passions         = new();
-        public IntRange                      bioAgeRange;
-        public IntRange                      chronoAgeRange;
-        public List<ThingDefCountRangeClass> forcedItems = new();
+        public List<AlienChanceEntry<TraitDef>> forcedTraitsChance     = new();
+        public List<AlienChanceEntry<TraitDef>> disallowedTraitsChance = new();
+        public WorkTags                         workAllows             = WorkTags.AllWork;
+        public float                            maleCommonality        = 100f;
+        public float                            femaleCommonality      = 100f;
+        public BackstoryDef                     linkedBackstory;
+        public RelationSettings                 relationSettings = new();
+        public List<HediffDef>                  forcedHediffs    = new();
+        public List<SkillGain>                  passions         = new();
+        public IntRange                         bioAgeRange;
+        public IntRange                         chronoAgeRange;
+        public List<ThingDefCountRangeClass>    forcedItems = new();
 
         public bool CommonalityApproved(Gender g) => Rand.Range(min: 0, max: 100) < (g == Gender.Female ? this.femaleCommonality : this.maleCommonality);
 
