@@ -203,6 +203,7 @@
 
         public SimpleCurve lovinIntervalHoursFromAge;
         public List<int>   growthAges = new() { 7, 10, 13 };
+        public int[]       GrowthAges => this.growthAges?.ToArray();
 
         public List<BackstoryCategoryFilter> childBackstoryFilter;
         public List<BackstoryCategoryFilter> adultBackstoryFilter;

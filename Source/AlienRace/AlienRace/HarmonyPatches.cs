@@ -272,9 +272,12 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnInternalTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker), "Notify_GenesChanged"), transpiler: new HarmonyMethod(patchType, nameof(NotifyGenesChangedTranspiler)));
 
-            harmony.Patch(AccessTools.Method(typeof(GrowthUtility),   nameof(GrowthUtility.IsGrowthBirthday)),       transpiler: new HarmonyMethod(patchType, nameof(IsGrowthBirthdayTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), nameof(Pawn_AgeTracker.TryChildGrowthMoment)), new HarmonyMethod(patchType,             nameof(TryChildGrowthMomentPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(Gizmo_GrowthTier), "GrowthTierTooltip"), new HarmonyMethod(patchType,             nameof(GrowthTierTooltipPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(GrowthUtility),    nameof(GrowthUtility.IsGrowthBirthday)),       transpiler: new HarmonyMethod(patchType, nameof(IsGrowthBirthdayTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker),  nameof(Pawn_AgeTracker.TryChildGrowthMoment)), new HarmonyMethod(patchType,             nameof(TryChildGrowthMomentPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(Gizmo_GrowthTier), "GrowthTierTooltip"),                          new HarmonyMethod(patchType,             nameof(GrowthTierTooltipPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), nameof(Pawn_AgeTracker.TrySimulateGrowthPoints)), transpiler: new HarmonyMethod(patchType, nameof(TrySimulateGrowthPointsTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(ChoiceLetter_GrowthMoment), "CacheLetterText"), transpiler: new HarmonyMethod(patchType, nameof(GrowthMomentCacheLetterTextTranspiler)));
+
 
             harmony.Patch(AccessTools.Method(typeof(Pawn_StyleTracker),             nameof(Pawn_StyleTracker.FinalizeHairColor)),  postfix: new HarmonyMethod(patchType,    nameof(FinalizeHairColorPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Toils_StyleChange),             nameof(Toils_StyleChange.FinalizeLookChange)), postfix: new HarmonyMethod(patchType,    nameof(FinalizeLookChangePostfix)));
@@ -980,6 +983,59 @@ namespace AlienRace
             __result = MeshPool.GetMeshSetForWidth(drawSize.x * vector3.x, drawSize.y * vector3.z);
         }
 
+        public static IEnumerable<CodeInstruction> GrowthMomentCacheLetterTextTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList      = instructions.ToList();
+            FieldInfo             growthMomentAgesInfo = AccessTools.Field(typeof(GrowthUtility), nameof(GrowthUtility.GrowthMomentAges));
+
+
+            foreach (CodeInstruction instruction in instructionList)
+            {
+                if (instruction.LoadsField(growthMomentAgesInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_AgeTracker), "pawn"));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn),            nameof(Pawn.def)));
+                    yield return CodeInstruction.Call(patchType, nameof(GrowthMomentHelper), new[] { typeof(ThingDef) });
+                }
+                else
+                {
+                    yield return instruction;
+                }
+            }
+        }
+
+        public static IEnumerable<CodeInstruction> TrySimulateGrowthPointsTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList      = instructions.ToList();
+            FieldInfo             growthMomentAgesInfo = AccessTools.Field(typeof(GrowthUtility), nameof(GrowthUtility.GrowthMomentAges));
+
+
+            foreach (CodeInstruction instruction in instructionList)
+            {
+                if (instruction.LoadsField(growthMomentAgesInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_AgeTracker), "pawn"));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn),            nameof(Pawn.def)));
+                    yield return CodeInstruction.Call(patchType, nameof(GrowthMomentHelper), new[] { typeof(ThingDef) });
+                } else if (instruction.opcode == OpCodes.Ldc_I4_3)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_AgeTracker), "pawn"));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn),            nameof(Pawn.def)));
+                    yield return CodeInstruction.Call(patchType, nameof(GetBabyToChildAge));
+                }
+                else
+                {
+                    yield return instruction;
+                }
+            }
+        }
+
+        public static int GetBabyToChildAge(ThingDef pawnDef) => 
+            Mathf.FloorToInt(pawnDef.race.lifeStageAges.First(lsa => lsa.def.developmentalStage.HasAny(DevelopmentalStage.Child | DevelopmentalStage.Adult)).minAge);
+
         public static void GrowthTierTooltipPrefix(Pawn ___child) =>
             growthMomentPawn = ___child;
 
@@ -998,13 +1054,16 @@ namespace AlienRace
         {
             foreach (CodeInstruction instruction in instructions)
                 if (instruction.opcode == OpCodes.Ldsfld)
-                    yield return CodeInstruction.Call(patchType, nameof(GrowthMomentHelper));
+                    yield return CodeInstruction.Call(patchType, nameof(GrowthMomentHelper), Type.EmptyTypes);
                 else
                     yield return instruction;
         }
 
         public static int[] GrowthMomentHelper() =>
-            (growthMomentPawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.growthAges?.ToArray() ?? GrowthUtility.GrowthMomentAges;
+            (growthMomentPawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.GrowthAges ?? GrowthUtility.GrowthMomentAges;
+
+        public static int[] GrowthMomentHelper(ThingDef pawnDef) =>
+            (pawnDef as ThingDef_AlienRace)?.alienRace.generalSettings.GrowthAges ?? GrowthUtility.GrowthMomentAges;
 
         public static IEnumerable<CodeInstruction> NotifyGenesChangedTranspiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -1979,12 +2038,23 @@ namespace AlienRace
 
         public static IEnumerable<CodeInstruction> GenerateTraitsForTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            List<CodeInstruction> instructionList = instructions.ToList();
-            MethodInfo            defListInfo     = AccessTools.Property(typeof(DefDatabase<TraitDef>), nameof(DefDatabase<TraitDef>.AllDefsListForReading)).GetGetMethod();
+            List<CodeInstruction> instructionList      = instructions.ToList();
+            MethodInfo            defListInfo          = AccessTools.Property(typeof(DefDatabase<TraitDef>), nameof(DefDatabase<TraitDef>.AllDefsListForReading)).GetGetMethod();
+            FieldInfo             growthMomentAgesInfo = AccessTools.Field(typeof(GrowthUtility), nameof(GrowthUtility.GrowthMomentAges));
+
 
             foreach (CodeInstruction instruction in instructionList)
             {
-                yield return instruction;
+                if (instruction.LoadsField(growthMomentAgesInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn), nameof(Pawn.def)));
+                    yield return CodeInstruction.Call(patchType, nameof(GrowthMomentHelper), new []{typeof(ThingDef)});
+                } else
+                {
+                    yield return instruction;
+                }
+
                 if (instruction.opcode == OpCodes.Call && instruction.OperandIs(defListInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
