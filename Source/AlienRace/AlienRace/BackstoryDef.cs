@@ -33,10 +33,6 @@
             this.identifier = this.defName;
             base.ResolveReferences();
 
-            this.forcedTraits = (this.forcedTraits ??= new List<BackstoryTrait>()).
-                                Concat(this.forcedTraitsChance.Where(predicate: trait => Rand.Range(min: 0, max: 100) < trait.chance).ToList().ConvertAll(converter: trait => new BackstoryTrait { def = trait.defName, degree = trait.degree })).ToList();
-            this.disallowedTraits = (this.disallowedTraits ??= new List<BackstoryTrait>()).
-                                    Concat(this.disallowedTraitsChance.Where(predicate: trait => Rand.Range(min: 0, max: 100) < trait.chance).ToList().ConvertAll(converter: trait => new BackstoryTrait { def = trait.defName, degree = trait.degree })).ToList();
             this.workDisables = (this.workAllows & WorkTags.AllWork) != 0 ? this.workDisables : ~this.workAllows;
 
             if (this.bodyTypeGlobal == null && this.bodyTypeFemale == null && this.bodyTypeMale == null)
