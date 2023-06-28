@@ -299,9 +299,13 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GetBackstoryCategoryFiltersFor"), postfix: new HarmonyMethod(patchType, nameof(GetBackstoryCategoryFiltersForPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(QuestNode_Root_WandererJoin_WalkIn), nameof(QuestNode_Root_WandererJoin_WalkIn.GeneratePawn)), transpiler: new HarmonyMethod(patchType, nameof(WandererJoinTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),                   nameof(PregnancyUtility.ApplyBirthOutcome)), transpiler: new HarmonyMethod(patchType, nameof(ApplyBirthOutcomeTranspiler)));
-
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),                   nameof(PregnancyUtility.ApplyBirthOutcome)),              transpiler: new HarmonyMethod(patchType, nameof(ApplyBirthOutcomeTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator),                      nameof(PawnGenerator.XenotypesAvailableFor)) ,            postfix: new HarmonyMethod(patchType,    nameof(XenotypesAvailableForPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator),                      nameof(PawnGenerator.GetXenotypeForGeneratedPawn)),       transpiler: new HarmonyMethod(patchType, nameof(GetXenotypeForGeneratedPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker),                   nameof(Pawn_GeneTracker.SetXenotype)), new HarmonyMethod(patchType, nameof(SetXenotypePrefix)));
             harmony.Patch(AccessTools.Method(typeof(CharacterCardUtility), "LifestageAndXenotypeOptions"),                        transpiler: new HarmonyMethod(patchType, nameof(LifestageAndXenotypeOptionsTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), nameof(PawnGenerator.AdjustXenotypeForFactionlessPawn)), transpiler: new HarmonyMethod(patchType, nameof(LifestageAndXenotypeOptionsTranspiler)));
+
             harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility),  nameof(StartingPawnUtility.NewGeneratedStartingPawn)), transpiler: new HarmonyMethod(patchType, nameof(NewGeneratedStartingPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnHairColors),       nameof(PawnHairColors.HasGreyHair)),                   transpiler: new HarmonyMethod(patchType, nameof(HasGreyHairTranspiler)));
 
@@ -550,7 +554,7 @@ namespace AlienRace
                 }
             }
         }
-
+        
         public static IEnumerable<CodeInstruction> LifestageAndXenotypeOptionsTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             MethodInfo dbXenoInfo = AccessTools.PropertyGetter(typeof(DefDatabase<XenotypeDef>), nameof(DefDatabase<XenotypeDef>.AllDefs));
