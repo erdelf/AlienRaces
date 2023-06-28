@@ -976,8 +976,8 @@ namespace AlienRace
                 return;
 
             Vector2 drawSize = (portraitRender.First.Target as Pawn == ___pawn && portraitRender.Second ?
-                                    ___pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitHeadDrawSize :
-                                    ___pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
+                                    ___pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitDrawSize :
+                                    ___pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customDrawSize) ?? Vector2.one;
             float   lifeStageFactor = ModsConfig.BiotechActive ? ___pawn.ageTracker.CurLifeStage.bodyWidth ?? 1f : 1f;
             Vector3 vector3         = __result.MeshAt(Rot4.North).vertices[2] * 2 * lifeStageFactor;
             __result = MeshPool.GetMeshSetForWidth(drawSize.x * vector3.x, drawSize.y * vector3.z);
@@ -3431,6 +3431,7 @@ namespace AlienRace
                                                       GraphicDatabase.Get<Graphic_Multi>(stumpPath, alien.story.SkinColor == apg.SkinColor(alien, first: false) ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, 
                                                                                                                 Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false))
                                                       : null;
+
                     __instance.desiccatedHeadStumpGraphic = !stumpPath.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(stumpPath, ShaderDatabase.Cutout, Vector2.one, PawnGraphicSet.RottingColorDefault) : null;
                     
                     if (ModLister.BiotechInstalled)
