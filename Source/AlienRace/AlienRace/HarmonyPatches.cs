@@ -3797,7 +3797,7 @@ namespace AlienRace
                     if (!isPortrait && isInvisible)
                         mat = InvisibilityMatPool.GetInvisibleMat(mat);
 
-                    DrawAddonsFinalHook(pawn, ba, rotation, ref addonGraphic, ref offsetVector, ref num, ref mat);
+                    DrawAddonsFinalHook(pawn, ba, rotation, renderFlags, ref addonGraphic, ref offsetVector, ref num, ref mat);
                     
                     //                                                                                   Angle calculation to not pick the shortest, taken from Quaternion.Angle and modified
                     GenDraw.DrawMeshNowOrLater(
@@ -3809,7 +3809,7 @@ namespace AlienRace
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void DrawAddonsFinalHook(Pawn pawn, AlienPartGenerator.BodyAddon addon, Rot4 rot, ref Graphic graphic, ref Vector3 offsetVector, ref float angle, ref Material mat)
+        public static void DrawAddonsFinalHook(Pawn pawn, AlienPartGenerator.BodyAddon addon, Rot4 rot, PawnRenderFlags renderFlags, ref Graphic graphic, ref Vector3 offsetVector, ref float angle, ref Material mat)
         {
 
         }
