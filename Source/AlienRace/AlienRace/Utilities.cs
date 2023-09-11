@@ -223,5 +223,8 @@
 
         public static readonly AccessTools.FieldRef<Pawn_StoryTracker, Color?> skinColorBase =
             AccessTools.FieldRefAccess<Pawn_StoryTracker, Color?>(AccessTools.Field(typeof(Pawn_StoryTracker), "skinColorBase"));
+
+        public static readonly AccessTools.FieldRef<Dialog_StylingStation, Dialog_StylingStation.StylingTab> curTab =
+            AccessTools.FieldRefAccess<Dialog_StylingStation, Dialog_StylingStation.StylingTab>(AccessTools.Field(typeof(Dialog_StylingStation), "curTab"));
     }
 }
