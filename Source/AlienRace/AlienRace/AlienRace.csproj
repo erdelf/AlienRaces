@@ -329,6 +329,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RaceSettings.cs" />
     <Compile Include="ScenPart_StartingHumanlikes.cs" />
+    <Compile Include="StylingStation.cs" />
     <Compile Include="ThingDef_AlienRace.cs" />
     <Compile Include="Thoughts.cs" />
     <Compile Include="TweakValues.cs" />
