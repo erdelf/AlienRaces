@@ -13,7 +13,7 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     public List<string> paths         = new();
     public List<string> pathsFallback = new();
 
-    private bool useFallback = false;
+    public bool usingFallback = false;
 
     public int       variantCount  = 0;
     public List<int> variantCounts = new();
@@ -51,13 +51,13 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     }
 
     public string GetPath()          => this.GetPathCount() > 0 ? this.GetPath(0) : this.path;
-    public string GetPath(int index) => !this.useFallback ? this.paths[index] : this.pathsFallback[index];
+    public string GetPath(int index) => !this.usingFallback ? this.paths[index] : this.pathsFallback[index];
 
-    public int GetPathCount() => !this.useFallback ? this.paths.Count : this.pathsFallback.Count;
+    public int GetPathCount() => !this.usingFallback ? this.paths.Count : this.pathsFallback.Count;
 
     public bool UseFallback()
     {
-        this.useFallback = true;
+        this.usingFallback = true;
 
         this.variantCounts.Clear();
         for (int i = 0; i < this.pathsFallback.Count; i++)
@@ -75,7 +75,7 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
             if (variantIndex < count)
             {
                 zero = variantIndex == 0;
-                return this.paths[index];
+                return this.GetPath(index);
             }
 
             variantIndex -= count;
