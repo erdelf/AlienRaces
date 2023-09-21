@@ -78,6 +78,10 @@ public static class StylingStation
     public static void SetTab() => 
         CachedData.curTab(instance) = (Dialog_StylingStation.StylingTab) BODYADDON_TAB_INDEX;
 
+    public static List<Color> AvailableColors(AlienPartGenerator.BodyAddon ba, bool first = true) =>
+        DefDatabase<ColorDef>.AllDefs.Select(cd => cd.color).ToList();
+    // new List<Color>();
+
     public static void DrawBodyAddonTab(Rect rect)
     {
         Widgets.Label(rect, "BODY ADDONS HERE");
