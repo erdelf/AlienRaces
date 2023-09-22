@@ -312,7 +312,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility),  nameof(StartingPawnUtility.NewGeneratedStartingPawn)), transpiler: new HarmonyMethod(patchType, nameof(NewGeneratedStartingPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnHairColors),       nameof(PawnHairColors.HasGreyHair)),                   transpiler: new HarmonyMethod(patchType, nameof(HasGreyHairTranspiler)));
 
-            harmony.Patch(AccessTools.Method(typeof(Dialog_StylingStation), "DrawTabs"), transpiler: new HarmonyMethod(typeof(StylingStation), nameof(StylingStation.DrawTabsTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Dialog_StylingStation), "DoWindowContents"), transpiler: new HarmonyMethod(typeof(StylingStation), nameof(StylingStation.DoWindowContentsTranspiler)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
