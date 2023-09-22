@@ -8,6 +8,7 @@
     using AlienRace.ExtendedGraphics;
     using HarmonyLib;
     using JetBrains.Annotations;
+    using MonoMod.Utils;
     using RimWorld;
     using UnityEngine;
     using Verse;
@@ -224,7 +225,8 @@
         public static readonly AccessTools.FieldRef<Pawn_StoryTracker, Color?> skinColorBase =
             AccessTools.FieldRefAccess<Pawn_StoryTracker, Color?>(AccessTools.Field(typeof(Pawn_StoryTracker), "skinColorBase"));
 
-        public static readonly AccessTools.FieldRef<Dialog_StylingStation, Dialog_StylingStation.StylingTab> curTab =
-            AccessTools.FieldRefAccess<Dialog_StylingStation, Dialog_StylingStation.StylingTab>(AccessTools.Field(typeof(Dialog_StylingStation), "curTab"));
+        public static readonly Action<Dialog_StylingStation, Rect> drawTabs = AccessTools.Method(typeof(Dialog_StylingStation), "DrawTabs").CreateDelegate<Action<Dialog_StylingStation, Rect>>();
+
+        public static readonly AccessTools.FieldRef<Dialog_StylingStation, Pawn> stationPawn = AccessTools.FieldRefAccess<Dialog_StylingStation, Pawn>("pawn");
     }
 }
