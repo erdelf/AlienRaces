@@ -100,11 +100,11 @@ public static class StylingStation
         if (selectedIndex > addons.Count) selectedIndex = -1;
 
         Widgets.DrawMenuSection(inRect);
-        Rect viewRect = new Rect(0, 0, 246, addons.Count * 54 + 4);
+        Rect viewRect = new Rect(0, 0, 250, addons.Count * 54 + 4);
         Widgets.BeginScrollView(inRect, ref addonsScrollPos, viewRect);
         for (int i = 0; i < addons.Count; i++)
         {
-            Rect rect = new Rect(6, i * 54f + 4, 240f, 50f).ContractedBy(2);
+            Rect rect = new Rect(10, i * 54f + 4, 240f, 50f).ContractedBy(2);
             if (i == selectedIndex)
                 Widgets.DrawOptionSelected(rect);
             else
@@ -113,8 +113,25 @@ public static class StylingStation
                 GUI.DrawTexture(rect, BaseContent.WhiteTex);
                 GUI.color = Color.white;
 
-                if ((i < addons.Count - 1 && addons[i + 1].linkVariantIndexWithPrevious && selectedIndex == i + 1)
-                || (i  > 0                && addons[i].linkVariantIndexWithPrevious     && selectedIndex == i - 1))
+                bool groupSelected = false;
+                int  index         = i;
+
+                while (index >= 0 && addons[index].linkVariantIndexWithPrevious)
+                {
+                    index--;
+                    if (selectedIndex == index) groupSelected = true;
+                }
+
+                index = i + 1;
+
+                while (index <= addons.Count - 1 && addons[index].linkVariantIndexWithPrevious)
+                {
+                    Log.Message($"{index} is linked, selected is {selectedIndex}");
+                    if (selectedIndex == index) groupSelected = true;
+                    index++;
+                }
+
+                if (groupSelected)
                 {
                     GUI.color = new ColorInt(135, 135, 135).ToColor;
                     Widgets.DrawBox(rect, 1);
@@ -129,9 +146,9 @@ public static class StylingStation
                 SoundDefOf.Click.PlayOneShotOnCamera();
             }
 
-            Rect      position = rect.LeftPartPixels(rect.height).ContractedBy(2);
-            int       index    = alienComp.addonVariants[i];
-            Texture2D image    = ContentFinder<Texture2D>.Get(addons[i].GetPath(pawn, ref index, index) + "_south");
+            Rect      position     = rect.LeftPartPixels(rect.height).ContractedBy(2);
+            int       addonVariant = alienComp.addonVariants[i];
+            Texture2D image        = ContentFinder<Texture2D>.Get(addons[i].GetPath(pawn, ref addonVariant, addonVariant) + "_south");
             GUI.color = Widgets.MenuSectionBGFillColor;
             GUI.DrawTexture(position, BaseContent.WhiteTex);
             GUI.color = Color.white;
@@ -238,14 +255,15 @@ public static class StylingStation
 
         int   variantCount = addon.GetVariantCount();
         int   countPerRow  = 4;
-        float itemSize     = inRect.width / countPerRow;
-        while (itemSize > 48)
+        float width        = inRect.width - 20;
+        float itemSize     = width / countPerRow;
+        while (itemSize > 92)
         {
             countPerRow++;
-            itemSize = inRect.width / countPerRow;
+            itemSize = width / countPerRow;
         }
 
-        Rect viewRect = new Rect(0, 0, inRect.width - 20, Mathf.Ceil((float)variantCount / countPerRow) * itemSize);
+        Rect viewRect = new Rect(0, 0, width, Mathf.Ceil((float)variantCount / countPerRow) * itemSize);
 
         Widgets.DrawMenuSection(inRect);
         Widgets.BeginScrollView(inRect, ref variantsScrollPos, viewRect);
@@ -272,13 +290,13 @@ public static class StylingStation
 
                 while (index >= 0 && addons[index].linkVariantIndexWithPrevious)
                 {
-                    alienComp.addonVariants[index] = i;
                     index--;
+                    alienComp.addonVariants[index] = i;
                 }
 
                 index = selectedIndex + 1;
 
-                while (index < addons.Count - 1 && addons[index].linkVariantIndexWithPrevious)
+                while (index <= addons.Count - 1 && addons[index].linkVariantIndexWithPrevious)
                 {
                     alienComp.addonVariants[index] = i;
                     index++;
