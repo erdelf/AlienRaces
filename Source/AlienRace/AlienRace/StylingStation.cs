@@ -90,7 +90,7 @@ public static class StylingStation
         List<AlienPartGenerator.BodyAddon> bodyAddons = alienRaceDef.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).ToList();
         DoAddonList(inRect.LeftPartPixels(260), bodyAddons);
         inRect.xMin += 260;
-        if (selectedIndex != -1) DoAddonInfo(inRect, bodyAddons[selectedIndex], selectedIndex < bodyAddons.Count - 1 ? bodyAddons[selectedIndex + 1] : null);
+        if (selectedIndex != -1) DoAddonInfo(inRect, bodyAddons[selectedIndex], bodyAddons);
     }
 
     private static Vector2 addonsScrollPos;
@@ -130,7 +130,8 @@ public static class StylingStation
             }
 
             Rect      position = rect.LeftPartPixels(rect.height).ContractedBy(2);
-            Texture2D image    = ContentFinder<Texture2D>.Get(addons[i].GetPath() + "_south"); // TODO: Better way to get the image for this
+            int       index    = alienComp.addonVariants[i];
+            Texture2D image    = ContentFinder<Texture2D>.Get(addons[i].GetPath(pawn, ref index, index) + "_south");
             GUI.color = Widgets.MenuSectionBGFillColor;
             GUI.DrawTexture(position, BaseContent.WhiteTex);
             GUI.color = Color.white;
@@ -165,7 +166,7 @@ public static class StylingStation
     private static Vector2 variantsScrollPos;
     private static bool    editingFirstColor;
 
-    private static void DoAddonInfo(Rect inRect, AlienPartGenerator.BodyAddon addon, AlienPartGenerator.BodyAddon nextAddon)
+    private static void DoAddonInfo(Rect inRect, AlienPartGenerator.BodyAddon addon, List<AlienPartGenerator.BodyAddon> addons)
     {
         List<Color>    firstColors   = AvailableColors(addon, true);
         List<Color>    secondColors  = AvailableColors(addon, false);
@@ -250,10 +251,8 @@ public static class StylingStation
         Widgets.BeginScrollView(inRect, ref variantsScrollPos, viewRect);
         for (int i = 0; i < variantCount; i++)
         {
-            Rect   rect    = new Rect(i % countPerRow * itemSize, Mathf.Floor((float)i / countPerRow) * itemSize, itemSize, itemSize).ContractedBy(2);
-            int    index   = i;
-            string variant = addon.GetBestGraphic(new ExtendedGraphicsPawnWrapper(pawn), addon.bodyPart, addon.bodyPartLabel).GetPathFromVariant(ref index, out _);
-            Log.Message($"Variant {i} has path {variant}");
+            Rect rect  = new Rect(i % countPerRow * itemSize, Mathf.Floor((float)i / countPerRow) * itemSize, itemSize, itemSize).ContractedBy(2);
+            int  index = i;
 
             GUI.color = Widgets.WindowBGFillColor;
             GUI.DrawTexture(rect, BaseContent.WhiteTex);
@@ -262,14 +261,28 @@ public static class StylingStation
 
             if (alienComp.addonVariants[selectedIndex] == i) Widgets.DrawBox(rect);
 
-            Texture2D image = ContentFinder<Texture2D>.Get(variant + "_south"); // TODO: Better way to get the image for this
+            Texture2D image = ContentFinder<Texture2D>.Get(addon.GetPath(pawn, ref index, i) + "_south");
             GUI.DrawTexture(rect, image);
 
             if (Widgets.ButtonInvisible(rect))
             {
                 alienComp.addonVariants[selectedIndex] = i;
-                if (addon.linkVariantIndexWithPrevious) alienComp.addonVariants[selectedIndex                  - 1] = i;
-                if (nextAddon is { linkVariantIndexWithPrevious: true }) alienComp.addonVariants[selectedIndex + 1] = i;
+
+                index = selectedIndex;
+
+                while (index >= 0 && addons[index].linkVariantIndexWithPrevious)
+                {
+                    alienComp.addonVariants[index] = i;
+                    index--;
+                }
+
+                index = selectedIndex + 1;
+
+                while (index < addons.Count - 1 && addons[index].linkVariantIndexWithPrevious)
+                {
+                    alienComp.addonVariants[index] = i;
+                    index++;
+                }
             }
         }
 
