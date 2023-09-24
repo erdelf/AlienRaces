@@ -60,8 +60,75 @@ public static class StylingStation
         }
     }
 
-    public static List<Color> AvailableColors(AlienPartGenerator.BodyAddon ba, bool first = true) =>
-        DefDatabase<ColorDef>.AllDefs.Select(cd => cd.color).ToList();
+    public static List<Color> AvailableColors(AlienPartGenerator.BodyAddon ba, bool first = true)
+    {
+        List<Color> availableColors = new();
+
+        AlienPartGenerator.ColorChannelGenerator channelGenerator = alienRaceDef.alienRace.generalSettings?.alienPartGenerator.colorChannels?.Find(ccg => ccg.name == ba.ColorChannel);
+
+
+        if (channelGenerator != null)
+            foreach (AlienPartGenerator.ColorChannelGeneratorCategory entry in channelGenerator.entries)
+            {
+                ColorGenerator cg = first ? entry.first : entry.second;
+
+                switch (cg)
+                {
+                    case ColorGenerator_CustomAlienChannel cgCustomAlien:
+
+                        break;
+                    case ColorGenerator_SkinColorMelanin cgMelanin:
+
+                        if (cgMelanin.naturalMelanin)
+                        {
+                            foreach (GeneDef geneDef in PawnSkinColors.SkinColorGenesInOrder)
+                                if (geneDef.skinColorBase.HasValue)
+                                    availableColors.Add(geneDef.skinColorBase.Value);
+                        }
+                        else
+                        {
+                            for (int i = 0; i < PawnSkinColors.SkinColorGenesInOrder.Count; i++)
+                            {
+                                float currentMelanin = Mathf.Lerp(cgMelanin.minMelanin, cgMelanin.maxMelanin, 1f / PawnSkinColors.SkinColorGenesInOrder.Count * i);
+
+                                int     nextIndex = PawnSkinColors.SkinColorGenesInOrder.FirstIndexOf(gd => gd.minMelanin >= currentMelanin);
+                                GeneDef lastGene  = PawnSkinColors.SkinColorGenesInOrder[nextIndex - 1];
+                                GeneDef nextGene  = PawnSkinColors.SkinColorGenesInOrder[nextIndex];
+                                availableColors.Add(Color.Lerp(lastGene.skinColorBase.Value, nextGene.skinColorBase.Value,
+                                                               Mathf.InverseLerp(lastGene.minMelanin, nextGene.minMelanin, currentMelanin)));
+                            }
+                        }
+
+                        break;
+                    case ColorGenerator_Options cgOptions:
+                        foreach (ColorOption co in cgOptions.options)
+                            if (co.only.a >= 0f)
+                            {
+                                availableColors.Add(co.only);
+                            }
+                            else
+                            {
+                                Color diff = co.max - co.min;
+
+                                int steps = Math.Min(100, Mathf.RoundToInt((Mathf.Abs(diff.r) + Mathf.Abs(diff.g) + Mathf.Abs(diff.b) + Mathf.Abs(diff.a)) / 0.005f));
+
+                                for (int i = 0; i < steps; i++)
+                                    availableColors.Add(Color.Lerp(co.min, co.max, 1f / steps * i));
+                            }
+
+                        break;
+                    case ColorGenerator_Single:
+                    case ColorGenerator_White:
+                        availableColors.Add(cg.NewRandomizedColor());
+                        break;
+                    default:
+                        //availableColors.AddRange(DefDatabase<ColorDef>.AllDefs.Select(cd => cd.color));
+                        break;
+                }
+            }
+
+        return availableColors;
+    }
     // new List<Color>();
 
     public static void DoRaceTabs(Rect inRect)
@@ -209,8 +276,10 @@ public static class StylingStation
                 Widgets.DrawLightHighlight(colorRect);
                 Widgets.DrawHighlightIfMouseover(colorRect);
                 Widgets.DrawBoxSolid(colorRect.ContractedBy(2), colors.Item1);
+
                 if (editingFirstColor)
                     Widgets.DrawBox(colorRect);
+
                 if (Widgets.ButtonInvisible(colorRect))
                     editingFirstColor = true;
             }
@@ -225,8 +294,10 @@ public static class StylingStation
                 Widgets.DrawLightHighlight(colorRect);
                 Widgets.DrawHighlightIfMouseover(colorRect);
                 Widgets.DrawBoxSolid(colorRect.ContractedBy(2), colors.Item2);
+
                 if (!editingFirstColor)
                     Widgets.DrawBox(colorRect);
+
                 if (Widgets.ButtonInvisible(colorRect))
                     editingFirstColor = false;
             }
@@ -245,19 +316,25 @@ public static class StylingStation
                 Widgets.DrawLightHighlight(rect);
                 Widgets.DrawHighlightIfMouseover(rect);
                 Widgets.DrawBoxSolid(rect.ContractedBy(1), color);
+
                 if (editingFirstColor)
                 {
                     if (colors.Item1.IndistinguishableFrom(color))
                         Widgets.DrawBox(rect);
                     if (Widgets.ButtonInvisible(rect))
-                        addon.colorOverrideOne = color;
+                        if (addon.ColorChannel == "hair")
+                            pawn.story.HairColor = color;
+                        else
+                            alienComp.OverwriteColorChannel(addon.ColorChannel, color);
+                    //addon.colorOverrideOne = color;
                 }
                 else
                 {
                     if (colors.Item2.IndistinguishableFrom(color))
                         Widgets.DrawBox(rect);
                     if (Widgets.ButtonInvisible(rect))
-                        addon.colorOverrideTwo = color;
+                        alienComp.OverwriteColorChannel(addon.ColorChannel, second: color);
+                    //addon.colorOverrideTwo = color;
                 }
 
                 pos.x += size.x;
