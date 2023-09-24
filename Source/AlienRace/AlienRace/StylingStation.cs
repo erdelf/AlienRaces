@@ -1,19 +1,15 @@
 namespace AlienRace;
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
-using AlienRace.ExtendedGraphics;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
 
-[HotSwappable]
 public static class StylingStation
 {
     private static List<TabRecord> mainTabs = new();
@@ -28,10 +24,8 @@ public static class StylingStation
     private static AlienPartGenerator.AlienComp alienComp;
     private static ThingDef_AlienRace           alienRaceDef;
 
-    public static IEnumerable<CodeInstruction> DoWindowContentsTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
-    {
-        return instructions.MethodReplacer(AccessTools.Method(typeof(Dialog_StylingStation), "DrawTabs"), AccessTools.Method(typeof(StylingStation), nameof(DoRaceAndCharacterTabs)));
-    }
+    public static IEnumerable<CodeInstruction> DoWindowContentsTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg) =>
+        instructions.MethodReplacer(AccessTools.Method(typeof(Dialog_StylingStation), "DrawTabs"), AccessTools.Method(typeof(StylingStation), nameof(DoRaceAndCharacterTabs)));
 
     public static void DoRaceAndCharacterTabs(Dialog_StylingStation gotInstance, Rect inRect)
     {
@@ -66,7 +60,8 @@ public static class StylingStation
         }
     }
 
-    public static List<Color> AvailableColors(AlienPartGenerator.BodyAddon ba, bool first = true) => DefDatabase<ColorDef>.AllDefs.Select(cd => cd.color).ToList();
+    public static List<Color> AvailableColors(AlienPartGenerator.BodyAddon ba, bool first = true) =>
+        DefDatabase<ColorDef>.AllDefs.Select(cd => cd.color).ToList();
     // new List<Color>();
 
     public static void DoRaceTabs(Rect inRect)
@@ -90,23 +85,27 @@ public static class StylingStation
         List<AlienPartGenerator.BodyAddon> bodyAddons = alienRaceDef.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).ToList();
         DoAddonList(inRect.LeftPartPixels(260), bodyAddons);
         inRect.xMin += 260;
-        if (selectedIndex != -1) DoAddonInfo(inRect, bodyAddons[selectedIndex], bodyAddons);
+        if (selectedIndex != -1)
+            DoAddonInfo(inRect, bodyAddons[selectedIndex], bodyAddons);
     }
 
     private static Vector2 addonsScrollPos;
 
     private static void DoAddonList(Rect inRect, List<AlienPartGenerator.BodyAddon> addons)
     {
-        if (selectedIndex > addons.Count) selectedIndex = -1;
+        if (selectedIndex > addons.Count)
+            selectedIndex = -1;
 
         Widgets.DrawMenuSection(inRect);
-        Rect viewRect = new Rect(0, 0, 250, addons.Count * 54 + 4);
+        Rect viewRect = new(0, 0, 250, addons.Count * 54 + 4);
         Widgets.BeginScrollView(inRect, ref addonsScrollPos, viewRect);
         for (int i = 0; i < addons.Count; i++)
         {
             Rect rect = new Rect(10, i * 54f + 4, 240f, 50f).ContractedBy(2);
             if (i == selectedIndex)
+            {
                 Widgets.DrawOptionSelected(rect);
+            }
             else
             {
                 GUI.color = Widgets.WindowBGFillColor;
@@ -119,27 +118,30 @@ public static class StylingStation
                 while (index >= 0 && addons[index].linkVariantIndexWithPrevious)
                 {
                     index--;
-                    if (selectedIndex == index) groupSelected = true;
+                    if (selectedIndex == index)
+                        groupSelected = true;
                 }
 
                 index = i + 1;
 
                 while (index <= addons.Count - 1 && addons[index].linkVariantIndexWithPrevious)
                 {
-                    Log.Message($"{index} is linked, selected is {selectedIndex}");
-                    if (selectedIndex == index) groupSelected = true;
+                    //Log.Message($"{index} is linked, selected is {selectedIndex}");
+                    if (selectedIndex == index)
+                        groupSelected = true;
                     index++;
                 }
 
                 if (groupSelected)
                 {
                     GUI.color = new ColorInt(135, 135, 135).ToColor;
-                    Widgets.DrawBox(rect, 1);
+                    Widgets.DrawBox(rect);
                     GUI.color = Color.white;
                 }
             }
 
             Widgets.DrawHighlightIfMouseover(rect);
+
             if (Widgets.ButtonInvisible(rect))
             {
                 selectedIndex = i;
@@ -168,7 +170,7 @@ public static class StylingStation
             AlienPartGenerator.ExposableValueTuple<Color, Color> channelColors = alienComp.GetChannel(addons[i].ColorChannel);
             (Color, Color)                                       colors        = (addons[i].colorOverrideOne ?? channelColors.first, addons[i].colorOverrideTwo ?? channelColors.second);
 
-            Rect colorRect = new Rect(rect.xMax - 44, rect.yMax - 22, 18, 18);
+            Rect colorRect = new(rect.xMax - 44, rect.yMax - 22, 18, 18);
             Widgets.DrawLightHighlight(colorRect);
             Widgets.DrawBoxSolid(colorRect.ContractedBy(2), colors.Item1);
 
@@ -185,10 +187,10 @@ public static class StylingStation
 
     private static void DoAddonInfo(Rect inRect, AlienPartGenerator.BodyAddon addon, List<AlienPartGenerator.BodyAddon> addons)
     {
-        List<Color>    firstColors   = AvailableColors(addon, true);
-        List<Color>    secondColors  = AvailableColors(addon, false);
-        var            channelColors = alienComp.GetChannel(addon.ColorChannel);
-        (Color, Color) colors        = (addon.colorOverrideOne ?? channelColors.first, addon.colorOverrideTwo ?? channelColors.second);
+        List<Color>                                          firstColors   = AvailableColors(addon);
+        List<Color>                                          secondColors  = AvailableColors(addon, false);
+        AlienPartGenerator.ExposableValueTuple<Color, Color> channelColors = alienComp.GetChannel(addon.ColorChannel);
+        (Color, Color)                                       colors        = (addon.colorOverrideOne ?? channelColors.first, addon.colorOverrideTwo ?? channelColors.second);
         if (firstColors.Any() || secondColors.Any())
         {
             Rect colorsRect = inRect.BottomPart(0.4f);
@@ -207,10 +209,15 @@ public static class StylingStation
                 Widgets.DrawLightHighlight(colorRect);
                 Widgets.DrawHighlightIfMouseover(colorRect);
                 Widgets.DrawBoxSolid(colorRect.ContractedBy(2), colors.Item1);
-                if (editingFirstColor) Widgets.DrawBox(colorRect);
-                if (Widgets.ButtonInvisible(colorRect)) editingFirstColor = true;
+                if (editingFirstColor)
+                    Widgets.DrawBox(colorRect);
+                if (Widgets.ButtonInvisible(colorRect))
+                    editingFirstColor = true;
             }
-            else editingFirstColor = false;
+            else
+            {
+                editingFirstColor = false;
+            }
 
             if (secondColors.Any())
             {
@@ -218,30 +225,39 @@ public static class StylingStation
                 Widgets.DrawLightHighlight(colorRect);
                 Widgets.DrawHighlightIfMouseover(colorRect);
                 Widgets.DrawBoxSolid(colorRect.ContractedBy(2), colors.Item2);
-                if (!editingFirstColor) Widgets.DrawBox(colorRect);
-                if (Widgets.ButtonInvisible(colorRect)) editingFirstColor = false;
+                if (!editingFirstColor)
+                    Widgets.DrawBox(colorRect);
+                if (Widgets.ButtonInvisible(colorRect))
+                    editingFirstColor = false;
             }
-            else editingFirstColor = true;
+            else
+            {
+                editingFirstColor = true;
+            }
 
             List<Color> availableColors = editingFirstColor ? firstColors : secondColors;
 
-            var pos  = new Vector2(colorsRect.x + 6, colorsRect.y + 30);
-            var size = new Vector2(14,               18);
+            Vector2 pos  = new(colorsRect.x + 6, colorsRect.y + 30);
+            Vector2 size = new(14, 18);
             foreach (Color color in availableColors)
             {
-                var rect = new Rect(pos, size).ContractedBy(1);
+                Rect rect = new Rect(pos, size).ContractedBy(1);
                 Widgets.DrawLightHighlight(rect);
                 Widgets.DrawHighlightIfMouseover(rect);
                 Widgets.DrawBoxSolid(rect.ContractedBy(1), color);
                 if (editingFirstColor)
                 {
-                    if (colors.Item1.IndistinguishableFrom(color)) Widgets.DrawBox(rect);
-                    if (Widgets.ButtonInvisible(rect)) addon.colorOverrideOne = color;
+                    if (colors.Item1.IndistinguishableFrom(color))
+                        Widgets.DrawBox(rect);
+                    if (Widgets.ButtonInvisible(rect))
+                        addon.colorOverrideOne = color;
                 }
                 else
                 {
-                    if (colors.Item2.IndistinguishableFrom(color)) Widgets.DrawBox(rect);
-                    if (Widgets.ButtonInvisible(rect)) addon.colorOverrideTwo = color;
+                    if (colors.Item2.IndistinguishableFrom(color))
+                        Widgets.DrawBox(rect);
+                    if (Widgets.ButtonInvisible(rect))
+                        addon.colorOverrideTwo = color;
                 }
 
                 pos.x += size.x;
@@ -263,10 +279,11 @@ public static class StylingStation
             itemSize = width / countPerRow;
         }
 
-        Rect viewRect = new Rect(0, 0, width, Mathf.Ceil((float)variantCount / countPerRow) * itemSize);
+        Rect viewRect = new(0, 0, width, Mathf.Ceil((float)variantCount / countPerRow) * itemSize);
 
         Widgets.DrawMenuSection(inRect);
         Widgets.BeginScrollView(inRect, ref variantsScrollPos, viewRect);
+
         for (int i = 0; i < variantCount; i++)
         {
             Rect rect  = new Rect(i % countPerRow * itemSize, Mathf.Floor((float)i / countPerRow) * itemSize, itemSize, itemSize).ContractedBy(2);
@@ -277,10 +294,14 @@ public static class StylingStation
             GUI.color = Color.white;
             Widgets.DrawHighlightIfMouseover(rect);
 
-            if (alienComp.addonVariants[selectedIndex] == i) Widgets.DrawBox(rect);
+            if (alienComp.addonVariants[selectedIndex] == i)
+                Widgets.DrawBox(rect);
 
-            Texture2D image = ContentFinder<Texture2D>.Get(addon.GetPath(pawn, ref index, i) + "_south");
-            GUI.DrawTexture(rect, image);
+            string    addonPath = addon.GetPath(pawn, ref index, i);
+            Texture2D image     = ContentFinder<Texture2D>.Get(addonPath + "_south", false);
+
+            if (image != null)
+                GUI.DrawTexture(rect, image);
 
             if (Widgets.ButtonInvisible(rect))
             {
@@ -309,7 +330,8 @@ public static class StylingStation
 
     private enum MainTab
     {
-        CHARACTER, RACE
+        CHARACTER,
+        RACE
     }
 
     private enum RaceTab
@@ -317,5 +339,3 @@ public static class StylingStation
         BODY_ADDONS
     }
 }
-
-public class HotSwappableAttribute : Attribute { }
