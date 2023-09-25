@@ -102,10 +102,7 @@ public static class StylingStation
                         break;
                     case ColorGenerator_Options cgOptions:
                         foreach (ColorOption co in cgOptions.options)
-                            if (co.only.a >= 0f)
-                            {
-                                availableColors.Add(co.only);
-                            }
+                            if (co.only.a >= 0f) { availableColors.Add(co.only); }
                             else
                             {
                                 Color diff = co.max - co.min;
@@ -169,10 +166,7 @@ public static class StylingStation
         for (int i = 0; i < addons.Count; i++)
         {
             Rect rect = new Rect(10, i * 54f + 4, 240f, 50f).ContractedBy(2);
-            if (i == selectedIndex)
-            {
-                Widgets.DrawOptionSelected(rect);
-            }
+            if (i == selectedIndex) { Widgets.DrawOptionSelected(rect); }
             else
             {
                 GUI.color = Widgets.WindowBGFillColor;
@@ -251,13 +245,15 @@ public static class StylingStation
 
     private static Vector2 variantsScrollPos;
     private static bool    editingFirstColor;
+    private static Vector2 colorsScrollPos;
 
     private static void DoAddonInfo(Rect inRect, AlienPartGenerator.BodyAddon addon, List<AlienPartGenerator.BodyAddon> addons)
     {
-        List<Color>                                          firstColors   = AvailableColors(addon);
-        List<Color>                                          secondColors  = AvailableColors(addon, false);
-        AlienPartGenerator.ExposableValueTuple<Color, Color> channelColors = alienComp.GetChannel(addon.ColorChannel);
-        (Color, Color)                                       colors        = (addon.colorOverrideOne ?? channelColors.first, addon.colorOverrideTwo ?? channelColors.second);
+        List<Color>    firstColors   = AvailableColors(addon);
+        List<Color>    secondColors  = AvailableColors(addon, false);
+        var            channelColors = alienComp.GetChannel(addon.ColorChannel);
+        (Color, Color) colors        = (addon.colorOverrideOne ?? channelColors.first, addon.colorOverrideTwo ?? channelColors.second);
+        Rect           viewRect;
         if (firstColors.Any() || secondColors.Any())
         {
             Rect colorsRect = inRect.BottomPart(0.4f);
@@ -266,6 +262,7 @@ public static class StylingStation
             Widgets.DrawMenuSection(colorsRect);
 
             Rect headerRect = colorsRect.TopPartPixels(30).ContractedBy(4);
+            colorsRect.yMin += 30;
 
             Widgets.Label(headerRect, "HAR.Colors".Translate());
 
@@ -283,10 +280,7 @@ public static class StylingStation
                 if (Widgets.ButtonInvisible(colorRect))
                     editingFirstColor = true;
             }
-            else
-            {
-                editingFirstColor = false;
-            }
+            else editingFirstColor = false;
 
             if (secondColors.Any())
             {
@@ -301,15 +295,16 @@ public static class StylingStation
                 if (Widgets.ButtonInvisible(colorRect))
                     editingFirstColor = false;
             }
-            else
-            {
-                editingFirstColor = true;
-            }
+            else editingFirstColor = true;
 
             List<Color> availableColors = editingFirstColor ? firstColors : secondColors;
 
-            Vector2 pos  = new(colorsRect.x + 6, colorsRect.y + 30);
+            colorsRect = colorsRect.ContractedBy(6);
+
             Vector2 size = new(14, 18);
+            viewRect = new Rect(0, 0, colorsRect.width - 16, Mathf.Ceil(availableColors.Count / ((colorsRect.width - 16) / size.x)) * size.y);
+            Vector2 pos = new(0, 0);
+            Widgets.BeginScrollView(colorsRect, ref colorsScrollPos, viewRect);
             foreach (Color color in availableColors)
             {
                 Rect rect = new Rect(pos, size).ContractedBy(1);
@@ -338,12 +333,14 @@ public static class StylingStation
                 }
 
                 pos.x += size.x;
-                if (pos.x + size.x >= colorsRect.xMax)
+                if (pos.x + size.x >= viewRect.xMax)
                 {
                     pos.y += size.y;
-                    pos.x =  colorsRect.x + 6;
+                    pos.x =  0;
                 }
             }
+
+            Widgets.EndScrollView();
         }
 
         int   variantCount = addon.GetVariantCount();
@@ -356,7 +353,7 @@ public static class StylingStation
             itemSize = width / countPerRow;
         }
 
-        Rect viewRect = new(0, 0, width, Mathf.Ceil((float)variantCount / countPerRow) * itemSize);
+        viewRect = new(0, 0, width, Mathf.Ceil((float)variantCount / countPerRow) * itemSize);
 
         Widgets.DrawMenuSection(inRect);
         Widgets.BeginScrollView(inRect, ref variantsScrollPos, viewRect);
@@ -407,8 +404,7 @@ public static class StylingStation
 
     private enum MainTab
     {
-        CHARACTER,
-        RACE
+        CHARACTER, RACE
     }
 
     private enum RaceTab
