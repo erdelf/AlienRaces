@@ -567,12 +567,15 @@
                 switch (gen)
                 {
                     case ColorGenerator_CustomAlienChannel ac:
-                        string[] split = ac.colorChannel.Split('_');
-                        if (!this.colorChannelLinks.ContainsKey(split[0]))
-                            this.colorChannelLinks.Add(split[0], new HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool >>());
-                        if (this.colorChannelLinks[split[0]].All(evt => evt.first.first != channel.name))
-                            this.colorChannelLinks[split[0]].Add(new ExposableValueTuple<ExposableValueTuple<string, int>, bool>(new ExposableValueTuple<string, int>(channel.name, channel.entries.IndexOf(category)), first));
-                        return split[1] == "1" ? this.ColorChannels[split[0]].first : this.ColorChannels[split[0]].second;
+
+                        ac.GetInfo(out string channelName, out bool firstColor);
+
+                        if (!this.colorChannelLinks.ContainsKey(channelName))
+                            this.colorChannelLinks.Add(channelName, new HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>());
+                        if (this.colorChannelLinks[channelName].All(evt => evt.first.first != channel.name))
+                            this.colorChannelLinks[channelName]
+                             .Add(new ExposableValueTuple<ExposableValueTuple<string, int>, bool>(new ExposableValueTuple<string, int>(channel.name, channel.entries.IndexOf(category)), first));
+                        return firstColor ? this.ColorChannels[channelName].first : this.ColorChannels[channelName].second;
                     default:
                         return this.GenerateColor(gen);
                 }
