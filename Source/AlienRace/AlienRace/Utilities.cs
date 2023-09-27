@@ -228,5 +228,7 @@
         public static readonly Action<Dialog_StylingStation, Rect> drawTabs = AccessTools.Method(typeof(Dialog_StylingStation), "DrawTabs").CreateDelegate<Action<Dialog_StylingStation, Rect>>();
 
         public static readonly AccessTools.FieldRef<Dialog_StylingStation, Pawn> stationPawn = AccessTools.FieldRefAccess<Dialog_StylingStation, Pawn>("pawn");
+
+        public static readonly AccessTools.FieldRef<Dialog_StylingStation, Color> stationDesiredHairColor = AccessTools.FieldRefAccess<Dialog_StylingStation, Color>("desiredHairColor");
     }
 }
