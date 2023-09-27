@@ -60,8 +60,14 @@ public static class StylingStation
         }
     }
 
+    private static Dictionary<AlienPartGenerator.BodyAddon, Dictionary<bool, List<Color>>> availableColorsCache = new Dictionary<AlienPartGenerator.BodyAddon, Dictionary<bool, List<Color>>>();
+
     public static List<Color> AvailableColors(AlienPartGenerator.BodyAddon ba, bool first = true)
     {
+        if (availableColorsCache.TryGetValue(ba, out Dictionary<bool, List<Color>> firstEntry))
+            if (firstEntry.TryGetValue(first, out List<Color> colors))
+                return colors;
+
         List<Color> availableColors = new();
 
         AlienPartGenerator.ColorChannelGenerator channelGenerator = alienRaceDef.alienRace.generalSettings?.alienPartGenerator.colorChannels?.Find(ccg => ccg.name == ba.ColorChannel);
@@ -102,15 +108,43 @@ public static class StylingStation
                         break;
                     case ColorGenerator_Options cgOptions:
                         foreach (ColorOption co in cgOptions.options)
-                            if (co.only.a >= 0f) { availableColors.Add(co.only); }
+                            if (co.only.a >= 0f)
+                            {
+                                availableColors.Add(co.only);
+                            }
                             else
                             {
+                                List<Color> colorOptions = new List<Color>();
+
                                 Color diff = co.max - co.min;
 
-                                int steps = Math.Min(100, Mathf.RoundToInt((Mathf.Abs(diff.r) + Mathf.Abs(diff.g) + Mathf.Abs(diff.b) + Mathf.Abs(diff.a)) / 0.005f));
+                                //int steps = Math.Min(100, Mathf.RoundToInt((Mathf.Abs(diff.r) + Mathf.Abs(diff.g) + Mathf.Abs(diff.b) + Mathf.Abs(diff.a)) / 0.01f));
 
-                                for (int i = 0; i < steps; i++)
-                                    availableColors.Add(Color.Lerp(co.min, co.max, 1f / steps * i));
+                                float redStep   = Mathf.Max(0.0001f, diff.r / 2);
+                                float greenStep = Mathf.Max(0.0001f, diff.g / 2);
+                                float blueStep  = Mathf.Max(0.0001f, diff.b / 2);
+                                float alphaStep = Mathf.Max(0.0001f, diff.a / 2);
+
+                                for (float r = co.min.r; r <= co.max.r; r += redStep)
+                                {
+                                    for (float g = co.min.g; g <= co.max.g; g += greenStep)
+                                    {
+                                        for (float b = co.min.b; b <= co.max.b; b += blueStep)
+                                        {
+                                            for (float a = co.min.a; a <= co.max.a; a += alphaStep)
+                                                colorOptions.Add(new Color(r, g, b, a));
+                                        }
+                                    }
+                                }
+
+                                availableColors.AddRange(colorOptions.OrderBy(c =>
+                                                                              {
+                                                                                  Color.RGBToHSV(c, out _, out float s, out float v);
+                                                                                  return s + v;
+                                                                              }));
+
+                                //for (int i = 0; i < steps; i++)
+                                //availableColors.Add(Color.Lerp(co.min, co.max, 1f / steps * i));
                             }
 
                         break;
@@ -123,6 +157,10 @@ public static class StylingStation
                         break;
                 }
             }
+
+        if (!availableColorsCache.ContainsKey(ba))
+            availableColorsCache.Add(ba, new Dictionary<bool, List<Color>>());
+        availableColorsCache[ba].Add(first, availableColors);
 
         return availableColors;
     }
@@ -319,12 +357,6 @@ public static class StylingStation
 
             Vector2 pos = new(0, 30);
 
-            colorsRect = colorsRect.ContractedBy(6);
-
-            Vector2 size = new(14, 18);
-            viewRect = new Rect(0, 0, colorsRect.width - 16, Mathf.Ceil(availableColors.Count / ((colorsRect.width - 16) / size.x)) * size.y);
-            Vector2 pos = new(0, 0);
-            Widgets.BeginScrollView(colorsRect, ref colorsScrollPos, viewRect);
             foreach (Color color in availableColors)
             {
                 Rect rect = new Rect(pos, size).ContractedBy(1);
