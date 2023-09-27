@@ -78,84 +78,93 @@ public static class StylingStation
             {
                 ColorGenerator cg = first ? entry.first : entry.second;
 
-                switch (cg)
+                void AddColorFromGenerator(ColorGenerator colorGenerator)
                 {
-                    case ColorGenerator_CustomAlienChannel cgCustomAlien:
+                    switch (colorGenerator)
+                    {
+                        case ColorGenerator_CustomAlienChannel cgCustomAlien:
+                            cgCustomAlien.GetInfo(out string channel, out bool firstCustom);
 
-                        break;
-                    case ColorGenerator_SkinColorMelanin cgMelanin:
+                            foreach (AlienPartGenerator.ColorChannelGeneratorCategory entriesCustom in
+                                     alienRaceDef.alienRace.generalSettings.alienPartGenerator.colorChannels.Find(ccg => ccg.name == channel).entries)
+                                AddColorFromGenerator(firstCustom ? entriesCustom.first : entriesCustom.second);
+                            break;
+                        case ColorGenerator_SkinColorMelanin cgMelanin:
 
-                        if (cgMelanin.naturalMelanin)
-                        {
-                            foreach (GeneDef geneDef in PawnSkinColors.SkinColorGenesInOrder)
-                                if (geneDef.skinColorBase.HasValue)
-                                    availableColors.Add(geneDef.skinColorBase.Value);
-                        }
-                        else
-                        {
-                            for (int i = 0; i < PawnSkinColors.SkinColorGenesInOrder.Count; i++)
+                            if (cgMelanin.naturalMelanin)
                             {
-                                float currentMelanin = Mathf.Lerp(cgMelanin.minMelanin, cgMelanin.maxMelanin, 1f / PawnSkinColors.SkinColorGenesInOrder.Count * i);
-
-                                int     nextIndex = PawnSkinColors.SkinColorGenesInOrder.FirstIndexOf(gd => gd.minMelanin >= currentMelanin);
-                                GeneDef lastGene  = PawnSkinColors.SkinColorGenesInOrder[nextIndex - 1];
-                                GeneDef nextGene  = PawnSkinColors.SkinColorGenesInOrder[nextIndex];
-                                availableColors.Add(Color.Lerp(lastGene.skinColorBase.Value, nextGene.skinColorBase.Value,
-                                                               Mathf.InverseLerp(lastGene.minMelanin, nextGene.minMelanin, currentMelanin)));
-                            }
-                        }
-
-                        break;
-                    case ColorGenerator_Options cgOptions:
-                        foreach (ColorOption co in cgOptions.options)
-                            if (co.only.a >= 0f)
-                            {
-                                availableColors.Add(co.only);
+                                foreach (GeneDef geneDef in PawnSkinColors.SkinColorGenesInOrder)
+                                    if (geneDef.skinColorBase.HasValue)
+                                        availableColors.Add(geneDef.skinColorBase.Value);
                             }
                             else
                             {
-                                List<Color> colorOptions = new List<Color>();
-
-                                Color diff = co.max - co.min;
-
-                                //int steps = Math.Min(100, Mathf.RoundToInt((Mathf.Abs(diff.r) + Mathf.Abs(diff.g) + Mathf.Abs(diff.b) + Mathf.Abs(diff.a)) / 0.01f));
-
-                                float redStep   = Mathf.Max(0.0001f, diff.r / 2);
-                                float greenStep = Mathf.Max(0.0001f, diff.g / 2);
-                                float blueStep  = Mathf.Max(0.0001f, diff.b / 2);
-                                float alphaStep = Mathf.Max(0.0001f, diff.a / 2);
-
-                                for (float r = co.min.r; r <= co.max.r; r += redStep)
+                                for (int i = 0; i < PawnSkinColors.SkinColorGenesInOrder.Count; i++)
                                 {
-                                    for (float g = co.min.g; g <= co.max.g; g += greenStep)
-                                    {
-                                        for (float b = co.min.b; b <= co.max.b; b += blueStep)
-                                        {
-                                            for (float a = co.min.a; a <= co.max.a; a += alphaStep)
-                                                colorOptions.Add(new Color(r, g, b, a));
-                                        }
-                                    }
+                                    float currentMelanin = Mathf.Lerp(cgMelanin.minMelanin, cgMelanin.maxMelanin, 1f / PawnSkinColors.SkinColorGenesInOrder.Count * i);
+
+                                    int     nextIndex = PawnSkinColors.SkinColorGenesInOrder.FirstIndexOf(gd => gd.minMelanin >= currentMelanin);
+                                    GeneDef lastGene  = PawnSkinColors.SkinColorGenesInOrder[nextIndex - 1];
+                                    GeneDef nextGene  = PawnSkinColors.SkinColorGenesInOrder[nextIndex];
+                                    availableColors.Add(Color.Lerp(lastGene.skinColorBase.Value, nextGene.skinColorBase.Value,
+                                                                   Mathf.InverseLerp(lastGene.minMelanin, nextGene.minMelanin, currentMelanin)));
                                 }
-
-                                availableColors.AddRange(colorOptions.OrderBy(c =>
-                                                                              {
-                                                                                  Color.RGBToHSV(c, out _, out float s, out float v);
-                                                                                  return s + v;
-                                                                              }));
-
-                                //for (int i = 0; i < steps; i++)
-                                //availableColors.Add(Color.Lerp(co.min, co.max, 1f / steps * i));
                             }
 
-                        break;
-                    case ColorGenerator_Single:
-                    case ColorGenerator_White:
-                        availableColors.Add(cg.NewRandomizedColor());
-                        break;
-                    default:
-                        //availableColors.AddRange(DefDatabase<ColorDef>.AllDefs.Select(cd => cd.color));
-                        break;
+                            break;
+                        case ColorGenerator_Options cgOptions:
+                            foreach (ColorOption co in cgOptions.options)
+                                if (co.only.a >= 0f)
+                                {
+                                    availableColors.Add(co.only);
+                                }
+                                else
+                                {
+                                    List<Color> colorOptions = new List<Color>();
+
+                                    Color diff = co.max - co.min;
+
+                                    //int steps = Math.Min(100, Mathf.RoundToInt((Mathf.Abs(diff.r) + Mathf.Abs(diff.g) + Mathf.Abs(diff.b) + Mathf.Abs(diff.a)) / 0.01f));
+
+                                    float redStep   = Mathf.Max(0.0001f, diff.r / 2);
+                                    float greenStep = Mathf.Max(0.0001f, diff.g / 2);
+                                    float blueStep  = Mathf.Max(0.0001f, diff.b / 2);
+                                    float alphaStep = Mathf.Max(0.0001f, diff.a / 2);
+
+                                    for (float r = co.min.r; r <= co.max.r; r += redStep)
+                                    {
+                                        for (float g = co.min.g; g <= co.max.g; g += greenStep)
+                                        {
+                                            for (float b = co.min.b; b <= co.max.b; b += blueStep)
+                                            {
+                                                for (float a = co.min.a; a <= co.max.a; a += alphaStep)
+                                                    colorOptions.Add(new Color(r, g, b, a));
+                                            }
+                                        }
+                                    }
+
+                                    availableColors.AddRange(colorOptions.OrderBy(c =>
+                                                                                  {
+                                                                                      Color.RGBToHSV(c, out _, out float s, out float v);
+                                                                                      return s + v;
+                                                                                  }));
+
+                                    //for (int i = 0; i < steps; i++)
+                                    //availableColors.Add(Color.Lerp(co.min, co.max, 1f / steps * i));
+                                }
+
+                            break;
+                        case ColorGenerator_Single:
+                        case ColorGenerator_White:
+                            availableColors.Add(colorGenerator.NewRandomizedColor());
+                            break;
+                        default:
+                            //availableColors.AddRange(DefDatabase<ColorDef>.AllDefs.Select(cd => cd.color));
+                            break;
+                    }
                 }
+
+                AddColorFromGenerator(colorGenerator: cg);
             }
 
         if (!availableColorsCache.ContainsKey(ba))
