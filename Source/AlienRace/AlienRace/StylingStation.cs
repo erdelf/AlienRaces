@@ -318,9 +318,17 @@ public static class StylingStation
                         Widgets.DrawBox(rect);
                     if (Widgets.ButtonInvisible(rect))
                         if (addon.ColorChannel == "hair")
+                        {
                             pawn.story.HairColor = color;
+                            pawn.style.Notify_StyleItemChanged();
+                            pawn.style.ResetNextStyleChangeAttemptTick();
+                            pawn.style.nextHairColor                     = null;
+                            CachedData.stationDesiredHairColor(instance) = color;
+                        }
                         else
+                        {
                             alienComp.OverwriteColorChannel(addon.ColorChannel, color);
+                        }
                     //addon.colorOverrideOne = color;
                 }
                 else
