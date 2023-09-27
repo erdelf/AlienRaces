@@ -16,15 +16,18 @@
     public partial class AlienPartGenerator
     {
         public List<HeadTypeDef> headTypes;
-        public List<HeadTypeDef> HeadTypes => 
+
+        public List<HeadTypeDef> HeadTypes =>
             this.headTypes ?? CachedData.DefaultHeadTypeDefs;
 
         public List<BodyTypeDef> bodyTypes = new();
 
         [LoadDefFromField("Male")]
         public BodyTypeDef defaultMaleBodyType;
+
         [LoadDefFromField("Female")]
         public BodyTypeDef defaultFemaleBodyType;
+
 
         [Obsolete]
         public int getsGreyAt = 40;
@@ -33,52 +36,54 @@
         public SimpleCurve oldHairAgeCurve = new();
 
         public ColorGenerator oldHairColorGen = new ColorGenerator_Options
-                                             {
-                                                 options = new List<ColorOption>
-                                                           {
-                                                               new() { only = new Color(0.65f, 0.65f, 0.65f)},
-                                                               new() { only = new Color(0.70f, 0.70f, 0.70f)},
-                                                               new() { only = new Color(0.75f, 0.75f, 0.75f)},
-                                                               new() { only = new Color(0.80f, 0.80f, 0.80f)},
-                                                               new() { only = new Color(0.85f, 0.85f, 0.85f)},
-                                                           }
-                                             };
+                                                {
+                                                    options = new List<ColorOption>
+                                                              {
+                                                                  new() { only = new Color(0.65f, 0.65f, 0.65f) },
+                                                                  new() { only = new Color(0.70f, 0.70f, 0.70f) },
+                                                                  new() { only = new Color(0.75f, 0.75f, 0.75f) },
+                                                                  new() { only = new Color(0.80f, 0.80f, 0.80f) },
+                                                                  new() { only = new Color(0.85f, 0.85f, 0.85f) },
+                                                              }
+                                                };
 
 
         public List<ColorChannelGenerator> colorChannels  = new();
         public List<OffsetNamed>           offsetDefaults = new();
-        
+
 
         public List<WoundAnchorReplacement> anchorReplacements = new();
 
-        public Vector2           headOffset            = Vector2.zero;
-        [Obsolete("Type will be replaced by Directional Offset")]
-        public DirectionOffset   headOffsetDirectional = new();
-        public DirectionalOffset headOffsetSpecific    = new();
+        public Vector2 headOffset = Vector2.zero;
 
-        public Vector2 headFemaleOffset = Vector2.negativeInfinity;
+        [Obsolete("Type will be replaced by Directional Offset")]
+        public DirectionOffset headOffsetDirectional = new();
+
+        public DirectionalOffset headOffsetSpecific = new();
+
+        public Vector2           headFemaleOffset = Vector2.negativeInfinity;
         public DirectionalOffset headFemaleOffsetSpecific;
 
         public float borderScale = 1f;
-        public int atlasScale = 1;
+        public int   atlasScale  = 1;
 
-        public Vector2 customDrawSize = Vector2.one;
-        public Vector2 customPortraitDrawSize = Vector2.one;
-        public Vector2 customHeadDrawSize = Vector2.zero;
+        public Vector2 customDrawSize             = Vector2.one;
+        public Vector2 customPortraitDrawSize     = Vector2.one;
+        public Vector2 customHeadDrawSize         = Vector2.zero;
         public Vector2 customPortraitHeadDrawSize = Vector2.zero;
 
-        public Vector2 customFemaleDrawSize = Vector2.zero;
-        public Vector2 customFemalePortraitDrawSize = Vector2.zero;
-        public Vector2 customFemaleHeadDrawSize = Vector2.zero;
+        public Vector2 customFemaleDrawSize             = Vector2.zero;
+        public Vector2 customFemalePortraitDrawSize     = Vector2.zero;
+        public Vector2 customFemaleHeadDrawSize         = Vector2.zero;
         public Vector2 customFemalePortraitHeadDrawSize = Vector2.zero;
-        
+
 
         public BodyPartDef headBodyPartDef;
 
         public List<BodyAddon> bodyAddons = new();
 
         public ThingDef_AlienRace alienProps;
-        
+
         public Color SkinColor(Pawn alien, bool first = true)
         {
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
@@ -86,21 +91,21 @@
             if (alien.story.SkinColorOverriden)
                 return alien.story.skinColorOverride!.Value;
 
-            if (alienComp == null) 
+            if (alienComp == null)
                 return CachedData.skinColorBase(alien.story) ?? Color.clear;
 
             ExposableValueTuple<Color, Color> skinColors = alienComp.GetChannel(channel: "skin");
             return first ? skinColors.first : skinColors.second;
         }
 
-        public void GenericOffsets() => 
+        public void GenericOffsets() =>
             this.GenerateOffsetDefaults();
 
         private void GenerateOffsetDefaults()
         {
             this.offsetDefaults.Add(new OffsetNamed
                                     {
-                                        name = "Center",
+                                        name    = "Center",
                                         offsets = new DirectionalOffset()
                                     });
             this.offsetDefaults.Add(new OffsetNamed
@@ -110,21 +115,21 @@
                                                   {
                                                       south = new RotationOffset
                                                               {
-                                                                  offset      = new Vector2(0.42f, -0.22f)
+                                                                  offset = new Vector2(0.42f, -0.22f)
                                                               },
                                                       north = new RotationOffset
                                                               {
-                                                                  offset      = new Vector2(0f, -0.55f)
+                                                                  offset = new Vector2(0f, -0.55f)
                                                               },
                                                       east = new RotationOffset
                                                              {
-                                                                 offset      = new Vector2(0.42f, -0.22f)
+                                                                 offset = new Vector2(0.42f, -0.22f)
                                                              },
                                                       west = new RotationOffset
                                                              {
                                                                  offset = new Vector2(0.42f, -0.22f)
                                                              }
-                                        }
+                                                  }
                                     });
             this.offsetDefaults.Add(new OffsetNamed
                                     {
@@ -145,28 +150,27 @@
                                                              },
                                                       west = new RotationOffset
                                                              {
-                                                                offset = new Vector2(-0.07f, 0.5f)
+                                                                 offset = new Vector2(-0.07f, 0.5f)
                                                              }
                                                   }
                                     });
-
         }
 
         public void GenerateMeshsAndMeshPools()
         {
             if (this.oldHairAgeCurve.PointsCount <= 0)
             {
-                float minAge = this.oldHairAgeRange.min <= 0 ? 
+                float minAge = this.oldHairAgeRange.min <= 0 ?
                                    this.getsGreyAt :
                                    this.oldHairAgeRange.TrueMin;
 
-                float maxAge = this.oldHairAgeRange.max <= 0 ? 
-                                   this.alienProps.race.ageGenerationCurve == null || this.alienProps.race.ageGenerationCurve.Points.Count < 3 ? 
+                float maxAge = this.oldHairAgeRange.max <= 0 ?
+                                   this.alienProps.race.ageGenerationCurve == null || this.alienProps.race.ageGenerationCurve.Points.Count < 3 ?
                                        this.alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt + this.alienProps.race.lifeExpectancy / 3f :
-                                       this.alienProps.race.ageGenerationCurve.Points.Skip(this.alienProps.race.ageGenerationCurve.Points.Count - 3).First().x : 
+                                       this.alienProps.race.ageGenerationCurve.Points.Skip(this.alienProps.race.ageGenerationCurve.Points.Count - 3).First().x :
                                    this.oldHairAgeRange.TrueMax;
 
-                this.oldHairAgeCurve.Add(0f, 0f);
+                this.oldHairAgeCurve.Add(0f,     0f);
                 this.oldHairAgeCurve.Add(minAge, 0f);
 
 
@@ -188,7 +192,6 @@
             {
                 if (!this.alienProps.alienRace.graphicPaths.head.GetSubGraphics().MoveNext())
                 {
-
                     ExtendedGraphicTop headGraphic = this.alienProps.alienRace.graphicPaths.head;
                     string             headPath    = headGraphic.path;
 
@@ -264,7 +267,6 @@
             }
 
             {
-                
                 foreach (ExtendedGraphicTop graphicTop in this.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values)
                 {
                     if (!graphicTop.GetSubGraphics().MoveNext())
@@ -297,7 +299,6 @@
                 {
                     foreach (ExtendedGraphicTop graphicTop in fallback.wornGraphicPaths.Concat(fallback.wornGraphicPath))
                     {
-
                         if (!graphicTop.GetSubGraphics().MoveNext())
                         {
                             string path = graphicTop.path;
@@ -329,7 +330,7 @@
             if (!this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.GetPath().NullOrEmpty())
                 this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.IncrementVariantCount();
             Stack<IEnumerator<IExtendedGraphic>> stack = new();
-            
+
             stack.Push(this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.GetSubGraphics());
             while (stack.Count > 0)
             {
@@ -341,15 +342,15 @@
                     if (current != null)
                     {
                         current.Init();
-                        if(!current.GetPath().NullOrEmpty())
+                        if (!current.GetPath().NullOrEmpty())
                             current.IncrementVariantCount();
-                        
+
                         stack.Push(current.GetSubGraphics());
                     }
                 }
             }
 
-            graphicsLoader.LoadAllGraphics(this.alienProps.defName, 
+            graphicsLoader.LoadAllGraphics(this.alienProps.defName,
                                            this.alienProps.alienRace.graphicPaths.head,
                                            this.alienProps.alienRace.graphicPaths.body,
                                            this.alienProps.alienRace.graphicPaths.skeleton,
@@ -357,12 +358,12 @@
                                            this.alienProps.alienRace.graphicPaths.stump,
                                            this.alienProps.alienRace.graphicPaths.bodyMasks,
                                            this.alienProps.alienRace.graphicPaths.headMasks);
-            
-            graphicsLoader.LoadAllGraphics(this.alienProps.defName, 
+
+            graphicsLoader.LoadAllGraphics(this.alienProps.defName,
                                            this.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values.Concat(
-                                                                                                                                this.alienProps.alienRace.graphicPaths.apparel.fallbacks.SelectMany(afo => 
-                                                                                                                                    afo.wornGraphicPaths.Concat(afo.wornGraphicPath)) ).ToArray());
-            
+                                                                                                                        this.alienProps.alienRace.graphicPaths.apparel.fallbacks.SelectMany(afo =>
+                                                                                                                            afo.wornGraphicPaths.Concat(afo.wornGraphicPath))).ToArray());
+
             graphicsLoader.LoadAllGraphics(this.alienProps.defName + " Addons", this.bodyAddons.Cast<ExtendedGraphicTop>().ToArray());
 
             foreach (BodyAddon bodyAddon in this.bodyAddons)
@@ -372,15 +373,15 @@
 
         public class WoundAnchorReplacement
         {
-            public string originalTag = string.Empty;
+            public string           originalTag = string.Empty;
             public BodyPartGroupDef originalGroup;
 
             public BodyTypeDef.WoundAnchor replacement;
-            public DirectionalOffset        offsets;
+            public DirectionalOffset       offsets;
 
             public bool ValidReplacement(BodyTypeDef.WoundAnchor original)
             {
-                if (original.rotation != this.replacement.rotation) 
+                if (original.rotation != this.replacement.rotation)
                     return false;
 
                 if (!this.originalTag.NullOrEmpty() && !original.tag.NullOrEmpty() && this.originalTag == original.tag)
@@ -393,13 +394,13 @@
 
         public class OffsetNamed
         {
-            public string           name = "";
+            public string            name = "";
             public DirectionalOffset offsets;
         }
 
         public class ColorChannelGenerator
         {
-            public string                              name = "";
+            public string                              name    = "";
             public List<ColorChannelGeneratorCategory> entries = new();
 
 
@@ -439,27 +440,27 @@
 
         public class AlienComp : ThingComp
         {
-            public  bool          fixGenderPostSpawn;
-            public  Vector2       customDrawSize             = Vector2.one;
-            public  Vector2       customHeadDrawSize         = Vector2.one;
-            public  Vector2       customPortraitDrawSize     = Vector2.one;
-            public  Vector2       customPortraitHeadDrawSize = Vector2.one;
+            public bool    fixGenderPostSpawn;
+            public Vector2 customDrawSize             = Vector2.one;
+            public Vector2 customHeadDrawSize         = Vector2.one;
+            public Vector2 customPortraitDrawSize     = Vector2.one;
+            public Vector2 customPortraitHeadDrawSize = Vector2.one;
 
-            public  int           bodyVariant                = -1;
-            public  int           headVariant                = -1;
-            public  int           headMaskVariant            = -1;
-            public  int           bodyMaskVariant            = -1;
+            public int bodyVariant     = -1;
+            public int headVariant     = -1;
+            public int headMaskVariant = -1;
+            public int bodyMaskVariant = -1;
 
-            public  List<Graphic> addonGraphics;
-            public  List<int>     addonVariants;
-        
+            public List<Graphic> addonGraphics;
+            public List<int>     addonVariants;
+
 
             public int lastAlienMeatIngestedTick = 0;
 
-            private Dictionary<string, ExposableValueTuple<Color, Color>> colorChannels;
-            private Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>   colorChannelLinks = new();
+            private Dictionary<string, ExposableValueTuple<Color, Color>>                                    colorChannels;
+            private Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> colorChannelLinks = new();
 
-            private Pawn               Pawn       => (Pawn) this.parent;
+            private Pawn               Pawn       => (Pawn)this.parent;
             private ThingDef_AlienRace AlienProps => (ThingDef_AlienRace)this.Pawn.def;
 
             public Dictionary<string, ExposableValueTuple<Color, Color>> ColorChannels
@@ -468,7 +469,7 @@
                 {
                     if (this.colorChannels == null || !this.colorChannels.Any())
                     {
-                        AlienPartGenerator apg        = this.AlienProps.alienRace.generalSettings.alienPartGenerator;
+                        AlienPartGenerator apg = this.AlienProps.alienRace.generalSettings.alienPartGenerator;
 
                         this.colorChannels     = new Dictionary<string, ExposableValueTuple<Color, Color>>();
                         this.colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
@@ -485,7 +486,7 @@
                         }
 
                         this.colorChannels.Add("tattoo", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
-                        
+
                         foreach (ColorChannelGenerator channel in apg.colorChannels)
                         {
                             if (!this.colorChannels.ContainsKey(channel.name))
@@ -511,7 +512,7 @@
 
                         if (this.colorChannels["hair"].first == Color.clear)
                             this.OverwriteColorChannel("hair", this.Pawn.story.HairColor);
-                        
+
                         if (this.colorChannels[key: "tattoo"].first == Color.clear)
                         {
                             Color tattooColor = skinColors.first;
@@ -529,7 +530,7 @@
 
                         this.RegenerateColorChannelLink("skin");
 
-                        
+
                         if (this.AlienProps.alienRace.generalSettings.alienPartGenerator.oldHairColorGen != null)
                         {
                             if (Rand.Value < this.AlienProps.alienRace.generalSettings.alienPartGenerator.oldHairAgeCurve.Evaluate(this.Pawn.ageTracker.AgeBiologicalYearsFloat))
@@ -592,7 +593,7 @@
             public override void PostSpawnSetup(bool respawningAfterLoad)
             {
                 base.PostSpawnSetup(respawningAfterLoad);
-                AlienPartGenerator apg = ((ThingDef_AlienRace) this.parent.def).alienRace.generalSettings.alienPartGenerator;
+                AlienPartGenerator apg = ((ThingDef_AlienRace)this.parent.def).alienRace.generalSettings.alienPartGenerator;
                 this.customDrawSize             = apg.customDrawSize;
                 this.customHeadDrawSize         = apg.customHeadDrawSize;
                 this.customPortraitDrawSize     = apg.customPortraitDrawSize;
@@ -607,8 +608,8 @@
                 Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
                 Scribe_NestedCollections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Undefined, LookMode.Deep);
 
-                Scribe_Values.Look(ref this.headVariant, nameof(this.headVariant), -1);
-                Scribe_Values.Look(ref this.bodyVariant, nameof(this.bodyVariant), -1);
+                Scribe_Values.Look(ref this.headVariant,     nameof(this.headVariant),     -1);
+                Scribe_Values.Look(ref this.bodyVariant,     nameof(this.bodyVariant),     -1);
                 Scribe_Values.Look(ref this.headMaskVariant, nameof(this.headMaskVariant), -1);
                 Scribe_Values.Look(ref this.bodyMaskVariant, nameof(this.bodyMaskVariant), -1);
 
@@ -638,7 +639,7 @@
 
             public void RegenerateColorChannelLinks()
             {
-                foreach (KeyValuePair<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> kvp in this.colorChannelLinks) 
+                foreach (KeyValuePair<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> kvp in this.colorChannelLinks)
                     this.RegenerateColorChannelLink(kvp.Key);
             }
 
@@ -698,7 +699,7 @@
             }
         }
 
-        public class ExposableValueTuple<TK, TV> : IExposable, IEquatable<ExposableValueTuple<TK,TV>>, ICloneable
+        public class ExposableValueTuple<TK, TV> : IExposable, IEquatable<ExposableValueTuple<TK, TV>>, ICloneable
         {
             public TK first;
             public TV second;
@@ -709,23 +710,23 @@
 
             public ExposableValueTuple(TK first, TV second)
             {
-                this.first = first;
+                this.first  = first;
                 this.second = second;
             }
 
-            public bool Equals(ExposableValueTuple<TK, TV> other) => 
+            public bool Equals(ExposableValueTuple<TK, TV> other) =>
                 other != null && this.first.Equals(other.first) && this.second.Equals(other.second);
 
             // ReSharper disable twice NonReadonlyMemberInGetHashCode
-            public override int    GetHashCode() => 
+            public override int GetHashCode() =>
                 this.first.GetHashCode() + this.second.GetHashCode();
 
-            public          object Clone()       => 
+            public object Clone() =>
                 new ExposableValueTuple<TK, TV>(this.first, this.second);
 
             public void ExposeData()
             {
-                if(typeof(TK).GetInterface(nameof(IExposable)) != null)
+                if (typeof(TK).GetInterface(nameof(IExposable)) != null)
                     Scribe_Deep.Look(ref this.first, label: nameof(this.first));
                 else
                     Scribe_Values.Look(ref this.first, label: "first");
