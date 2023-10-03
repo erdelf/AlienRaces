@@ -104,10 +104,19 @@ public static class StylingStation
                                     float currentMelanin = Mathf.Lerp(cgMelanin.minMelanin, cgMelanin.maxMelanin, 1f / PawnSkinColors.SkinColorGenesInOrder.Count * i);
 
                                     int     nextIndex = PawnSkinColors.SkinColorGenesInOrder.FirstIndexOf(gd => gd.minMelanin >= currentMelanin);
-                                    GeneDef lastGene  = PawnSkinColors.SkinColorGenesInOrder[nextIndex - 1];
                                     GeneDef nextGene  = PawnSkinColors.SkinColorGenesInOrder[nextIndex];
-                                    availableColors.Add(Color.Lerp(lastGene.skinColorBase.Value, nextGene.skinColorBase.Value,
-                                                                   Mathf.InverseLerp(lastGene.minMelanin, nextGene.minMelanin, currentMelanin)));
+
+
+                                    if (nextIndex == 0)
+                                    {
+                                        availableColors.Add(nextGene.skinColorBase!.Value);
+                                    }
+                                    else
+                                    {
+                                        GeneDef lastGene = PawnSkinColors.SkinColorGenesInOrder[nextIndex - 1];
+                                        availableColors.Add(Color.Lerp(lastGene.skinColorBase!.Value, nextGene.skinColorBase!.Value,
+                                                                       Mathf.InverseLerp(lastGene.minMelanin, nextGene.minMelanin, currentMelanin)));
+                                    }
                                 }
                             }
 
