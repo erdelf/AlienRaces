@@ -11,8 +11,8 @@ namespace AlienRace.ApparelGraphics
     {
         public static Dictionary<(ThingDef, ThingDef_AlienRace, BodyTypeDef), AlienPartGenerator.ExtendedGraphicTop> apparelCache = new();
 
-        public static Graphic GetGraphic(string path, Shader shader, Vector2 drawSize, Color color, Apparel apparel, BodyTypeDef bodyType) => 
-            GraphicDatabase.Get<Graphic_Multi>(GetPath(path, apparel, bodyType) ?? path, shader, drawSize, color);
+        public static Graphic GetGraphic(string path, Shader shader, Vector2 drawSize, Color color, Apparel apparel, BodyTypeDef bodyType) =>
+            GraphicDatabase.Get<Graphic_Multi>(GetPath(path, apparel, bodyType) ?? path, shader, drawSize, color, apparel.DrawColorTwo);
 
         public static string GetPath(string path, Apparel apparel, BodyTypeDef bodyType)
         {
@@ -27,7 +27,7 @@ namespace AlienRace.ApparelGraphics
 
                 AlienPartGenerator.ExtendedGraphicTop overrideEGraphic;
                 string                                overridePath;
-                ApparelGraphicsOverrides              overrides    = alienRace.alienRace.graphicPaths.apparel;
+                ApparelGraphicsOverrides              overrides = alienRace.alienRace.graphicPaths.apparel;
 
                 // Check first for specific Def overrides
                 if ((overrideEGraphic = overrides.GetOverride(apparel)) != null) // default initialize bodytypes
