@@ -313,6 +313,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnHairColors),       nameof(PawnHairColors.HasGreyHair)),                   transpiler: new HarmonyMethod(patchType, nameof(HasGreyHairTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(Dialog_StylingStation), "DoWindowContents"), transpiler: new HarmonyMethod(typeof(StylingStation), nameof(StylingStation.DoWindowContentsTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(ApparelProperties), nameof(ApparelProperties.PawnCanWear)), postfix: new HarmonyMethod(patchType, nameof(PawnCanWearPostfix)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -489,6 +490,8 @@ namespace AlienRace
             AlienRaceMod.settings.UpdateSettings();
         }
 
+        public static void PawnCanWearPostfix(ApparelProperties props, Pawn pawn, ref bool __result) => 
+            __result &= RaceRestrictionSettings.CanWear(CachedData.GetApparelFromApparelProps(props), pawn.def);
 
         public static IEnumerable<CodeInstruction> HasGreyHairTranspiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -2624,7 +2627,7 @@ namespace AlienRace
         {
             if (!(__result >= 0f)) return;
             if (!RaceRestrictionSettings.CanWear(ap.def, pawn.def))
-                __result = -50f;
+                __result = -1001f;
         }
 
         public static void PrepForMapGenPrefix(GameInitData __instance)
