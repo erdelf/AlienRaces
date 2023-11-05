@@ -1,5 +1,6 @@
 ﻿namespace AlienRace
 {
+    using System.Collections.Generic;
     using RimWorld;
     using UnityEngine;
     using Verse;
@@ -36,5 +37,20 @@
             Color.clear;
 
         public abstract Color NewRandomizedColor(Pawn pawn);
+    }
+
+    public class ColorGenerator_GenderBased : ColorGenerator_PawnBased
+    {
+        public Dictionary<Gender, ColorGenerator> colors = new();
+
+        public override Color NewRandomizedColor(Pawn pawn)
+        {
+            Gender gender = pawn.gender;
+
+            if (!this.colors.ContainsKey(pawn.gender)) 
+                gender = this.colors.Keys.RandomElement();
+
+            return this.colors[gender].NewRandomizedColor();
+        }
     }
 }
