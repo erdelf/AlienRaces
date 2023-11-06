@@ -313,6 +313,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnHairColors),       nameof(PawnHairColors.HasGreyHair)),                   transpiler: new HarmonyMethod(patchType, nameof(HasGreyHairTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(Dialog_StylingStation), "DoWindowContents"), transpiler: new HarmonyMethod(typeof(StylingStation), nameof(StylingStation.DoWindowContentsTranspiler)));
+            harmony.Patch(AccessTools.Constructor(typeof(Dialog_StylingStation), new []{typeof(Pawn), typeof(Thing)}), postfix: new HarmonyMethod(typeof(StylingStation), nameof(StylingStation.ConstructorPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Dialog_StylingStation), "Reset"), postfix: new HarmonyMethod(typeof(StylingStation), nameof(StylingStation.ResetPostfix)));
+
             harmony.Patch(AccessTools.Method(typeof(ApparelProperties), nameof(ApparelProperties.PawnCanWear), new []{typeof(Pawn), typeof(bool)}), postfix: new HarmonyMethod(patchType, nameof(PawnCanWearPostfix)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
