@@ -12,10 +12,10 @@ using Verse.Sound;
 
 public static class StylingStation
 {
-    private static List<TabRecord> mainTabs = new();
-    private static List<TabRecord> raceTabs = new();
-    private static MainTab         curMainTab;
-    private static RaceTab         curRaceTab;
+    private static readonly List<TabRecord> mainTabs = new();
+    private static readonly List<TabRecord> raceTabs = new();
+    private static          MainTab         curMainTab;
+    private static          RaceTab         curRaceTab;
 
     private static int selectedIndex = -1;
 
@@ -24,22 +24,37 @@ public static class StylingStation
     private static AlienPartGenerator.AlienComp alienComp;
     private static ThingDef_AlienRace           alienRaceDef;
 
+    private static List<int>                                                                addonVariants;
+    private static Dictionary<string, AlienPartGenerator.ExposableValueTuple<Color, Color>> colorChannels;
+
+
+    public static void ConstructorPostfix(Pawn pawn)
+    {
+        StylingStation.pawn         = pawn;
+        StylingStation.alienComp    = pawn.TryGetComp<AlienPartGenerator.AlienComp>();
+        StylingStation.alienRaceDef = pawn.def as ThingDef_AlienRace;
+        addonVariants               = new List<int>(alienComp.addonVariants);
+        colorChannels               = new Dictionary<string, AlienPartGenerator.ExposableValueTuple<Color, Color>>(alienComp.ColorChannels);
+        List<string> list = colorChannels.Keys.ToList();
+        for (int i = 0; i < list.Count; i++)
+        {
+            string key = list[i];
+            colorChannels[key] = (AlienPartGenerator.ExposableValueTuple<Color, Color>) colorChannels[key].Clone();
+        }
+    }
+
     public static IEnumerable<CodeInstruction> DoWindowContentsTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg) =>
         instructions.MethodReplacer(AccessTools.Method(typeof(Dialog_StylingStation), "DrawTabs"), AccessTools.Method(typeof(StylingStation), nameof(DoRaceAndCharacterTabs)));
 
     public static void DoRaceAndCharacterTabs(Dialog_StylingStation gotInstance, Rect inRect)
     {
         instance = gotInstance;
-        pawn     = CachedData.stationPawn(instance);
 
-        if (pawn.def is not ThingDef_AlienRace alienRace || pawn.TryGetComp<AlienPartGenerator.AlienComp>() is not { } comp)
+        if (alienRaceDef == null)
         {
             CachedData.drawTabs(instance, inRect);
             return;
         }
-
-        alienRaceDef = alienRace;
-        alienComp    = comp;
 
         mainTabs.Clear();
         mainTabs.Add(new TabRecord("HAR.CharacterFeatures".Translate(), () => curMainTab = MainTab.CHARACTER, curMainTab == MainTab.CHARACTER));
@@ -60,7 +75,7 @@ public static class StylingStation
         }
     }
 
-    private static Dictionary<AlienPartGenerator.BodyAddon, Dictionary<bool, List<Color>>> availableColorsCache = new Dictionary<AlienPartGenerator.BodyAddon, Dictionary<bool, List<Color>>>();
+    private static readonly Dictionary<AlienPartGenerator.BodyAddon, Dictionary<bool, List<Color>>> availableColorsCache = new();
 
     public static List<Color> AvailableColors(AlienPartGenerator.BodyAddon ba, bool first = true)
     {
@@ -182,7 +197,6 @@ public static class StylingStation
 
         return availableColors;
     }
-    // new List<Color>();
 
     public static void DoRaceTabs(Rect inRect)
     {
@@ -431,7 +445,7 @@ public static class StylingStation
             itemSize = width / countPerRow;
         }
 
-        viewRect = new(0, 0, width, Mathf.Ceil((float)variantCount / countPerRow) * itemSize);
+        viewRect = new Rect(0, 0, width, Mathf.Ceil((float)variantCount / countPerRow) * itemSize);
 
         Widgets.DrawMenuSection(inRect);
         Widgets.BeginScrollView(inRect, ref variantsScrollPos, viewRect);
@@ -478,6 +492,23 @@ public static class StylingStation
         }
 
         Widgets.EndScrollView();
+    }
+
+    public static void ResetPostfix()
+    {
+        alienComp.addonVariants = addonVariants;
+        alienComp.ColorChannels = colorChannels;
+
+        Color color = alienComp.GetChannel("hair").first;
+        pawn.story.HairColor = color;
+        pawn.style.Notify_StyleItemChanged();
+        pawn.style.ResetNextStyleChangeAttemptTick();
+        pawn.style.nextHairColor                     = null;
+        CachedData.stationDesiredHairColor(instance) = color;
+
+        pawn.Drawer.renderer.graphics.SetAllGraphicsDirty();
+
+        ConstructorPostfix(pawn);
     }
 
     private enum MainTab
