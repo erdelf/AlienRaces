@@ -545,6 +545,7 @@
 
                     return this.colorChannels;
                 }
+                set => this.colorChannels = value;
             }
 
             public ExposableValueTuple<Color, Color> GenerateChannel(ColorChannelGenerator channel, ExposableValueTuple<Color, Color> colors = null)
