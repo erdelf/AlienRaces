@@ -317,6 +317,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Dialog_StylingStation), "Reset"), postfix: new HarmonyMethod(typeof(StylingStation), nameof(StylingStation.ResetPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(ApparelProperties), nameof(ApparelProperties.PawnCanWear), new []{typeof(Pawn), typeof(bool)}), postfix: new HarmonyMethod(patchType, nameof(PawnCanWearPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Scenario), nameof(Scenario.PostIdeoChosen)), prefix: new HarmonyMethod(patchType, nameof(ScenarioPostIdeoChosenPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), "RegenerateStartingPawnInPlace"), prefix: new HarmonyMethod(patchType, nameof(RegenerateStartingPawnInPlacePrefix)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -493,6 +495,12 @@ namespace AlienRace
             AlienRaceMod.settings.UpdateSettings();
         }
 
+        public static void RegenerateStartingPawnInPlacePrefix() => 
+            firstStartingRequest = false;
+
+        public static void ScenarioPostIdeoChosenPrefix() => 
+            firstStartingRequest = true;
+
         public static void PawnCanWearPostfix(ApparelProperties __instance, Pawn pawn, ref bool __result) => 
             __result &= RaceRestrictionSettings.CanWear(CachedData.GetApparelFromApparelProps(__instance), pawn.def);
 
@@ -522,6 +530,7 @@ namespace AlienRace
                 originalChance;
 
         public static PawnGenerationRequest currentStartingRequest;
+        public static bool                  firstStartingRequest;
         
         public static IEnumerable<CodeInstruction> NewGeneratedStartingPawnTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg, MethodBase originalMethod)
         {
@@ -531,13 +540,15 @@ namespace AlienRace
             for (int i = 0; i < instructionList.Count; i++)
             {
                 CodeInstruction instruction = instructionList[i];
+                yield return instruction;
                 if (instruction.Calls(getRequestInfo))
                 {
-                    yield return instruction;
                     yield return CodeInstruction.LoadField(typeof(AlienRaceMod),      nameof(AlienRaceMod.settings));
                     yield return CodeInstruction.LoadField(typeof(AlienRaceSettings), nameof(AlienRaceSettings.randomizeStartingPawnsOnReroll));
                     yield return new CodeInstruction(OpCodes.Brfalse, instructionList[i + 1].operand);
-                    yield return new CodeInstruction(OpCodes.Stsfld,  AccessTools.Field(patchType, nameof(currentStartingRequest)));
+                    yield return CodeInstruction.LoadField(typeof(HarmonyPatches), nameof(firstStartingRequest));
+                    yield return new CodeInstruction(OpCodes.Brtrue, instructionList[i + 1].operand);
+                    yield return new CodeInstruction(OpCodes.Stsfld, AccessTools.Field(patchType, nameof(currentStartingRequest)));
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Call, instructionList[i + 2].operand);
                     yield return new CodeInstruction(OpCodes.Dup);
@@ -546,8 +557,7 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Ldsflda,  AccessTools.Field(patchType, nameof(currentStartingRequest)));
                     yield return new CodeInstruction(OpCodes.Initobj, typeof(PawnGenerationRequest));
                     yield return new CodeInstruction(OpCodes.Ldloc_0);
-                } else
-                    yield return instruction;
+                }
             }
         }
 
@@ -3204,7 +3214,7 @@ namespace AlienRace
 
                 if (instruction.LoadsField(basicMemberInfo))
                 {
-                    yield return CodeInstruction.Call(patchType, nameof(NewGeneratedStartingPawnHelper));
+                    yield return CodeInstruction.Call(patchType, nameof(NewGeneratedStartingPawnHelper)).WithLabels(instructionList[i+1].ExtractLabels());
                     yield return new CodeInstruction(OpCodes.Dup) { labels = instructionList[i + 1].ExtractLabels() };
                     //yield return new CodeInstruction(OpCodes.Stloc, pawnKindDefLocal.LocalIndex) { labels = instructionList[i +1].ExtractLabels()};
                     //yield return new CodeInstruction(OpCodes.Ldloc, pawnKindDefLocal.LocalIndex);
