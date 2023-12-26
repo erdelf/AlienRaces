@@ -270,7 +270,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateSkills"), new HarmonyMethod(patchType, nameof(GenerateSkillsPrefix)), postfix: new HarmonyMethod(patchType, nameof(GenerateSkillsPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnInternalTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker), "Notify_GenesChanged"), transpiler: new HarmonyMethod(patchType, nameof(NotifyGenesChangedTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker), "Notify_GenesChanged"), postfix: new HarmonyMethod(patchType, nameof(NotifyGenesChangedPostfix)), transpiler: new HarmonyMethod(patchType, nameof(NotifyGenesChangedTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(GrowthUtility),    nameof(GrowthUtility.IsGrowthBirthday)),       transpiler: new HarmonyMethod(patchType, nameof(IsGrowthBirthdayTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker),  nameof(Pawn_AgeTracker.TryChildGrowthMoment)), new HarmonyMethod(patchType,             nameof(TryChildGrowthMomentPrefix)));
@@ -1082,6 +1082,9 @@ namespace AlienRace
 
         public static int[] GrowthMomentHelper(ThingDef pawnDef) =>
             (pawnDef as ThingDef_AlienRace)?.alienRace.generalSettings.GrowthAges ?? GrowthUtility.GrowthMomentAges;
+
+        public static void NotifyGenesChangedPostfix(Pawn ___pawn) => 
+            ___pawn.Drawer.renderer.graphics.nakedGraphic = null;
 
         public static IEnumerable<CodeInstruction> NotifyGenesChangedTranspiler(IEnumerable<CodeInstruction> instructions)
         {
