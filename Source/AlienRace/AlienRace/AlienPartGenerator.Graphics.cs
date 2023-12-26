@@ -41,7 +41,7 @@ public partial class AlienPartGenerator
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            XmlAttribute mayRequire = xmlRoot.Attributes?[name: "MayRequire"];
+            XmlAttribute mayRequire = xmlRoot.Attributes?["MayRequire"];
             int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
             const string ageFieldName = nameof(this.age);
             DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, ageFieldName,
@@ -96,7 +96,7 @@ public partial class AlienPartGenerator
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            XmlAttribute mayRequire      = xmlRoot.Attributes?[name: "MayRequire"];
+            XmlAttribute mayRequire      = xmlRoot.Attributes?["MayRequire"];
             int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
             const string hediffFieldName = nameof(this.hediff);
             DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, hediffFieldName,
