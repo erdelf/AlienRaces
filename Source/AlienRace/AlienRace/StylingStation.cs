@@ -501,7 +501,7 @@ public static class StylingStation
 
         Color color = alienComp.GetChannel("hair").first;
         pawn.story.HairColor = color;
-        pawn.style.Notify_StyleItemChanged();
+        //pawn.style.Notify_StyleItemChanged();
         pawn.style.ResetNextStyleChangeAttemptTick();
         pawn.style.nextHairColor                     = null;
         CachedData.stationDesiredHairColor(instance) = color;
