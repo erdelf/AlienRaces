@@ -13,6 +13,7 @@
     using UnityEngine;
     using Verse;
     using Verse.AI;
+    using static AlienRace.AlienPartGenerator;
 
     [DefOf]
     public static class AlienDefOf
@@ -77,6 +78,7 @@
                     universalBodyAddons = new List<AlienPartGenerator.BodyAddon>();
                     universalBodyAddons.AddRange(DefDatabase<RaceSettings>.AllDefsListForReading.SelectMany(rs => rs.universalBodyAddons));
                     universalBodyAddons.GeneBodyAddonPatcher();
+                    new DefaultGraphicsLoader().LoadAllGraphics("Universal Addons", universalBodyAddons.Cast<ExtendedGraphicTop>().ToArray());
                 }
 
                 return universalBodyAddons;
@@ -109,8 +111,7 @@
                     geneAddons.AddRange(har.addons);
                 }
             }
-
-            new DefaultGraphicsLoader().LoadAllGraphics("universal genes", geneAddons.Cast<AlienPartGenerator.ExtendedGraphicTop>().ToArray());
+            
             universal.AddRange(geneAddons);
         }
 
