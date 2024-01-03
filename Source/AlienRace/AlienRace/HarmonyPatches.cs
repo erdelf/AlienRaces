@@ -3735,6 +3735,10 @@ namespace AlienRace
                         AlienPartGenerator.BodyAddon ba = bodyAddons.Current;
 
                         if (ba != null)
+                        {
+                            if (addonIndex >= alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Count)
+                                ba.defaultOffsets = alienProps.alienRace.generalSettings.alienPartGenerator.offsetDefaultsDictionary[ba.defaultOffset].offsets;
+
                             DrawAddon(ba, alienComp.addonGraphics[addonIndex],
                                       (isPortrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) *
                                       (ba.scaleWithPawnDrawsize ?
@@ -3744,9 +3748,10 @@ namespace AlienRace
                                                     alienComp.customHeadDrawSize :
                                                 isPortrait ?
                                                     alienComp.customPortraitDrawSize :
-                                                    alienComp.customDrawSize) * 
+                                                    alienComp.customDrawSize) *
                                            (ModsConfig.BiotechActive ? pawn.ageTracker.CurLifeStage.bodyWidth ?? 1.5f : 1.5f) :
                                            Vector2.one * 1.5f));
+                        }
                         addonIndex++;
                     }
 

@@ -49,6 +49,9 @@
 
 
         public List<ColorChannelGenerator> colorChannels  = new();
+
+        [Unsaved]
+        public Dictionary<string, OffsetNamed> offsetDefaultsDictionary;
         public List<OffsetNamed>           offsetDefaults = new();
 
 
@@ -366,9 +369,12 @@
 
             graphicsLoader.LoadAllGraphics(this.alienProps.defName + " Addons", this.bodyAddons.Cast<ExtendedGraphicTop>().ToArray());
 
+            this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
+            foreach (OffsetNamed offsetDefault in this.offsetDefaults)
+                this.offsetDefaultsDictionary.Add(offsetDefault.name, offsetDefault);
+
             foreach (BodyAddon bodyAddon in this.bodyAddons)
-                // Initialise the offsets of each addon with the generic default offsets
-                bodyAddon.defaultOffsets = this.offsetDefaults.Find(on => on.name == bodyAddon.defaultOffset).offsets;
+                bodyAddon.defaultOffsets = this.offsetDefaultsDictionary[bodyAddon.defaultOffset].offsets;
         }
 
         public class WoundAnchorReplacement
