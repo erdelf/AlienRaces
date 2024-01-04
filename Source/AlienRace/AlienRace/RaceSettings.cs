@@ -7,7 +7,7 @@
     [StaticConstructorOnStartup]
     public class RaceSettings : Def
     {
-        public PawnKindSettings                   pawnKindSettings;
+        public PawnKindSettings                   pawnKindSettings    = new();
         public List<AlienPartGenerator.BodyAddon> universalBodyAddons = new();
     }
 
