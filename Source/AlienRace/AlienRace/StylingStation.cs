@@ -191,6 +191,11 @@ public static class StylingStation
             case ColorGenerator_White:
                 availableColors.Add(colorGenerator.NewRandomizedColor());
                 break;
+            case IAlienChannelColorGenerator accg:
+                foreach (ColorGenerator generator in accg.AvailableGenerators(pawn: pawn)) 
+                    availableColors.AddRange(AvailableColors(generator));
+                availableColors.AddRange(accg.AvailableColors(pawn));
+                break;
             default:
                 //availableColors.AddRange(DefDatabase<ColorDef>.AllDefs.Select(cd => cd.color));
                 break;
