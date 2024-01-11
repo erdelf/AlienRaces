@@ -5,6 +5,13 @@
     using UnityEngine;
     using Verse;
 
+    public interface IAlienChannelColorGenerator
+    {
+        public List<Color> AvailableColors(Pawn pawn);
+
+        public List<ColorGenerator> AvailableGenerators(Pawn pawn);
+    }
+
     public class ColorGenerator_SkinColorMelanin : ColorGenerator
     {
         public float minMelanin     = 0f;
@@ -31,26 +38,33 @@
         }
     }
 
-    public abstract class ColorGenerator_PawnBased : ColorGenerator
+    public abstract class ChannelColorGenerator_PawnBased : ColorGenerator, IAlienChannelColorGenerator
     {
         public override Color NewRandomizedColor() =>
             Color.clear;
 
-        public abstract Color NewRandomizedColor(Pawn pawn);
+        public abstract Color                NewRandomizedColor(Pawn  pawn);
+        public virtual  List<Color>          AvailableColors(Pawn     pawn) => [];
+        public virtual  List<ColorGenerator> AvailableGenerators(Pawn pawn) => [];
     }
 
-    public class ColorGenerator_GenderBased : ColorGenerator_PawnBased
+    public class ChannelColorGenerator_GenderBased : ChannelColorGenerator_PawnBased
     {
-        public Dictionary<Gender, ColorGenerator> colors = new();
+        public Dictionary<Gender, ColorGenerator> colors = [];
 
-        public override Color NewRandomizedColor(Pawn pawn)
+        public override Color NewRandomizedColor(Pawn pawn) => 
+            this.GetGenerator(pawn.gender).NewRandomizedColor();
+
+        public override List<Color> AvailableColors(Pawn pawn) => [];
+
+        public override List<ColorGenerator> AvailableGenerators(Pawn pawn) => [this.GetGenerator(pawn.gender)];
+
+        public ColorGenerator GetGenerator(Gender gender)
         {
-            Gender gender = pawn.gender;
-
-            if (!this.colors.ContainsKey(pawn.gender)) 
+            if (!this.colors.ContainsKey(gender))
                 gender = this.colors.Keys.RandomElement();
 
-            return this.colors[gender].NewRandomizedColor();
+            return this.colors[gender];
         }
     }
 }
