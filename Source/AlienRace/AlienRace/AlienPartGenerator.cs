@@ -593,7 +593,7 @@
                 gen switch
                 {
                     ColorGenerator_SkinColorMelanin cm => cm.naturalMelanin ? ((Pawn)this.parent).story.SkinColorBase : gen.NewRandomizedColor(),
-                    ColorGenerator_PawnBased pb => pb.NewRandomizedColor(this.Pawn),
+                    ChannelColorGenerator_PawnBased pb => pb.NewRandomizedColor(this.Pawn),
                     _ => gen.NewRandomizedColor()
                 };
 
