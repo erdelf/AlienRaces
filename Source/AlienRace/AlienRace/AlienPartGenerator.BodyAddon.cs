@@ -145,6 +145,8 @@ namespace AlienRace
             public Color? colorOverrideTwo;
             public float  colorPostFactor = 1f;
 
+            public bool userCustomizable = true;
+
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new();
             public List<string>           hiddenUnderApparelTag = new();
 

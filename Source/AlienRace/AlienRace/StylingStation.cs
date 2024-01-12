@@ -184,7 +184,7 @@ public static class StylingStation
                                                                           Color.RGBToHSV(c, out _, out float s, out float v);
                                                                           return s + v;
                                                                       }));
-
+                        
                     }
                 break;
             case ColorGenerator_Single:
@@ -228,7 +228,7 @@ public static class StylingStation
 
     public static void DrawBodyAddonTab(Rect inRect)
     {
-        List<AlienPartGenerator.BodyAddon> bodyAddons = alienRaceDef.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).ToList();
+        List<AlienPartGenerator.BodyAddon> bodyAddons = alienRaceDef.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).Where(ba => ba.userCustomizable).ToList();
         DoAddonList(inRect.LeftPartPixels(260), bodyAddons);
         inRect.xMin += 260;
         if (selectedIndexAddons != -1)
@@ -243,6 +243,7 @@ public static class StylingStation
             selectedIndexAddons = -1;
 
         Widgets.DrawMenuSection(inRect);
+
         Rect viewRect = new(0, 0, 250, addons.Count * 54 + 4);
         Widgets.BeginScrollView(inRect, ref addonsScrollPos, viewRect);
         for (int i = 0; i < addons.Count; i++)
