@@ -610,10 +610,10 @@ public static class StylingStation
             colorsRect = colorsRect.ContractedBy(6);
 
             Vector2 size     = new(18, 18);
-            Rect    viewRect = new(0, 0, colorsRect.width - 16, (Mathf.Ceil(availableColors.Count / ((colorsRect.width - 14) / size.x)) + 1) * size.y + 50);
+            Rect    viewRect = new(0, 0, colorsRect.width - 16, (Mathf.Ceil(availableColors.Count / ((colorsRect.width - 14) / size.x)) + 1) * size.y + 35);
 
             Widgets.BeginScrollView(colorsRect, ref colorsScrollPos, viewRect);
-            viewRect.yMin += 15;
+            
             Rect headerRect = viewRect.TopPartPixels(30).ContractedBy(4);
             viewRect.yMin += 30;
 
@@ -623,7 +623,8 @@ public static class StylingStation
 
             void LinkedIndicator(Rect linkedRect, bool first)
             {
-                linkedRect.yMin -= linkedRect.height * 1.5f;
+                linkedRect.y += linkedRect.height * 0.5f;
+                linkedRect.x += linkedRect.width * 0.5f;
 
 
                 List<string> linkedTo = [];
@@ -646,7 +647,7 @@ public static class StylingStation
 
                 if (linkedTo.Any() || linkedFrom.Any())
                 {
-                    Log.Message(linkedFrom.Count + " " + linkedTo.Count);
+                    //Log.Message(linkedFrom.Count + " " + linkedTo.Count);
 
                     Widgets.DrawTextureFitted(linkedRect, ChainTex, 1.5f);
 
@@ -668,7 +669,7 @@ public static class StylingStation
                             foreach (string s in linkedFrom)
                                 sb.AppendLine(s);
                         }
-                        Log.Message(sb.ToString());
+                        //Log.Message(sb.ToString());
                         TooltipHandler.TipRegion(linkedRect, new TipSignal(sb.ToString()));
                     }
                 }
@@ -676,7 +677,7 @@ public static class StylingStation
 
             if (firstColors.Any())
             {
-                colorRect = new Rect(headerRect.xMax - 44, headerRect.y, 18, 18);
+                colorRect = new Rect(headerRect.xMax - 44 - 7, headerRect.y, 18, 18);
                 Widgets.DrawLightHighlight(colorRect);
                 Widgets.DrawHighlightIfMouseover(colorRect);
                 Widgets.DrawBoxSolid(colorRect.ContractedBy(2), colors.Item1);
@@ -714,7 +715,7 @@ public static class StylingStation
                 editingFirstColor = true;
             }
 
-            Vector2 pos = new(0, 45);
+            Vector2 pos = new(0, 35);
 
             foreach (Color color in availableColors)
             {
