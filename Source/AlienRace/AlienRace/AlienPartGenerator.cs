@@ -464,7 +464,8 @@
             public int lastAlienMeatIngestedTick = 0;
 
             private Dictionary<string, ExposableValueTuple<Color, Color>>                                    colorChannels;
-            private Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> colorChannelLinks = new();
+            private Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> colorChannelLinks = [];
+            public  Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> ColorChannelLinks => this.colorChannelLinks;
 
             private Pawn               Pawn       => (Pawn)this.parent;
             private ThingDef_AlienRace AlienProps => (ThingDef_AlienRace)this.Pawn.def;
@@ -578,10 +579,10 @@
 
                         ac.GetInfo(out string channelName, out bool firstColor);
 
-                        if (!this.colorChannelLinks.ContainsKey(channelName))
-                            this.colorChannelLinks.Add(channelName, new HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>());
-                        if (this.colorChannelLinks[channelName].All(evt => evt.first.first != channel.name))
-                            this.colorChannelLinks[channelName]
+                        if (!this.ColorChannelLinks.ContainsKey(channelName))
+                            this.ColorChannelLinks.Add(channelName, new HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>());
+                        if (this.ColorChannelLinks[channelName].All(evt => evt.first.first != channel.name))
+                            this.ColorChannelLinks[channelName]
                              .Add(new ExposableValueTuple<ExposableValueTuple<string, int>, bool>(new ExposableValueTuple<string, int>(channel.name, channel.entries.IndexOf(category)), first));
                         return firstColor ? this.ColorChannels[channelName].first : this.ColorChannels[channelName].second;
                     default:
@@ -623,7 +624,7 @@
                 if (Scribe.mode is LoadSaveMode.ResolvingCrossRefs)
                     this.Pawn.story.SkinColorBase = this.GetChannel("skin").first;
 
-                this.colorChannelLinks ??= new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
+                this.colorChannelLinks = this.ColorChannelLinks ?? new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
             }
 
             public ExposableValueTuple<Color, Color> GetChannel(string channel)
@@ -646,7 +647,7 @@
 
             public void RegenerateColorChannelLinks()
             {
-                foreach (KeyValuePair<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> kvp in this.colorChannelLinks)
+                foreach (KeyValuePair<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> kvp in this.ColorChannelLinks)
                     this.RegenerateColorChannelLink(kvp.Key);
             }
 
@@ -655,7 +656,7 @@
                 ThingDef_AlienRace alienProps = ((ThingDef_AlienRace)this.parent.def);
                 AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
 
-                if (this.colorChannelLinks.TryGetValue(channel, out HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>> colorChannelLink))
+                if (this.ColorChannelLinks.TryGetValue(channel, out HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>> colorChannelLink))
                     foreach (ExposableValueTuple<ExposableValueTuple<string, int>, bool> link in colorChannelLink)
                     {
                         foreach (ColorChannelGenerator apgChannel in apg.colorChannels)

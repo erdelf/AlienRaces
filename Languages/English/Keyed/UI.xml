@@ -5,4 +5,9 @@
     <HAR.BodyAddons>Body addons</HAR.BodyAddons>
     <HAR.MatchSkinColor>Match skin color</HAR.MatchSkinColor>
     <HAR.Colors>Colors</HAR.Colors>
+    <HAR.LinkedFrom>Linked from:</HAR.LinkedFrom>
+    <HAR.LinkedTo>Linked to:</HAR.LinkedTo>
+    <HAR.LinkText>~{0}: {1}</HAR.LinkText>
+    <HAR.FirstColor>first color</HAR.FirstColor>
+    <HAR.SecondColor>second color</HAR.SecondColor>
 </LanguageData>
