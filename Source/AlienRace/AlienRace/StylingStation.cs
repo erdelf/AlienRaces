@@ -541,6 +541,8 @@ public static class StylingStation
         Widgets.BeginScrollView(inRect, ref channelsScrollPos, viewRect);
         for (int i = 0; i < channels.Count; i++)
         {
+            AlienPartGenerator.ColorChannelGenerator channel = channels[i];
+
             Rect rect = new Rect(10, i * 54f + 4, 240f, 50f).ContractedBy(2);
             if (i == selectedIndexChannels)
             {
@@ -558,11 +560,14 @@ public static class StylingStation
             if (Widgets.ButtonInvisible(rect))
             {
                 selectedIndexChannels = i;
+                if (channel.name == "hair")
+                    editingFirstColor = false;
+
                 SoundDefOf.Click.PlayOneShotOnCamera();
             }
 
-            AlienPartGenerator.ExposableValueTuple<Color, Color> channelColors = alienComp.GetChannel(channels[i].name);
-            (Color, Color)                                       colors        = (channelColors.first, channelColors.second);
+            AlienPartGenerator.ExposableValueTuple<Color, Color> channelColors         = alienComp.GetChannel(channel.name);
+            (Color, Color)                                       colors                = (channelColors.first, channelColors.second);
 
             Rect position = rect.LeftPartPixels(rect.height).ContractedBy(2);
 
@@ -573,7 +578,7 @@ public static class StylingStation
                 Widgets.DrawBox(position);
 
             Text.Anchor =  TextAnchor.MiddleCenter;
-            Widgets.Label(rect, channels[i].name);
+            Widgets.Label(rect, channel.name);
             Text.Anchor = TextAnchor.UpperLeft;
 
             rect.xMin += rect.height;
@@ -592,7 +597,7 @@ public static class StylingStation
     
     private static void DoChannelInfo(Rect inRect, AlienPartGenerator.ColorChannelGenerator channel, List<AlienPartGenerator.ColorChannelGenerator> channels)
     {
-        List<Color>                                          firstColors   = channel.name == "hair" ? [] : AvailableColors(channel, true);
+        List<Color>                                          firstColors   = AvailableColors(channel, true);
         List<Color>                                          secondColors  = AvailableColors(channel, false);
         AlienPartGenerator.ExposableValueTuple<Color, Color> channelColors = alienComp.GetChannel(channel.name);
         (Color, Color)                                       colors        = (channelColors.first, channelColors.second);
@@ -686,7 +691,15 @@ public static class StylingStation
                     Widgets.DrawBox(colorRect);
 
                 if (Widgets.ButtonInvisible(colorRect))
-                    editingFirstColor = true;
+                    if (channel.name == "hair")
+                    {
+                        curMainTab                 = MainTab.CHARACTER;
+                        CachedData.stationCurTab(instance) = Dialog_StylingStation.StylingTab.Hair;
+                    }
+                    else
+                    {
+                        editingFirstColor = true;
+                    }
 
                 LinkedIndicator(colorRect, true);
             }
