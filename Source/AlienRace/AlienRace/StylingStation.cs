@@ -4,15 +4,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Text;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
-using static UnityEngine.ParticleSystem;
 
+[StaticConstructorOnStartup]
 public static class StylingStation
 {
+    private static readonly Texture2D ChainTex = ContentFinder<Texture2D>.Get("AlienRace/UI/LinkChain");
+
     private static readonly List<TabRecord> mainTabs = new();
     private static readonly List<TabRecord> raceTabs = new();
     private static          MainTab         curMainTab;
@@ -589,7 +592,7 @@ public static class StylingStation
     
     private static void DoChannelInfo(Rect inRect, AlienPartGenerator.ColorChannelGenerator channel, List<AlienPartGenerator.ColorChannelGenerator> channels)
     {
-        List<Color>                                          firstColors   = channel.name == "hair" ? new List<Color>() : AvailableColors(channel, true);
+        List<Color>                                          firstColors   = channel.name == "hair" ? [] : AvailableColors(channel, true);
         List<Color>                                          secondColors  = AvailableColors(channel, false);
         AlienPartGenerator.ExposableValueTuple<Color, Color> channelColors = alienComp.GetChannel(channel.name);
         (Color, Color)                                       colors        = (channelColors.first, channelColors.second);
@@ -607,16 +610,70 @@ public static class StylingStation
             colorsRect = colorsRect.ContractedBy(6);
 
             Vector2 size     = new(18, 18);
-            Rect    viewRect = new(0, 0, colorsRect.width - 16, (Mathf.Ceil(availableColors.Count / ((colorsRect.width - 14) / size.x)) + 1) * size.y + 35);
+            Rect    viewRect = new(0, 0, colorsRect.width - 16, (Mathf.Ceil(availableColors.Count / ((colorsRect.width - 14) / size.x)) + 1) * size.y + 50);
 
             Widgets.BeginScrollView(colorsRect, ref colorsScrollPos, viewRect);
-
+            viewRect.yMin += 15;
             Rect headerRect = viewRect.TopPartPixels(30).ContractedBy(4);
             viewRect.yMin += 30;
 
             Widgets.Label(headerRect, "HAR.Colors".Translate());
 
             Rect colorRect;
+
+            void LinkedIndicator(Rect linkedRect, bool first)
+            {
+                linkedRect.yMin -= linkedRect.height * 1.5f;
+
+
+                List<string> linkedTo = [];
+
+                if (alienComp.ColorChannelLinks.Keys.Contains(channel.name))
+                    foreach (AlienPartGenerator.ExposableValueTuple<AlienPartGenerator.ExposableValueTuple<string, int>, bool> link in alienComp.ColorChannelLinks[channel.name])
+                        if (link.second == first)
+                            linkedTo.Add("HAR.LinkText".Translate(link.first.first.CapitalizeFirst(), (link.first.second == 0 ? "HAR.FirstColor" : "HAR.SecondColor").Translate()));
+            
+
+                List<string> linkedFrom = [];
+
+                foreach ((string baseChannel, HashSet<AlienPartGenerator.ExposableValueTuple<AlienPartGenerator.ExposableValueTuple<string, int>, bool>> hashSet) in alienComp.ColorChannelLinks)
+                {
+                    foreach (AlienPartGenerator.ExposableValueTuple<AlienPartGenerator.ExposableValueTuple<string, int>, bool> link in hashSet)
+                        if (link.first.first == channel.name)
+                            if (link.first.second == (first ? 0 : 1))
+                                linkedFrom.Add("HAR.LinkText".Translate(baseChannel.CapitalizeFirst(), (link.second ? "HAR.FirstColor" : "HAR.SecondColor").Translate()));
+                }
+
+                if (linkedTo.Any() || linkedFrom.Any())
+                {
+                    Log.Message(linkedFrom.Count + " " + linkedTo.Count);
+
+                    Widgets.DrawTextureFitted(linkedRect, ChainTex, 1.5f);
+
+                    //linkedRect.position += inRect.position;
+                    if (Mouse.IsOver(linkedRect))
+                    {
+                        StringBuilder sb = new();
+
+                        if (linkedTo.Any())
+                        {
+                            sb.AppendLine("HAR.LinkedTo".Translate());
+                            foreach (string s in linkedTo)
+                                sb.AppendLine(s);
+                        }
+
+                        if (linkedFrom.Any())
+                        {
+                            sb.AppendLine("HAR.LinkedFrom".Translate());
+                            foreach (string s in linkedFrom)
+                                sb.AppendLine(s);
+                        }
+                        Log.Message(sb.ToString());
+                        TooltipHandler.TipRegion(linkedRect, new TipSignal(sb.ToString()));
+                    }
+                }
+            }
+
             if (firstColors.Any())
             {
                 colorRect = new Rect(headerRect.xMax - 44, headerRect.y, 18, 18);
@@ -629,6 +686,8 @@ public static class StylingStation
 
                 if (Widgets.ButtonInvisible(colorRect))
                     editingFirstColor = true;
+
+                LinkedIndicator(colorRect, true);
             }
             else
             {
@@ -647,13 +706,15 @@ public static class StylingStation
 
                 if (Widgets.ButtonInvisible(colorRect))
                     editingFirstColor = false;
+
+                LinkedIndicator(colorRect, false);
             }
             else
             {
                 editingFirstColor = true;
             }
 
-            Vector2 pos = new(0, 30);
+            Vector2 pos = new(0, 45);
 
             foreach (Color color in availableColors)
             {
