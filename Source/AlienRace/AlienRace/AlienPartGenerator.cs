@@ -580,7 +580,7 @@
                         ac.GetInfo(out string channelName, out bool firstColor);
 
                         if (!this.ColorChannelLinks.ContainsKey(channelName))
-                            this.ColorChannelLinks.Add(channelName, new HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>());
+                            this.ColorChannelLinks.Add(channelName, []);
                         if (this.ColorChannelLinks[channelName].All(evt => evt.first.first != channel.name))
                             this.ColorChannelLinks[channelName]
                              .Add(new ExposableValueTuple<ExposableValueTuple<string, int>, bool>(new ExposableValueTuple<string, int>(channel.name, channel.entries.IndexOf(category)), first));
