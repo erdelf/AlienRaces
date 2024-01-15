@@ -637,7 +637,7 @@ public static class StylingStation
                 if (alienComp.ColorChannelLinks.Keys.Contains(channel.name))
                     foreach (AlienPartGenerator.ExposableValueTuple<AlienPartGenerator.ExposableValueTuple<string, int>, bool> link in alienComp.ColorChannelLinks[channel.name])
                         if (link.second == first)
-                            linkedTo.Add("HAR.LinkText".Translate(link.first.first.CapitalizeFirst(), (link.first.second == 0 ? "HAR.FirstColor" : "HAR.SecondColor").Translate()));
+                            linkedTo.Add("HAR.LinkText".Translate(link.first.first.CapitalizeFirst(), (link.first.second == 1 ? "HAR.FirstColor" : "HAR.SecondColor").Translate()));
             
 
                 List<string> linkedFrom = [];
@@ -646,19 +646,21 @@ public static class StylingStation
                 {
                     foreach (AlienPartGenerator.ExposableValueTuple<AlienPartGenerator.ExposableValueTuple<string, int>, bool> link in hashSet)
                         if (link.first.first == channel.name)
-                            if (link.first.second == (first ? 0 : 1))
+                            if (link.first.second == (first ? 1 : 2))
                                 linkedFrom.Add("HAR.LinkText".Translate(baseChannel.CapitalizeFirst(), (link.second ? "HAR.FirstColor" : "HAR.SecondColor").Translate()));
                 }
 
                 if (linkedTo.Any() || linkedFrom.Any())
                 {
-                    //Log.Message(linkedFrom.Count + " " + linkedTo.Count);
 
                     Widgets.DrawTextureFitted(linkedRect, ChainTex, 1.5f);
 
                     //linkedRect.position += inRect.position;
                     if (Mouse.IsOver(linkedRect))
                     {
+                        Log.Message($"{channel.name}_{first}");
+
+
                         StringBuilder sb = new();
 
                         if (linkedTo.Any())
