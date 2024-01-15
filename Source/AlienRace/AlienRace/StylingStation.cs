@@ -769,14 +769,17 @@ public static class StylingStation
     #endregion
 
 
-    public static void ResetPostfix()
+    public static void ResetPostfix(bool resetColors)
     {
-        alienComp.addonVariants = addonVariants;
-        alienComp.ColorChannels = colorChannels;
+        if (resetColors)
+        {
+            alienComp.addonVariants = addonVariants;
+            alienComp.ColorChannels = colorChannels;
 
-        pawn.Drawer.renderer.graphics.SetAllGraphicsDirty();
+            pawn.Drawer.renderer.graphics.SetAllGraphicsDirty();
 
-        ConstructorPostfix(pawn);
+            ConstructorPostfix(pawn);
+        }
     }
 
     private enum MainTab
