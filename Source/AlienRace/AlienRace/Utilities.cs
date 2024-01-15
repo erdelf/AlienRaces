@@ -75,9 +75,12 @@
             {
                 if (universalBodyAddons == null)
                 {
-                    universalBodyAddons = new List<AlienPartGenerator.BodyAddon>();
-                    universalBodyAddons.AddRange(DefDatabase<RaceSettings>.AllDefsListForReading.SelectMany(rs => rs.universalBodyAddons));
+                    universalBodyAddons = [.. DefDatabase<RaceSettings>.AllDefsListForReading.SelectMany(rs => rs.universalBodyAddons)];
                     universalBodyAddons.GeneBodyAddonPatcher();
+
+                    foreach (BodyAddon bodyAddon in universalBodyAddons) 
+                        bodyAddon.offsets.west ??= bodyAddon.offsets.east;
+
                     new DefaultGraphicsLoader().LoadAllGraphics("Universal Addons", universalBodyAddons.Cast<ExtendedGraphicTop>().ToArray());
                 }
 
