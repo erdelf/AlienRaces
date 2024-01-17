@@ -465,7 +465,10 @@
 
             private Dictionary<string, ExposableValueTuple<Color, Color>>                                    colorChannels;
             private Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> colorChannelLinks = [];
-            public  Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> ColorChannelLinks => this.colorChannelLinks;
+            // originalChannelName, ((targetChannelName, targetChannelCategoryIndex), targetChannelFirst)
+
+
+            public Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> ColorChannelLinks => this.colorChannelLinks;
 
             private Pawn               Pawn       => (Pawn)this.parent;
             private ThingDef_AlienRace AlienProps => (ThingDef_AlienRace)this.Pawn.def;
@@ -581,9 +584,8 @@
 
                         if (!this.ColorChannelLinks.ContainsKey(channelName))
                             this.ColorChannelLinks.Add(channelName, []);
-                        if (this.ColorChannelLinks[channelName].All(evt => evt.first.first != channel.name))
-                            this.ColorChannelLinks[channelName]
-                             .Add(new ExposableValueTuple<ExposableValueTuple<string, int>, bool>(new ExposableValueTuple<string, int>(channel.name, channel.entries.IndexOf(category)), first));
+                        if (this.ColorChannelLinks[channelName].All(evt => evt.first.first != channel.name || evt.second != first))
+                            this.ColorChannelLinks[channelName].Add(new ExposableValueTuple<ExposableValueTuple<string, int>, bool>(new ExposableValueTuple<string, int>(channel.name, channel.entries.IndexOf(category)), first));
                         return firstColor ? this.ColorChannels[channelName].first : this.ColorChannels[channelName].second;
                     default:
                         return this.GenerateColor(gen);
