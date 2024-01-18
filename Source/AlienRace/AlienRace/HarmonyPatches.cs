@@ -323,6 +323,7 @@ namespace AlienRace
             harmony.Patch(typeof(PawnRenderer).GetNestedTypes(AccessTools.all).SelectMany(t => t.GetMethods(AccessTools.all)).FirstOrDefault(x =>  x.Name.Contains("DrawExtraEyeGraphic")),
                           transpiler: new HarmonyMethod(patchType, nameof(DrawExtraEyeGraphicTranspiler)));
 
+            harmony.Patch(AccessTools.PropertyGetter(typeof(Pawn_AgeTracker), "GrowthPointsFactor"), postfix: new HarmonyMethod(patchType, nameof(GrowthPointsFactorPostfix)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -497,6 +498,13 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static void GrowthPointsFactorPostfix(Pawn_AgeTracker __instance, ref float __result, Pawn ___pawn)
+        {
+            if (___pawn.def is ThingDef_AlienRace alienProps)
+                if (alienProps.alienRace.generalSettings.growthFactorByAge != null)
+                    __result = alienProps.alienRace.generalSettings.growthFactorByAge.Evaluate(__instance.AgeBiologicalYears);
         }
 
         public static IEnumerable<CodeInstruction> DrawExtraEyeGraphicTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -1057,15 +1065,17 @@ namespace AlienRace
             FieldInfo             growthMomentAgesInfo = AccessTools.Field(typeof(GrowthUtility), nameof(GrowthUtility.GrowthMomentAges));
 
 
-            foreach (CodeInstruction instruction in instructionList)
+            for (int i = 0; i < instructionList.Count; i++)
             {
+                CodeInstruction instruction = instructionList[i];
                 if (instruction.LoadsField(growthMomentAgesInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_AgeTracker), "pawn"));
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn),            nameof(Pawn.def)));
-                    yield return CodeInstruction.Call(patchType, nameof(GrowthMomentHelper), new[] { typeof(ThingDef) });
-                } else if (instruction.opcode == OpCodes.Ldc_I4_3)
+                    yield return CodeInstruction.Call(patchType, nameof(GrowthMomentHelper), [typeof(ThingDef)]);
+                }
+                else if (instruction.opcode == OpCodes.Ldc_I4_3)
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_AgeTracker), "pawn"));
@@ -1074,9 +1084,28 @@ namespace AlienRace
                 }
                 else
                 {
+                    if (instruction.Is(OpCodes.Ldc_R4, 7))
+                    {
+                        yield return new CodeInstruction(OpCodes.Dup);
+                    } else if (instruction.opcode == OpCodes.Mul && instructionList[i+1].opcode == OpCodes.Stloc_2)
+                    {
+                        yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
+                        yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_AgeTracker), "pawn"));
+                        yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn),            nameof(Pawn.def)));
+                        yield return CodeInstruction.Call(patchType, nameof(EvalGrowthPointsHelper));
+                    }
+
                     yield return instruction;
                 }
             }
+        }
+
+        public static float EvalGrowthPointsHelper(float age, float original, ThingDef pawnDef)
+        {
+            if (pawnDef is ThingDef_AlienRace alienProps)
+                if (alienProps.alienRace.generalSettings.growthFactorByAge != null)
+                    return alienProps.alienRace.generalSettings.growthFactorByAge.Evaluate(age);
+            return original;
         }
 
         public static int GetBabyToChildAge(ThingDef pawnDef) => 
@@ -1106,7 +1135,7 @@ namespace AlienRace
         }
 
         public static int[] GrowthMomentHelper() =>
-            (growthMomentPawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.GrowthAges ?? GrowthUtility.GrowthMomentAges;
+            GrowthMomentHelper(growthMomentPawn.def);
 
         public static int[] GrowthMomentHelper(ThingDef pawnDef) =>
             (pawnDef as ThingDef_AlienRace)?.alienRace.generalSettings.GrowthAges ?? GrowthUtility.GrowthMomentAges;
