@@ -146,6 +146,7 @@ namespace AlienRace
             public float  colorPostFactor = 1f;
 
             public bool userCustomizable = true;
+            public bool allowColorOverride = false;
 
             public List<BodyPartGroupDef> hiddenUnderApparelFor = new();
             public List<string>           hiddenUnderApparelTag = new();
@@ -248,12 +249,9 @@ namespace AlienRace
                 string returnPath = this.GetPath(pawn, ref sharedIndex, savedIndex);
 
                 return !returnPath.NullOrEmpty() ?
-                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, ContentFinder<Texture2D>.Get(returnPath + "_southm", reportFailure: false) == null ?
-                                                                                               this.ShaderType.Shader : 
-                                                                                               ShaderDatabase.CutoutComplex, this.drawSize * 1.5f, first, second, new GraphicData
-                                                                                                                                                                                  {
-                                                                                                                                                                                      drawRotated = !this.drawRotated
-                                                                                                                                                                                  }) :
+                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, ContentFinder<Texture2D>.Get(returnPath + "_southm", reportFailure: false) == null ? 
+                                                                                               this.ShaderType.Shader : ShaderDatabase.CutoutComplex, 
+                                                                               this.drawSize * 1.5f, first, second, new GraphicData { drawRotated = !this.drawRotated }) :
                            null;
             }
 

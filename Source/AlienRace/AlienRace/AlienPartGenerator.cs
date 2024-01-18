@@ -459,6 +459,7 @@
 
             public List<Graphic> addonGraphics;
             public List<int>     addonVariants;
+            public List<ExposableValueTuple<Color?, Color?>>   addonColors = [];
 
 
             public int lastAlienMeatIngestedTick = 0;
@@ -615,6 +616,7 @@
                 base.PostExposeData();
                 Scribe_Values.Look(ref this.fixGenderPostSpawn, label: "fixAlienGenderPostSpawn");
                 Scribe_Collections.Look(ref this.addonVariants, label: "addonVariants");
+                Scribe_Collections.Look(ref this.addonColors,   label: nameof(this.addonColors), LookMode.Deep);
                 Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
                 Scribe_NestedCollections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Undefined, LookMode.Deep);
 

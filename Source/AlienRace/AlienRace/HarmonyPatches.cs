@@ -3512,9 +3512,9 @@ namespace AlienRace
                         __instance.beardGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.beardDef.texPath, alienProps.alienRace.styleSettings[typeof(BeardDef)].shader?.Shader ?? ShaderDatabase.Transparent, 
                                                                                      Vector2.one, alien.story.HairColor);
                     
-                    alienComp.addonGraphics = new List<Graphic>();
-
-                    alienComp.addonVariants ??= new List<int>();
+                    alienComp.addonGraphics = [];
+                    alienComp.addonVariants ??= [];
+                    alienComp.addonColors ??= [];
 
                     sharedIndex = 0;
 
@@ -3523,10 +3523,39 @@ namespace AlienRace
                         int addonIndex = 0;
                         while (bodyAddons.MoveNext())
                         {
-                            Graphic g = bodyAddons.Current.GetGraphic(alien, ref sharedIndex, alienComp.addonVariants.Count > addonIndex ? alienComp.addonVariants[addonIndex] : null);
+                            bool colorInsertActive = false;
+
+                            AlienPartGenerator.BodyAddon addon = bodyAddons.Current;
+                            if (alienComp.addonColors.Count > addonIndex)
+                            {
+                                AlienPartGenerator.ExposableValueTuple<Color?, Color?> addonColor = alienComp.addonColors[addonIndex];
+                                if (addonColor.first.HasValue)
+                                {
+                                    addon.colorOverrideOne = addonColor.first;
+                                    colorInsertActive      = true;
+                                }
+
+                                if (addonColor.second.HasValue)
+                                {
+                                    addon.colorOverrideTwo = addonColor.second;
+                                    colorInsertActive      = true;
+                                }
+                            }
+
+                            Graphic g = addon.GetGraphic(alien, ref sharedIndex, alienComp.addonVariants.Count > addonIndex ? alienComp.addonVariants[addonIndex] : null);
                             alienComp.addonGraphics.Add(g);
                             if (alienComp.addonVariants.Count <= addonIndex)
                                 alienComp.addonVariants.Add(sharedIndex);
+
+                            if (alienComp.addonColors.Count <= addonIndex)
+                            {
+                                alienComp.addonColors.Add(new AlienPartGenerator.ExposableValueTuple<Color?, Color?>(null, null));
+                            }
+                            else if (colorInsertActive)
+                            {
+                                addon.colorOverrideOne = null;
+                                addon.colorOverrideTwo = null;
+                            }
 
                             addonIndex++;
                         }
