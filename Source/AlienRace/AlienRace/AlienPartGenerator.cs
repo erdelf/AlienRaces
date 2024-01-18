@@ -498,7 +498,7 @@
 
 
                         this.colorChannels.Add("tattoo", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
-                        this.colorChannels.Add("favorite", new ExposableValueTuple<Color, Color>());
+                        this.colorChannels.Add("favorite", new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
 
                         foreach (ColorChannelGenerator channel in apg.colorChannels)
                         {
