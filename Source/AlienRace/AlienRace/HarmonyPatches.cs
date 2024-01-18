@@ -320,6 +320,10 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Scenario), nameof(Scenario.PostIdeoChosen)), prefix: new HarmonyMethod(patchType, nameof(ScenarioPostIdeoChosenPrefix)));
             harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), "RegenerateStartingPawnInPlace"), prefix: new HarmonyMethod(patchType, nameof(RegenerateStartingPawnInPlacePrefix)));
 
+            harmony.Patch(typeof(PawnRenderer).GetNestedTypes(AccessTools.all).SelectMany(t => t.GetMethods(AccessTools.all)).FirstOrDefault(x =>  x.Name.Contains("DrawExtraEyeGraphic")),
+                          transpiler: new HarmonyMethod(patchType, nameof(DrawExtraEyeGraphicTranspiler)));
+
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -493,6 +497,30 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> DrawExtraEyeGraphicTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo  woundAnchors       = AccessTools.Field(typeof(BodyTypeDef),  "woundAnchors");
+            FieldInfo  pawn               = AccessTools.Field(typeof(PawnRenderer), "pawn");
+            MethodInfo findAnchorsPostfix = AccessTools.Method(typeof(HarmonyPatches), nameof(HarmonyPatches.FindAnchorsPostfix));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                yield return instruction;
+
+                if (instruction.Is(OpCodes.Ldfld, woundAnchors))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Ldfld, instructionList[i - 4].operand); //PawnRenderer
+                    yield return new CodeInstruction(OpCodes.Ldfld, pawn);
+                    yield return new CodeInstruction(OpCodes.Call,  findAnchorsPostfix);
+                }
+            }
         }
 
         public static void RegenerateStartingPawnInPlacePrefix() => 
@@ -1736,7 +1764,7 @@ namespace AlienRace
             {
                 List<AlienPartGenerator.WoundAnchorReplacement> anchorReplacements = alienRace.alienRace.generalSettings.alienPartGenerator.anchorReplacements;
 
-                List<BodyTypeDef.WoundAnchor> result = new();
+                List<BodyTypeDef.WoundAnchor> result = [];
 
                 foreach (BodyTypeDef.WoundAnchor anchor in __result)
                 {
