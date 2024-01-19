@@ -10,4 +10,6 @@
     <HAR.LinkText>~{0}: {1}</HAR.LinkText>
     <HAR.FirstColor>first color</HAR.FirstColor>
     <HAR.SecondColor>second color</HAR.SecondColor>
+    <HAR.NoAddonsForList>No customizable addons found</HAR.NoAddonsForList>
+    <HAR.NoColorsForList>No customizable colors found</HAR.NoColorsForList>
 </LanguageData>
