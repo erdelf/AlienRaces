@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Runtime.Remoting.Channels;
 using System.Text;
 using HarmonyLib;
 using RimWorld;
@@ -428,7 +429,20 @@ public static class StylingStation
                     editingFirstColor = true;
                 }
 
-                Vector2 pos = new(0, 30);
+                Rect randomizeRect = viewRect.TopPartPixels(30).LeftHalf().ContractedBy(4);
+                viewRect.yMin += 30;
+
+                if (Widgets.ButtonText(randomizeRect, "HAR.RandomizeColors".Translate()))
+                {
+                    AlienPartGenerator.ExposableValueTuple<Color, Color> newlyGeneratedColors = alienComp.GenerateChannel(alienRaceDef.alienRace.generalSettings.alienPartGenerator.colorChannels.
+                                                                                                                              Find(ccg => ccg.name == addon.ColorChannel));
+                    if (editingFirstColor)
+                        alienComp.addonColors[selectedIndexAddons].first = newlyGeneratedColors.first;
+                    else
+                        alienComp.addonColors[selectedIndexAddons].second = newlyGeneratedColors.second;
+                }
+
+                Vector2 pos = new(0, 60);
 
                 for (int i = 0; i < availableColors.Count; i++)
                 {
@@ -762,7 +776,16 @@ public static class StylingStation
                 editingFirstColor = true;
             }
 
-            Vector2 pos = new(0, 35);
+            Rect randomizeRect = viewRect.TopPartPixels(30).LeftHalf().ContractedBy(4);
+            viewRect.yMin += 30;
+
+            if (Widgets.ButtonText(randomizeRect, "HAR.RandomizeColors".Translate()))
+            {
+                AlienPartGenerator.ExposableValueTuple<Color, Color> newlyGeneratedColors = alienComp.GenerateChannel(channel);
+                alienComp.OverwriteColorChannel(channel.name, editingFirstColor ? newlyGeneratedColors.first : null, !editingFirstColor ? newlyGeneratedColors.second : null);
+            }
+
+            Vector2 pos = new(0, 65);
 
             foreach (Color color in availableColors)
             {
