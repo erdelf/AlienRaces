@@ -115,6 +115,11 @@ public static class StylingStation
         List<Color> availableColors = [];
         switch (colorGenerator)
         {
+            case IAlienChannelColorGenerator accg:
+                foreach (ColorGenerator generator in accg.AvailableGenerators(pawn: pawn))
+                    availableColors.AddRange(AvailableColors(generator));
+                availableColors.AddRange(accg.AvailableColors(pawn));
+                break;
             case ColorGenerator_CustomAlienChannel cgCustomAlien:
                 cgCustomAlien.GetInfo(out string channel, out bool firstCustom);
 
