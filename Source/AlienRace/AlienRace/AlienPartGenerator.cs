@@ -681,7 +681,7 @@
             public void OverwriteColorChannel(string channel, Color? first = null, Color? second = null)
             {
                 if (!this.ColorChannels.ContainsKey(channel))
-                    return;
+                    this.ColorChannels.Add(channel, new ExposableValueTuple<Color, Color>(Color.clear, Color.clear));
 
                 if (first.HasValue)
                     this.ColorChannels[channel].first = first.Value;
