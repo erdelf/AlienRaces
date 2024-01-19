@@ -325,6 +325,8 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.PropertyGetter(typeof(Pawn_AgeTracker), "GrowthPointsFactor"), postfix: new HarmonyMethod(patchType, nameof(GrowthPointsFactorPostfix)));
 
+            harmony.Patch(AccessTools.Method(typeof(StatPart_Age), "AgeMultiplier"), prefix: new HarmonyMethod(patchType, nameof(StatPartAgeMultiplierPrefix)));
+
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
@@ -3966,6 +3968,30 @@ namespace AlienRace
                     yield return instruction;
                 }
             }
+        }
+
+        private static AccessTools.FieldRef<object, bool> statPartAgeUseBiologicalYearsField = AccessTools.FieldRefAccess<bool>(typeof(StatPart_Age), "useBiologicalYears");
+        private static AccessTools.FieldRef<object, SimpleCurve> statPartAgeCurveField = AccessTools.FieldRefAccess<SimpleCurve>(typeof(StatPart_Age), "curve");
+
+        public static bool StatPartAgeMultiplierPrefix(ref float __result, StatPart_Age __instance, Pawn pawn)
+        {
+            if (pawn.def is ThingDef_AlienRace race && race.alienRace.generalSettings.ageStatOverride.TryGetValue(__instance.parentStat, out var overridePart))
+            {
+                float oldval = __result;
+                ref bool useBiologicalYears = ref statPartAgeUseBiologicalYearsField.Invoke(overridePart);
+                ref SimpleCurve curve = ref statPartAgeCurveField.Invoke(overridePart);
+                if (useBiologicalYears)
+                {
+                    __result = curve.Evaluate(pawn.ageTracker.AgeBiologicalYears);
+                }
+                else
+                {
+                    __result = curve.Evaluate(pawn.ageTracker.AgeBiologicalYearsFloat / pawn.RaceProps.lifeExpectancy);
+                }
+
+                return false;
+            }
+            return true;
         }
     }
 }
