@@ -28,6 +28,7 @@ public static class StylingStation
     private static ThingDef_AlienRace           alienRaceDef;
 
     private static List<int>                                                                addonVariants;
+    private static List<AlienPartGenerator.ExposableValueTuple<Color?, Color?>>             addonColors;
     private static Dictionary<string, AlienPartGenerator.ExposableValueTuple<Color, Color>> colorChannels;
 
 
@@ -37,11 +38,12 @@ public static class StylingStation
         StylingStation.alienComp    = pawn.TryGetComp<AlienPartGenerator.AlienComp>();
         StylingStation.alienRaceDef = pawn.def as ThingDef_AlienRace;
         addonVariants               = [.. alienComp.addonVariants];
+        addonColors                 = [.. alienComp.addonColors];
         colorChannels               = new Dictionary<string, AlienPartGenerator.ExposableValueTuple<Color, Color>>(alienComp.ColorChannels);
         List<string> list = [.. colorChannels.Keys];
 
-        foreach (string key in list) 
-            colorChannels[key] = (AlienPartGenerator.ExposableValueTuple<Color, Color>) colorChannels[key].Clone();
+        foreach (string key in list)
+            colorChannels[key] = (AlienPartGenerator.ExposableValueTuple<Color, Color>)colorChannels[key].Clone();
     }
 
     public static IEnumerable<CodeInstruction> DoWindowContentsTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg) =>
@@ -806,6 +808,7 @@ public static class StylingStation
         if (resetColors)
         {
             alienComp.addonVariants = addonVariants;
+            alienComp.addonColors   = addonColors;
             alienComp.ColorChannels = colorChannels;
 
             pawn.Drawer.renderer.graphics.SetAllGraphicsDirty();
