@@ -1063,12 +1063,18 @@ namespace AlienRace
         {
             List<CodeInstruction> instructionList      = instructions.ToList();
             FieldInfo             growthMomentAgesInfo = AccessTools.Field(typeof(GrowthUtility), nameof(GrowthUtility.GrowthMomentAges));
+            FieldInfo             growthMomentAgesCacheInfo = AccessTools.Field(typeof(Pawn_AgeTracker), "growthMomentAges");
 
 
             for (int i = 0; i < instructionList.Count; i++)
             {
                 CodeInstruction instruction = instructionList[i];
-                if (instruction.LoadsField(growthMomentAgesInfo))
+
+                if (instruction.LoadsField(growthMomentAgesCacheInfo) && instructionList[i+1].opcode == OpCodes.Brtrue_S)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_0).MoveLabelsFrom(instruction);
+                } 
+                else if (instruction.LoadsField(growthMomentAgesInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_AgeTracker), "pawn"));
@@ -1082,12 +1088,20 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn),            nameof(Pawn.def)));
                     yield return CodeInstruction.Call(patchType, nameof(GetBabyToChildAge));
                 }
+                else if (instruction.Is(OpCodes.Ldc_I4_S, 13))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_AgeTracker), "pawn"));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn),            nameof(Pawn.def)));
+                    yield return CodeInstruction.Call(patchType, nameof(GetChildToAdultAge));
+                }
                 else
                 {
                     if (instruction.Is(OpCodes.Ldc_R4, 7))
                     {
                         yield return new CodeInstruction(OpCodes.Dup);
-                    } else if (instruction.opcode == OpCodes.Mul && instructionList[i+1].opcode == OpCodes.Stloc_2)
+                    } 
+                    else if (instruction.opcode == OpCodes.Mul && instructionList[i+1].opcode == OpCodes.Stloc_2)
                     {
                         yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
                         yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_AgeTracker), "pawn"));
@@ -1110,6 +1124,9 @@ namespace AlienRace
 
         public static int GetBabyToChildAge(ThingDef pawnDef) => 
             Mathf.FloorToInt(pawnDef.race.lifeStageAges.First(lsa => lsa.def.developmentalStage.HasAny(DevelopmentalStage.Child | DevelopmentalStage.Adult)).minAge);
+
+        public static int GetChildToAdultAge(ThingDef pawnDef) =>
+            Mathf.FloorToInt(pawnDef.race.lifeStageAges.First(lsa => lsa.def.developmentalStage.HasAny(DevelopmentalStage.Adult)).minAge);
 
         public static void GrowthTierTooltipPrefix(Pawn ___child) =>
             growthMomentPawn = ___child;
