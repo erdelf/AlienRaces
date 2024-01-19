@@ -269,12 +269,17 @@ public static class StylingStation
         {
             Rect viewRect = new(0, 0, 250, usableCount * 54 + 4);
             Widgets.BeginScrollView(inRect, ref addonsScrollPos, viewRect);
+
+            int usableIndex = -1;
+
             for (int i = 0; i < addons.Count; i++)
             {
                 if (!addons[i].userCustomizable)
                     continue;
 
-                Rect rect = new Rect(10, i * 54f + 4, 240f, 50f).ContractedBy(2);
+                usableIndex++;
+
+                Rect rect = new Rect(10, usableIndex * 54f + 4, 240f, 50f).ContractedBy(2);
                 if (i == selectedIndexAddons)
                 {
                     Widgets.DrawOptionSelected(rect);
@@ -286,7 +291,7 @@ public static class StylingStation
                     GUI.color = Color.white;
 
                     bool groupSelected = false;
-                    int  index         = i;
+                    int  index         = usableIndex;
 
                     while (index >= 0 && addons[index].linkVariantIndexWithPrevious)
                     {
@@ -335,8 +340,8 @@ public static class StylingStation
                 {
                     GUI.color = new ColorInt(135, 135, 135).ToColor;
                     GUI.DrawTexture(new Rect(rect.x - rect.height - 6, rect.center.y,     6, 2),  BaseContent.WhiteTex);
-                    GUI.DrawTexture(new Rect(rect.x - rect.height - 6, (i - 1) * 54 + 27, 6, 2),  BaseContent.WhiteTex);
-                    GUI.DrawTexture(new Rect(rect.x - rect.height - 6, (i - 1) * 54 + 27, 2, 56), BaseContent.WhiteTex);
+                    GUI.DrawTexture(new Rect(rect.x - rect.height - 6, (usableIndex - 1) * 54 + 27, 6, 2),  BaseContent.WhiteTex);
+                    GUI.DrawTexture(new Rect(rect.x - rect.height - 6, (usableIndex - 1) * 54 + 27, 2, 56), BaseContent.WhiteTex);
                     GUI.color = Color.white;
                 }
 
