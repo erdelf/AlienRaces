@@ -10,6 +10,7 @@
     using RimWorld.BaseGen;
     using UnityEngine;
     using Verse;
+    using System.Xml;
 
     public class ThingDef_AlienRace : ThingDef
     {
@@ -38,6 +39,9 @@
 
             if (this.alienRace.generalSettings.minAgeForAdulthood < 0)
                 this.alienRace.generalSettings.minAgeForAdulthood = (float) AccessTools.Field(typeof(PawnBioAndNameGenerator), name: "MinAgeForAdulthood").GetValue(obj: null);
+
+            foreach (StatPartAgeOverride spao in this.alienRace.generalSettings.ageStatOverrides)
+                this.alienRace.generalSettings.ageStatOverride[spao.stat] = spao.overridePart;
 
             for (int i = 0; i < this.race.lifeStageAges.Count; i++)
             {
@@ -215,6 +219,11 @@
         public ReproductionSettings reproduction = new();
 
         public List<AlienChanceEntry<GeneDef>> raceGenes = new();
+
+        internal List<StatPartAgeOverride> ageStatOverrides = new();
+
+        [Unsaved]
+        public Dictionary<StatDef, StatPart_Age> ageStatOverride = new();
     }
 
     public class ReproductionSettings
@@ -805,6 +814,18 @@
         public Vector2         customFemalePortraitDrawSize     = Vector2.zero;
         public Vector2         customFemaleHeadDrawSize         = Vector2.zero;
         public Vector2         customFemalePortraitHeadDrawSize = Vector2.zero;
+    }
+
+    public class StatPartAgeOverride
+    {
+        public StatDef stat;
+        public StatPart_Age overridePart;
+
+        public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+        {
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, "stat", xmlRoot.Name);
+            overridePart = DirectXmlToObject.ObjectFromXml<StatPart_Age>(xmlRoot, false);
+        }
     }
 
     public class CompatibilityInfo
