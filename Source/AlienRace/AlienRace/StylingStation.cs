@@ -41,6 +41,9 @@ public static class StylingStation
         addonVariants               = [.. alienComp.addonVariants];
         addonColors                 = [.. alienComp.addonColors];
         colorChannels               = new Dictionary<string, AlienPartGenerator.ExposableValueTuple<Color, Color>>(alienComp.ColorChannels);
+
+        availableColorsCache.Clear();
+
         List<string> list = [.. colorChannels.Keys];
 
         foreach (string key in list)
@@ -174,10 +177,10 @@ public static class StylingStation
 
                         //int steps = Math.Min(100, Mathf.RoundToInt((Mathf.Abs(diff.r) + Mathf.Abs(diff.g) + Mathf.Abs(diff.b) + Mathf.Abs(diff.a)) / 0.01f));
 
-                        float redStep   = Mathf.Max(0.0001f, diff.r / 2);
-                        float greenStep = Mathf.Max(0.0001f, diff.g / 2);
-                        float blueStep  = Mathf.Max(0.0001f, diff.b / 2);
-                        float alphaStep = Mathf.Max(0.0001f, diff.a / 2);
+                        float redStep   = Mathf.Max(0.001f, diff.r / 4);
+                        float greenStep = Mathf.Max(0.001f, diff.g / 4);
+                        float blueStep  = Mathf.Max(0.001f, diff.b / 4);
+                        float alphaStep = Mathf.Max(0.001f, diff.a / 2);
 
                         for (float r = co.min.r; r <= co.max.r; r += redStep)
                         {
