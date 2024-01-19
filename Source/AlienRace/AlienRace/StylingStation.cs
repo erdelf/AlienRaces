@@ -17,6 +17,7 @@ public static class StylingStation
 {
     private static readonly Texture2D ChainTex = ContentFinder<Texture2D>.Get("AlienRace/UI/LinkChain");
     private static readonly Texture2D ClearTex = ContentFinder<Texture2D>.Get("AlienRace/UI/ClearButton");
+    private static readonly Texture2D ChainVanillaTex = ContentFinder<Texture2D>.Get("AlienRace/UI/LinkVanilla");
 
     private static readonly List<TabRecord> mainTabs = new();
     private static readonly List<TabRecord> raceTabs = new();
@@ -580,8 +581,6 @@ public static class StylingStation
         }
         else
         {
-
-
             Rect viewRect = new(0, 0, 250, channels.Count * 54 + 4);
             Widgets.BeginScrollView(inRect, ref channelsScrollPos, viewRect);
             for (int i = 0; i < channels.Count; i++)
@@ -752,7 +751,21 @@ public static class StylingStation
                         editingFirstColor = true;
                     }
 
-                LinkedIndicator(colorRect, true);
+                if (channel.name == "hair")
+                {
+                    colorRect.y += colorRect.height * 0.5f;
+                    colorRect.x += colorRect.width  * 0.5f;
+                    Widgets.DrawTextureFitted(colorRect, ChainVanillaTex, 1.5f);
+
+                    //linkedRect.position += inRect.position;
+                    if (Mouse.IsOver(colorRect))
+                    {
+                        TooltipHandler.TipRegion(colorRect, new TipSignal("HAR.HairOneInfo".Translate()));
+                    }
+                } else
+                {
+                    LinkedIndicator(colorRect, true);
+                }
             }
             else
             {
