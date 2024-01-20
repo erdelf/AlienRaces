@@ -243,7 +243,13 @@ public static class StylingStation
         DoAddonList(inRect.LeftPartPixels(260), bodyAddons);
         inRect.xMin += 260;
         if (selectedIndexAddons != -1)
-            DoAddonInfo(inRect, bodyAddons[selectedIndexAddons], bodyAddons);
+        {
+            AlienPartGenerator.BodyAddon addon = bodyAddons[selectedIndexAddons];
+            if (addon.userCustomizable)
+                DoAddonInfo(inRect, addon, bodyAddons);
+            else
+                selectedIndexAddons = -1;
+        }
     }
 
     private static Vector2 addonsScrollPos;
@@ -252,7 +258,7 @@ public static class StylingStation
     {
         int usableCount = addons.Count(ba => ba.userCustomizable);
 
-        if (selectedIndexAddons >= usableCount)
+        if (selectedIndexAddons >= addons.Count)
             selectedIndexAddons = -1;
 
         Widgets.DrawMenuSection(inRect);
