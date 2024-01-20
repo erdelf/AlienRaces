@@ -325,7 +325,7 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.PropertyGetter(typeof(Pawn_AgeTracker), "GrowthPointsFactor"), postfix: new HarmonyMethod(patchType, nameof(GrowthPointsFactorPostfix)));
 
-            harmony.Patch(AccessTools.Method(typeof(StatPart_Age), "AgeMultiplier"), prefix: new HarmonyMethod(patchType, nameof(StatPartAgeMultiplierPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(StatPart_Age), "AgeMultiplier"), new HarmonyMethod(patchType, nameof(StatPartAgeMultiplierPrefix)));
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -500,6 +500,22 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static bool StatPartAgeMultiplierPrefix(ref float __result, StatPart_Age __instance, Pawn pawn)
+        {
+            if (pawn.def is ThingDef_AlienRace race && race.alienRace.generalSettings.ageStatOverride.TryGetValue(__instance.parentStat, out StatPart_Age overridePart))
+            {
+                ref bool        useBiologicalYears = ref CachedData.statPartAgeUseBiologicalYearsField.Invoke(overridePart);
+                ref SimpleCurve curve              = ref CachedData.statPartAgeCurveField.Invoke(overridePart);
+
+                __result = useBiologicalYears ?
+                               curve.Evaluate(pawn.ageTracker.AgeBiologicalYears) :
+                               curve.Evaluate(pawn.ageTracker.AgeBiologicalYearsFloat / pawn.RaceProps.lifeExpectancy);
+
+                return false;
+            }
+            return true;
         }
 
         public static void GrowthPointsFactorPostfix(Pawn_AgeTracker __instance, ref float __result, Pawn ___pawn)
@@ -3791,7 +3807,7 @@ namespace AlienRace
             request.KindDef = kindDef;
         }
 
-        public static Pair<WeakReference, bool> portraitRender;
+        public static  Pair<WeakReference, bool>                 portraitRender;
 
         public static void RenderPawnInternalPrefix(Pawn ___pawn, PawnRenderFlags flags) => 
             portraitRender = new Pair<WeakReference, bool>(new WeakReference(___pawn), (flags & PawnRenderFlags.Portrait) != 0);
@@ -3968,30 +3984,6 @@ namespace AlienRace
                     yield return instruction;
                 }
             }
-        }
-
-        private static AccessTools.FieldRef<object, bool> statPartAgeUseBiologicalYearsField = AccessTools.FieldRefAccess<bool>(typeof(StatPart_Age), "useBiologicalYears");
-        private static AccessTools.FieldRef<object, SimpleCurve> statPartAgeCurveField = AccessTools.FieldRefAccess<SimpleCurve>(typeof(StatPart_Age), "curve");
-
-        public static bool StatPartAgeMultiplierPrefix(ref float __result, StatPart_Age __instance, Pawn pawn)
-        {
-            if (pawn.def is ThingDef_AlienRace race && race.alienRace.generalSettings.ageStatOverride.TryGetValue(__instance.parentStat, out var overridePart))
-            {
-                float oldval = __result;
-                ref bool useBiologicalYears = ref statPartAgeUseBiologicalYearsField.Invoke(overridePart);
-                ref SimpleCurve curve = ref statPartAgeCurveField.Invoke(overridePart);
-                if (useBiologicalYears)
-                {
-                    __result = curve.Evaluate(pawn.ageTracker.AgeBiologicalYears);
-                }
-                else
-                {
-                    __result = curve.Evaluate(pawn.ageTracker.AgeBiologicalYearsFloat / pawn.RaceProps.lifeExpectancy);
-                }
-
-                return false;
-            }
-            return true;
         }
     }
 }
