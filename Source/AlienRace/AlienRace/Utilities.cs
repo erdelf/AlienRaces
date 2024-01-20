@@ -256,5 +256,8 @@
         public static readonly AccessTools.FieldRef<Dialog_StylingStation, Color> stationDesiredHairColor = AccessTools.FieldRefAccess<Dialog_StylingStation, Color>("desiredHairColor");
 
         public static readonly AccessTools.FieldRef<Dialog_StylingStation, Dialog_StylingStation.StylingTab> stationCurTab = AccessTools.FieldRefAccess<Dialog_StylingStation, Dialog_StylingStation.StylingTab>("curTab");
+
+        public static readonly AccessTools.FieldRef<object, bool>        statPartAgeUseBiologicalYearsField = AccessTools.FieldRefAccess<bool>(typeof(StatPart_Age), "useBiologicalYears");
+        public static readonly AccessTools.FieldRef<object, SimpleCurve> statPartAgeCurveField              = AccessTools.FieldRefAccess<SimpleCurve>(typeof(StatPart_Age), "curve");
     }
 }
