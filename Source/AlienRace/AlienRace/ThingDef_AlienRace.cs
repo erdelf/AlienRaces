@@ -220,10 +220,10 @@
 
         public List<AlienChanceEntry<GeneDef>> raceGenes = new();
 
-        internal List<StatPartAgeOverride> ageStatOverrides = new();
+        internal List<StatPartAgeOverride> ageStatOverrides = [];
 
         [Unsaved]
-        public Dictionary<StatDef, StatPart_Age> ageStatOverride = new();
+        public Dictionary<StatDef, StatPart_Age> ageStatOverride = [];
     }
 
     public class ReproductionSettings
