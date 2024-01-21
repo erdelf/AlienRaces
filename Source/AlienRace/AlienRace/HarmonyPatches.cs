@@ -25,8 +25,7 @@ namespace AlienRace
         // ReSharper disable once InconsistentNaming
         private static readonly Type patchType = typeof(HarmonyPatches);
 
-        public static readonly Texture2D AlienIconInactive = ContentFinder<Texture2D>.Get("AlienRace/UI/AlienIconInactive");
-        public static readonly Texture2D AlienIconActive = ContentFinder<Texture2D>.Get("AlienRace/UI/AlienIconActive");
+        
 
         static HarmonyPatches()
         {
@@ -3206,11 +3205,8 @@ namespace AlienRace
             if (!found) Log.Error("(Humanoid Alien Races) Unable to find injection point for character card randomization transpiler, the target may have been changed or transpiled by another mod.");
         }
 
-        private static PawnKindDef startingPawnKindRestriction = null;
-        private static string startingPawnKindLabel = null;
-        private static readonly List<PawnKindDef> startingPawnKinds = [];
-        private static readonly HashSet<string> startingPawnKindLabelSet = [];
-        private static readonly HashSet<string> startingPawnKindDuplicateLabelSet = [];
+        private static PawnKindDef startingPawnKindRestriction;
+        private static string      startingPawnKindLabel;
 
         private static bool PawnKindRandomizeButtonPassthrough(Rect rect, string label, bool drawBackground = true, bool doMouseoverSound = true, bool active = true, TextAnchor? overrideTextAnchor = null)
         {
@@ -3219,55 +3215,52 @@ namespace AlienRace
             rightRect.width = 46f;
 
             if (Mouse.IsOver(rightRect))
-            {
                 if (Find.WindowStack.FloatMenu == null)
                 {
                     TaggedString tipString = "HAR.StartingRace".Translate(startingPawnKindLabel ?? ("None".Translate())).Colorize(ColoredText.TipSectionTitleColor) + "\n\n" + "HAR.StartingRaceDescription".Translate();
                     TooltipHandler.TipRegion(rightRect, tipString.Resolve());
                 }
-            }
 
-            if (Widgets.ButtonImageWithBG(rightRect, startingPawnKindRestriction == null ? AlienIconInactive : AlienIconActive, new Vector2(22f, 22f)))
-            {
+            if (Widgets.ButtonImageWithBG(rightRect, startingPawnKindRestriction == null ? CachedData.Textures.AlienIconInactive : CachedData.Textures.AlienIconActive, new Vector2(22f, 22f))) 
                 DoStartingPawnKindDropdown();
-            }
 
             rect.width = 150f;
 
             return Widgets.ButtonText(rect, label, drawBackground, doMouseoverSound, active, overrideTextAnchor);
         }
+
         private static void DoStartingPawnKindDropdown()
         {
-            startingPawnKinds.Clear();
-            startingPawnKindLabelSet.Clear();
-            startingPawnKindDuplicateLabelSet.Clear();
+            List<PawnKindDef> startingPawnKinds                 = [];
+            HashSet<string>   startingPawnKindLabelSet          = [];
+            HashSet<string>   startingPawnKindDuplicateLabelSet = [];
 
             PawnKindDef basicMemberKind = Find.GameInitData.startingPawnKind ?? Faction.OfPlayer.def.basicMemberKind;
-            List<FloatMenuOption> options = [];
-            options.Add(new FloatMenuOption("NoneBrackets".Translate(), delegate
-            {
-                startingPawnKindRestriction = null;
-                startingPawnKindLabel = "None".Translate();
-            }));
 
-            foreach(PawnKindEntry entry in NewGeneratedStartingPawnKinds(basicMemberKind))
+            List<FloatMenuOption> options =
+            [
+                new FloatMenuOption("NoneBrackets".Translate(), delegate
+                                                                {
+                                                                    startingPawnKindRestriction = null;
+                                                                    startingPawnKindLabel       = "None".Translate();
+                                                                })
+            ];
+
+            foreach (PawnKindEntry entry in NewGeneratedStartingPawnKinds(basicMemberKind))
             {
-                foreach (PawnKindDef kind in entry.kindDefs) {
-                    if (startingPawnKinds.Contains(kind)) continue;
+                foreach (PawnKindDef kind in entry.kindDefs)
+                {
+                    if (startingPawnKinds.Contains(kind))
+                        continue;
 
                     startingPawnKinds.Add(kind);
-                    if (startingPawnKindLabelSet.Contains(kind.label))
-                    {
+                    if (!startingPawnKindLabelSet.Add(kind.label))
                         startingPawnKindDuplicateLabelSet.Add(kind.label);
-                    }
-                    else
-                    {
-                        startingPawnKindLabelSet.Add(kind.label);
-                    }
                 }
             }
 
-            foreach (PawnKindDef kind in startingPawnKinds) {
+            foreach (PawnKindDef kind in startingPawnKinds)
+            {
                 string label;
                 if (startingPawnKindDuplicateLabelSet.Contains(kind.label))
                     label = $"{kind.race.LabelCap} ({kind.defName})";
@@ -3277,19 +3270,16 @@ namespace AlienRace
                     label = $"{kind.race.LabelCap} ({kind.label})";
 
 
-                options.Add(new FloatMenuOption(
-                    label,
-                    delegate
-                    {
-                        startingPawnKindRestriction = kind;
-                        startingPawnKindLabel = label;
-                    }
-                ));
+                options.Add(new FloatMenuOption(label, delegate
+                                                       {
+                                                           startingPawnKindRestriction = kind;
+                                                           startingPawnKindLabel       = label;
+                                                       }
+                                               ));
             }
 
             Find.WindowStack.Add(new FloatMenu(options));
         }
-
 
         public static bool GeneratePawnNamePrefix(ref Name __result, Pawn pawn, NameStyle style = NameStyle.Full, string forcedLastName = null)
         {
@@ -3475,20 +3465,21 @@ namespace AlienRace
         }
 
         public static IEnumerable<PawnKindEntry> NewGeneratedStartingPawnKinds(PawnKindDef basicMember) =>
-            DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.startingColonists.NullOrEmpty())
-                                  .SelectMany(selector: tdar => tdar.pawnKindSettings.startingColonists).Where(predicate: sce => sce.factionDefs.Contains(Faction.OfPlayer.def))
-                                  .SelectMany(selector: sce => sce.pawnKindEntries).AddItem(new PawnKindEntry { chance = 100f, kindDefs = new List<PawnKindDef> { basicMember } });
+            DefDatabase<RaceSettings>.AllDefsListForReading.Where(tdar => !tdar.pawnKindSettings.startingColonists.NullOrEmpty())
+                                  .SelectMany(tdar => tdar.pawnKindSettings.startingColonists).Where(sce => sce.factionDefs.Contains(Faction.OfPlayer.def))
+                                  .SelectMany(sce => sce.pawnKindEntries).AddItem(new PawnKindEntry { chance = 100f, kindDefs = [basicMember] });
 
         public static PawnKindDef NewGeneratedStartingPawnHelper(PawnKindDef basicMember)
         {
             IEnumerable<PawnKindEntry> usableEntries = NewGeneratedStartingPawnKinds(basicMember);
 
             // Only use the override if it's specifying a valid pawnkind for the current scenario (safety check)
-            if (startingPawnKindRestriction != null && usableEntries.Any((pke) => pke.kindDefs.Contains(startingPawnKindRestriction))) return startingPawnKindRestriction;
-
-            return usableEntries.TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk)
-                ? pk.kindDefs.RandomElement()
-                : basicMember;
+            if (startingPawnKindRestriction != null && usableEntries.Any(pke => pke.kindDefs.Contains(startingPawnKindRestriction))) 
+                return startingPawnKindRestriction;
+            
+            return usableEntries.TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk) ? 
+                       pk.kindDefs.RandomElement() : 
+                       basicMember;
         }
 
         public static void RandomHediffsToGainOnBirthdayPostfix(ref IEnumerable<HediffGiver_Birthday> __result, ThingDef raceDef)
