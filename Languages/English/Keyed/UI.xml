@@ -14,4 +14,6 @@
     <HAR.NoColorsForList>No customizable colors found</HAR.NoColorsForList>
     <HAR.RandomizeColors>Randomize</HAR.RandomizeColors>
     <HAR.HairOneInfo>This color is determined by the standard Hair color. Change the colonist's normal hair color to change this color.</HAR.HairOneInfo>
+    <HAR.StartingRace>Race Restriction: {0}</HAR.StartingRace>
+    <HAR.StartingRaceDescription>Restrict randomization to a specific alien race.</HAR.StartingRaceDescription>
 </LanguageData>
