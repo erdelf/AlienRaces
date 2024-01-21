@@ -160,8 +160,15 @@
             this.data?.drawRotated ?? false;
     }
 
+    [StaticConstructorOnStartup]
     public static class CachedData
     {
+        public static class Textures
+        {
+            public static readonly Texture2D AlienIconInactive = ContentFinder<Texture2D>.Get("AlienRace/UI/AlienIconInactive");
+            public static readonly Texture2D AlienIconActive   = ContentFinder<Texture2D>.Get("AlienRace/UI/AlienIconActive");
+        }
+
         private static readonly Dictionary<RaceProperties, ThingDef> racePropsToRaceDict = new();
 
         public static ThingDef GetRaceFromRaceProps(RaceProperties props)
