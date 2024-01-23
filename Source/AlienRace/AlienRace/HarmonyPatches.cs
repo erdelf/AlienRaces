@@ -126,7 +126,8 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), name: "BirthdayBiological"), new HarmonyMethod(patchType, nameof(BirthdayBiologicalPrefix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), nameof(PawnGenerator.GeneratePawn), new[] { typeof(PawnGenerationRequest) }),
-                new HarmonyMethod(patchType, nameof(GeneratePawnPrefix)));
+                new HarmonyMethod(patchType, nameof(GeneratePawnPrefix)),
+                postfix: new HarmonyMethod(patchType, nameof(GeneratePawnPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGraphicSet), nameof(PawnGraphicSet.ResolveAllGraphics)),
                 new HarmonyMethod(patchType, nameof(ResolveAllGraphicsPrefix)));
             
@@ -3918,6 +3919,17 @@ namespace AlienRace
             }
 
             request.KindDef = kindDef;
+        }
+
+        public static void GeneratePawnPostfix(Pawn __result)
+        {
+            if (__result != null && __result.def is ThingDef_AlienRace race)
+            {
+                foreach(AbilityDef ability in race.alienRace.generalSettings.abilities)
+                {
+                    __result.abilities?.GainAbility(ability);
+                }
+            }
         }
 
         public static  Pair<WeakReference, bool>                 portraitRender;
