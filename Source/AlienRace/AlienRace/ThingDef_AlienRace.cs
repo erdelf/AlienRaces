@@ -194,6 +194,7 @@
         public IntRange               additionalTraits   = IntRange.zero;
         public AlienPartGenerator     alienPartGenerator = new();
         public List<SkillGain>        passions           = new();
+        public List<AbilityDef>       abilities          = new();
 
         public List<FactionRelationSettings> factionRelations;
         public int                           maxDamageForSocialfight = int.MaxValue;
