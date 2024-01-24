@@ -142,10 +142,6 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     
     protected virtual void SetFieldFromXmlNode(Traverse field, XmlNode xmlNode)
     {
-        if (!field.FieldExists()) 
-            return;
-        field.SetValue(field.GetValueType().IsGenericType ? 
-                           DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlNode, false) : 
-                           ParseHelper.FromString(xmlNode.InnerXml.Trim(), field.GetValueType()));
+        Utilities.SetFieldFromXmlNode(field, xmlNode);
     }
 }
