@@ -16,4 +16,5 @@
     <HAR.HairOneInfo>This color is determined by the standard Hair color. Change the colonist's normal hair color to change this color.</HAR.HairOneInfo>
     <HAR.StartingRace>Race Restriction: {0}</HAR.StartingRace>
     <HAR.StartingRaceDescription>Restrict randomization to a specific alien race.</HAR.StartingRaceDescription>
+    <HAR.ReproductionNotAllowed>{genderOne} {raceOne} can not reproduce with {genderTwo} {raceTwo}</HAR.ReproductionNotAllowed>
 </LanguageData>
