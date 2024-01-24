@@ -498,7 +498,7 @@ public static class StylingStation
             }
         }
 
-        int   variantCount = addon.GetVariantCount();
+        int   variantCount = addon.VariantCountMax;//.GetVariantCount();
         int   countPerRow  = 4;
         float width        = inRect.width - 20;
         float itemSize     = width / countPerRow;
