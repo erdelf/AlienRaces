@@ -292,7 +292,8 @@ namespace AlienRace
             Trait,
             Age,
             Damage,
-            Gene
+            Gene,
+            Extended
         }
     }
 }
