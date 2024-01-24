@@ -11,6 +11,7 @@ namespace AlienRace
     using RimWorld;
     using RimWorld.QuestGen;
     using UnityEngine;
+    using UnityEngine.Networking;
     using Verse;
     using Verse.AI;
     using Verse.Grammar;
@@ -3364,7 +3365,8 @@ namespace AlienRace
             if (pawn.def is ThingDef_AlienRace alienProps)
                 foreach (AlienChanceEntry<GeneDef> gene in alienProps.alienRace.generalSettings.raceGenes)
                     if (gene.Approved(pawn))
-                        pawn.genes.AddGene(gene.defName, false);
+                        foreach(GeneDef option in gene.Select())
+                            pawn.genes.AddGene(option, false);
         }
 
         public static void GenerateGenesPrefix(Pawn pawn, ref PawnGenerationRequest request)
@@ -3923,11 +3925,16 @@ namespace AlienRace
 
         public static void GeneratePawnPostfix(Pawn __result)
         {
-            if (__result != null && __result.def is ThingDef_AlienRace race)
+            if (__result != null && __result.def is ThingDef_AlienRace race && race.alienRace.generalSettings.abilities != null)
             {
-                foreach(AbilityDef ability in race.alienRace.generalSettings.abilities)
+                foreach(AlienChanceEntry<AbilityDef> entry in race.alienRace.generalSettings.abilities)
                 {
-                    __result.abilities?.GainAbility(ability);
+                    if (entry.Approved(__result)) {
+                        foreach (AbilityDef ability in entry.Select())
+                        {
+                            __result.abilities?.GainAbility(ability);
+                        }
+                    }
                 }
             }
         }
