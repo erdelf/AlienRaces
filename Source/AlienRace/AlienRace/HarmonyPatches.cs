@@ -978,7 +978,8 @@ namespace AlienRace
             if (__result.Accepted)
             {
                 if (!RaceRestrictionSettings.CanReproduce(first, second))
-                    __result = $"{first.gender} {first.def.LabelCap} can not reproduce with {second.gender} {second.def.LabelCap}"; // todo Translationkey
+                    __result = "HAR.ReproductionNotAllowed".Translate(new NamedArgument(first.gender.GetLabel(),  "genderOne"), new NamedArgument(first.def.LabelCap,  "raceOne"),
+                                                                      new NamedArgument(second.gender.GetLabel(), "genderTwo"), new NamedArgument(second.def.LabelCap, "raceTwo"));
             }
         }
 
