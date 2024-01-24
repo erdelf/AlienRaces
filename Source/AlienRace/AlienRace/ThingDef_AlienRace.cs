@@ -11,6 +11,7 @@
     using UnityEngine;
     using Verse;
     using System.Xml;
+    using System.Xml.Serialization;
 
     public class ThingDef_AlienRace : ThingDef
     {
@@ -187,14 +188,14 @@
 
         public List<ThingDef>         validBeds;
         public List<ChemicalSettings> chemicalSettings;
-        public List<AlienChanceEntry<TraitDef>>  forcedRaceTraitEntries;
-        public List<AlienChanceEntry<TraitDef>>  disallowedTraits;
+        public List<AlienChanceEntry<TraitDef>>   forcedRaceTraitEntries;
+        public List<AlienChanceEntry<TraitDef>>   disallowedTraits;
         [Obsolete("Effectively replaced via growth moments, currently ineffective")]
-        public IntRange               traitCount         = new(1, 3);
-        public IntRange               additionalTraits   = IntRange.zero;
-        public AlienPartGenerator     alienPartGenerator = new();
-        public List<SkillGain>        passions           = new();
-        public List<AbilityDef>       abilities          = new();
+        public IntRange                           traitCount         = new(1, 3);
+        public IntRange                           additionalTraits   = IntRange.zero;
+        public AlienPartGenerator                 alienPartGenerator = new();
+        public List<SkillGain>                    passions           = new();
+        public List<AlienChanceEntry<AbilityDef>> abilities          = new();
 
         public List<FactionRelationSettings> factionRelations;
         public int                           maxDamageForSocialfight = int.MaxValue;
@@ -303,11 +304,16 @@
     public class AlienChanceEntry<T>
     {
         public T defName;
+        public List<T> options;
+        public int count = 1;
         public int degree = 0; //mostly for traits, but maybe will find some other use later
         public float chance = 100;
 
         public float commonalityMale = -1f;
         public float commonalityFemale = -1f;
+
+        [Unsaved]
+        private readonly List<T> shuffledOptions = [];
 
         public bool Approved(int wantedDegree = 0) =>
             (wantedDegree == this.degree || this.degree == 0) &&
@@ -321,6 +327,47 @@
 
         public bool Approved(Pawn pawn, int wantedDegree = 0) =>
             this.Approved(pawn.gender, wantedDegree);
+
+        public IEnumerable<T> Select()
+        {
+            if (options.NullOrEmpty())
+            {
+                yield return defName;
+                yield break;
+            }
+
+            // Doing this instead of GenCollection.TakeRandom because TakeRandom allows repeats
+            if (shuffledOptions.Count != options.Count)
+            {
+                shuffledOptions.Clear();
+                shuffledOptions.AddRange(options);
+            }
+            shuffledOptions.Shuffle();
+            int limit = Math.Min(shuffledOptions.Count, count);
+            for (int i = 0; i < limit; i ++)
+            {
+                yield return shuffledOptions[i];
+            }
+        }
+
+        public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+        {
+            if (xmlRoot.ChildNodes.Count == 1 && xmlRoot.FirstChild.NodeType == XmlNodeType.Text)
+            {
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, "defName", xmlRoot.FirstChild.Value);
+            }
+            else
+            {
+                Traverse traverse = Traverse.Create(this);
+                foreach (XmlNode xmlNode in xmlRoot.ChildNodes)
+                {
+                    if (xmlNode.Name == "defName")
+                        DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, "defName", xmlNode.FirstChild.Value);
+                    else
+                        Utilities.SetFieldFromXmlNode(traverse.Field(xmlNode.Name), xmlNode);
+                }
+            }
+        }
     }
 
     public class GraphicPaths

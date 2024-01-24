@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Reflection;
     using System.Text.RegularExpressions;
+    using System.Xml;
     using AlienRace.ExtendedGraphics;
     using HarmonyLib;
     using JetBrains.Annotations;
@@ -88,6 +89,16 @@
             }
         }
 
+        public static void SetFieldFromXmlNode(Traverse field, XmlNode xmlNode)
+        {
+            if (!field.FieldExists())
+                return;
+            field.SetValue(field.GetValueType().IsGenericType ?
+                               DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlNode, false) :
+                               ParseHelper.FromString(xmlNode.InnerXml.Trim(), field.GetValueType()));
+        }
+
+
         public static void GeneBodyAddonPatcher(this List<AlienPartGenerator.BodyAddon> universal)
         {
             List<AlienPartGenerator.BodyAddon> geneAddons  = new();
@@ -163,6 +174,7 @@
     [StaticConstructorOnStartup]
     public static class CachedData
     {
+        [StaticConstructorOnStartup]
         public static class Textures
         {
             public static readonly Texture2D AlienIconInactive = ContentFinder<Texture2D>.Get("AlienRace/UI/AlienIconInactive");
