@@ -3365,9 +3365,8 @@ namespace AlienRace
         {
             if (pawn.def is ThingDef_AlienRace alienProps)
                 foreach (AlienChanceEntry<GeneDef> gene in alienProps.alienRace.generalSettings.raceGenes)
-                    if (gene.Approved(pawn))
-                        foreach(GeneDef option in gene.Select())
-                            pawn.genes.AddGene(option, false);
+                    foreach(GeneDef option in gene.Select(pawn))
+                        pawn.genes.AddGene(option, false);
         }
 
         public static void GenerateGenesPrefix(Pawn pawn, ref PawnGenerationRequest request)
@@ -3813,8 +3812,9 @@ namespace AlienRace
 
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
-                List<AlienChanceEntry<TraitDef>> alienTraits = new();
-                if (!alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
+                List<AlienChanceEntry<TraitWithDegree>> alienTraits = [];
+                
+                if(!alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
                     alienTraits.AddRange(alienProps.alienRace.generalSettings.forcedRaceTraitEntries);
 
                 foreach (BackstoryDef backstory in pawn.story.AllBackstories)
@@ -3823,10 +3823,10 @@ namespace AlienRace
                             alienTraits.AddRange(alienBackstory.forcedTraitsChance);
 
 
-                foreach (AlienChanceEntry<TraitDef> ate in alienTraits)
-                    if (ate.Approved(pawn) && !pawn.story.traits.allTraits.Any(predicate: tr => tr.def == ate.defName))
-
-                        pawn.story.traits.GainTrait(new Trait(ate.defName, ate.degree, forced: true));
+                foreach (AlienChanceEntry<TraitWithDegree> ate in alienTraits)
+                        foreach (TraitWithDegree trait in ate.Select(pawn, int.MinValue))
+                            if (!pawn.story.traits.HasTrait(trait.def)) 
+                                pawn.story.traits.GainTrait(new Trait(trait.def, ate.degree != 0 ? ate.degree : trait.degree, forced: true));
 
                 int traits = alienProps.alienRace.generalSettings.additionalTraits.RandomInRange;
                 if (traits > 0)
@@ -3926,18 +3926,10 @@ namespace AlienRace
 
         public static void GeneratePawnPostfix(Pawn __result)
         {
-            if (__result != null && __result.def is ThingDef_AlienRace race && race.alienRace.generalSettings.abilities != null)
-            {
+            if (__result?.def is ThingDef_AlienRace race)
                 foreach(AlienChanceEntry<AbilityDef> entry in race.alienRace.generalSettings.abilities)
-                {
-                    if (entry.Approved(__result)) {
-                        foreach (AbilityDef ability in entry.Select())
-                        {
-                            __result.abilities?.GainAbility(ability);
-                        }
-                    }
-                }
-            }
+                    foreach (AbilityDef ability in entry.Select(__result)) 
+                        __result.abilities?.GainAbility(ability);
         }
 
         public static  Pair<WeakReference, bool>                 portraitRender;
