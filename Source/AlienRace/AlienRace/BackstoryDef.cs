@@ -9,8 +9,8 @@
     {
         public static HashSet<BackstoryDef> checkBodyType = new();
 
-        public List<AlienChanceEntry<TraitDef>> forcedTraitsChance     = new();
-        public List<AlienChanceEntry<TraitDef>> disallowedTraitsChance = new();
+        public List<AlienChanceEntry<TraitWithDegree>> forcedTraitsChance     = [];
+        public List<AlienChanceEntry<TraitWithDegree>> disallowedTraitsChance = [];
         public WorkTags                         workAllows             = WorkTags.AllWork;
         public float                            maleCommonality        = 100f;
         public float                            femaleCommonality      = 100f;
