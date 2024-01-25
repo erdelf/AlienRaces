@@ -93,7 +93,7 @@
         {
             if (!field.FieldExists())
                 return;
-            field.SetValue(field.GetValueType().IsGenericType ?
+            field.SetValue(field.GetValueType().IsGenericType || !ParseHelper.HandlesType(field.GetValueType()) ?
                                DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlNode, false) :
                                ParseHelper.FromString(xmlNode.InnerXml.Trim(), field.GetValueType()));
         }

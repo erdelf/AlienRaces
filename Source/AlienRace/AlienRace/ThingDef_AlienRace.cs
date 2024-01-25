@@ -7,11 +7,10 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using RimWorld.BaseGen;
     using UnityEngine;
     using Verse;
     using System.Xml;
-    using System.Xml.Serialization;
+    using JetBrains.Annotations;
 
     public class ThingDef_AlienRace : ThingDef
     {
@@ -188,8 +187,8 @@
 
         public List<ThingDef>         validBeds;
         public List<ChemicalSettings> chemicalSettings;
-        public List<AlienChanceEntry<TraitDef>>   forcedRaceTraitEntries;
-        public List<AlienChanceEntry<TraitDef>>   disallowedTraits;
+        public List<AlienChanceEntry<TraitWithDegree>>   forcedRaceTraitEntries;
+        public List<AlienChanceEntry<TraitWithDegree>>   disallowedTraits;
         [Obsolete("Effectively replaced via growth moments, currently ineffective")]
         public IntRange                           traitCount         = new(1, 3);
         public IntRange                           additionalTraits   = IntRange.zero;
@@ -304,8 +303,9 @@
     public class AlienChanceEntry<T>
     {
         public T defName;
-        public List<T> options;
+        public List<AlienChanceEntry<T>> options = [];
         public int count = 1;
+        [Obsolete("Use TraitWithDegree instead")]
         public int degree = 0; //mostly for traits, but maybe will find some other use later
         public float chance = 100;
 
@@ -313,10 +313,10 @@
         public float commonalityFemale = -1f;
 
         [Unsaved]
-        private readonly List<T> shuffledOptions = [];
+        private readonly List<AlienChanceEntry<T>> shuffledOptions = [];
 
         public bool Approved(int wantedDegree = 0) =>
-            (wantedDegree == this.degree || this.degree == 0) &&
+            (wantedDegree == int.MinValue || wantedDegree == this.degree || this.degree == 0) &&
             Rand.Range(min: 0, max: 100) < this.chance;
 
         public bool Approved(Gender gender, int wantedDegree = 0) =>
@@ -328,28 +328,37 @@
         public bool Approved(Pawn pawn, int wantedDegree = 0) =>
             this.Approved(pawn.gender, wantedDegree);
 
-        public IEnumerable<T> Select()
+        public IEnumerable<T> Select(Pawn pawn, int wantedDegree = 0)
         {
-            if (options.NullOrEmpty())
+            if (pawn != null)
             {
-                yield return defName;
+                if (!this.Approved(pawn, wantedDegree))
+                    yield break;
+            } else if (!this.Approved(wantedDegree))
+            {
                 yield break;
             }
 
+            if (!Equals(this.defName, default(T))) 
+                yield return this.defName;
+
             // Doing this instead of GenCollection.TakeRandom because TakeRandom allows repeats
-            if (shuffledOptions.Count != options.Count)
+            if (this.shuffledOptions.Count != this.options.Count)
             {
-                shuffledOptions.Clear();
-                shuffledOptions.AddRange(options);
+                this.shuffledOptions.Clear();
+                this.shuffledOptions.AddRange(this.options);
             }
-            shuffledOptions.Shuffle();
-            int limit = Math.Min(shuffledOptions.Count, count);
+
+            this.shuffledOptions.Shuffle();
+            int limit = Math.Min(this.shuffledOptions.Count, this.count);
             for (int i = 0; i < limit; i ++)
             {
-                yield return shuffledOptions[i];
+                foreach (T entryInner in this.shuffledOptions[i].Select(pawn, wantedDegree))
+                    yield return entryInner;
             }
         }
 
+        [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
             if (xmlRoot.ChildNodes.Count == 1 && xmlRoot.FirstChild.NodeType == XmlNodeType.Text)
@@ -360,13 +369,25 @@
             {
                 Traverse traverse = Traverse.Create(this);
                 foreach (XmlNode xmlNode in xmlRoot.ChildNodes)
-                {
-                    if (xmlNode.Name == "defName")
-                        DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, "defName", xmlNode.FirstChild.Value);
+
+                    if (xmlNode.Name == nameof(this.defName) && typeof(T).IsSubclassOf(typeof(Def)))
+                        DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.defName), xmlNode.FirstChild.Value);
                     else
                         Utilities.SetFieldFromXmlNode(traverse.Field(xmlNode.Name), xmlNode);
-                }
             }
+        }
+    }
+
+    public class TraitWithDegree
+    {
+        public TraitDef def;
+        public int      degree = 0;
+
+        [UsedImplicitly]
+        public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+        {
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.def), xmlRoot.FirstChild.Value);
+            int.TryParse(xmlRoot.Attributes?["Degree"]?.Value, out this.degree);
         }
     }
 
@@ -664,7 +685,7 @@
 
         public static bool CanGetTrait(TraitDef trait, Pawn pawn, int degree = 0)
         {
-            List<AlienChanceEntry<TraitDef>> disallowedTraits = new();
+            List<AlienChanceEntry<TraitWithDegree>> disallowedTraits = [];
 
             foreach (BackstoryDef backstory in pawn.story.AllBackstories)
                 if (backstory is AlienBackstoryDef alienBackstory)
@@ -674,7 +695,7 @@
             return CanGetTrait(trait, pawn.def, degree, disallowedTraits);
         }
 
-        public static bool CanGetTrait(TraitDef trait, ThingDef race, int degree = 0, List<AlienChanceEntry<TraitDef>> disallowedTraits = null)
+        public static bool CanGetTrait(TraitDef trait, ThingDef race, int degree = 0, List<AlienChanceEntry<TraitWithDegree>> disallowedTraits = null)
         {
             ThingDef_AlienRace.AlienSettings           alienProps   = (race as ThingDef_AlienRace)?.alienRace;
             RaceRestrictionSettings raceRestriction = alienProps?.raceRestriction;
@@ -683,13 +704,13 @@
             if (traitRestricted.Contains(trait) || (raceRestriction?.onlyGetRaceRestrictedTraits ?? false))
                 result &= raceRestriction?.whiteTraitList.Contains(trait)                        ?? false;
 
-            disallowedTraits ??= new List<AlienChanceEntry<TraitDef>>();
+            disallowedTraits ??= [];
+
             if (!(alienProps?.generalSettings.disallowedTraits.NullOrEmpty() ?? true))
                 disallowedTraits.AddRange(alienProps.generalSettings.disallowedTraits);
 
             if (!disallowedTraits.NullOrEmpty())
-                result &= !disallowedTraits.Where(traitEntry => traitEntry.defName == trait && traitEntry.Approved(degree))
-                                         .Any(traitEntry => Rand.Range(min: 0, max: 100) < traitEntry.chance);
+                result &= disallowedTraits.All(ace => ace.Select(null, int.MinValue).All(traitEntry => traitEntry.def != trait && degree != (ace.degree != 0 ? ace.degree : traitEntry.degree)));
             
 
             return result && !(raceRestriction?.blackTraitList.Contains(trait) ?? false);
@@ -872,7 +893,7 @@
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
             DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, "stat", xmlRoot.Name);
-            overridePart = DirectXmlToObject.ObjectFromXml<StatPart_Age>(xmlRoot, false);
+            this.overridePart = DirectXmlToObject.ObjectFromXml<StatPart_Age>(xmlRoot, false);
         }
     }
 
