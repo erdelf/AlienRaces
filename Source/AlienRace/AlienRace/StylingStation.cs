@@ -651,6 +651,9 @@ public static class StylingStation
         }
     }
 
+
+    private static float channelColorViewRectHeight;
+
     private static void DoChannelInfo(Rect inRect, AlienPartGenerator.ColorChannelGenerator channel, List<AlienPartGenerator.ColorChannelGenerator> channels)
     {
         List<Color>                                          firstColors   = AvailableColors(channel, true);
@@ -671,12 +674,16 @@ public static class StylingStation
             colorsRect = colorsRect.ContractedBy(6);
 
             Vector2 size     = new(18, 18);
-            Rect    viewRect = new(0, 0, colorsRect.width - 16, (Mathf.Ceil(availableColors.Count / ((colorsRect.width - 14) / size.x)) + 1) * size.y + 35);
+            Rect    viewRect = new(0, 0, colorsRect.width - 16, channelColorViewRectHeight);
 
             Widgets.BeginScrollView(colorsRect, ref colorsScrollPos, viewRect);
-            
+
+            channelColorViewRectHeight = 0;
+
             Rect headerRect = viewRect.TopPartPixels(30).ContractedBy(4);
-            viewRect.yMin += 30;
+            viewRect.yMin              += 30;
+            channelColorViewRectHeight += 30;
+
 
             Widgets.Label(headerRect, "HAR.Colors".Translate());
 
@@ -804,7 +811,8 @@ public static class StylingStation
             }
 
             Rect randomizeRect = viewRect.TopPartPixels(30).LeftHalf().ContractedBy(4);
-            viewRect.yMin += 30;
+            viewRect.yMin              += 30;
+            channelColorViewRectHeight += 30;
 
             if (Widgets.ButtonText(randomizeRect, "HAR.RandomizeColors".Translate()))
             {
@@ -813,6 +821,7 @@ public static class StylingStation
             }
 
             Vector2 pos = new(0, 65);
+            channelColorViewRectHeight += 10;
 
             foreach (Color color in availableColors)
             {
@@ -841,7 +850,9 @@ public static class StylingStation
                 pos.x += size.x;
                 if (pos.x + size.x >= viewRect.xMax)
                 {
-                    pos.y += size.y;
+                    pos.y                      += size.y;
+                    channelColorViewRectHeight += size.y;
+
                     pos.x = 0;
                 }
             }
