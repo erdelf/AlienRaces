@@ -176,8 +176,8 @@ namespace AlienRace
                 (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) &&
                 (pawn.VisibleInBed()                       || this.drawnInBed);
 
-            private bool VisibleForBackstoryOf(ExtendedGraphicsPawnWrapper pawn) => this.backstoryRequirement == null ||
-                                                                             pawn.HasBackstory(this.backstoryRequirement);
+            private bool VisibleForBackstoryOf(ExtendedGraphicsPawnWrapper pawn) => 
+                this.backstoryRequirement == null || pawn.HasBackstory(this.backstoryRequirement);
 
             private bool VisibleForRotStageOf(ExtendedGraphicsPawnWrapper pawn) =>
                 this.drawnDesiccated || pawn.GetRotStage() != RotStage.Dessicated;
@@ -215,14 +215,20 @@ namespace AlienRace
             private bool CanDrawAddon(ExtendedGraphicsPawnWrapper pawn) =>
                 this.VisibleUnderApparelOf(pawn)     &&
                 this.VisibleForPostureOf(pawn)       &&
-                this.VisibleForBackstoryOf(pawn)     &&
                 this.VisibleForRotStageOf(pawn)      &&
-                this.RequiredBodyPartExistsFor(pawn) &&
-                this.VisibleForGenderOf(pawn)        &&
-                this.VisibleForBodyTypeOf(pawn)      &&
                 this.VisibleForDrafted(pawn)         &&
-                this.VisibleForJob(pawn)             &&
-                this.VisibleWithGene(pawn)           &&
+                this.RequiredBodyPartExistsFor(pawn) &&
+                this.VisibleForJob(pawn)             && 
+                this.CanDrawAddonStatic(pawn);
+
+            public virtual bool CanDrawAddonStatic(Pawn pawn) =>
+                this.CanDrawAddonStatic(new ExtendedGraphicsPawnWrapper(pawn));
+
+            private bool CanDrawAddonStatic(ExtendedGraphicsPawnWrapper pawn) =>
+                this.VisibleForGenderOf(pawn)    &&
+                this.VisibleForBodyTypeOf(pawn)  &&
+                this.VisibleWithGene(pawn)       &&
+                this.VisibleForBackstoryOf(pawn) &&
                 this.VisibleForRace(pawn);
 
             public virtual Graphic GetGraphic(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())

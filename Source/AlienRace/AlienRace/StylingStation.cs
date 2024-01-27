@@ -245,7 +245,7 @@ public static class StylingStation
         if (selectedIndexAddons != -1)
         {
             AlienPartGenerator.BodyAddon addon = bodyAddons[selectedIndexAddons];
-            if (addon.userCustomizable)
+            if (addon.userCustomizable && addon.CanDrawAddonStatic(pawn))
                 DoAddonInfo(inRect, addon, bodyAddons);
             else
                 selectedIndexAddons = -1;
@@ -280,7 +280,7 @@ public static class StylingStation
 
             for (int i = 0; i < addons.Count; i++)
             {
-                if (!addons[i].userCustomizable)
+                if (!addons[i].userCustomizable || !addons[i].CanDrawAddonStatic(pawn))
                     continue;
 
                 usableIndex++;
