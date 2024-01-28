@@ -821,7 +821,7 @@ public static class StylingStation
             }
 
             Vector2 pos = new(0, 65);
-            channelColorViewRectHeight += 10;
+            channelColorViewRectHeight += size.y + 5;
 
             foreach (Color color in availableColors)
             {
