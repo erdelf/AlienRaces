@@ -615,7 +615,7 @@ public static class StylingStation
                 if (Widgets.ButtonInvisible(rect))
                 {
                     selectedIndexChannels = i;
-                    if (channel.name == "hair")
+                    if (channel.name == "hair") 
                         editingFirstColor = false;
 
                     SoundDefOf.Click.PlayOneShotOnCamera();
@@ -660,6 +660,21 @@ public static class StylingStation
         List<Color>                                          secondColors  = AvailableColors(channel, false);
         AlienPartGenerator.ExposableValueTuple<Color, Color> channelColors = alienComp.GetChannel(channel.name);
         (Color, Color)                                       colors        = (channelColors.first, channelColors.second);
+
+        if (channel.name == "hair")
+        {
+            if (editingFirstColor)
+            {
+                curMainTab                         = MainTab.CHARACTER;
+                CachedData.stationCurTab(instance) = Dialog_StylingStation.StylingTab.Hair;
+
+                if (secondColors.Any())
+                    editingFirstColor = false;
+                else
+                    selectedIndexChannels = -1;
+            }
+        }
+
 
         if (firstColors.Any() || secondColors.Any())
         {
@@ -759,15 +774,7 @@ public static class StylingStation
                     Widgets.DrawBox(colorRect);
 
                 if (Widgets.ButtonInvisible(colorRect))
-                    if (channel.name == "hair")
-                    {
-                        curMainTab                 = MainTab.CHARACTER;
-                        CachedData.stationCurTab(instance) = Dialog_StylingStation.StylingTab.Hair;
-                    }
-                    else
-                    {
-                        editingFirstColor = true;
-                    }
+                    editingFirstColor = true;
 
                 if (channel.name == "hair")
                 {
