@@ -103,7 +103,7 @@
             //if (this.alienRace.graphicPaths.body.path == GraphicPaths.VANILLA_BODY_PATH && !this.alienRace.graphicPaths.body.GetSubGraphics().MoveNext())
                 //this.alienRace.graphicPaths.body.debug = false;
 
-            if (this.alienRace.graphicPaths.head.path == GraphicPaths.VANILLA_HEAD_PATH && !this.alienRace.graphicPaths.head.GetSubGraphics().MoveNext())
+            if (this.alienRace.graphicPaths.head.path == GraphicPaths.VANILLA_HEAD_PATH && !this.alienRace.graphicPaths.head.GetSubGraphics().Any())
             {
                 foreach (HeadTypeDef headType in DefDatabase<HeadTypeDef>.AllDefs)
                 {
@@ -113,23 +113,21 @@
                                                                                      path = headType.graphicPath
                                                                                  };
 
-                    this.alienRace.graphicPaths.head.headtypeGraphics.Add(headtypeGraphic);
+                    this.alienRace.graphicPaths.head.extendedGraphics.Add(headtypeGraphic);
                     //this.alienRace.graphicPaths.head.debug = false;
                 }
             }
 
-            if (this.alienRace.graphicPaths.skeleton.path == GraphicPaths.VANILLA_SKELETON_PATH && !this.alienRace.graphicPaths.skeleton.GetSubGraphics().MoveNext())
+            if (this.alienRace.graphicPaths.skeleton.path == GraphicPaths.VANILLA_SKELETON_PATH && !this.alienRace.graphicPaths.skeleton.GetSubGraphics().Any())
             {
                 this.alienRace.graphicPaths.skeleton.path             = string.Empty;
-                this.alienRace.graphicPaths.skeleton.bodytypeGraphics = new List<AlienPartGenerator.ExtendedBodytypeGraphic>();
+
                 foreach (BodyTypeDef bodyType in this.alienRace.generalSettings.alienPartGenerator.bodyTypes)
-                {
-                    this.alienRace.graphicPaths.skeleton.bodytypeGraphics.Add(new AlienPartGenerator.ExtendedBodytypeGraphic()
+                    this.alienRace.graphicPaths.skeleton.extendedGraphics.Add(new AlienPartGenerator.ExtendedBodytypeGraphic()
                                                                               {
                                                                                   bodytype = bodyType,
                                                                                   path     = bodyType.bodyDessicatedGraphicPath
                                                                               });
-                }
             }
             
             void RecursiveAttributeCheck(Type type, Traverse instance)
@@ -361,7 +359,7 @@
                 if(typeof(T).IsSubclassOf(typeof(Def)))
                     DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, "defName", xmlRoot.FirstChild.Value);
                 else
-                    Utilities.SetFieldFromXmlNode(Traverse.Create(this.entry), xmlRoot);
+                    Utilities.SetFieldFromXmlNode(Traverse.Create(this), xmlRoot, this, nameof(this.entry));
             }
             else
             {
@@ -371,7 +369,7 @@
                     if (xmlNode.Name == nameof(this.entry) && typeof(T).IsSubclassOf(typeof(Def)))
                         DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.entry), xmlNode.FirstChild.Value);
                     else
-                        Utilities.SetFieldFromXmlNode(traverse.Field(xmlNode.Name), xmlNode);
+                        Utilities.SetFieldFromXmlNode(traverse, xmlNode, this, xmlNode.Name);
             }
         }
     }

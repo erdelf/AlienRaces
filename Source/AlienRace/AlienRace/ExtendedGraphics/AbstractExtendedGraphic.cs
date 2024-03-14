@@ -1,10 +1,9 @@
 ﻿namespace AlienRace.ExtendedGraphics;
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Xml;
 using HarmonyLib;
+using JetBrains.Annotations;
 using Verse;
 
 public abstract class AbstractExtendedGraphic : IExtendedGraphic
@@ -17,28 +16,18 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
 
     public int       variantCount  = 0;
     public List<int> variantCounts = [];
-
-    // Not unused, users can define their own order in XML which takes priority.
     
-    #pragma warning disable CS0649
-    private List<AlienPartGenerator.ExtendedGraphicsPrioritization>   prioritization;
-    #pragma warning restore CS0649
-
-    public List<AlienPartGenerator.ExtendedHediffGraphic>    hediffGraphics    = [];
-    public List<AlienPartGenerator.ExtendedBackstoryGraphic> backstoryGraphics = [];
-    public List<AlienPartGenerator.ExtendedAgeGraphic>       ageGraphics       = [];
-    public List<AlienPartGenerator.ExtendedDamageGraphic>    damageGraphics    = [];
-    public List<AlienPartGenerator.ExtendedGenderGraphic>    genderGraphics    = [];
-    public List<AlienPartGenerator.ExtendedTraitGraphic>     traitGraphics     = [];
-    public List<AlienPartGenerator.ExtendedBodytypeGraphic>  bodytypeGraphics  = [];
-    public List<AlienPartGenerator.ExtendedHeadtypeGraphic>  headtypeGraphics  = [];
-    public List<AlienPartGenerator.ExtendedGeneGraphic>      geneGraphics      = [];
-    public List<AlienPartGenerator.ExtendedRaceGraphic>      raceGraphics      = [];
-    public List<AbstractExtendedGraphic>                     extendedGraphics  = [];
-
-
-    protected List<AlienPartGenerator.ExtendedGraphicsPrioritization> Prioritization =>
-        this.prioritization ?? GetPrioritiesByDeclarationOrder().ToList();
+    [LoadAlias("hediffGraphics")]
+    [LoadAlias("backstoryGraphics")]
+    [LoadAlias("ageGraphics")]
+    [LoadAlias("damageGraphics")]
+    [LoadAlias("genderGraphics")]
+    [LoadAlias("traitGraphics")]
+    [LoadAlias("bodytypeGraphics")]
+    [LoadAlias("headtypeGraphics")]
+    [LoadAlias("geneGraphics")]
+    [LoadAlias("raceGraphics")]
+    public List<AbstractExtendedGraphic> extendedGraphics = [];
 
     public void Init()
     {
@@ -95,34 +84,43 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
 
     public abstract bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel);
 
-    private static IEnumerable<AlienPartGenerator.ExtendedGraphicsPrioritization> GetPrioritiesByDeclarationOrder() => 
-        Enum.GetValues(typeof(AlienPartGenerator.ExtendedGraphicsPrioritization)).Cast<AlienPartGenerator.ExtendedGraphicsPrioritization>();
-
-    public virtual IEnumerator<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+    public virtual IEnumerable<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
         this.GetSubGraphics();
 
-    /**
-     * Get an enumerator of all the sub-graphics, unrestricted in any way.
-     * Used to aid initialization in the AlienPartGenerator
-     */
-    public virtual IEnumerator<IExtendedGraphic> GetSubGraphics() => 
-        this.Prioritization.SelectMany(this.GetSubGraphicsOfPriority).GetEnumerator();
+    public virtual IEnumerable<IExtendedGraphic> GetSubGraphics() => 
+        this.extendedGraphics;
 
-    public virtual IEnumerable<IExtendedGraphic> GetSubGraphicsOfPriority(AlienPartGenerator.ExtendedGraphicsPrioritization priority) => priority switch
+
+    private static readonly Dictionary<string, string> XML_CLASS_DICTIONARY = new()
+                                                                            {
+                                                                                {"hediffGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedHediffGraphic)}"},
+                                                                                {"backstoryGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedBackstoryGraphic)}"},
+                                                                                {"ageGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedAgeGraphic)}"},
+                                                                                {"damageGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedDamageGraphic)}"},
+                                                                                {"genderGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedGenderGraphic)}"},
+                                                                                {"traitGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedTraitGraphic)}"},
+                                                                                {"bodytypeGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedBodytypeGraphic)}"},
+                                                                                {"headtypeGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedHeadtypeGraphic)}"},
+                                                                                {"geneGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedGeneGraphic)}"},
+                                                                                {"raceGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedRaceGraphic)}"}
+                                                                            };
+
+    [UsedImplicitly]
+    public void LoadDataFromXmlCustom(XmlNode xmlRoot)
     {
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Headtype => this.headtypeGraphics   ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Bodytype => this.bodytypeGraphics   ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Trait => this.traitGraphics         ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Gender => this.genderGraphics       ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Backstory => this.backstoryGraphics ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Hediff => this.hediffGraphics       ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Age => this.ageGraphics             ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Damage => this.damageGraphics       ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Gene => this.geneGraphics           ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Race => this.raceGraphics           ?? Enumerable.Empty<IExtendedGraphic>(),
-        AlienPartGenerator.ExtendedGraphicsPrioritization.Extended => this.extendedGraphics   ?? Enumerable.Empty<IExtendedGraphic>(),
-        _ => Enumerable.Empty<IExtendedGraphic>()
-    };
+
+        foreach (XmlNode childNode in xmlRoot.ChildNodes)
+        {
+            if(XML_CLASS_DICTIONARY.TryGetValue(childNode.Name, out string classTag))
+            {
+                XmlAttribute attribute = xmlRoot.OwnerDocument!.CreateAttribute("Class");
+                attribute.Value = classTag;
+                childNode.Attributes!.SetNamedItem(attribute);
+            }
+        }
+        
+        this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
+    }
 
     protected virtual void SetInstanceVariablesFromChildNodesOf(XmlNode xmlRootNode) =>
         this.SetInstanceVariablesFromChildNodesOf(xmlRootNode, []);
@@ -132,7 +130,7 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
         Traverse traverse = Traverse.Create(this);
         foreach (XmlNode xmlNode in xmlRootNode.ChildNodes)
             if (!excludedFieldNames.Contains(xmlNode.Name))
-                this.SetFieldFromXmlNode(traverse.Field(xmlNode.Name), xmlNode);
+                this.SetFieldFromXmlNode(traverse, xmlNode);
 
         // If the path has not been set just use the value contained by the root node
         // This caters for nodes containing _only_ a path i.e. <someNode>a/path/here</someNode> 
@@ -142,6 +140,6 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     
     protected virtual void SetFieldFromXmlNode(Traverse field, XmlNode xmlNode)
     {
-        Utilities.SetFieldFromXmlNode(field, xmlNode);
+        Utilities.SetFieldFromXmlNode(field, xmlNode, this, xmlNode.Name);
     }
 }

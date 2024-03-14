@@ -14,7 +14,6 @@
     using UnityEngine;
     using Verse;
     using Verse.AI;
-    using static AlienRace.AlienPartGenerator;
 
     [DefOf]
     public static class AlienDefOf
@@ -90,7 +89,7 @@
                     universalBodyAddons = [.. DefDatabase<RaceSettings>.AllDefsListForReading.SelectMany(rs => rs.universalBodyAddons)];
                     universalBodyAddons.GeneBodyAddonPatcher();
 
-                    foreach (BodyAddon bodyAddon in universalBodyAddons) 
+                    foreach (AlienPartGenerator.BodyAddon bodyAddon in universalBodyAddons) 
                         bodyAddon.offsets.west ??= bodyAddon.offsets.east;
 
                     DefaultGraphicsLoader graphicsLoader = new();
@@ -103,13 +102,22 @@
             }
         }
 
-        public static void SetFieldFromXmlNode(Traverse field, XmlNode xmlNode)
+        public static void SetFieldFromXmlNode(Traverse traverse, XmlNode xmlNode, object wanter, string fieldName)
         {
+            Traverse field = traverse.Field(fieldName);
+
             if (!field.FieldExists())
                 return;
-            field.SetValue(field.GetValueType().IsGenericType || !ParseHelper.HandlesType(field.GetValueType()) ?
-                               DirectXmlToObject.GetObjectFromXmlMethod(field.GetValueType())(xmlNode, false) :
-                               ParseHelper.FromString(xmlNode.InnerXml.Trim(), field.GetValueType()));
+
+            Type valueType = field.GetValueType();
+
+
+            if(valueType.IsSubclassOf(typeof(Def)))
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(wanter, fieldName, xmlNode.FirstChild.Value);
+            else
+                field.SetValue(valueType.IsGenericType || !ParseHelper.HandlesType(valueType) ?
+                                   DirectXmlToObject.GetObjectFromXmlMethod(valueType)(xmlNode, false) :
+                                   ParseHelper.FromString(xmlNode.InnerXml.Trim(), valueType));
         }
 
 
