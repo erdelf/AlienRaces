@@ -2,8 +2,6 @@
 
 using System.Collections.Generic;
 using System.Xml;
-using System.Xml.Schema;
-using HarmonyLib;
 using JetBrains.Annotations;
 using Verse;
 

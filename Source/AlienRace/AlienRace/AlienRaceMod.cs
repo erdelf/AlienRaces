@@ -1,5 +1,6 @@
 ﻿namespace AlienRace
 {
+    using ExtendedGraphics;
     using UnityEngine;
     using Verse;
 
@@ -18,6 +19,9 @@
             else
                 CachedData.customDataLoadMethodCacheInfo().Add(typeof(AlienPartGenerator.BodyAddon), null);
             */
+
+            XmlInheritance.allowDuplicateNodesFieldNames.Add(nameof(AbstractExtendedGraphic.extendedGraphics));
+            XmlInheritance.allowDuplicateNodesFieldNames.Add(nameof(AlienPartGenerator.ExtendedConditionGraphic.conditions));
         }
 
         public override void DoSettingsWindowContents(Rect inRect)
