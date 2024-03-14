@@ -1149,21 +1149,25 @@ namespace AlienRace
 
             MethodInfo allDefsInfo = AccessTools.PropertyGetter(typeof(DefDatabase<HeadTypeDef>), nameof(DefDatabase<HeadTypeDef>.AllDefs));
 
-            foreach (CodeInstruction instruction in instructions)
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
             {
+                CodeInstruction instruction = instructionList[i];
                 yield return instruction;
                 if (!done && instruction.Calls(allDefsInfo))
                 {
                     done = true;
                     yield return new CodeInstruction(OpCodes.Ldloc_0);
+                    yield return new CodeInstruction(instructionList[i-2]);
                     yield return CodeInstruction.Call(patchType, nameof(HeadTypeFilter));
                 }
             }
         }
 
-        public static IEnumerable<HeadTypeDef> HeadTypeFilter(IEnumerable<HeadTypeDef> headTypes, Pawn pawn) =>
+        public static IEnumerable<HeadTypeDef> HeadTypeFilter(IEnumerable<HeadTypeDef> headTypes, Pawn pawn) => 
             pawn.def is ThingDef_AlienRace alienProps ? 
-                headTypes.Intersect(alienProps.alienRace.generalSettings.alienPartGenerator.HeadTypes) : 
+                headTypes.Intersect(alienProps.alienRace.generalSettings.alienPartGenerator.HeadTypes) :
                 headTypes;
 
         public static void GenerateSkillsPostfix(Pawn pawn)
