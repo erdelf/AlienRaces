@@ -28,6 +28,7 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     [LoadAlias("headtypeGraphics")]
     [LoadAlias("geneGraphics")]
     [LoadAlias("raceGraphics")]
+    [XmlInheritanceAllowDuplicateNodes]
     public List<AbstractExtendedGraphic> extendedGraphics = [];
 
     public void Init()
