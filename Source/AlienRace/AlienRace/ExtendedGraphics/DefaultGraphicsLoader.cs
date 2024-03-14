@@ -12,7 +12,8 @@ public class DefaultGraphicsLoader : IGraphicsLoader
 
 {
     private readonly IGraphicFinder<Texture2D> graphicFinder2D;
-    private          bool                      noPath = false;
+    public           bool                      foundSeverityGraphics = false;
+    private          bool                      noPath                = false;
 
     public DefaultGraphicsLoader() : this(new GraphicFinder2D())
     {
@@ -103,6 +104,10 @@ public class DefaultGraphicsLoader : IGraphicsLoader
                     if (currentGraphic == null) break;
                     this.LoadAll2DVariantsForGraphic(currentGraphic, logBuilder, source, topGraphic.Debug);
                     topGraphic.VariantCountMax = currentGraphic.GetVariantCount();
+
+                    if (currentGraphic is AlienPartGenerator.ExtendedHediffSeverityGraphic)
+                        this.foundSeverityGraphics = true;
+
                     // Add the enumerator for any sub graphics to the stack
                     topGraphics.Push(currentGraphic.GetSubGraphics());
                 }
