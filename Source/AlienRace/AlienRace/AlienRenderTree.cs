@@ -31,6 +31,8 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Body), nameof(PawnRenderNode_Body.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(BodyGraphicForPrefix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Head), nameof(PawnRenderNode_Head.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(HeadGraphicForPrefix)));
+
+            harmony.Patch(AccessTools.Method(typeof(HairDef), nameof(HairDef.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(HairDefGraphicForTranspiler)));
         }
 
         public class PawnRenderResolveData
@@ -41,8 +43,18 @@ namespace AlienRace
             public int                          sharedIndex = 0;
         }
 
-        public static Dictionary<Pawn, PawnRenderResolveData> pawnRenderResolveData = [];
+        public static PawnRenderResolveData pawnRenderResolveData;
 
+        public static PawnRenderResolveData RegenerateResolveData(Pawn pawn) =>
+            pawnRenderResolveData?.alienComp?.parent != pawn ?
+                pawnRenderResolveData = new PawnRenderResolveData
+                                        {
+                                            alienProps  = pawn.def as ThingDef_AlienRace,
+                                            alienComp   = pawn.GetComp<AlienPartGenerator.AlienComp>(),
+                                            lsaa        = pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien,
+                                            sharedIndex = 0
+                                        } :
+                pawnRenderResolveData;
 
         public static void TrySetupGraphIfNeededPrefix(PawnRenderTree __instance)
         {
@@ -53,10 +65,12 @@ namespace AlienRace
 
             if (alien.def is ThingDef_AlienRace alienProps && alien.story != null)
             {
-                //Log.Message($"Setup Graph: {alien.NameFullColored}");
+                Log.Message($"Setup Graph: {alien.NameFullColored}");
 
-                AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
-                
+                RegenerateResolveData(alien);
+                AlienPartGenerator.AlienComp alienComp = pawnRenderResolveData.alienComp;
+
+
                 if (alienComp != null)
                 {
                     
@@ -69,7 +83,7 @@ namespace AlienRace
                         alienComp.fixGenderPostSpawn = false;
                     }
 
-                    LifeStageAgeAlien lsaa = (alien.ageTracker.CurLifeStageRace as LifeStageAgeAlien)!;
+                    LifeStageAgeAlien lsaa = pawnRenderResolveData.lsaa;
 
 
                     if (alien.gender == Gender.Female)
@@ -97,17 +111,6 @@ namespace AlienRace
                         alienComp.OverwriteColorChannel("skin", PawnRenderUtility.GetRottenColor(alien.story.SkinColor));
 
                     alienComp.RegenerateColorChannelLinks();
-
-                    if(!pawnRenderResolveData.ContainsKey(alien))
-                        pawnRenderResolveData.Add(alien, null);
-
-                    pawnRenderResolveData[alien] = new PawnRenderResolveData
-                                                   {
-                                                       alienProps  = alienProps,
-                                                       alienComp   = alienComp,
-                                                       lsaa        = lsaa,
-                                                       sharedIndex = 0
-                                                   };
                     
                     portraitRender = new Pair<WeakReference, bool>(new WeakReference(alien), false);
 
@@ -242,22 +245,16 @@ namespace AlienRace
             }
         }
 
-        public static void PawnRenderTreeEnsureInitializedPostfix(PawnRenderTree __instance)
-        {
-            if (pawnRenderResolveData.ContainsKey(__instance.pawn))
-            {
-                //Log.Message($"Removing {__instance.pawn.NameFullColored} | {pawnRenderResolveData.Count} saved data entries remaining");
-                pawnRenderResolveData.Remove(__instance.pawn);
-            }
-        }
+        public static void PawnRenderTreeEnsureInitializedPostfix(PawnRenderTree __instance) => 
+            pawnRenderResolveData = default;
 
         public static bool BodyGraphicForPrefix(PawnRenderNode_Body __instance, Pawn pawn, ref Graphic __result)
         {
             if (pawn.def is not ThingDef_AlienRace)
                 return true;
-            //Log.Message($"Body GraphicFor: {pawn.NameFullColored}");
+            Log.Message($"Body GraphicFor: {pawn.NameFullColored}");
 
-            PawnRenderResolveData pawnRenderData = pawnRenderResolveData[pawn];
+            PawnRenderResolveData pawnRenderData = RegenerateResolveData(pawn);
 
             //if (pawnRenderResolveData.pawn != pawn) Log.Message($"PAWNS DON'T MATCH: {pawn.NameFullColored} vs {pawnRenderResolveData.pawn.NameFullColored}");
             int                          sharedIndex  = pawnRenderData.sharedIndex;
@@ -302,11 +299,11 @@ namespace AlienRace
             if (pawn.def is not ThingDef_AlienRace)
                 return true;
 
-            //Log.Message($"Head GraphicFor: {pawn.NameFullColored}");
+            Log.Message($"Head GraphicFor: {pawn.NameFullColored}");
 
             //if (pawnRenderResolveData.pawn != pawn) Log.Message($"PAWNS DON'T MATCH: {pawn.NameFullColored} vs {pawnRenderResolveData.pawn.NameFullColored}");
 
-            PawnRenderResolveData pawnRenderData = pawnRenderResolveData[pawn];
+            PawnRenderResolveData pawnRenderData = pawnRenderResolveData;
 
             int                          sharedIndex  = pawnRenderData.sharedIndex;
             GraphicPaths                 graphicPaths = pawnRenderData.alienProps.alienRace.graphicPaths;
@@ -346,17 +343,51 @@ namespace AlienRace
             return false;
         }
 
+        public static IEnumerable<CodeInstruction> HairDefGraphicForTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                yield return instruction;
+
+                if (instruction.opcode == OpCodes.Brfalse_S)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldsfld,   AccessTools.Field(patchType,                                nameof(pawnRenderResolveData)));
+                    yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(PawnRenderResolveData),            nameof(PawnRenderResolveData.alienProps)));
+                    yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(ThingDef_AlienRace),               nameof(ThingDef_AlienRace.alienRace)));
+                    yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(ThingDef_AlienRace.AlienSettings), nameof(ThingDef_AlienRace.AlienSettings.styleSettings)));
+                    yield return new CodeInstruction(OpCodes.Ldtoken,  typeof(HairDef));
+                    yield return new CodeInstruction(OpCodes.Call,     AccessTools.Method(typeof(Type),          nameof(Type.GetTypeFromHandle)));
+                    yield return new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(Dictionary<Type, StyleSettings>), "get_Item"));
+                    //yield return new CodeInstruction(OpCodes.Dup);
+                    yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(StyleSettings), nameof(StyleSettings.hasStyle)));
+                    yield return new CodeInstruction(OpCodes.Brtrue_S, instruction.operand);
+                    //yield return new CodeInstruction(OpCodes.Pop);
+                }
+            }
+        }
+
+        
+
+
+        /*
+                    __instance.hairGraphic = !(__instance.pawn.story.hairDef?.noGraphic ?? true) && alienProps.alienRace.styleSettings[typeof(HairDef)].hasStyle ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
+                                                                                                                           (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Transparent) :
+                                                                                                                           ShaderDatabase.CutoutComplex, Vector2.one, alien.story.HairColor,
+                                                                                alienComp.GetChannel(channel: "hair").second) : null;
+        */
+
+
         public static void SetupDynamicNodesPostfix(PawnRenderTree __instance)
         {
             if (__instance.pawn.RaceProps.Humanlike)
             {
-                //Log.Message($"Setup Addons: {__instance.pawn.NameFullColored}");
+                Log.Message($"Setup Addons: {__instance.pawn.NameFullColored}");
 
-                if (!pawnRenderResolveData.ContainsKey(__instance.pawn))
-                    return;
-
-
-                PawnRenderResolveData pawnRenderData = pawnRenderResolveData[__instance.pawn];
+                PawnRenderResolveData pawnRenderData = pawnRenderResolveData;
 
 
                 AlienPartGenerator.AlienComp alienComp = pawnRenderData.alienComp;

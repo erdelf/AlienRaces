@@ -1,12 +1,6 @@
 <Patch>
     <Operation Class="PatchOperationAttributeSet">
-        <xpath>Defs/ThingDef[defName="Human"]</xpath>
-        <attribute>Class</attribute>
-        <value>AlienRace.ThingDef_AlienRace</value>
-    </Operation>
-
-    <Operation Class="PatchOperationAttributeSet">
-        <xpath>Defs/ThingDef[defName="CreepJoiner"]</xpath>
+        <xpath>Defs/ThingDef[defName="Human" or defName="CreepJoiner"]</xpath>
         <attribute>Class</attribute>
         <value>AlienRace.ThingDef_AlienRace</value>
     </Operation>
