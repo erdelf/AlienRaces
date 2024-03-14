@@ -17,12 +17,10 @@ namespace AlienRace
         private static readonly Type patchType = typeof(AlienRenderTreePatches);
         public static void HarmonyInit(AlienHarmony harmony)
         {
-            
-            harmony.Patch(AccessTools.Method(typeof(MeshPool), nameof(MeshPool.GetMeshSetForWidth), [typeof(float), typeof(float)]), transpiler: new HarmonyMethod(patchType, nameof(GetMeshSetForWidthTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeBodySetForPawnTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBeardSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn)), prefix: new HarmonyMethod(patchType, nameof(GetHumanlikeBodySetForPawnPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn)), prefix: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)), prefix: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBeardSetForPawn)), prefix: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnPrefix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), "SetupDynamicNodes"), postfix: new HarmonyMethod(patchType, nameof(SetupDynamicNodesPostfix)));
 
@@ -531,145 +529,26 @@ namespace AlienRace
             return node.MeshSetFor(parms.pawn);
         }
 
-        public static IEnumerable<CodeInstruction> GetMeshSetForWidthTranspiler(IEnumerable<CodeInstruction> instructions)
-        {
-            foreach (CodeInstruction instruction in instructions)
-            {
-                if (instruction.opcode == OpCodes.Newobj)
-                {
-                    yield return new CodeInstruction(OpCodes.Ldarg_1);
-                    yield return new CodeInstruction(OpCodes.Newobj, AccessTools.Constructor(typeof(GraphicMeshSet), [typeof(float), typeof(float)]));
-                }
-                else
-                {
-                    yield return instruction;
-                }
-            }
-        }
-
         public static Pair<WeakReference, bool> portraitRender = new(new WeakReference(new Pawn()), false);
-
-        public static IEnumerable<CodeInstruction> GetHumanlikeHairSetForPawnTranspiler(IEnumerable<CodeInstruction> instructions)
-        {
-            MethodInfo helperInfo = AccessTools.Method(patchType, nameof(GetHumanlikeHairSetForPawnHelper));
-
-
-            List<CodeInstruction> instructionList = instructions.ToList();
-
-            for (int i = 0; i < instructionList.Count; i++)
-            {
-                CodeInstruction instruction = instructionList[i];
-                yield return instruction;
-                if (instruction.IsLdloc() && instructionList[i - 1].IsStloc())
-                {
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Call, helperInfo);
-                    yield return new CodeInstruction(OpCodes.Stloc_0);
-                    yield return new CodeInstruction(instruction);
-                }
-            }
-        }
-
-        public static Vector2 GetHumanlikeHairSetForPawnHelper(Vector2 headFactor, Pawn pawn)
-        {
-            Vector2 drawSize = (portraitRender.First?.Target as Pawn == pawn && portraitRender.Second ?
-                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitHeadDrawSize :
-                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
-            return drawSize * headFactor;
-        }
-
-        public static IEnumerable<CodeInstruction> GetHumanlikeHeadSetForPawnTranspiler(IEnumerable<CodeInstruction> instructions)
-        {
-            MethodInfo getMeshInfo = AccessTools.Method(typeof(MeshPool), nameof(MeshPool.GetMeshSetForWidth), new[] { typeof(float) });
-            FieldInfo humanlikeBodyInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeHeadSet));
-            MethodInfo helperInfo = AccessTools.Method(patchType, nameof(GetHumanlikeHeadSetForPawnHelper));
-
-
-            List<CodeInstruction> instructionList = instructions.ToList();
-
-            foreach (CodeInstruction instruction in instructionList)
-            {
-                if (instruction.Calls(getMeshInfo))
-                {
-                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Call, helperInfo);
-                }
-                else if (instruction.LoadsField(humanlikeBodyInfo))
-                {
-                    yield return new CodeInstruction(OpCodes.Ldc_R4, 1.5f).WithLabels(instruction.ExtractLabels());
-                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Call, helperInfo);
-                }
-                else
-                {
-                    yield return instruction;
-                }
-            }
-        }
-
-        public static GraphicMeshSet GetHumanlikeHeadSetForPawnHelper(object lifestageFactor, Pawn pawn)
+        
+        public static void GetHumanlikeHeadSetForPawnPrefix(Pawn pawn, ref float wFactor, ref float hFactor)
         {
             Vector2 drawSize = (portraitRender.First?.Target as Pawn == pawn && portraitRender.Second ?
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitHeadDrawSize :
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
 
-            Vector2 scaleFactor = lifestageFactor switch
-            {
-                Vector2 lifestageFactorV2 => lifestageFactorV2,
-                float lifestageFactorF => new Vector2(lifestageFactorF, lifestageFactorF),
-                _ => Vector2.one
-            };
-
-            return MeshPool.GetMeshSetForWidth(drawSize.x * scaleFactor.x, drawSize.y * scaleFactor.y);
+            wFactor *= drawSize.x;
+            hFactor *= drawSize.y;
         }
 
-        public static IEnumerable<CodeInstruction> GetHumanlikeBodySetForPawnTranspiler(IEnumerable<CodeInstruction> instructions)
-        {
-            MethodInfo getMeshInfo = AccessTools.Method(typeof(MeshPool), nameof(MeshPool.GetMeshSetForWidth), new[] { typeof(float) });
-            FieldInfo humanlikeBodyInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeBodySet));
-            MethodInfo helperInfo = AccessTools.Method(patchType, nameof(GetHumanlikeBodySetForPawnHelper));
-
-
-            List<CodeInstruction> instructionList = instructions.ToList();
-
-            foreach (CodeInstruction instruction in instructionList)
-            {
-                if (instruction.Calls(getMeshInfo))
-                {
-                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Call, helperInfo);
-                }
-                else if (instruction.LoadsField(humanlikeBodyInfo))
-                {
-                    yield return new CodeInstruction(OpCodes.Ldc_R4, 1.5f).WithLabels(instruction.ExtractLabels());
-                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Call, helperInfo);
-                }
-                else
-                {
-                    yield return instruction;
-                }
-            }
-        }
-
-        public static GraphicMeshSet GetHumanlikeBodySetForPawnHelper(object lifestageFactor, Pawn pawn)
+        public static void GetHumanlikeBodySetForPawnPrefix(Pawn pawn, ref float wFactor, ref float hFactor)
         {
             Vector2 drawSize = (portraitRender.First?.Target as Pawn == pawn && portraitRender.Second ?
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitDrawSize :
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customDrawSize) ?? Vector2.one;
-            
-            Vector2 scaleFactor = lifestageFactor switch
-            {
-                Vector2 lifestageFactorV2 => lifestageFactorV2,
-                float lifestageFactorF => new Vector2(lifestageFactorF, lifestageFactorF),
-                _ => Vector2.one
-            };
 
-            return MeshPool.GetMeshSetForWidth(drawSize.x * scaleFactor.x, drawSize.y * scaleFactor.y);
+            wFactor *= drawSize.x;
+            hFactor *= drawSize.y;
         }
         #endregion
     }
