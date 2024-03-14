@@ -713,7 +713,7 @@ namespace AlienRace
         public static void AdultLifeStageStartedPostfix(Pawn pawn) =>
             LongEventHandler.ExecuteWhenFinished(() =>
                                                  {
-                                                     Log.Message("adult life started");
+                                                     //Log.Message("adult life started");
                                                      List<BackstoryTrait> forcedTraits = pawn.story?.Adulthood?.forcedTraits;
                                                      if (!forcedTraits.NullOrEmpty())
                                                          foreach (BackstoryTrait te2 in forcedTraits!)
