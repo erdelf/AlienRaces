@@ -320,9 +320,6 @@
 
         public static readonly AccessTools.FieldRef<XmlElement, IXmlSchemaInfo> xmlElementName = AccessTools.FieldRefAccess<IXmlSchemaInfo>(typeof(XmlElement), "name");
 
-        public static readonly AccessTools.FieldRef<IXmlSchemaInfo, string> xmlNameLocalName = AccessTools.FieldRefAccess<string>("System.Xml.XmlName:localName");
-        public static readonly AccessTools.FieldRef<IXmlSchemaInfo, string> xmlNameName = AccessTools.FieldRefAccess<string>("System.Xml.XmlName:name");
-
         public delegate IXmlSchemaInfo XmlDocumentAddName(XmlDocument document, string prefix, string localName, string namespaceURI, IXmlSchemaInfo schemaInfo);
 
         public static readonly XmlDocumentAddName xmlDocumentAddName = AccessTools.MethodDelegate<XmlDocumentAddName>(AccessTools.Method(typeof(XmlDocument), "AddXmlName"));
