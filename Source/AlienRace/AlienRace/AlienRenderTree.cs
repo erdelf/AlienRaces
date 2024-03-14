@@ -11,8 +11,6 @@ namespace AlienRace
     using JetBrains.Annotations;
     using UnityEngine;
     using Verse;
-    using static AlienRace.AlienPartGenerator;
-    using UnityEngine.UIElements;
 
     public static class AlienRenderTreePatches
     {
@@ -56,7 +54,7 @@ namespace AlienRace
                 pawnRenderResolveData = new PawnRenderResolveData
                                         {
                                             alienProps  = pawn.def as ThingDef_AlienRace,
-                                            alienComp   = pawn.GetComp<AlienComp>(),
+                                            alienComp   = pawn.GetComp<AlienPartGenerator.AlienComp>(),
                                             lsaa        = pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien,
                                             sharedIndex = 0
                                         } :
@@ -313,7 +311,7 @@ namespace AlienRace
             FieldInfo bodyTypeInfo = AccessTools.Field(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.bodyType));
 
             LocalBuilder styleLocal = ilg.DeclareLocal(typeof(StyleSettings));
-            LocalBuilder colorLocal = ilg.DeclareLocal(typeof(ExposableValueTuple<Color, Color>));
+            LocalBuilder colorLocal = ilg.DeclareLocal(typeof(AlienPartGenerator.ExposableValueTuple<Color, Color>));
 
             bool conditionJumpDone = false;
 
@@ -360,14 +358,14 @@ namespace AlienRace
                 {
                     i++;
                     yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(patchType,                     nameof(pawnRenderResolveData)));
-                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderResolveData), nameof(PawnRenderResolveData.alienComp)));
-                    yield return new CodeInstruction(OpCodes.Ldstr, "tattoo");
-                    yield return new CodeInstruction(OpCodes.Call,  AccessTools.Method(typeof(AlienComp), nameof(AlienComp.GetChannel)));
+                    yield return new CodeInstruction(OpCodes.Ldfld,  AccessTools.Field(typeof(PawnRenderResolveData), nameof(PawnRenderResolveData.alienComp)));
+                    yield return new CodeInstruction(OpCodes.Ldstr,  "tattoo");
+                    yield return new CodeInstruction(OpCodes.Call,   AccessTools.Method(typeof(AlienPartGenerator.AlienComp), nameof(AlienPartGenerator.AlienComp.GetChannel)));
                     yield return new CodeInstruction(OpCodes.Dup);
                     yield return new CodeInstruction(OpCodes.Stloc, colorLocal.LocalIndex);
-                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ExposableValueTuple<Color, Color>), nameof(ExposableValueTuple<Color,Color>.first)));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(AlienPartGenerator.ExposableValueTuple<Color, Color>), nameof(AlienPartGenerator.ExposableValueTuple<Color,Color>.first)));
                     yield return new CodeInstruction(OpCodes.Ldloc, colorLocal.LocalIndex);
-                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ExposableValueTuple<Color, Color>), nameof(ExposableValueTuple<Color, Color>.second)));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(AlienPartGenerator.ExposableValueTuple<Color, Color>), nameof(AlienPartGenerator.ExposableValueTuple<Color, Color>.second)));
                 }
                 else
                 {

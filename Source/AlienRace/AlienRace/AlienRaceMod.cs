@@ -1,6 +1,5 @@
 ﻿namespace AlienRace
 {
-    using RimWorld;
     using UnityEngine;
     using Verse;
 
