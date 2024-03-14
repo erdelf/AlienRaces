@@ -6,7 +6,7 @@
 	<IssueDef>
 		<defName>HAR_EatingAliens</defName>
 		<label>eating aliens</label>
-		<iconPath>UI/Issues/EatingAliens</iconPath>
+		<iconPath>AlienRace/UI/Issues/EatingAliens</iconPath>
 	</IssueDef>
 
 	<HistoryEventDef>

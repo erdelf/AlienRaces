@@ -13,7 +13,7 @@
 			<li>HAR_XenoDisposition</li>
 		</exclusionTags>
 		<description>Relations with aliens are to be encouraged and embraced, to be fearful or hostile towards them only proves one's simplemindedness.</description>
-		<iconPath>UI/Memes/Xenophilia</iconPath>
+		<iconPath>AlienRace/UI/Memes/Xenophilia</iconPath>
 		<groupDef>HAR_XenoDisposition</groupDef>
 		<impact>1</impact>
 		<generalRules>
@@ -97,7 +97,7 @@
 			<li>HAR_XenoDisposition</li>
 		</exclusionTags>
 		<description>Suffer not the alien to live, their mere existence is a threat to ours. Species of such are better as our servants or our sustenance.</description>
-		<iconPath>UI/Memes/Xenophobia</iconPath>
+		<iconPath>AlienRace/UI/Memes/Xenophobia</iconPath>
 		<groupDef>HAR_XenoDisposition</groupDef>
 		<impact>1</impact>
 		<generalRules>

@@ -5,7 +5,7 @@
 	<IssueDef>
 		<defName>HAR_AlienDating</defName>
 		<label>dating aliens</label>
-		<iconPath>UI/Issues/DatingAliens</iconPath>
+		<iconPath>AlienRace/UI/Issues/DatingAliens</iconPath>
 	</IssueDef>
 	
 	<HistoryEventDef>
