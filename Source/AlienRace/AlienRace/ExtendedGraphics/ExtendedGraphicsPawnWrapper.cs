@@ -76,6 +76,7 @@ public class ExtendedGraphicsPawnWrapper
 
     public virtual bool IsBodyPart(BodyPartRecord bpr, BodyPartDef part, string partLabel) =>
         (partLabel.NullOrEmpty() || bpr.untranslatedCustomLabel == partLabel) && (part == null || bpr.def == part);
+
     public virtual bool LinkToCorePart(bool drawWithoutPart, bool alignWithHead, BodyPartDef part, string partLabel) => 
         drawWithoutPart && 
         !this.NamedBodyPartExists(part, partLabel) && 
