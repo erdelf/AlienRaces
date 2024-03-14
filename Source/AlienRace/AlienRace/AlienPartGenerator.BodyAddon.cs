@@ -133,6 +133,8 @@ namespace AlienRace
             public bool    drawRotated           = true;
             public bool    scaleWithPawnDrawsize = false;
 
+            public List<RenderSkipFlagDef> useSkipFlags = [];
+
 
             private string colorChannel;
 
@@ -169,7 +171,7 @@ namespace AlienRace
                 !pawn.HasApparelGraphics() ||
                 (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
                 !pawn.GetWornApparel().Any(ap => 
-                    !ap.hatRenderedFrontOfFace && ap.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
+                    ap.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
                     ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
 
             private bool VisibleForPostureOf(ExtendedGraphicsPawnWrapper pawn) =>
