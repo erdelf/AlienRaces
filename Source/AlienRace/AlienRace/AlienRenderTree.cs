@@ -8,16 +8,28 @@ namespace AlienRace
 {
     using HarmonyLib;
     using RimWorld;
+    using System.Reflection.Emit;
+    using System.Reflection;
     using UnityEngine;
     using Verse;
+    using Verse.Sound;
 
     public static class AlienRenderTreePatches
     {
         private static readonly Type patchType = typeof(AlienRenderTreePatches);
         public static void HarmonyInit(Harmony harmony)
         {
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), nameof(PawnRenderTree.EnsureInitialized)), new HarmonyMethod(patchType, nameof(PawnRenderTreeEnsureInitializedPrefix)));
+            
+            harmony.Patch(AccessTools.Method(typeof(MeshPool), nameof(MeshPool.GetMeshSetForWidth), [typeof(float), typeof(float)]), transpiler: new HarmonyMethod(patchType, nameof(GetMeshSetForWidthTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeBodySetForPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBeardSetForPawn)), transpiler: new HarmonyMethod(patchType, nameof(GetHumanlikeHairSetForPawnTranspiler)));
+
             harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), "SetupDynamicNodes"), postfix: new HarmonyMethod(patchType, nameof(SetupDynamicNodesPostfix)));
+
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode), nameof(PawnRenderNode.GetMesh)), transpiler: new HarmonyMethod(patchType, nameof(RenderNodeGetMeshTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), "TrySetupGraphIfNeeded"),        new HarmonyMethod(patchType,             nameof(TrySetupGraphIfNeededPrefix)));
         }
 
         public class PawnRenderResolveData
@@ -33,15 +45,20 @@ namespace AlienRace
         public static PawnRenderResolveData pawnRenderResolveData;
 
 
-        public static void PawnRenderTreeEnsureInitializedPrefix(PawnRenderTree __instance)
+        public static void TrySetupGraphIfNeededPrefix(PawnRenderTree __instance)
         {
+            if (__instance.Resolved)
+                return;
+            
             Pawn alien = __instance.pawn;
+
             if (alien.def is ThingDef_AlienRace alienProps && alien.story != null)
             {
                 AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
-
+                
                 if (alienComp != null)
                 {
+                    
                     if (alienComp.fixGenderPostSpawn)
                     {
                         float? maleGenderProbability = alien.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? alienProps.alienRace.generalSettings.maleGenderProbability;
@@ -82,13 +99,14 @@ namespace AlienRace
                     alienComp.RegenerateColorChannelLinks();
 
                     pawnRenderResolveData = new PawnRenderResolveData
-                    {
-                        pawn = alien,
-                        alienProps = alienProps,
-                        alienComp = alienComp,
-                        lsaa = lsaa
-                    };
-
+                                            {
+                                                pawn = alien,
+                                                alienProps = alienProps,
+                                                alienComp = alienComp,
+                                                lsaa = lsaa
+                                            };
+                    
+                    portraitRender = new Pair<WeakReference, bool>(new WeakReference(alien), false);
 
                     /*
                     int sharedIndex = 0;
@@ -262,7 +280,7 @@ namespace AlienRace
                     AnimalBodyAddons extension = alien.def.GetModExtension<AnimalBodyAddons>();
                     if (extension != null)
                     {
-                        comp.addonGraphics = new List<Graphic>();
+                        comp.addonGraphics =   new List<Graphic>();
                         comp.addonVariants ??= new List<int>();
                         int sharedIndex = 0;
                         for (int i = 0; i < extension.bodyAddons.Count; i++)
@@ -347,7 +365,8 @@ namespace AlienRace
                                                                                                                 new DrawData.RotationalData { rotationOffset = -addon.angle, rotation = Rot4.East},
                                                                                                                 new DrawData.RotationalData { rotationOffset = 0, rotation = Rot4.North }),
                                                                                 useGraphic = true,
-                                                                                alienComp = alienComp
+                                                                                alienComp = alienComp,
+                                                                                debugLabel = addon.Name
                                                                             };
                         PawnRenderNode pawnRenderNode = (PawnRenderNode)Activator.CreateInstance(nodeProps.nodeClass, pawnRenderResolveData.pawn, nodeProps, pawnRenderResolveData.pawn.Drawer.renderer.renderTree);
                         CachedData.renderTreeAddChild(pawnRenderResolveData.pawn.Drawer.renderer.renderTree, pawnRenderNode, null);
@@ -355,6 +374,181 @@ namespace AlienRace
                 }
             }
         }
+
+
+
+        #region MeshSets
+
+        public static IEnumerable<CodeInstruction> RenderNodeGetMeshTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            FieldInfo meshSetInfo       = AccessTools.Field(typeof(PawnRenderNode), "meshSet");
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int index = 0; index < instructionList.Count; index++)
+            {
+                CodeInstruction instruction = instructionList[index];
+                yield return instruction;
+                if (instruction.LoadsField(meshSetInfo) && instructionList[index+1].opcode == OpCodes.Ldarg_1)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return CodeInstruction.Call(patchType, nameof(RenderNodeGetMeshHelper));
+                }
+            }
+        }
+
+        public static GraphicMeshSet RenderNodeGetMeshHelper(GraphicMeshSet meshSet, PawnRenderNode node, PawnDrawParms parms)
+        {
+            if (!parms.Portrait)
+                return meshSet;
+
+            portraitRender = new Pair<WeakReference, bool>(new WeakReference(parms.pawn), true);
+            return node.MeshSetFor(parms.pawn);
+        }
+
+        public static IEnumerable<CodeInstruction> GetMeshSetForWidthTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.opcode == OpCodes.Newobj)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Newobj, AccessTools.Constructor(typeof(GraphicMeshSet), [typeof(float), typeof(float)]));
+                }
+                else
+                {
+                    yield return instruction;
+                }
+            }
+        }
+
+        public static Pair<WeakReference, bool> portraitRender = new(new WeakReference(new Pawn()), false);
+
+        public static IEnumerable<CodeInstruction> GetHumanlikeHairSetForPawnTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo helperInfo = AccessTools.Method(patchType, nameof(GetHumanlikeHairSetForPawnHelper));
+
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+                yield return instruction;
+                if (instruction.IsLdloc() && instructionList[i - 1].IsStloc())
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Call, helperInfo);
+                    yield return new CodeInstruction(OpCodes.Stloc_0);
+                    yield return new CodeInstruction(instruction);
+                }
+            }
+        }
+
+        public static Vector2 GetHumanlikeHairSetForPawnHelper(Vector2 headFactor, Pawn pawn)
+        {
+            Vector2 drawSize = (portraitRender.First?.Target as Pawn == pawn && portraitRender.Second ?
+                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitHeadDrawSize :
+                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
+            return drawSize * headFactor;
+        }
+
+        public static IEnumerable<CodeInstruction> GetHumanlikeHeadSetForPawnTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo getMeshInfo = AccessTools.Method(typeof(MeshPool), nameof(MeshPool.GetMeshSetForWidth), new[] { typeof(float) });
+            FieldInfo humanlikeBodyInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeHeadSet));
+            MethodInfo helperInfo = AccessTools.Method(patchType, nameof(GetHumanlikeHeadSetForPawnHelper));
+
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            foreach (CodeInstruction instruction in instructionList)
+            {
+                if (instruction.Calls(getMeshInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Call, helperInfo);
+                }
+                else if (instruction.LoadsField(humanlikeBodyInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldc_R4, 1.5f).WithLabels(instruction.ExtractLabels());
+                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Call, helperInfo);
+                }
+                else
+                {
+                    yield return instruction;
+                }
+            }
+        }
+
+        public static GraphicMeshSet GetHumanlikeHeadSetForPawnHelper(object lifestageFactor, Pawn pawn)
+        {
+            Vector2 drawSize = (portraitRender.First?.Target as Pawn == pawn && portraitRender.Second ?
+                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitHeadDrawSize :
+                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
+
+            Vector2 scaleFactor = lifestageFactor switch
+            {
+                Vector2 lifestageFactorV2 => lifestageFactorV2,
+                float lifestageFactorF => new Vector2(lifestageFactorF, lifestageFactorF),
+                _ => Vector2.one
+            };
+
+            return MeshPool.GetMeshSetForWidth(drawSize.x * scaleFactor.x, drawSize.y * scaleFactor.y);
+        }
+
+        public static IEnumerable<CodeInstruction> GetHumanlikeBodySetForPawnTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo getMeshInfo = AccessTools.Method(typeof(MeshPool), nameof(MeshPool.GetMeshSetForWidth), new[] { typeof(float) });
+            FieldInfo humanlikeBodyInfo = AccessTools.Field(typeof(MeshPool), nameof(MeshPool.humanlikeBodySet));
+            MethodInfo helperInfo = AccessTools.Method(patchType, nameof(GetHumanlikeBodySetForPawnHelper));
+
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            foreach (CodeInstruction instruction in instructionList)
+            {
+                if (instruction.Calls(getMeshInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Call, helperInfo);
+                }
+                else if (instruction.LoadsField(humanlikeBodyInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldc_R4, 1.5f).WithLabels(instruction.ExtractLabels());
+                    yield return new CodeInstruction(OpCodes.Box, typeof(float));
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Call, helperInfo);
+                }
+                else
+                {
+                    yield return instruction;
+                }
+            }
+        }
+
+        public static GraphicMeshSet GetHumanlikeBodySetForPawnHelper(object lifestageFactor, Pawn pawn)
+        {
+            Vector2 drawSize = (portraitRender.First?.Target as Pawn == pawn && portraitRender.Second ?
+                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitDrawSize :
+                                    pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customDrawSize) ?? Vector2.one;
+            
+            Vector2 scaleFactor = lifestageFactor switch
+            {
+                Vector2 lifestageFactorV2 => lifestageFactorV2,
+                float lifestageFactorF => new Vector2(lifestageFactorF, lifestageFactorF),
+                _ => Vector2.one
+            };
+
+            return MeshPool.GetMeshSetForWidth(drawSize.x * scaleFactor.x, drawSize.y * scaleFactor.y);
+        }
+
+        #endregion
     }
 
     public class AlienPawnRenderNodeProperties_BodyAddon : PawnRenderNodeProperties
@@ -371,6 +565,27 @@ namespace AlienRace
         public new AlienPawnRenderNodeProperties_BodyAddon props = props;
 
         public override Graphic GraphicFor(Pawn pawn) => this.props.graphic;
+
+        public override Mesh GetMesh(PawnDrawParms parms)
+        {
+            AlienPartGenerator.BodyAddon            ba    = this.props.addon;
+
+            Vector3 scale = (parms.Portrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) *
+                            (ba.scaleWithPawnDrawsize ?
+                                 (ba.alignWithHead ?
+                                      parms.Portrait ?
+                                          this.props.alienComp.customPortraitHeadDrawSize :
+                                          this.props.alienComp.customHeadDrawSize :
+                                      parms.Portrait ?
+                                          this.props.alienComp.customPortraitDrawSize :
+                                          this.props.alienComp.customDrawSize) *
+                                 (ModsConfig.BiotechActive ? parms.pawn.ageTracker.CurLifeStage.bodyWidth ?? 1.5f : 1.5f) :
+                                 Vector2.one * 1.5f);
+
+            this.props.graphic.drawSize = scale;
+
+            return this.props.graphic.MeshAt(parms.facing);
+        }
     }
 
     public class AlienPawnRenderNodeWorker_BodyAddon : PawnRenderNodeWorker
@@ -381,8 +596,11 @@ namespace AlienRace
         public static AlienPartGenerator.BodyAddon AddonFromNode(PawnRenderNode node) => 
             ((AlienPawnRenderNode_BodyAddon)node).props.addon;
 
-        public override bool CanDrawNow(PawnRenderNode node, PawnDrawParms parms) => 
-            base.CanDrawNow(node, parms) && AddonFromNode(node).CanDrawAddon(parms.pawn);
+        public override bool CanDrawNow(PawnRenderNode node, PawnDrawParms parms)
+        {
+            AlienPartGenerator.BodyAddon addonFromNode = AddonFromNode(node);
+            return addonFromNode.CanDrawAddon(parms.pawn);
+        }
 
         public override Vector3 OffsetFor(PawnRenderNode node, PawnDrawParms parms, out Vector3 pivot)
         {
@@ -411,26 +629,6 @@ namespace AlienRace
                 offsetVector.x = -offsetVector.x;
 
             return base.OffsetFor(node, parms, out pivot) + offsetVector;
-        }
-
-        public override Vector3 ScaleFor(PawnRenderNode node, PawnDrawParms parms)
-        {
-            AlienPawnRenderNodeProperties_BodyAddon props = PropsFromNode(node);
-            AlienPartGenerator.BodyAddon            ba    = props.addon;
-
-            Vector3 scale = (parms.Portrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) *
-                            (ba.scaleWithPawnDrawsize ?
-                                 (ba.alignWithHead ?
-                                      parms.Portrait ?
-                                          props.alienComp.customPortraitHeadDrawSize :
-                                          props.alienComp.customHeadDrawSize :
-                                      parms.Portrait ?
-                                          props.alienComp.customPortraitDrawSize :
-                                          props.alienComp.customDrawSize) *
-                                 (ModsConfig.BiotechActive ? parms.pawn.ageTracker.CurLifeStage.bodyWidth ?? 1.5f : 1.5f) :
-                                 Vector2.one * 1.5f);
-
-            return scale.ScaledBy(base.ScaleFor(node, parms));
         }
     }
 }
