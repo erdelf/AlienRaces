@@ -82,7 +82,7 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
         return this.variantCounts[index]++;
     }
 
-    public abstract bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel);
+    public abstract bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel);
 
     public virtual IEnumerable<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
         this.GetSubGraphics();
@@ -122,24 +122,13 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
         this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
     }
 
-    protected virtual void SetInstanceVariablesFromChildNodesOf(XmlNode xmlRootNode) =>
-        this.SetInstanceVariablesFromChildNodesOf(xmlRootNode, []);
-
-    protected virtual void SetInstanceVariablesFromChildNodesOf(XmlNode xmlRootNode, HashSet<string> excludedFieldNames)
+    protected virtual void SetInstanceVariablesFromChildNodesOf(XmlNode xmlRootNode)
     {
-        Traverse traverse = Traverse.Create(this);
-        foreach (XmlNode xmlNode in xmlRootNode.ChildNodes)
-            if (!excludedFieldNames.Contains(xmlNode.Name))
-                this.SetFieldFromXmlNode(traverse, xmlNode);
+        Utilities.SetInstanceVariablesFromChildNodesOf(xmlRootNode, this, []);
 
         // If the path has not been set just use the value contained by the root node
         // This caters for nodes containing _only_ a path i.e. <someNode>a/path/here</someNode> 
-        if (this.path.NullOrEmpty()) 
+        if (this.path.NullOrEmpty())
             this.path = xmlRootNode.FirstChild.Value?.Trim();
-    }
-    
-    protected virtual void SetFieldFromXmlNode(Traverse field, XmlNode xmlNode)
-    {
-        Utilities.SetFieldFromXmlNode(field, xmlNode, this, xmlNode.Name);
     }
 }
