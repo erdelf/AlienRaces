@@ -1760,20 +1760,22 @@ namespace AlienRace
 
                     if (i < instructionList.Count - 2 && instructionList[i + 2].OperandIs(bodyInfo) && instructionList[i + 1].OperandIs(propsInfo) && instruction.OperandIs(defInfo))
                     {
-                        instruction =  new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(ReplacedBody)));
-                        i           += 2;
+                        instruction.opcode  =  OpCodes.Call;
+                        instruction.operand =  AccessTools.Method(patchType, nameof(ReplacedBody));
+                        i                   += 2;
                     }
 
                     if (i < instructionList.Count - 1 && instructionList[i + 1].OperandIs(bodyInfo) && instruction.OperandIs(defInfo))
                     {
-                        instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(ReplacedBody)));
+                        instruction.opcode  = OpCodes.Call;
+                        instruction.operand = AccessTools.Method(patchType, nameof(ReplacedBody));
                         i++;
                     }
 
                     if (i < instructionList.Count - 1 && instructionList[i + 1].OperandIs(bodyInfo) && instruction.OperandIs(raceprops))
                     {
-
-                        instruction = new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(ReplacedBody)));
+                        instruction.opcode = OpCodes.Call;
+                        instruction.operand = AccessTools.Method(patchType, nameof(ReplacedBody));
                         i++;
                     }
 
