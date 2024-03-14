@@ -228,6 +228,27 @@ namespace AlienRace
                                                                                Vector2.one, first, second, new GraphicData { drawRotated = !this.drawRotated }) :
                            null;
             }
+
+            public override void LoadDataFromXmlCustom(XmlNode xmlRoot)
+            {
+                foreach (XmlNode childNode in xmlRoot.ChildNodes)
+                {
+                    if (childNode.Name.Equals(nameof(this.conditions)))
+                    {
+                        foreach (XmlNode node in childNode.ChildNodes)
+                        {
+                            if (Condition.XmlNameParseKeys.TryGetValue(node.Name, out string classTag))
+                            {
+                                XmlAttribute attribute = xmlRoot.OwnerDocument!.CreateAttribute("Class");
+                                attribute.Value = classTag;
+                                node.Attributes!.SetNamedItem(attribute);
+                            }
+                        }
+                    }
+                }
+
+                base.LoadDataFromXmlCustom(xmlRoot);
+            }
         }
     }
 }

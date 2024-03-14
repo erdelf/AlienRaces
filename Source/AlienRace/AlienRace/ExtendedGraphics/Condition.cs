@@ -3,13 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using RimWorld;
-using System.Xml.Serialization;
 using Verse;
 using JetBrains.Annotations;
 using System.Xml;
 using HarmonyLib;
-using static AlienRace.AlienPartGenerator.BodyAddon;
 
 [StaticConstructorOnStartup]
 public abstract class Condition
@@ -34,7 +33,14 @@ public abstract class Condition
     [UsedImplicitly]
     public virtual void LoadDataFromXmlCustom(XmlNode xmlRoot)
     {
-        Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
+        //Log.Message("Condition: " + xmlRoot.OuterXml + "\n" + xmlRoot.ChildNodes.Count);
+        if(xmlRoot.ChildNodes.Count == 1)
+        {
+            FieldInfo field = this.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public).First();
+            Utilities.SetFieldFromXmlNodeRaw(Traverse.Create(this).Field(field.Name), xmlRoot, this, field.Name, field.FieldType);
+        }
+        else
+            Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
     }
 }
 
@@ -47,7 +53,7 @@ public class ConditionRotStage : Condition
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) => 
         this.allowedStages.Contains(pawn.GetRotStage() ?? RotStage.Fresh);
 
-    public new virtual void LoadDataFromXmlCustom(XmlNode xmlRoot) => 
+    public override void LoadDataFromXmlCustom(XmlNode xmlRoot) => 
         this.allowedStages = xmlRoot.Value.Split(',').Select(ParseHelper.FromString<RotStage>).ToList();
 }
 

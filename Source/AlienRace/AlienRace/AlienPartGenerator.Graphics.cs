@@ -19,15 +19,17 @@ public partial class AlienPartGenerator
         public List<Condition> conditions = [];
 
         [UsedImplicitly]
-        public new void LoadDataFromXmlCustom(XmlNode xmlRoot)
+        public override void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            if (Condition.XmlNameParseKeys.TryGetValue(xmlRoot.LocalName, out string classTagOrigin))
+            if (Condition.XmlNameParseKeys.ContainsKey(xmlRoot.LocalName))
             {
                 XmlDocument xmlDoc = new();
-                xmlDoc.LoadXml($"<conditions><{classTagOrigin}>{xmlRoot.Attributes!["For"].Value}</{classTagOrigin}></conditions>");
-                xmlRoot.AppendChild(xmlRoot.OwnerDocument!.ImportNode(xmlDoc, true));
+                xmlDoc.LoadXml($"<root><path>{xmlRoot.FirstChild.Value}</path><conditions><{xmlRoot.LocalName}>{xmlRoot.Attributes!["For"].Value}</{xmlRoot.LocalName}></conditions></root>");
+                xmlRoot.FirstChild.Value = string.Empty;
+                foreach (XmlNode childNode in xmlDoc.DocumentElement!.ChildNodes) 
+                    xmlRoot.AppendChild(xmlRoot.OwnerDocument!.ImportNode(childNode, true));
             }
-
+            //Log.Message("Import Result: " + xmlRoot.OuterXml);
             foreach (XmlNode childNode in xmlRoot.ChildNodes)
             {
                 if (childNode.Name.Equals(nameof(this.conditions)))
@@ -43,7 +45,7 @@ public partial class AlienPartGenerator
                     }
                 }
             }
-            Log.Message(xmlRoot.OuterXml);
+            //Log.Message("Graphic: " + xmlRoot.OuterXml);
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
@@ -88,7 +90,7 @@ public partial class AlienPartGenerator
         public LifeStageDef age;
 
         [UsedImplicitly]
-        public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+        public override void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
             XmlAttribute mayRequire = xmlRoot.Attributes?["MayRequire"];
             int index = mayRequire != null ? xmlRoot.Name.LastIndexOf(value: '\"') + 1 : 0;
