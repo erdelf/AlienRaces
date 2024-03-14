@@ -122,4 +122,8 @@ public class ExtendedGraphicsPawnWrapper
     public virtual bool HasGene(GeneDef gene) => this.WrappedPawn.genes.GetGene(gene)?.Active ?? false;
 
     public virtual bool IsRace(ThingDef race) => this.WrappedPawn.def == race;
+
+    public virtual bool IsMutant(MutantDef def) => this.WrappedPawn.IsMutant && (def == null || this.WrappedPawn.mutant.Def == def);
+
+    public virtual bool IsCreepJoiner(CreepJoinerFormKindDef def) => this.WrappedPawn.IsCreepJoiner && (def == null || this.WrappedPawn.creepjoiner.form == def);
 }
