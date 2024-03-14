@@ -94,20 +94,20 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
 
     private static readonly Dictionary<string, string> XML_CLASS_DICTIONARY = new()
                                                                             {
-                                                                                {"hediffGraphics", $"{nameof(ConditionHediff)}"},
-                                                                                {"backstoryGraphics", $"{nameof(ConditionBackstory)}"},
-                                                                                {"ageGraphics", $"{nameof(ConditionAge)}"},
-                                                                                {"damageGraphics", $"{nameof(ConditionDamage)}"},
-                                                                                {"genderGraphics", $"{nameof(ConditionGender)}"},
-                                                                                {"traitGraphics", $"{nameof(ConditionTrait)}"},
-                                                                                {"bodytypeGraphics", $"{nameof(ConditionBodyType)}"},
-                                                                                {"headtypeGraphics", $"{nameof(ConditionHeadType)}"},
-                                                                                {"geneGraphics", $"{nameof(ConditionGene)}"},
-                                                                                {"raceGraphics", $"{nameof(ConditionRace)}"}
+                                                                                {"hediffGraphics", ConditionHediff.XmlNameParseKey},
+                                                                                {"backstoryGraphics", ConditionBackstory.XmlNameParseKey},
+                                                                                {"ageGraphics", ConditionAge.XmlNameParseKey},
+                                                                                {"damageGraphics", ConditionDamage.XmlNameParseKey},
+                                                                                {"genderGraphics", ConditionGender.XmlNameParseKey},
+                                                                                {"traitGraphics", ConditionTrait.XmlNameParseKey},
+                                                                                {"bodytypeGraphics", ConditionBodyType.XmlNameParseKey},
+                                                                                {"headtypeGraphics", ConditionHeadType.XmlNameParseKey},
+                                                                                {"geneGraphics", ConditionGene.XmlNameParseKey},
+                                                                                {"raceGraphics", ConditionRace.XmlNameParseKey}
                                                                             };
 
     [UsedImplicitly]
-    public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+    public virtual void LoadDataFromXmlCustom(XmlNode xmlRoot)
     {
         foreach (XmlNode childNode in xmlRoot.ChildNodes)
         {
@@ -144,7 +144,7 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
         }
 
         if(this is AlienPartGenerator.BodyAddon)
-            Log.Message(xmlRoot.OuterXml);
+            Log.Message("BodyAddon: " + xmlRoot.OuterXml);
         this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
     }
 
