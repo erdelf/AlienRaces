@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Xml;
+using System.Xml.Schema;
 using HarmonyLib;
 using JetBrains.Annotations;
 using Verse;
@@ -93,16 +94,16 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
 
     private static readonly Dictionary<string, string> XML_CLASS_DICTIONARY = new()
                                                                             {
-                                                                                {"hediffGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedHediffGraphic)}"},
-                                                                                {"backstoryGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedBackstoryGraphic)}"},
-                                                                                {"ageGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedAgeGraphic)}"},
-                                                                                {"damageGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedDamageGraphic)}"},
-                                                                                {"genderGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedGenderGraphic)}"},
-                                                                                {"traitGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedTraitGraphic)}"},
-                                                                                {"bodytypeGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedBodytypeGraphic)}"},
-                                                                                {"headtypeGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedHeadtypeGraphic)}"},
-                                                                                {"geneGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedGeneGraphic)}"},
-                                                                                {"raceGraphics", $"{nameof(AlienPartGenerator)}.{nameof(AlienPartGenerator.ExtendedRaceGraphic)}"}
+                                                                                {"hediffGraphics", $"{nameof(ConditionHediff)}"},
+                                                                                {"backstoryGraphics", $"{nameof(ConditionBackstory)}"},
+                                                                                {"ageGraphics", $"{nameof(ConditionAge)}"},
+                                                                                {"damageGraphics", $"{nameof(ConditionDamage)}"},
+                                                                                {"genderGraphics", $"{nameof(ConditionGender)}"},
+                                                                                {"traitGraphics", $"{nameof(ConditionTrait)}"},
+                                                                                {"bodytypeGraphics", $"{nameof(ConditionBodyType)}"},
+                                                                                {"headtypeGraphics", $"{nameof(ConditionHeadType)}"},
+                                                                                {"geneGraphics", $"{nameof(ConditionGene)}"},
+                                                                                {"raceGraphics", $"{nameof(ConditionRace)}"}
                                                                             };
 
     [UsedImplicitly]
@@ -110,14 +111,42 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     {
         foreach (XmlNode childNode in xmlRoot.ChildNodes)
         {
-            if(XML_CLASS_DICTIONARY.TryGetValue(childNode.Name, out string classTag))
+            //Log.Message("checking: " + childNode.Name);
+            if (XML_CLASS_DICTIONARY.TryGetValue(childNode.Name, out string classTag))
             {
-                XmlAttribute attribute = xmlRoot.OwnerDocument!.CreateAttribute("Class");
-                attribute.Value = classTag;
-                childNode.Attributes!.SetNamedItem(attribute);
+                //Log.Message("Original: " + childNode.OuterXml);
+                foreach (XmlNode graphicNode in childNode.ChildNodes)
+                {
+                    XmlAttribute attribute = xmlRoot.OwnerDocument!.CreateAttribute("Class");
+                    attribute.Value = typeof(AlienPartGenerator.ExtendedConditionGraphic).FullName;
+                    graphicNode.Attributes!.SetNamedItem(attribute);
+                    XmlAttribute attribute2 = xmlRoot.OwnerDocument!.CreateAttribute("For");
+                    attribute2.Value = graphicNode.Name;
+                    graphicNode.Attributes!.SetNamedItem(attribute2);
+
+                    IXmlSchemaInfo elementName = CachedData.xmlElementName(graphicNode as XmlElement);
+                    CachedData.xmlNameLocalName(elementName) = CachedData.xmlNameName(elementName) = classTag;
+                }
+
+
+                CachedData.xmlElementName(childNode as XmlElement) = CachedData.xmlDocumentAddName(childNode.OwnerDocument, string.Empty, nameof(this.extendedGraphics), string.Empty, null);
+
+                //Log.Message("Adjusting: " + childNode.OuterXml);
+            }
+            else if(childNode.Name.Equals(nameof(this.extendedGraphics)))
+            {
+                foreach (XmlNode graphicNode in childNode.ChildNodes)
+                    if (graphicNode.Attributes!["Class"] == null)
+                    {
+                        XmlAttribute attribute = xmlRoot.OwnerDocument!.CreateAttribute("Class");
+                        attribute.Value = typeof(AlienPartGenerator.ExtendedConditionGraphic).FullName;
+                        graphicNode.Attributes!.SetNamedItem(attribute);
+                    }
             }
         }
-        
+
+        if(this is AlienPartGenerator.BodyAddon)
+            Log.Message(xmlRoot.OuterXml);
         this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
     }
 
