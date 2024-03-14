@@ -306,6 +306,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlienHarmony.cs" />
     <Compile Include="AlienPartGenerator.BodyAddon.cs" />
     <Compile Include="AlienPartGenerator.Graphics.cs" />
     <Compile Include="AlienPartGenerator.cs" />
