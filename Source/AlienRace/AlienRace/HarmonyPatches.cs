@@ -189,10 +189,10 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_InteractAnimal), name: "CanInteractWithAnimal", new []{typeof(Pawn), typeof(Pawn), typeof(string).MakeByRefType(), typeof(bool), typeof(bool), typeof(bool), typeof(bool)}), 
                 postfix: new HarmonyMethod(patchType, nameof(CanInteractWithAnimalPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer), nameof(PawnRenderer.BaseHeadOffsetAt)), 
-                          postfix: new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtPostfix)),
-                transpiler: new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), name: "CheckForStateChange"), 
-                postfix: new HarmonyMethod(patchType, nameof(CheckForStateChangePostfix)));
+                          postfix: new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtPostfix)), transpiler: new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), name: "CheckForStateChange"),          postfix: new HarmonyMethod(patchType, nameof(CheckForStateChangePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), nameof(Pawn_HealthTracker.AddHediff), new []{typeof(Hediff), typeof(BodyPartRecord), typeof(DamageInfo?), typeof(DamageWorker.DamageResult)}), postfix: new HarmonyMethod(patchType, nameof(AddHediffPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), nameof(Pawn_HealthTracker.Notify_HediffChanged)), postfix: new HarmonyMethod(patchType, nameof(HediffChangedPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateGearFor"), 
                 postfix:          new HarmonyMethod(patchType, nameof(GenerateGearForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn), nameof(Pawn.ChangeKind)), new HarmonyMethod(patchType, nameof(ChangeKindPrefix)));
@@ -1806,10 +1806,21 @@ namespace AlienRace
                    }
                });
 
-        public static void CheckForStateChangePostfix(Pawn ___pawn)
+        public static void AddHediffPostfix(Pawn ___pawn) => 
+            ___pawn.Drawer.renderer.SetAllGraphicsDirty();
+
+        public static void HediffChangedPostfix(Pawn ___pawn, HediffSet ___hediffSet)
         {
-            if (Current.ProgramState == ProgramState.Playing && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace)
-                ___pawn.Drawer.renderer.SetAllGraphicsDirty();
+            if (Current.ProgramState == ProgramState.Playing && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace && (AlienPartGenerator.racesWithSeverity?.Contains(___pawn.def) ?? true) && (!___hediffSet.HasRegeneration || ___pawn.IsHashIntervalTick(300)))
+                ___pawn.Drawer.renderer.renderTree.SetDirty();
+        }
+
+        public static void CheckForStateChangePostfix(Pawn ___pawn, HediffSet ___hediffSet)
+        {
+            return;
+
+            if (Current.ProgramState == ProgramState.Playing && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace && (!___hediffSet.HasRegeneration || ___pawn.IsHashIntervalTick(300)))
+                ___pawn.Drawer.renderer.renderTree.SetDirty();
         }
 
         public static IEnumerable<CodeInstruction> BaseHeadOffsetAtTranspiler(IEnumerable<CodeInstruction> instructions)
