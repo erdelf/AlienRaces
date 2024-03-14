@@ -61,6 +61,8 @@ public class ConditionRotStage : Condition
 
 public class ConditionBodyPart : Condition
 {
+    public override bool Static => true;
+
     public new const string XmlNameParseKey = "BodyPart";
 
     public BodyPartDef bodyPart;
@@ -68,7 +70,7 @@ public class ConditionBodyPart : Condition
     public bool        drawWithoutPart = false;
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
-        (pawn.HasNamedBodyPart(this.bodyPart, this.bodyPartLabel))// || pawn.LinkToCorePart(this.drawWithoutPart, this.alignWithHead, this.bodyPart, this.bodyPartLabel))
+        pawn.HasNamedBodyPart(part = this.bodyPart, partLabel = this.bodyPartLabel)// || pawn.LinkToCorePart(this.drawWithoutPart, this.alignWithHead, this.bodyPart, this.bodyPartLabel))
     //|| this.extendedGraphics.OfType<AlienPartGenerator.ExtendedHediffGraphic>().Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart)
     ;
 
@@ -178,7 +180,7 @@ public class ConditionHediff : Condition
     public  HediffDef                     hediff;
     private List<ConditionHediffSeverity> severities;
 
-    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) => 
         pawn.HasHediffOfDefAndPart(this.hediff, part, partLabel);
 }
 
