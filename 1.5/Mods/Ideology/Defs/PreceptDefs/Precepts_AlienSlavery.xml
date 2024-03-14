@@ -5,7 +5,7 @@
 	<IssueDef>
 		<defName>HAR_AlienSlavery</defName>
 		<label>alien slavery</label>
-		<iconPath>UI/Issues/AlienSlaves</iconPath>
+		<iconPath>AlienRace/UI/Issues/AlienSlaves</iconPath>
 	</IssueDef>
 
 	<HistoryEventDef>
