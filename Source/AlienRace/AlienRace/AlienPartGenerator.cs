@@ -84,13 +84,7 @@
         public Color SkinColor(Pawn alien, bool first = true)
         {
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
-
-            if (alien.story.SkinColorOverriden)
-                return alien.story.skinColorOverride!.Value;
-
-            if (alienComp == null)
-                return CachedData.skinColorBase(alien.story) ?? Color.clear;
-
+            
             ExposableValueTuple<Color, Color> skinColors = alienComp.GetChannel(channel: "skin");
             return first ? skinColors.first : skinColors.second;
         }
@@ -190,7 +184,7 @@
                     ExtendedGraphicTop headGraphic = this.alienProps.alienRace.graphicPaths.head;
                     string             headPath    = headGraphic.path;
 
-                    foreach (HeadTypeDef headType in this.HeadTypes.Concat(DefDatabase<HeadTypeDef>.AllDefs.Where(htd => !htd.requiredGenes.NullOrEmpty())))
+                    foreach (HeadTypeDef headType in DefDatabase<HeadTypeDef>.AllDefs)//.Where(htd => !htd.requiredGenes.NullOrEmpty())))
                     {
                         string headTypePath = Path.GetFileName(headType.graphicPath);
 
@@ -201,14 +195,10 @@
                         ExtendedHeadtypeGraphic headtypeGraphic = new()
                                                                   {
                                                                       headType = headType,
-                                                                      paths = new List<string>
-                                                                              {
-                                                                                  headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath
-                                                                              }
+                                                                      path    = headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath
                                                                   };
 
-                        if (!headType.requiredGenes.NullOrEmpty())
-                            headtypeGraphic.pathsFallback.Add(headType.graphicPath);
+                        headtypeGraphic.pathsFallback.Add(headType.graphicPath);
 
                         Gender firstGender = genderIncluded ? headType.gender : Gender.Male;
 
@@ -257,6 +247,38 @@
                                                                                   }
                                                                               }
                                                          });
+                    }
+
+                    foreach (CreepJoinerFormKindDef formKindDef in DefDatabase<CreepJoinerFormKindDef>.AllDefsListForReading)
+                    {
+                        ExtendedCreepJoinerFormGraphic formGraphic = new()
+                                                                     {
+                                                                         form = formKindDef,
+                                                                         path = $"{bodyPath}_{formKindDef}"
+                                                                     };
+                        foreach (BodyTypeGraphicData bodyTypeData in formKindDef.bodyTypeGraphicPaths)
+                            formGraphic.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
+                                                             {
+                                                                 bodytype = bodyTypeData.bodyType,
+                                                                 path     = bodyTypeData.texturePath
+                                                             });
+                        bodyGraphic.extendedGraphics.Add(formGraphic);
+                    }
+
+                    foreach (MutantDef mutantDef in DefDatabase<MutantDef>.AllDefsListForReading)
+                    {
+                        ExtendedMutantGraphic mutantGraphic = new()
+                                                                     {
+                                                                         mutant = mutantDef,
+                                                                         path = $"{bodyPath}_{mutantDef}"
+                                                                     };
+                        foreach (BodyTypeGraphicData bodyTypeData in mutantDef.bodyTypeGraphicPaths)
+                            mutantGraphic.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
+                                                             {
+                                                                 bodytype = bodyTypeData.bodyType,
+                                                                 path     = bodyTypeData.texturePath
+                                                             });
+                        bodyGraphic.extendedGraphics.Add(mutantGraphic);
                     }
                 }
             }

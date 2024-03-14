@@ -128,7 +128,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateBodyType"), postfix: new HarmonyMethod(patchType, nameof(GenerateBodyTypePostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: nameof(PawnGenerator.GetBodyTypeFor)), postfix: new HarmonyMethod(patchType, nameof(GetBodyTypeForPostfix)));
             harmony.Patch(AccessTools.Property(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.SkinColor)).GetGetMethod(), 
-                postfix: new HarmonyMethod(patchType, nameof(SkinColorPostfix)));
+                transpiler: new HarmonyMethod(patchType, nameof(SkinColorTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), name: "BirthdayBiological"), new HarmonyMethod(patchType, nameof(BirthdayBiologicalPrefix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), nameof(PawnGenerator.GeneratePawn), new[] { typeof(PawnGenerationRequest) }),
@@ -3386,10 +3386,28 @@ namespace AlienRace
             }
         }
 
-        public static void SkinColorPostfix(Pawn ___pawn, ref Color __result)
+        public static IEnumerable<CodeInstruction> SkinColorTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            if (___pawn.def is ThingDef_AlienRace alienProps) 
-                __result = alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(___pawn);
+            MethodInfo baseColorInfo = AccessTools.PropertyGetter(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.SkinColorBase));
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.Calls(baseColorInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_StoryTracker), "pawn"));
+                    yield return CodeInstruction.Call(patchType, nameof(SkinColorHelper));
+                } else
+                {
+                    yield return instruction;
+                }
+            }
+        }
+
+        public static Color SkinColorHelper(Pawn pawn)
+        {
+            if (pawn.def is ThingDef_AlienRace alienProps) 
+                return alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(pawn);
+            return CachedData.skinColorBase(pawn.story)!.Value;
         }
 
         public static void GetBodyTypeForPostfix(Pawn pawn, ref BodyTypeDef __result) =>
