@@ -56,6 +56,11 @@ namespace AlienRace
                                         } :
                 pawnRenderResolveData;
 
+        public static Shader CheckMaskShader(string texPath, Shader shader, bool pathCheckOverride = false) =>
+            (!shader.SupportsMaskTex() && (pathCheckOverride || ContentFinder<Texture2D>.Get(texPath + "_northm", reportFailure: false) != null)) ?
+                ShaderDatabase.CutoutComplex : 
+                shader;
+
         public static void TrySetupGraphIfNeededPrefix(PawnRenderTree __instance)
         {
             if (__instance.Resolved)
@@ -284,9 +289,7 @@ namespace AlienRace
 
 
             __result = !bodyPath.NullOrEmpty() ? 
-                           CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi), bodyPath, 
-                                                                         bodyMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
-                                                                             skinShader : ShaderDatabase.CutoutComplex, 
+                           CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi), bodyPath, CheckMaskShader(bodyPath, skinShader, bodyMask.NullOrEmpty()), 
                                                                          Vector2.one, __instance.ColorFor(pawn), apg.SkinColor(pawn, first: false),
                                                                          null, 0, [graphicPaths.SkinColoringParameter], bodyMask)) :
                                           null;
@@ -335,9 +338,8 @@ namespace AlienRace
 
             __result = pawn.health.hediffSet.HasHead && !headPath.NullOrEmpty() ?
                            CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi),
-                                                                         headPath, headMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(headPath + "_northm", reportFailure: false) == null ?
-                                                                                       skinShader : ShaderDatabase.CutoutComplex, Vector2.one, __instance.ColorFor(pawn), apg.SkinColor(pawn, first: false), null,
-                                                                                                                                0, [graphicPaths.SkinColoringParameter], headMask))
+                                                                         headPath, CheckMaskShader(headPath, skinShader, headMask.NullOrEmpty()), Vector2.one, __instance.ColorFor(pawn), 
+                                                                         apg.SkinColor(pawn, first: false), null, 0, [graphicPaths.SkinColoringParameter], headMask))
                                          : null;
 
             return false;
@@ -357,7 +359,7 @@ namespace AlienRace
                     yield return CodeInstruction.Call(patchType, nameof(HairHelper));
                 } else
                 {
-                yield return instruction;
+                    yield return instruction;
                 }
 
                 if (instruction.opcode == OpCodes.Brfalse_S)
@@ -369,10 +371,8 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Ldtoken,  typeof(HairDef));
                     yield return new CodeInstruction(OpCodes.Call,     AccessTools.Method(typeof(Type),          nameof(Type.GetTypeFromHandle)));
                     yield return new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(Dictionary<Type, StyleSettings>), "get_Item"));
-                    //yield return new CodeInstruction(OpCodes.Dup);
                     yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(StyleSettings), nameof(StyleSettings.hasStyle)));
                     yield return new CodeInstruction(OpCodes.Brtrue_S, instruction.operand);
-                    //yield return new CodeInstruction(OpCodes.Pop);
                 }
             }
         }
@@ -380,16 +380,6 @@ namespace AlienRace
         public static Graphic HairHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) => 
             GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, pawnRenderResolveData.alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? shader), 
                                                size, color, pawnRenderResolveData.alienComp.GetChannel(channel: "hair").second);
-        
-
-
-        /*
-                    __instance.hairGraphic = !(__instance.pawn.story.hairDef?.noGraphic ?? true) && alienProps.alienRace.styleSettings[typeof(HairDef)].hasStyle ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
-                                                                                                                           (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Transparent) :
-                                                                                                                           ShaderDatabase.CutoutComplex, Vector2.one, alien.story.HairColor,
-                                                                                alienComp.GetChannel(channel: "hair").second) : null;
-        */
-
 
         public static void SetupDynamicNodesPostfix(PawnRenderTree __instance)
         {
