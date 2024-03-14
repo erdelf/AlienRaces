@@ -10,11 +10,10 @@ namespace AlienRace
     using RimWorld;
     using UnityEngine;
     using Verse;
-    using static AlienRace.AlienRenderTreePatches;
 
     public static class AlienRenderTreePatches
     {
-        private static readonly Type patchType = typeof(PawnRenderTree);
+        private static readonly Type patchType = typeof(AlienRenderTreePatches);
         public static void HarmonyInit(Harmony harmony)
         {
             harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), nameof(PawnRenderTree.EnsureInitialized)), new HarmonyMethod(patchType, nameof(PawnRenderTreeEnsureInitializedPrefix)));
@@ -34,7 +33,7 @@ namespace AlienRace
         public static PawnRenderResolveData pawnRenderResolveData;
 
 
-        public static void PawnRenderTreeEnsureInitializedPrefix(PawnRenderTree __instance, PawnRenderFlags defaultRenderFlagsNow)
+        public static void PawnRenderTreeEnsureInitializedPrefix(PawnRenderTree __instance)
         {
             Pawn alien = __instance.pawn;
             if (alien.def is ThingDef_AlienRace alienProps && alien.story != null)
@@ -43,8 +42,6 @@ namespace AlienRace
 
                 if (alienComp != null)
                 {
-                    AlienPartGenerator apg = alienProps.alienRace.generalSettings.alienPartGenerator;
-
                     if (alienComp.fixGenderPostSpawn)
                     {
                         float? maleGenderProbability = alien.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? alienProps.alienRace.generalSettings.maleGenderProbability;
