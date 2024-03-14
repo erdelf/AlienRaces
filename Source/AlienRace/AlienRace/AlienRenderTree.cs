@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AlienRace
 {
@@ -12,7 +10,6 @@ namespace AlienRace
     using System.Reflection;
     using UnityEngine;
     using Verse;
-    using Verse.Sound;
 
     public static class AlienRenderTreePatches
     {
@@ -29,17 +26,21 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), "SetupDynamicNodes"), postfix: new HarmonyMethod(patchType, nameof(SetupDynamicNodesPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnRenderNode), nameof(PawnRenderNode.GetMesh)), transpiler: new HarmonyMethod(patchType, nameof(RenderNodeGetMeshTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), "TrySetupGraphIfNeeded"),        new HarmonyMethod(patchType,             nameof(TrySetupGraphIfNeededPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), "TrySetupGraphIfNeeded"),        new HarmonyMethod(patchType,  nameof(TrySetupGraphIfNeededPrefix)));
+
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Body), nameof(PawnRenderNode_Body.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(BodyGraphicForPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Head), nameof(PawnRenderNode_Head.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(HeadGraphicForPrefix)));
         }
 
         public class PawnRenderResolveData
         {
             //public static Tuple<Pawn, ThingDef_AlienRace, AlienPartGenerator.AlienComp, LifeStageAgeAlien, int> pawnRenderData;
 
-            public Pawn pawn;
-            public ThingDef_AlienRace alienProps;
+            public Pawn                         pawn;
+            public ThingDef_AlienRace           alienProps;
             public AlienPartGenerator.AlienComp alienComp;
-            public LifeStageAgeAlien lsaa;
+            public LifeStageAgeAlien            lsaa;
+            public int                          sharedIndex = 0;
         }
 
         public static PawnRenderResolveData pawnRenderResolveData;
@@ -68,7 +69,6 @@ namespace AlienRace
                         alienComp.fixGenderPostSpawn = false;
                     }
 
-                    GraphicPaths graphicPaths = alienProps.alienRace.graphicPaths;
                     LifeStageAgeAlien lsaa = (alien.ageTracker.CurLifeStageRace as LifeStageAgeAlien)!;
 
 
@@ -103,68 +103,13 @@ namespace AlienRace
                                                 pawn = alien,
                                                 alienProps = alienProps,
                                                 alienComp = alienComp,
-                                                lsaa = lsaa
+                                                lsaa = lsaa,
+                                                sharedIndex = 0
                                             };
                     
                     portraitRender = new Pair<WeakReference, bool>(new WeakReference(alien), false);
 
                     /*
-                    int sharedIndex = 0;
-
-                    string bodyPath = graphicPaths.body.GetPath(alien, ref sharedIndex, alienComp.bodyVariant < 0 ? null : alienComp.bodyVariant);
-                    alienComp.bodyVariant = sharedIndex;
-                    string bodyMask = graphicPaths.bodyMasks.GetPath(alien, ref sharedIndex, alienComp.bodyMaskVariant < 0 ? null : alienComp.bodyMaskVariant);
-                    alienComp.bodyMaskVariant = sharedIndex;
-
-                    Shader skinShader = graphicPaths.skinShader?.Shader ?? ShaderDatabase.CutoutSkin;
-
-                    if (skinShader == ShaderDatabase.CutoutSkin && alien.story.SkinColorOverriden)
-                        skinShader = ShaderDatabase.CutoutSkinColorOverride;
-
-
-                    __instance.nakedGraphic = !bodyPath.NullOrEmpty() ?
-                                                  CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi),
-                                                                                                bodyPath, bodyMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
-                                                                                                              skinShader : ShaderDatabase.CutoutComplex,
-                                                                                                Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false), null,
-                                                                                                0, [graphicPaths.SkinColoringParameter], bodyMask)) :
-                                                  null;
-
-                    __instance.rottingGraphic = !bodyPath.NullOrEmpty() ?
-                                                GraphicDatabase.Get<Graphic_Multi>(bodyPath, ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
-                                                                                                 skinShader : ShaderDatabase.CutoutComplex,
-                                                                                   Vector2.one, PawnRenderUtility.GetRottenColor(alien.story.SkinColor), PawnRenderUtility.GetRottenColor(apg.SkinColor(alien, first: false)), null, bodyMask) :
-                                                null;
-
-                    string skeletonPath = graphicPaths.skeleton.GetPath(alien, ref sharedIndex, alienComp.bodyVariant);
-                    __instance.dessicatedGraphic = !skeletonPath.NullOrEmpty() ?
-                                                       GraphicDatabase.Get<Graphic_Multi>(skeletonPath, ShaderDatabase.Cutout) :
-                                                       null;
-
-                    string headPath = graphicPaths.head.GetPath(alien, ref sharedIndex, alienComp.headVariant < 0 ? null : alienComp.headVariant);
-                    alienComp.headVariant = sharedIndex;
-
-                    string headMask = graphicPaths.headMasks.GetPath(alien, ref sharedIndex, alienComp.headMaskVariant < 0 ? null : alienComp.headMaskVariant);
-                    alienComp.headMaskVariant = sharedIndex;
-
-                    __instance.headGraphic = alien.health.hediffSet.HasHead && !headPath.NullOrEmpty() ?
-                                                 CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi),
-                                                                                               headPath, headMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(headPath + "_northm", reportFailure: false) == null ?
-                                                                                                             skinShader : ShaderDatabase.CutoutComplex,
-                                                                                               Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false), null,
-                                                                                               0, new List<ShaderParameter> { graphicPaths.SkinColoringParameter }, headMask))
-                                                 : null;
-
-                    __instance.desiccatedHeadGraphic = alien.health.hediffSet.HasHead && !headPath.NullOrEmpty() ?
-                                                           GraphicDatabase.Get<Graphic_Multi>(headPath, ShaderDatabase.Cutout, Vector2.one, PawnRenderUtility.GetRottenColor(Color.white)) :
-                                                           null;
-
-                    string skullPath = graphicPaths.skull.GetPath(alien, ref sharedIndex, alienComp.headVariant);
-                    __instance.skullGraphic = alien.health.hediffSet.HasHead && !skullPath.NullOrEmpty()
-                                                  ? GraphicDatabase.Get<Graphic_Multi>(skullPath, ShaderDatabase.Cutout, Vector2.one, Color.white)
-                                                  : null;
-
-
                     __instance.hairGraphic = !(__instance.pawn.story.hairDef?.noGraphic ?? true) && alienProps.alienRace.styleSettings[typeof(HairDef)].hasStyle ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
                                                                                                                            (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Transparent) :
                                                                                                                            ShaderDatabase.CutoutComplex, Vector2.one, alien.story.HairColor,
@@ -295,8 +240,90 @@ namespace AlienRace
             }
         }
 
+        public static bool BodyGraphicForPrefix(PawnRenderNode_Body __instance, Pawn pawn, ref Graphic __result)
+        {
+            if (pawn.def is not ThingDef_AlienRace)
+                return true;
+
+            int                          sharedIndex  = pawnRenderResolveData.sharedIndex;
+            GraphicPaths                 graphicPaths = pawnRenderResolveData.alienProps.alienRace.graphicPaths;
+            AlienPartGenerator.AlienComp alienComp    = pawnRenderResolveData.alienComp;
+            AlienPartGenerator           apg          = pawnRenderResolveData.alienProps.alienRace.generalSettings.alienPartGenerator;
+
+            string bodyPath    = graphicPaths.body.GetPath(pawn, ref sharedIndex, alienComp.bodyVariant < 0 ? null : alienComp.bodyVariant);
+            alienComp.bodyVariant = sharedIndex;
+            string bodyMask = graphicPaths.bodyMasks.GetPath(pawn, ref sharedIndex, alienComp.bodyMaskVariant < 0 ? null : alienComp.bodyMaskVariant);
+            alienComp.bodyMaskVariant = sharedIndex;
+
+            pawnRenderResolveData.sharedIndex = sharedIndex;
+
+            Shader skinShader = graphicPaths.skinShader?.Shader ?? ShaderUtility.GetSkinShader(pawn);
+
+            if (skinShader == ShaderDatabase.CutoutSkin && pawn.story.SkinColorOverriden)
+                skinShader = ShaderDatabase.CutoutSkinColorOverride;
 
 
+            if (pawn.Drawer.renderer.CurRotDrawMode == RotDrawMode.Dessicated)
+            {
+                string skeletonPath = graphicPaths.skeleton.GetPath(pawn, ref sharedIndex, alienComp.bodyVariant);
+                __result = !skeletonPath.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(skeletonPath, ShaderDatabase.Cutout) : null;
+                return false;
+            }
+
+
+            __result = !bodyPath.NullOrEmpty() ? 
+                           CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi), bodyPath, 
+                                                                         bodyMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(bodyPath + "_northm", reportFailure: false) == null ?
+                                                                             skinShader : ShaderDatabase.CutoutComplex, 
+                                                                         Vector2.one, __instance.ColorFor(pawn), apg.SkinColor(pawn, first: false),
+                                                                         null, 0, [graphicPaths.SkinColoringParameter], bodyMask)) :
+                                          null;
+
+            return false;
+        }
+
+        public static bool HeadGraphicForPrefix(PawnRenderNode_Head __instance, Pawn pawn, ref Graphic __result)
+        {
+            if (pawn.def is not ThingDef_AlienRace)
+                return true;
+
+            int                          sharedIndex  = pawnRenderResolveData.sharedIndex;
+            GraphicPaths                 graphicPaths = pawnRenderResolveData.alienProps.alienRace.graphicPaths;
+            AlienPartGenerator.AlienComp alienComp    = pawnRenderResolveData.alienComp;
+            AlienPartGenerator           apg          = pawnRenderResolveData.alienProps.alienRace.generalSettings.alienPartGenerator;
+
+            string headPath = graphicPaths.head.GetPath(pawn, ref sharedIndex, alienComp.headVariant < 0 ? null : alienComp.headVariant);
+            alienComp.headVariant = sharedIndex;
+
+            string headMask = graphicPaths.headMasks.GetPath(pawn, ref sharedIndex, alienComp.headMaskVariant < 0 ? null : alienComp.headMaskVariant);
+            alienComp.headMaskVariant = sharedIndex;
+
+            pawnRenderResolveData.sharedIndex = sharedIndex;
+
+            Shader skinShader = graphicPaths.skinShader?.Shader ?? ShaderUtility.GetSkinShader(pawn);
+
+            if (skinShader == ShaderDatabase.CutoutSkin && pawn.story.SkinColorOverriden)
+                skinShader = ShaderDatabase.CutoutSkinColorOverride;
+
+
+            if (pawn.Drawer.renderer.CurRotDrawMode == RotDrawMode.Dessicated)
+            {
+                string skullPath = graphicPaths.skull.GetPath(pawn, ref sharedIndex, alienComp.headVariant);
+                __result = pawn.health.hediffSet.HasHead && !skullPath.NullOrEmpty() ?
+                               GraphicDatabase.Get<Graphic_Multi>(skullPath, ShaderDatabase.Cutout, Vector2.one, Color.white) : 
+                               null;
+                return false;
+            }
+
+            __result = pawn.health.hediffSet.HasHead && !headPath.NullOrEmpty() ?
+                           CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi),
+                                                                         headPath, headMask.NullOrEmpty() && ContentFinder<Texture2D>.Get(headPath + "_northm", reportFailure: false) == null ?
+                                                                                       skinShader : ShaderDatabase.CutoutComplex, Vector2.one, __instance.ColorFor(pawn), apg.SkinColor(pawn, first: false), null,
+                                                                                                                                0, [graphicPaths.SkinColoringParameter], headMask))
+                                         : null;
+
+            return false;
+        }
 
         public static void SetupDynamicNodesPostfix(PawnRenderTree __instance)
         {
@@ -375,10 +402,7 @@ namespace AlienRace
             }
         }
 
-
-
         #region MeshSets
-
         public static IEnumerable<CodeInstruction> RenderNodeGetMeshTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
             FieldInfo meshSetInfo       = AccessTools.Field(typeof(PawnRenderNode), "meshSet");
@@ -547,7 +571,6 @@ namespace AlienRace
 
             return MeshPool.GetMeshSetForWidth(drawSize.x * scaleFactor.x, drawSize.y * scaleFactor.y);
         }
-
         #endregion
     }
 
