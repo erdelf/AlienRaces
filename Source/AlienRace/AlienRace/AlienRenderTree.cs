@@ -578,26 +578,7 @@ namespace AlienRace
 
         public override Graphic GraphicFor(Pawn pawn) => this.props.graphic;
 
-        public override Mesh GetMesh(PawnDrawParms parms)
-        {
-            AlienPartGenerator.BodyAddon            ba    = this.props.addon;
-
-            Vector3 scale = (parms.Portrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) *
-                            (ba.scaleWithPawnDrawsize ?
-                                 (ba.alignWithHead ?
-                                      parms.Portrait ?
-                                          this.props.alienComp.customPortraitHeadDrawSize :
-                                          this.props.alienComp.customHeadDrawSize :
-                                      parms.Portrait ?
-                                          this.props.alienComp.customPortraitDrawSize :
-                                          this.props.alienComp.customDrawSize) *
-                                 (ModsConfig.BiotechActive ? parms.pawn.ageTracker.CurLifeStage.bodyWidth ?? 1.5f : 1.5f) :
-                                 Vector2.one * 1.5f);
-
-            this.props.graphic.drawSize = scale;
-
-            return this.props.graphic.MeshAt(parms.facing);
-        }
+        public override GraphicMeshSet MeshSetFor(Pawn pawn) => MeshPool.GetMeshSetForSize(Vector2.one);
     }
 
     public class AlienPawnRenderNodeWorker_BodyAddon : PawnRenderNodeWorker
@@ -641,6 +622,26 @@ namespace AlienRace
                 offsetVector.x = -offsetVector.x;
 
             return base.OffsetFor(node, parms, out pivot) + offsetVector;
+        }
+
+        public override Vector3 ScaleFor(PawnRenderNode node, PawnDrawParms parms)
+        {
+            AlienPawnRenderNodeProperties_BodyAddon props = PropsFromNode(node);
+            AlienPartGenerator.BodyAddon            ba    = props.addon;
+            Vector2 scale = (parms.Portrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) *
+                            (ba.scaleWithPawnDrawsize ?
+                                 (ba.alignWithHead ?
+                                      parms.Portrait ?
+                                          props.alienComp.customPortraitHeadDrawSize :
+                                          props.alienComp.customHeadDrawSize :
+                                      parms.Portrait ?
+                                          props.alienComp.customPortraitDrawSize :
+                                          props.alienComp.customDrawSize) *
+                                 (ModsConfig.BiotechActive ? parms.pawn.ageTracker.CurLifeStage.bodyWidth ?? 1.5f : 1.5f) :
+                                 Vector2.one * 1.5f);
+
+
+            return new Vector3(scale.x, 1f, scale.y);
         }
     }
 }
