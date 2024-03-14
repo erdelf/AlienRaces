@@ -74,7 +74,6 @@
         public Vector2 customFemaleHeadDrawSize         = Vector2.zero;
         public Vector2 customFemalePortraitHeadDrawSize = Vector2.zero;
 
-
         public BodyPartDef headBodyPartDef;
 
         public static HashSet<ThingDef> racesWithSeverity = [];
@@ -181,7 +180,7 @@
             this.GenerateOffsetDefaults();
 
             {
-                if (!this.alienProps.alienRace.graphicPaths.head.GetSubGraphics().MoveNext())
+                if (!this.alienProps.alienRace.graphicPaths.head.GetSubGraphics().Any())
                 {
                     ExtendedGraphicTop headGraphic = this.alienProps.alienRace.graphicPaths.head;
                     string             headPath    = headGraphic.path;
@@ -204,25 +203,25 @@
 
                         Gender firstGender = genderIncluded ? headType.gender : Gender.Male;
 
-                        headtypeGraphic.genderGraphics.Add(new ExtendedGenderGraphic
+                        headtypeGraphic.extendedGraphics.Add(new ExtendedGenderGraphic
                                                            {
                                                                gender = firstGender,
                                                                path   = headPath + firstGender + "_" + headTypePath
                                                            });
                         if (!genderIncluded)
-                            headtypeGraphic.genderGraphics.Add(new ExtendedGenderGraphic
+                            headtypeGraphic.extendedGraphics.Add(new ExtendedGenderGraphic
                                                                {
                                                                    gender = Gender.Female,
                                                                    path   = headPath + Gender.Female + headTypePath
                                                                });
 
-                        headGraphic.headtypeGraphics.Add(headtypeGraphic);
+                        headGraphic.extendedGraphics.Add(headtypeGraphic);
                     }
                 }
 
                 //Log.Message(string.Join("\n", this.alienProps.alienRace.graphicPaths.head.headtypeGraphics.Select(ehg => $"{ehg.headType.defName}: {ehg.path} | {string.Join("|", ehg.genderGraphics?.Select(egg => $"{egg.gender}: {egg.path}") ?? new []{string.Empty})}")));
 
-                if (!this.alienProps.alienRace.graphicPaths.body.GetSubGraphics().MoveNext())
+                if (!this.alienProps.alienRace.graphicPaths.body.GetSubGraphics().Any())
                 {
                     ExtendedGraphicTop bodyGraphic = this.alienProps.alienRace.graphicPaths.body;
                     string             bodyPath    = bodyGraphic.path;
@@ -231,23 +230,24 @@
                     {
                         BodyTypeDef bodyType = bodyTypeRaw == BodyTypeDefOf.Baby ? BodyTypeDefOf.Child : bodyTypeRaw;
 
-                        bodyGraphic.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
+                        bodyGraphic.extendedGraphics.Add(new ExtendedBodytypeGraphic
                                                          {
                                                              bodytype = bodyTypeRaw,
                                                              path     = $"{bodyPath}Naked_{bodyType.defName}",
-                                                             genderGraphics = new List<ExtendedGenderGraphic>()
-                                                                              {
-                                                                                  new()
-                                                                                  {
-                                                                                      gender = Gender.Male,
-                                                                                      path   = $"{bodyPath}{Gender.Male}_Naked_{bodyType.defName}"
-                                                                                  },
-                                                                                  new()
-                                                                                  {
-                                                                                      gender = Gender.Female,
-                                                                                      path   = $"{bodyPath}{Gender.Female}_Naked_{bodyType.defName}"
-                                                                                  }
-                                                                              }
+                                                             extendedGraphics =
+                                                             [
+                                                                 new ExtendedGenderGraphic
+                                                                 {
+                                                                     gender = Gender.Male,
+                                                                     path   = $"{bodyPath}{Gender.Male}_Naked_{bodyType.defName}"
+                                                                 },
+
+                                                                 new ExtendedGenderGraphic
+                                                                 {
+                                                                     gender = Gender.Female,
+                                                                     path   = $"{bodyPath}{Gender.Female}_Naked_{bodyType.defName}"
+                                                                 }
+                                                             ]
                                                          });
                     }
 
@@ -259,11 +259,12 @@
                                                                          path = $"{bodyPath}_{formKindDef}"
                                                                      };
                         foreach (BodyTypeGraphicData bodyTypeData in formKindDef.bodyTypeGraphicPaths)
-                            formGraphic.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
+                            formGraphic.extendedGraphics.Add(new ExtendedBodytypeGraphic
                                                              {
                                                                  bodytype = bodyTypeData.bodyType,
                                                                  path     = bodyTypeData.texturePath
                                                              });
+
                         bodyGraphic.extendedGraphics.Add(formGraphic);
                     }
 
@@ -275,7 +276,7 @@
                                                                          path = $"{bodyPath}_{mutantDef}"
                                                                      };
                         foreach (BodyTypeGraphicData bodyTypeData in mutantDef.bodyTypeGraphicPaths)
-                            mutantGraphic.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
+                            mutantGraphic.extendedGraphics.Add(new ExtendedBodytypeGraphic
                                                              {
                                                                  bodytype = bodyTypeData.bodyType,
                                                                  path     = bodyTypeData.texturePath
@@ -288,28 +289,29 @@
             {
                 foreach (ExtendedGraphicTop graphicTop in this.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values)
                 {
-                    if (!graphicTop.GetSubGraphics().MoveNext())
+                    if (!graphicTop.GetSubGraphics().Any())
                     {
                         string path = graphicTop.path;
 
                         foreach (BodyTypeDef bodyType in this.bodyTypes)
-                            graphicTop.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
+                            graphicTop.extendedGraphics.Add(new ExtendedBodytypeGraphic
                                                             {
                                                                 bodytype = bodyType,
                                                                 path     = $"{path}_{bodyType.defName}",
-                                                                genderGraphics = new List<ExtendedGenderGraphic>
-                                                                                 {
-                                                                                     new()
-                                                                                     {
-                                                                                         gender = Gender.Male,
-                                                                                         path   = $"{path}_{Gender.Male}_{bodyType.defName}"
-                                                                                     },
-                                                                                     new()
-                                                                                     {
-                                                                                         gender = Gender.Female,
-                                                                                         path   = $"{path}_{Gender.Female}_{bodyType.defName}"
-                                                                                     }
-                                                                                 }
+                                                                extendedGraphics =
+                                                                [
+                                                                    new ExtendedGenderGraphic
+                                                                    {
+                                                                        gender = Gender.Male,
+                                                                        path   = $"{path}_{Gender.Male}_{bodyType.defName}"
+                                                                    },
+
+                                                                    new ExtendedGenderGraphic
+                                                                    {
+                                                                        gender = Gender.Female,
+                                                                        path   = $"{path}_{Gender.Female}_{bodyType.defName}"
+                                                                    }
+                                                                ]
                                                             });
                     }
                 }
@@ -318,27 +320,27 @@
                 {
                     foreach (ExtendedGraphicTop graphicTop in fallback.wornGraphicPaths.Concat(fallback.wornGraphicPath))
                     {
-                        if (!graphicTop.GetSubGraphics().MoveNext())
+                        if (!graphicTop.GetSubGraphics().Any())
                         {
                             string path = graphicTop.path;
                             foreach (BodyTypeDef bodyType in this.bodyTypes)
-                                graphicTop.bodytypeGraphics.Add(new ExtendedBodytypeGraphic
+                                graphicTop.extendedGraphics.Add(new ExtendedBodytypeGraphic
                                                                 {
                                                                     bodytype = bodyType,
                                                                     path     = $"{path}_{bodyType.defName}",
-                                                                    genderGraphics = new List<ExtendedGenderGraphic>()
-                                                                                     {
-                                                                                         new()
-                                                                                         {
-                                                                                             gender = Gender.Male,
-                                                                                             path   = $"{path}_{Gender.Male}_{bodyType.defName}"
-                                                                                         },
-                                                                                         new()
-                                                                                         {
-                                                                                             gender = Gender.Female,
-                                                                                             path   = $"{path}_{Gender.Female}_{bodyType.defName}"
-                                                                                         }
-                                                                                     }
+                                                                    extendedGraphics =
+                                                                    [
+                                                                        new ExtendedGenderGraphic()
+                                                                        {
+                                                                            gender = Gender.Male,
+                                                                            path   = $"{path}_{Gender.Male}_{bodyType.defName}"
+                                                                        },
+                                                                        new ExtendedGenderGraphic()
+                                                                        {
+                                                                            gender = Gender.Female,
+                                                                            path   = $"{path}_{Gender.Female}_{bodyType.defName}"
+                                                                        }
+                                                                    ]
                                                                 });
                         }
                     }
@@ -348,16 +350,15 @@
             this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.Init();
             if (!this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.GetPath().NullOrEmpty())
                 this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.IncrementVariantCount();
-            Stack<IEnumerator<IExtendedGraphic>> stack = new();
+            
+            Stack<IEnumerable<IExtendedGraphic>> stack = new();
 
             stack.Push(this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.GetSubGraphics());
             while (stack.Count > 0)
             {
-                IEnumerator<IExtendedGraphic> currentGraphicSet = stack.Pop();
+                IEnumerable<IExtendedGraphic> currentGraphicSet = stack.Pop();
 
-                while (currentGraphicSet.MoveNext())
-                {
-                    IExtendedGraphic current = currentGraphicSet.Current;
+                foreach (IExtendedGraphic current in currentGraphicSet)
                     if (current != null)
                     {
                         current.Init();
@@ -366,7 +367,6 @@
 
                         stack.Push(current.GetSubGraphics());
                     }
-                }
             }
 
             graphicsLoader.LoadAllGraphics(this.alienProps.defName,

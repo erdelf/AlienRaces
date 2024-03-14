@@ -74,7 +74,7 @@ public class DefaultGraphicsLoader : IGraphicsLoader
      */
     public void LoadAllGraphics(string source, params AlienPartGenerator.ExtendedGraphicTop[] graphicTops)
     {
-        Stack<IEnumerator<IExtendedGraphic>> topGraphics = new();
+        Stack<IEnumerable<IExtendedGraphic>> topGraphics = new();
         StringBuilder                        logBuilder        = new();
 
         // Initialise the stack with the set of top level Graphics enumerators from all the bodyaddons.
@@ -95,12 +95,10 @@ public class DefaultGraphicsLoader : IGraphicsLoader
             while (topGraphics.Count > 0)
             {
                 // Take the next unprocessed graphics set off the stack
-                IEnumerator<IExtendedGraphic> subGraphicSet = topGraphics.Pop();
+                IEnumerable<IExtendedGraphic> subGraphicSet = topGraphics.Pop();
 
-                // For each graphic in the set being looked at, load it and add any sub-graphics to the stack
-                while (subGraphicSet.MoveNext())
+                foreach (IExtendedGraphic currentGraphic in subGraphicSet)
                 {
-                    IExtendedGraphic currentGraphic = subGraphicSet.Current;
                     if (currentGraphic == null) break;
                     this.LoadAll2DVariantsForGraphic(currentGraphic, logBuilder, source, topGraphic.Debug);
                     topGraphic.VariantCountMax = currentGraphic.GetVariantCount();

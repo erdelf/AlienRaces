@@ -12,11 +12,12 @@
         public AlienRaceMod(ModContentPack content) : base(content)
         {
             settings = this.GetSettings<AlienRaceSettings>();
-
+            /*
             if (CachedData.customDataLoadMethodCacheInfo().ContainsKey(typeof(AlienPartGenerator.BodyAddon)))
                 CachedData.customDataLoadMethodCacheInfo()[typeof(AlienPartGenerator.BodyAddon)] = null;
             else
                 CachedData.customDataLoadMethodCacheInfo().Add(typeof(AlienPartGenerator.BodyAddon), null);
+            */
         }
 
         public override void DoSettingsWindowContents(Rect inRect)
