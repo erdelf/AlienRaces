@@ -316,6 +316,7 @@
     <Compile Include="AnimalComp.cs" />
     <Compile Include="BackstoryDef.cs" />
     <Compile Include="ExtendedGraphics\AbstractExtendedGraphic.cs" />
+    <Compile Include="ExtendedGraphics\Condition.cs" />
     <Compile Include="ExtendedGraphics\ExtendedGraphicsPawnWrapper.cs" />
     <Compile Include="ExtendedGraphics\DefaultGraphicsLoader.cs" />
     <Compile Include="ExtendedGraphics\GraphicFinder2D.cs" />
@@ -339,7 +340,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Lib.Harmony">
-      <Version>2.2.2</Version>
+      <Version>2.3.0</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

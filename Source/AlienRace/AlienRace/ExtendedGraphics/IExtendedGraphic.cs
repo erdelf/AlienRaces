@@ -31,5 +31,5 @@ public interface IExtendedGraphic
     /**
      * Check if this graphic is relevant to the pawn and part.
      */
-    public bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel);
+    public bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel);
 }

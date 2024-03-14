@@ -14,6 +14,7 @@
     using UnityEngine;
     using Verse;
     using Verse.AI;
+    using static RimWorld.PsychicRitualRoleDef;
 
     [DefOf]
     public static class AlienDefOf
@@ -102,6 +103,14 @@
             }
         }
 
+        public static void SetInstanceVariablesFromChildNodesOf(XmlNode xmlRootNode, object wanter, HashSet<string> excludedFieldNames)
+        {
+            Traverse traverse = Traverse.Create(wanter);
+            foreach (XmlNode xmlNode in xmlRootNode.ChildNodes)
+                if (!excludedFieldNames.Contains(xmlNode.Name))
+                    SetFieldFromXmlNode(traverse, xmlNode, wanter, xmlNode.Name);
+        }
+
         public static void SetFieldFromXmlNode(Traverse traverse, XmlNode xmlNode, object wanter, string fieldName)
         {
             Traverse field = traverse.Field(fieldName);
@@ -123,8 +132,8 @@
 
         public static void GeneBodyAddonPatcher(this List<AlienPartGenerator.BodyAddon> universal)
         {
-            List<AlienPartGenerator.BodyAddon> geneAddons  = new();
-            AlienPartGenerator                 partHandler = new();
+            List<AlienPartGenerator.BodyAddon>             geneAddons  = new();
+            AlienPartGenerator partHandler = new();
             partHandler.GenericOffsets();
 
             foreach (GeneDef gene in (DefDatabase<GeneDef>.AllDefsListForReading))
@@ -132,16 +141,16 @@
                 if (!gene.HasModExtension<BodyAddonGene>())
                     continue;
                 BodyAddonGene har = gene.GetModExtension<BodyAddonGene>();
-                har.addon.geneRequirement = gene;
+                har.addon.conditions.Add(new ConditionGene() { gene = gene } );
                 har.addon.defaultOffsets  = partHandler.offsetDefaults.Find(on => on.name == har.addon.defaultOffset).offsets;
                 geneAddons.Add(har.addon);
 
                 if (!har.addons.NullOrEmpty())
                 {
-                    foreach (AlienPartGenerator.BodyAddon addons in har.addons)
+                    foreach (AlienPartGenerator.BodyAddon addon in har.addons)
                     {
-                        addons.defaultOffsets  = partHandler.offsetDefaults.Find(on => on.name == addons.defaultOffset).offsets;
-                        addons.geneRequirement = gene;
+                        addon.defaultOffsets  = partHandler.offsetDefaults.Find(on => on.name == addon.defaultOffset).offsets;
+                        addon.conditions.Add(new ConditionGene { gene = gene });
                     }
 
                     geneAddons.AddRange(har.addons);

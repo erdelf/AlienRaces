@@ -30,13 +30,14 @@ namespace AlienRace
                 get => this.variantCountMax;
                 set => this.variantCountMax = Mathf.Max(this.VariantCountMax, value);
             }
-
-            public BodyPartDef bodyPart;
-            public string      bodyPartLabel;
-            public bool drawWithoutPart = false;
-
-
+            
             private const string REWIND_PATH = "void";
+
+            [Unsaved]
+            public BodyPartDef bodyPart;
+            [Unsaved]
+            public string      bodyPartLabel;
+
 
             public IExtendedGraphic GetBestGraphic(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel)
             {
@@ -54,7 +55,7 @@ namespace AlienRace
                         IExtendedGraphic current = currentGraphicSet.Second.Current; //current branch of tree
                         //Log.ResetMessageCount();
                         //Log.Message(HarmonyLib.Traverse.Create(pawn).Property("WrappedPawn").GetValue<Pawn>().NameShortColored + ": " + HarmonyLib.AccessTools.GetDeclaredFields(current.GetType())[0].GetValue(current) + " | " + current.GetType().FullName + " | " + current.GetPath());
-                        if (!(current?.IsApplicable(pawn, part, partLabel) ?? false))
+                        if (!(current?.IsApplicable(pawn, ref part, ref partLabel) ?? false))
                             continue;
                         
                         //Log.Message("applicable");
@@ -108,7 +109,7 @@ namespace AlienRace
             }
             
             // Top level so always considered applicable
-            public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) => true;
+            public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) => true;
             
 
         }
@@ -128,17 +129,8 @@ namespace AlienRace
             public bool             inFrontOfBody                = false;
             public bool             layerInvert                  = true;
 
-
-            public bool drawnOnGround   = true;
-            public bool drawnInBed      = true;
-            public bool drawnDesiccated = true;
-            public bool drawForMale     = true;
-            public bool drawForFemale   = true;
-            public bool drawDrafted     = true;
-            public bool drawUndrafted   = true;
-
-            public BodyAddonJobConfig jobs = new();
-
+            public List<Condition> conditions = [];
+            
             public bool alignWithHead = false;
 
             public bool    drawRotated           = true;
@@ -161,15 +153,6 @@ namespace AlienRace
             public bool userCustomizable = true;
             public bool allowColorOverride = false;
 
-            public List<BodyPartGroupDef> hiddenUnderApparelFor = new();
-            public List<string>           hiddenUnderApparelTag = new();
-
-            public BackstoryDef   backstoryRequirement;
-            public BodyTypeDef    bodyTypeRequirement;
-            public GeneDef        geneRequirement;
-            public List<ThingDef> raceRequirement;
-            public List<ThingDef> raceBlacklist;
-
 
             private ShaderTypeDef shaderType;
 
@@ -178,71 +161,40 @@ namespace AlienRace
                 get => this.shaderType ??= ShaderTypeDefOf.Cutout;
                 set => this.shaderType = value ?? ShaderTypeDefOf.Cutout;
             }
-            private bool VisibleUnderApparelOf(ExtendedGraphicsPawnWrapper pawn) =>
-                !pawn.HasApparelGraphics() ||
-                (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
-                !pawn.GetWornApparel().Any(ap => 
-                    ap.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
-                    ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
-
-            private bool VisibleForPostureOf(ExtendedGraphicsPawnWrapper pawn) =>
-                (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) &&
-                (pawn.VisibleInBed()                       || this.drawnInBed);
-
-            private bool VisibleForBackstoryOf(ExtendedGraphicsPawnWrapper pawn) => 
-                this.backstoryRequirement == null || pawn.HasBackstory(this.backstoryRequirement);
-
-            private bool VisibleForRotStageOf(ExtendedGraphicsPawnWrapper pawn) =>
-                this.drawnDesiccated || pawn.GetRotStage() != RotStage.Dessicated;
-
+            
+            /*
             private bool RequiredBodyPartExistsFor(ExtendedGraphicsPawnWrapper pawn) =>
                 (pawn.HasNamedBodyPart(this.bodyPart, this.bodyPartLabel) || pawn.LinkToCorePart(this.drawWithoutPart, this.alignWithHead, this.bodyPart, this.bodyPartLabel)) ||
                 this.extendedGraphics.OfType<ExtendedHediffGraphic>().Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart);
                 //any missing part textures need to be done on the first branch level
-
-            private bool VisibleForGenderOf(ExtendedGraphicsPawnWrapper pawn) =>
-                pawn.GetGender() == Gender.Female ? this.drawForFemale : this.drawForMale;
-
-            private bool VisibleForBodyTypeOf(ExtendedGraphicsPawnWrapper pawn) => 
-                this.bodyTypeRequirement == null || pawn.HasBodyType(this.bodyTypeRequirement);
-
-            private bool VisibleForDrafted(ExtendedGraphicsPawnWrapper pawn) =>
-                this.drawDrafted   && this.drawUndrafted ||
-                this.drawDrafted   && pawn.Drafted       ||
-                this.drawUndrafted && !pawn.Drafted;
-
-            public bool VisibleForJob(ExtendedGraphicsPawnWrapper pawn) => 
-                pawn.CurJob == null ? 
-                    this.jobs.drawNoJob : 
-                    !this.jobs.JobMap.TryGetValue(pawn.CurJob.def, out BodyAddonJobConfig.BodyAddonJobConfigJob jobConfig) || jobConfig.IsApplicable(pawn);
-
-            public bool VisibleWithGene(ExtendedGraphicsPawnWrapper pawn) =>
-                !ModsConfig.BiotechActive || this.geneRequirement == null || pawn.HasGene(this.geneRequirement);
-
-            public bool VisibleForRace(ExtendedGraphicsPawnWrapper pawn) =>
-                (this.raceRequirement.NullOrEmpty() || this.raceRequirement.Any(pawn.IsRace)) && (this.raceBlacklist.NullOrEmpty() || !this.raceBlacklist.Any(pawn.IsRace));
-
+            */
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 this.CanDrawAddon(new ExtendedGraphicsPawnWrapper(pawn));
 
-            private bool CanDrawAddon(ExtendedGraphicsPawnWrapper pawn) =>
-                this.VisibleUnderApparelOf(pawn)     &&
-                this.VisibleForPostureOf(pawn)       &&
-                this.VisibleForRotStageOf(pawn)      &&
-                this.VisibleForDrafted(pawn)         &&
-                this.RequiredBodyPartExistsFor(pawn) &&
-                this.VisibleForJob(pawn)             && 
-                this.CanDrawAddonStatic(pawn);
+            private bool CanDrawAddon(ExtendedGraphicsPawnWrapper pawn) => 
+                this.conditions.TrueForAll(c => c.Satisfied(pawn, ref this.bodyPart, ref this.bodyPartLabel));
 
+            /*
+            this.VisibleUnderApparelOf(pawn)     &&
+            this.VisibleForPostureOf(pawn)       &&
+            this.VisibleForRotStageOf(pawn)      &&
+            this.VisibleForDrafted(pawn)         &&
+            this.RequiredBodyPartExistsFor(pawn) &&
+            this.VisibleForJob(pawn)             &&
+            this.CanDrawAddonStatic(pawn);
+            */
             public virtual bool CanDrawAddonStatic(Pawn pawn) =>
                 this.CanDrawAddonStatic(new ExtendedGraphicsPawnWrapper(pawn));
 
-            private bool CanDrawAddonStatic(ExtendedGraphicsPawnWrapper pawn) =>
+            private bool CanDrawAddonStatic(ExtendedGraphicsPawnWrapper pawn) => 
+                this.conditions.TrueForAll(c => !c.Static || c.Satisfied(pawn, ref this.bodyPart, ref this.bodyPartLabel));
+            /*
                 this.VisibleForGenderOf(pawn)    &&
                 this.VisibleForBodyTypeOf(pawn)  &&
                 this.VisibleWithGene(pawn)       &&
                 this.VisibleForBackstoryOf(pawn) &&
                 this.VisibleForRace(pawn);
+                */
 
             public virtual Graphic GetGraphic(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
@@ -275,30 +227,6 @@ namespace AlienRace
                                                                                                this.ShaderType.Shader : ShaderDatabase.CutoutComplex, 
                                                                                Vector2.one, first, second, new GraphicData { drawRotated = !this.drawRotated }) :
                            null;
-            }
-
-            public class BodyAddonJobConfig
-            {
-                public bool drawNoJob = true;
-
-                public List<BodyAddonJobConfigJob> jobs = new();
-
-                private Dictionary<JobDef, BodyAddonJobConfigJob> jobMap;
-
-                public Dictionary<JobDef, BodyAddonJobConfigJob> JobMap => this.jobMap ??= this.jobs.ToDictionary(bajcj => bajcj.job);
-
-                public class BodyAddonJobConfigJob
-                {
-                    public JobDef                        job;
-                    public Dictionary<PawnPosture, bool> drawPostures;
-                    public bool                          drawMoving = true;
-                    public bool                          drawUnmoving = true;
-
-                    public bool IsApplicable(ExtendedGraphicsPawnWrapper pawn) =>
-                        (!this.drawPostures.TryGetValue(pawn.GetPosture(), out bool postureDraw) || postureDraw) && 
-                        (this.drawMoving   && pawn.Moving || 
-                         this.drawUnmoving && !pawn.Moving);
-                }
             }
         }
     }

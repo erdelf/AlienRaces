@@ -14,6 +14,33 @@ using Verse;
 
 public partial class AlienPartGenerator
 {
+    public class ExtendedConditionGraphic : AbstractExtendedGraphic
+    {
+        public List<Condition> conditions = [];
+
+        [UsedImplicitly]
+        public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+        {
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
+        }
+
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel)
+        {
+            BodyPartDef bodyPart      = part;
+            string      bodyPartLabel = partLabel;
+
+            bool applicable = this.conditions.TrueForAll(c => c.Satisfied(pawn, ref bodyPart, ref bodyPartLabel));
+
+            if (applicable)
+            {
+                part      = bodyPart;
+                partLabel = bodyPartLabel;
+            }
+
+            return applicable;
+        }
+    }
+
     //Damage graphics
     public class ExtendedDamageGraphic : AbstractExtendedGraphic
     {
@@ -25,10 +52,9 @@ public partial class AlienPartGenerator
             this.damage = float.Parse(xmlRoot.Name.Substring(startIndex: 1).Trim());
 
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
-
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
             pawn.IsPartBelowHealthThreshold(part, partLabel, this.damage);
     }
 
@@ -48,11 +74,10 @@ public partial class AlienPartGenerator
                                                                 xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index),
                                                                 mayRequire?.Value.ToLower());
 
-            this.SetInstanceVariablesFromChildNodesOf(xmlRoot, new HashSet<string>{ageFieldName});
-
+            Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, [ageFieldName]);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
             pawn.CurrentLifeStageDefMatches(this.age);
     }
 
@@ -92,7 +117,7 @@ public partial class AlienPartGenerator
                 yield return graphic;
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
             pawn.HasHediffOfDefAndPart(this.hediff, part, partLabel);
 
         [UsedImplicitly]
@@ -105,8 +130,7 @@ public partial class AlienPartGenerator
                                                                 xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index),
                                                                 mayRequire?.Value.ToLower());
 
-            this.SetInstanceVariablesFromChildNodesOf(xmlRoot, [hediffFieldName]);
-
+            Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, [hediffFieldName]);
         }
     }
 
@@ -126,7 +150,7 @@ public partial class AlienPartGenerator
         // In isolation severity graphics must always be considered applicable because we don't have the hediff
         // As severityGraphics are only valid nested It is expected that the list will only contain applicable instances. 
         // the specific severity amount check is done above in the hediff level
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) => true;
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) => true;
     }
 
     //Backstory Graphics
@@ -143,7 +167,7 @@ public partial class AlienPartGenerator
 
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
             pawn.HasBackStory(this.backstory);
     }
 
@@ -166,7 +190,7 @@ public partial class AlienPartGenerator
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
             this.genderIsValid && pawn.GetGender() == this.gender;
     }
 
@@ -183,7 +207,7 @@ public partial class AlienPartGenerator
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
             pawn.HasTraitWithIdentifier(this.trait);
     }
 
@@ -200,7 +224,7 @@ public partial class AlienPartGenerator
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
             pawn.HasBodyType(this.bodytype);
     }
 
@@ -217,7 +241,7 @@ public partial class AlienPartGenerator
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
             pawn.HasHeadTypeNamed(this.headType);
     }
 
@@ -234,7 +258,7 @@ public partial class AlienPartGenerator
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
             pawn.HasGene(this.gene);
     }
 
@@ -250,7 +274,7 @@ public partial class AlienPartGenerator
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
             pawn.IsRace(this.race);
     }
 
@@ -266,7 +290,7 @@ public partial class AlienPartGenerator
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) => 
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) => 
             pawn.IsMutant(this.mutant);
     }
 
@@ -282,7 +306,7 @@ public partial class AlienPartGenerator
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 
-        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) => 
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) => 
             pawn.IsCreepJoiner(this.form);
     }
 }
