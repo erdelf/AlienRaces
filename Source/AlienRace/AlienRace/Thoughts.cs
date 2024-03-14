@@ -14,15 +14,15 @@ namespace AlienRace
     public class Thought_XenophobeVsXenophile : Thought_SituationalSocial
     {
         public override float OpinionOffset() =>
-             this.pawn.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1 ? -25f : -15f;
+             this.pawn.story.traits.DegreeOfTrait(AlienDefOf.HAR_Xenophobia) == 1 ? -25f : -15f;
     }
 
     [UsedImplicitly]
     public class ThoughtWorker_XenophobeVsXenophile : ThoughtWorker
     {
         protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) =>
-            p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && p.story.traits.HasTrait(AlienDefOf.Xenophobia) && otherPawn.story.traits.HasTrait(AlienDefOf.Xenophobia) &&
-            p.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) != otherPawn.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) && RelationsUtility.PawnsKnowEachOther(p, otherPawn);
+            p.RaceProps.Humanlike && otherPawn.RaceProps.Humanlike && p.story.traits.HasTrait(AlienDefOf.HAR_Xenophobia) && otherPawn.story.traits.HasTrait(AlienDefOf.HAR_Xenophobia) &&
+            p.story.traits.DegreeOfTrait(AlienDefOf.HAR_Xenophobia) != otherPawn.story.traits.DegreeOfTrait(AlienDefOf.HAR_Xenophobia) && RelationsUtility.PawnsKnowEachOther(p, otherPawn);
     }
 
     [UsedImplicitly]
@@ -30,8 +30,8 @@ namespace AlienRace
     {
         public override float OpinionOffset() =>
             Utilities.DifferentRace(this.pawn.def, this.OtherPawn().def)
-                ? this.pawn.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia)        == 1 ? -30 :
-                  this.OtherPawn().story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1 ? -15 : 0
+                ? this.pawn.story.traits.DegreeOfTrait(AlienDefOf.HAR_Xenophobia)        == 1 ? -30 :
+                  this.OtherPawn().story.traits.DegreeOfTrait(AlienDefOf.HAR_Xenophobia) == 1 ? -15 : 0
                 : 0;
     }
 
@@ -40,8 +40,8 @@ namespace AlienRace
     {
         protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) =>
             Utilities.DifferentRace(p.def, otherPawn.def) && RelationsUtility.PawnsKnowEachOther(p, otherPawn)?
-                p.story.traits.HasTrait(AlienDefOf.Xenophobia) ?
-                    p.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == -1 ?
+                p.story.traits.HasTrait(AlienDefOf.HAR_Xenophobia) ?
+                    p.story.traits.DegreeOfTrait(AlienDefOf.HAR_Xenophobia) == -1 ?
                         ThoughtState.ActiveAtStage(stageIndex: 0) :
                         ThoughtState.ActiveAtStage(stageIndex: 1) :
                     false :
@@ -53,8 +53,8 @@ namespace AlienRace
     {
         protected override ThoughtState CurrentSocialStateInternal(Pawn p, Pawn otherPawn) =>
             Utilities.DifferentRace(p.def, otherPawn.def) && RelationsUtility.PawnsKnowEachOther(p, otherPawn) ?
-                otherPawn.story.traits.HasTrait(AlienDefOf.Xenophobia) ?
-                    otherPawn.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == -1 ?
+                otherPawn.story.traits.HasTrait(AlienDefOf.HAR_Xenophobia) ?
+                    otherPawn.story.traits.DegreeOfTrait(AlienDefOf.HAR_Xenophobia) == -1 ?
                         ThoughtState.ActiveAtStage(stageIndex: 0) :
                         ThoughtState.ActiveAtStage(stageIndex: 1) :
                     false :

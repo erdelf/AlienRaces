@@ -1854,11 +1854,10 @@ namespace AlienRace
         public static void BaseHeadOffsetAtPostfix(ref Vector3 __result, Rot4 rotation, Pawn ___pawn)
         {
             LifeStageAgeAlien stageAgeAlien = (___pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien);
-            Vector2           offset        = stageAgeAlien?.headOffsetDirectional?.GetOffset(rotation) ?? Vector2.zero;
             Vector3 offsetSpecific = (___pawn.gender == Gender.Female ? 
-                                          stageAgeAlien?.headFemaleOffsetSpecific : 
-                                          stageAgeAlien?.headOffsetSpecific)?.GetOffset(rotation)?.GetOffset(false, ___pawn.story.bodyType, ___pawn.story.headType) ?? Vector3.zero;
-            __result += new Vector3(offset.x + offsetSpecific.x, y: offsetSpecific.y, offset.y + offsetSpecific.z);
+                                          stageAgeAlien?.headFemaleOffsetDirectional : 
+                                          stageAgeAlien?.headOffsetDirectional)?.GetOffset(rotation)?.GetOffset(false, ___pawn.story.bodyType, ___pawn.story.headType) ?? Vector3.zero;
+            __result += offsetSpecific;
         }
 
         public static void CanInteractWithAnimalPostfix(ref bool __result, Pawn pawn, Pawn animal) =>
@@ -2725,7 +2724,7 @@ namespace AlienRace
             {
                 if (ingester.def is not ThingDef_AlienRace alienProps) return;
 
-                if (ingester.story.traits.HasTrait(AlienDefOf.Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.Xenophobia) == 1)
+                if (ingester.story.traits.HasTrait(AlienDefOf.HAR_Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.HAR_Xenophobia) == 1)
                     if (__result.Any(tfi => tfi.thought       == AlienDefOf.AteHumanlikeMeatDirect) && foodDef.ingestible?.sourceDef != ingester.def)
                         __result.RemoveAll(tfi => tfi.thought == AlienDefOf.AteHumanlikeMeatDirect);
                     else if (__result.Any(tfi => tfi.thought == AlienDefOf.AteHumanlikeMeatAsIngredient) &&
@@ -3383,7 +3382,7 @@ namespace AlienRace
                 foreach (AlienChanceEntry<TraitWithDegree> ate in alienTraits)
                         foreach (TraitWithDegree trait in ate.Select(pawn, int.MinValue))
                             if (!pawn.story.traits.HasTrait(trait.def)) 
-                                pawn.story.traits.GainTrait(new Trait(trait.def, ate.degree != 0 ? ate.degree : trait.degree, forced: true));
+                                pawn.story.traits.GainTrait(new Trait(trait.def, trait.degree, forced: true));
 
                 int traits = alienProps.alienRace.generalSettings.additionalTraits.RandomInRange;
                 if (traits > 0)
