@@ -1391,7 +1391,7 @@ namespace AlienRace
 
                 if (instruction.opcode == OpCodes.Ldarg_0 && instructionList[i + 4].Calls(defaultAnchorInfo))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldarg_2).MoveLabelsFrom(instruction);
+                    yield return new CodeInstruction(OpCodes.Ldarg_3).MoveLabelsFrom(instruction);
                     yield return new CodeInstruction(OpCodes.Brfalse, label);
                     instructionList[i + 5].WithLabels(label);
                 }
