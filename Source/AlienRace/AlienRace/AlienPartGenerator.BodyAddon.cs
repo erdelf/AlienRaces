@@ -237,7 +237,12 @@ namespace AlienRace
             {
                 ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>()?.GetChannel(this.ColorChannel) ?? new ExposableValueTuple<Color, Color>(Color.white, Color.white);
 
-                Color first  = this.ColorChannel == "skin" ? pawn.story?.skinColorOverride.HasValue ?? false ? pawn.story.skinColorOverride.Value : channel.first : channel.first;
+                Color first  = this.ColorChannel == "skin" ? 
+                                   pawn.story?.skinColorOverride.HasValue ?? false ? 
+                                       pawn.story.skinColorOverride.Value : 
+                                       channel.first : 
+                                   channel.first;
+
                 Color second = channel.second;
 
                 if (this.colorOverrideOne.HasValue) 
@@ -257,7 +262,7 @@ namespace AlienRace
                 return !returnPath.NullOrEmpty() ?
                            GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, ContentFinder<Texture2D>.Get(returnPath + "_southm", reportFailure: false) == null ? 
                                                                                                this.ShaderType.Shader : ShaderDatabase.CutoutComplex, 
-                                                                               this.drawSize * 1.5f, first, second, new GraphicData { drawRotated = !this.drawRotated }) :
+                                                                               Vector2.one, first, second, new GraphicData { drawRotated = !this.drawRotated }) :
                            null;
             }
 
