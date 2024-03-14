@@ -20,14 +20,11 @@
     public static class AlienDefOf
     {
         // ReSharper disable InconsistentNaming
-        [Obsolete("Prefixing")]
-        public static TraitDef Xenophobia;
+        public static TraitDef HAR_Xenophobia;
 
-        [Obsolete("Prefixing")]
-        public static ThoughtDef XenophobiaVsAlien;
+        public static ThoughtDef HAR_XenophobiaVsAlien;
 
-        [Obsolete("Capitalizing and prefixing")]
-        public static ThingCategoryDef alienCorpseCategory;
+        public static ThingCategoryDef HAR_AlienCorpseCategory;
 
         [MayRequireIdeology]
         public static HistoryEventDef HAR_AteAlienMeat;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
   <AlienRace.RaceSettings>
-    <defName>AlienRaceSettings_Humans</defName>
+    <defName>HAR_AlienRaceSettings_Humans</defName>
     <pawnKindSettings>
       <alienslavekinds>
         <li>
