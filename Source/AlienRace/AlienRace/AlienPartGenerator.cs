@@ -157,12 +157,12 @@
         {
             if (this.oldHairAgeCurve.PointsCount <= 0)
             {
-                float minAge = this.oldHairAgeRange.TrueMin;
+                float minAge = this.oldHairAgeRange.min <= 0 ?
+                                   this.alienProps.race.lifeExpectancy / 2f :
+                                   this.oldHairAgeRange.TrueMin;
 
                 float maxAge = this.oldHairAgeRange.max <= 0 ?
-                                   this.alienProps.race.ageGenerationCurve == null || this.alienProps.race.ageGenerationCurve.Points.Count < 3 ?
-                                       this.alienProps.race.lifeExpectancy / 3f * 2f :
-                                       this.alienProps.race.ageGenerationCurve.Points.Skip(this.alienProps.race.ageGenerationCurve.Points.Count - 3).First().x :
+                                   this.alienProps.race.lifeExpectancy * 0.95f :
                                    this.oldHairAgeRange.TrueMax;
 
                 this.oldHairAgeCurve.Add(0f,     0f);
