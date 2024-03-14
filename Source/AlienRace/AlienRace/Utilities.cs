@@ -10,12 +10,10 @@
     using AlienRace.ExtendedGraphics;
     using HarmonyLib;
     using JetBrains.Annotations;
-    using MonoMod.Utils;
     using RimWorld;
     using UnityEngine;
     using Verse;
     using Verse.AI;
-    using static RimWorld.PsychicRitualRoleDef;
 
     [DefOf]
     public static class AlienDefOf
@@ -127,8 +125,15 @@
                 Type typeInAnyAssembly = GenTypes.GetTypeInAnyAssembly(xmlAttribute.Value, valueType.Namespace);
                 valueType = typeInAnyAssembly ?? valueType;
             }
+            
+            //if(wanter is Condition)
+            //    Log.Message($"xml: {fieldName} | {valueType} | {xmlNode.OuterXml}");
+            
+            SetFieldFromXmlNodeRaw(field: field, xmlNode: xmlNode, wanter: wanter, fieldName: fieldName, valueType: valueType);
+        }
 
-
+        public static void SetFieldFromXmlNodeRaw(Traverse field, XmlNode xmlNode, object wanter, string fieldName, Type valueType)
+        {
             if (valueType.IsSubclassOf(typeof(Def)))
                 DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(wanter, fieldName, xmlNode.FirstChild.Value);
             else
