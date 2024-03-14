@@ -178,8 +178,8 @@ namespace AlienRace
                 postfix: new HarmonyMethod(patchType, nameof(HasHeadPostfix)));
             harmony.Patch(AccessTools.Property(typeof(HediffSet), nameof(HediffSet.HasHead)).GetGetMethod(),
                 new HarmonyMethod(patchType, nameof(HasHeadPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), name: nameof(Pawn_AgeTracker.PostResolveLifeStageChange)), 
-                postfix: new HarmonyMethod(patchType, nameof(PostResolveLifeStageChangePostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), name: "RecalculateLifeStageIndex"), 
+                transpiler: new HarmonyMethod(patchType, nameof(RecalculateLifeStageIndexTranspiler)));
             
             harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.FactionTick)), transpiler:
                           new HarmonyMethod(patchType, nameof(FactionTickTranspiler)));
@@ -190,7 +190,6 @@ namespace AlienRace
                 postfix: new HarmonyMethod(patchType, nameof(CanInteractWithAnimalPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer), nameof(PawnRenderer.BaseHeadOffsetAt)), 
                           postfix: new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtPostfix)), transpiler: new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), name: "CheckForStateChange"),          postfix: new HarmonyMethod(patchType, nameof(CheckForStateChangePostfix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), nameof(Pawn_HealthTracker.AddHediff), new []{typeof(Hediff), typeof(BodyPartRecord), typeof(DamageInfo?), typeof(DamageWorker.DamageResult)}), postfix: new HarmonyMethod(patchType, nameof(AddHediffPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), nameof(Pawn_HealthTracker.Notify_HediffChanged)), postfix: new HarmonyMethod(patchType, nameof(HediffChangedPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateGearFor"), 
@@ -209,8 +208,6 @@ namespace AlienRace
                           new HarmonyMethod(patchType, nameof(MinAgeForAdulthood)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), name: "TryGiveSolidBioTo"), transpiler:
                           new HarmonyMethod(patchType, nameof(MinAgeForAdulthood)));
-
-            harmony.Patch(AccessTools.Method(typeof(CompRottable), "StageChanged"), new HarmonyMethod(patchType, nameof(RottableCompStageChangedPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnDrawUtility), nameof(PawnDrawUtility.FindAnchors)), postfix: new HarmonyMethod(patchType, nameof(FindAnchorsPostfix)));
 
@@ -265,7 +262,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateSkills"), new HarmonyMethod(patchType, nameof(GenerateSkillsPrefix)), postfix: new HarmonyMethod(patchType, nameof(GenerateSkillsPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnInternalTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker), "Notify_GenesChanged"), postfix: new HarmonyMethod(patchType, nameof(NotifyGenesChangedPostfix)), transpiler: new HarmonyMethod(patchType, nameof(NotifyGenesChangedTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker), "Notify_GenesChanged"), transpiler: new HarmonyMethod(patchType, nameof(NotifyGenesChangedTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(GrowthUtility),    nameof(GrowthUtility.IsGrowthBirthday)),       transpiler: new HarmonyMethod(patchType, nameof(IsGrowthBirthdayTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker),  nameof(Pawn_AgeTracker.TryChildGrowthMoment)), new HarmonyMethod(patchType,             nameof(TryChildGrowthMomentPrefix)));
@@ -1120,15 +1117,20 @@ namespace AlienRace
         public static int[] GrowthMomentHelper(ThingDef pawnDef) =>
             (pawnDef as ThingDef_AlienRace)?.alienRace.generalSettings.GrowthAges ?? GrowthUtility.GrowthMomentAges;
 
-        public static void NotifyGenesChangedPostfix(Pawn ___pawn) => 
-            ___pawn.Drawer.renderer.SetAllGraphicsDirty();
-
         public static IEnumerable<CodeInstruction> NotifyGenesChangedTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             MethodInfo allDefsInfo = AccessTools.PropertyGetter(typeof(DefDatabase<HeadTypeDef>), nameof(DefDatabase<HeadTypeDef>.AllDefs));
 
+            bool dirtyFlagSet = false;
+
             foreach (CodeInstruction instruction in instructions)
             {
+                if (instruction.opcode == OpCodes.Stloc_1)
+                {
+                    yield return new CodeInstruction(OpCodes.Pop);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+                }
+
                 yield return instruction;
                 if (instruction.Calls(allDefsInfo))
                 {
@@ -1669,12 +1671,6 @@ namespace AlienRace
             return __result;
         }
 
-        public static void RottableCompStageChangedPostfix(ThingWithComps ___parent)
-        {
-            Pawn pawn = ___parent as Pawn ?? (___parent as Corpse)?.InnerPawn;
-            pawn?.Drawer.renderer.SetAllGraphicsDirty();
-        }
-
         public static void ThoughtReplacementPrefix(MemoryThoughtHandler __instance, ref ThoughtDef def)
         {
             Pawn pawn = __instance.pawn;
@@ -1806,21 +1802,16 @@ namespace AlienRace
                    }
                });
 
-        public static void AddHediffPostfix(Pawn ___pawn) => 
-            ___pawn.Drawer.renderer.SetAllGraphicsDirty();
+        public static void AddHediffPostfix(Pawn ___pawn, Hediff hediff)
+        {
+            if(!hediff.def.hairColorOverride.HasValue && !hediff.def.HasDefinedGraphicProperties)
+                ___pawn.Drawer.renderer.SetAllGraphicsDirty();
+        }
 
         public static void HediffChangedPostfix(Pawn ___pawn, HediffSet ___hediffSet)
         {
             if (Current.ProgramState == ProgramState.Playing && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace && (AlienPartGenerator.racesWithSeverity?.Contains(___pawn.def) ?? true) && (!___hediffSet.HasRegeneration || ___pawn.IsHashIntervalTick(300)))
-                ___pawn.Drawer.renderer.renderTree.SetDirty();
-        }
-
-        public static void CheckForStateChangePostfix(Pawn ___pawn, HediffSet ___hediffSet)
-        {
-            return;
-
-            if (Current.ProgramState == ProgramState.Playing && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace && (!___hediffSet.HasRegeneration || ___pawn.IsHashIntervalTick(300)))
-                ___pawn.Drawer.renderer.renderTree.SetDirty();
+                ___pawn.Drawer.renderer.SetAllGraphicsDirty();
         }
 
         public static IEnumerable<CodeInstruction> BaseHeadOffsetAtTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -1906,11 +1897,18 @@ namespace AlienRace
                        player.basicMemberKind?.race == ar &&
                        (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(f.def) ?? false) ?? false));
         }
-        
-        public static void PostResolveLifeStageChangePostfix(Pawn ___pawn)
+
+        public static IEnumerable<CodeInstruction> RecalculateLifeStageIndexTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            if (Current.ProgramState == ProgramState.Playing && (___pawn).def is ThingDef_AlienRace && ___pawn.Drawer.renderer.renderTree.Resolved)
-                ___pawn.Drawer.renderer.SetAllGraphicsDirty();
+            MethodInfo biotechInfo = AccessTools.PropertyGetter(typeof(ModsConfig), nameof(ModsConfig.BiotechActive));
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.Calls(biotechInfo))
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+                else
+                    yield return instruction;
+            }
         }
 
         public static void HasHeadPrefix(HediffSet __instance) =>
