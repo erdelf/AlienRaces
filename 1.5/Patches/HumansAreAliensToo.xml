@@ -4,6 +4,13 @@
         <attribute>Class</attribute>
         <value>AlienRace.ThingDef_AlienRace</value>
     </Operation>
+    
+    <Operation Class="PatchOperationReplace">
+        <xpath>Defs/PawnRenderTreeDef//li[texPath="Things/Pawn/Humanlike/Apparel/SwaddledBaby/Swaddled_Child"]/nodeClass</xpath>
+        <value>
+            <nodeClass>AlienRace.AlienPawnRenderNode_Swaddle</nodeClass>
+        </value>
+    </Operation>
 
     <Operation Class="PatchOperationAdd">
         <xpath>Defs/ThingDef[defName="Human"]</xpath>
