@@ -166,6 +166,7 @@ namespace AlienRace
                 set => this.shaderType = value ?? ShaderTypeDefOf.Cutout;
             }
             private bool VisibleUnderApparelOf(ExtendedGraphicsPawnWrapper pawn) =>
+                !pawn.HasApparelGraphics() ||
                 (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
                 !pawn.GetWornApparel().Any(ap => 
                     !ap.hatRenderedFrontOfFace && ap.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 
@@ -236,8 +237,6 @@ namespace AlienRace
 
                 Color first  = this.ColorChannel == "skin" ? pawn.story?.skinColorOverride.HasValue ?? false ? pawn.story.skinColorOverride.Value : channel.first : channel.first;
                 Color second = channel.second;
-
-                //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
 
                 if (this.colorOverrideOne.HasValue) 
                     first = this.colorOverrideOne.Value;

@@ -19,6 +19,9 @@ public class ExtendedGraphicsPawnWrapper
     {
     }
 
+    public virtual bool HasApparelGraphics() =>
+        !this.WrappedPawn.apparel.WornApparel.Any(ap => ap.def.apparel.HasDefinedGraphicProperties);
+
     //backstory isApplicable
     public virtual bool HasBackStory(BackstoryDef backstory) =>
         this.GetBackstories().Contains(backstory); //matches pawn backstory with input
