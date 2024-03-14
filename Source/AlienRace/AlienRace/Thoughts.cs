@@ -2,6 +2,7 @@
 
 namespace AlienRace
 {
+    using System.Linq;
     using JetBrains.Annotations;
     using RimWorld;
     using RimWorld.Planet;

@@ -317,11 +317,11 @@
 
         public bool Approved(int wantedDegree = 0) =>
             (wantedDegree == int.MinValue || wantedDegree == this.degree || this.degree == 0) &&
-            Rand.Range(min: 0, max: 100) < this.chance;
+            Rand.Range(0, 100) < this.chance;
 
         public bool Approved(Gender gender, int wantedDegree = 0) =>
-            (gender == Gender.Male   && (this.commonalityMale   < 0 || Rand.Range(min: 0, max: 100) < this.commonalityMale)   ||
-             gender == Gender.Female && (this.commonalityFemale < 0 || Rand.Range(min: 0, max: 100) < this.commonalityFemale) ||
+            (gender == Gender.Male   && (this.commonalityMale   < 0 || Rand.Range(0, 100) < this.commonalityMale)   ||
+             gender == Gender.Female && (this.commonalityFemale < 0 || Rand.Range(0, 100) < this.commonalityFemale) ||
              gender == Gender.None) && 
             this.Approved(wantedDegree);
 
