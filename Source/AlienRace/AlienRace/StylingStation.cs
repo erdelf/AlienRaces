@@ -879,7 +879,7 @@ public static class StylingStation
             alienComp.addonColors   = addonColors;
             alienComp.ColorChannels = colorChannels;
 
-            pawn.Drawer.renderer.graphics.SetAllGraphicsDirty();
+            pawn.Drawer.renderer.SetAllGraphicsDirty();
 
             ConstructorPostfix(pawn);
         }

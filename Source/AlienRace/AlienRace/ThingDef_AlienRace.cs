@@ -515,26 +515,26 @@
     {
         public List<ThingDef> raceList;
 
-        [LoadDefFromField(nameof(ThoughtDefOf.ButcheredHumanlikeCorpse))]
+        [LoadDefFromField(nameof(AlienDefOf.ButcheredHumanlikeCorpse))]
         public ThoughtDef thought;
 
-        [LoadDefFromField(nameof(ThoughtDefOf.KnowButcheredHumanlikeCorpse))]
+        [LoadDefFromField(nameof(AlienDefOf.KnowButcheredHumanlikeCorpse))]
         public ThoughtDef knowThought;
     }
 
     public class AteThought
     {
         public List<ThingDef> raceList;
-        [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatDirect))]
+        [LoadDefFromField(nameof(AlienDefOf.AteHumanlikeMeatDirect))]
         public ThoughtDef thought;
 
-        [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatDirectCannibal))]
+        [LoadDefFromField(nameof(AlienDefOf.AteHumanlikeMeatDirectCannibal))]
         public ThoughtDef thoughtCannibal;
 
-        [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredient))]
+        [LoadDefFromField(nameof(AlienDefOf.AteHumanlikeMeatAsIngredient))]
         public ThoughtDef ingredientThought;
 
-        [LoadDefFromField(nameof(ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal))]
+        [LoadDefFromField(nameof(AlienDefOf.AteHumanlikeMeatAsIngredientCannibal))]
         public ThoughtDef ingredientThoughtCannibal;
 
         public ThoughtDef GetThought(bool cannibal, bool ingredient) =>
