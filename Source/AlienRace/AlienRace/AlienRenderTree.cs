@@ -351,7 +351,14 @@ namespace AlienRace
             {
                 CodeInstruction instruction = instructionList[i];
 
+                if (instruction.opcode == OpCodes.Call && instructionList[i + 1].opcode == OpCodes.Ret)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return CodeInstruction.Call(patchType, nameof(HairHelper));
+                } else
+                {
                 yield return instruction;
+                }
 
                 if (instruction.opcode == OpCodes.Brfalse_S)
                 {
@@ -370,6 +377,9 @@ namespace AlienRace
             }
         }
 
+        public static Graphic HairHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) => 
+            GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, pawnRenderResolveData.alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? shader), 
+                                               size, color, pawnRenderResolveData.alienComp.GetChannel(channel: "hair").second);
         
 
 
