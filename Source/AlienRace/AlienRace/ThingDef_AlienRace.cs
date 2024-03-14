@@ -717,7 +717,7 @@
                 disallowedTraits.AddRange(alienProps.generalSettings.disallowedTraits);
 
             if (!disallowedTraits.NullOrEmpty())
-                result &= disallowedTraits.All(ace => ace.Select(null, int.MinValue).All(traitEntry => traitEntry.def != trait || degree != (ace.degree != 0 ? ace.degree : traitEntry.degree)));
+                result &= disallowedTraits.All(ace => ace.Select(null, int.MinValue).All(traitEntry => traitEntry.def != trait || degree != traitEntry.degree));
             
 
             return result && !(raceRestriction?.blackTraitList.Contains(trait) ?? false);
