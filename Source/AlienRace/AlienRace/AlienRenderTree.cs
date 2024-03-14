@@ -304,8 +304,8 @@ namespace AlienRace
             List<CodeInstruction> instructionList = instructions.ToList();
 
             FieldInfo storyInfo    = AccessTools.Field(typeof(Pawn),              nameof(Pawn.story));
-            FieldInfo headTypeInfo = AccessTools.Field(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.headType));
-            FieldInfo bodyTypeInfo = AccessTools.Field(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.bodyType));
+            FieldInfo headTypeInfo = AccessTools.Field(typeof(HeadTypeDef), nameof(HeadTypeDef.graphicPath));
+            FieldInfo bodyTypeInfo = AccessTools.Field(typeof(BodyTypeDef), nameof(BodyTypeDef.bodyNakedGraphicPath));
 
             LocalBuilder styleLocal = ilg.DeclareLocal(typeof(StyleSettings));
             LocalBuilder colorLocal = ilg.DeclareLocal(typeof(AlienPartGenerator.ExposableValueTuple<Color, Color>));
@@ -332,25 +332,7 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Ldloc,    styleLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(StyleSettings), nameof(StyleSettings.hasStyle)));
                     yield return new CodeInstruction(OpCodes.Brtrue_S, instruction.operand);
-                } else if (instruction.LoadsField(storyInfo))
-                {
-                    if (instructionList[i + 1].LoadsField(headTypeInfo))
-                    {
-                        i += 2;
-                        yield return new CodeInstruction(OpCodes.Call,  AccessTools.PropertyGetter(typeof(Pawn), nameof(Pawn.Drawer)));
-                        yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_DrawTracker), nameof(Pawn_DrawTracker.renderer)));
-                        yield return new CodeInstruction(OpCodes.Call,  AccessTools.PropertyGetter(typeof(PawnRenderer), nameof(PawnRenderer.HeadGraphic)));
-                        yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Graphic), nameof(Graphic.path)));
-
-                    } else if (instructionList[i + 1].LoadsField(bodyTypeInfo))
-                    {
-                        i += 2;
-                        yield return new CodeInstruction(OpCodes.Call,  AccessTools.PropertyGetter(typeof(Pawn), nameof(Pawn.Drawer)));
-                        yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_DrawTracker), nameof(Pawn_DrawTracker.renderer)));
-                        yield return new CodeInstruction(OpCodes.Call,  AccessTools.PropertyGetter(typeof(PawnRenderer), nameof(PawnRenderer.BodyGraphic)));
-                        yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Graphic), nameof(Graphic.path)));
                     }
-                }
                 else if (instruction.opcode == OpCodes.Ldarg_2)
                 {
                     i++;
@@ -369,9 +351,22 @@ namespace AlienRace
                     yield return instruction;
                 }
 
+                if (instructionList[i].LoadsField(headTypeInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_0);
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(TattooPathHelper)));
+                }
+                else if (instructionList[i].LoadsField(bodyTypeInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(TattooPathHelper)));
+                }
+
                 if (instruction.opcode == OpCodes.Ldsfld && (instruction.operand as FieldInfo)?.FieldType == typeof(Shader))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldloc, styleLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldloc, styleLocal.LocalIndex).MoveLabelsFrom(instructionList[i+1]);
                     yield return CodeInstruction.Call(patchType, nameof(TattooShaderHelper));
                 }
             }
@@ -379,6 +374,11 @@ namespace AlienRace
 
         public static Shader TattooShaderHelper(Shader shader, StyleSettings style) =>
             style.shader?.Shader ?? shader;
+
+        public static string TattooPathHelper(string path, Pawn pawn, bool body) =>
+            (body ? 
+                pawn.Drawer.renderer.BodyGraphic?.path :
+                pawn.Drawer.renderer.HeadGraphic?.path) ?? path;
 
         public static IEnumerable<CodeInstruction> BeardDefGraphicForTranspiler(IEnumerable<CodeInstruction> instructions)
         {
