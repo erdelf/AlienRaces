@@ -26,7 +26,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), "SetupDynamicNodes"), postfix: new HarmonyMethod(patchType, nameof(SetupDynamicNodesPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnRenderNode), nameof(PawnRenderNode.GetMesh)), transpiler: new HarmonyMethod(patchType, nameof(RenderNodeGetMeshTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), "TrySetupGraphIfNeeded"),        new HarmonyMethod(patchType,  nameof(TrySetupGraphIfNeededPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), "TrySetupGraphIfNeeded"),        new HarmonyMethod(patchType,             nameof(TrySetupGraphIfNeededPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), nameof(PawnRenderTree.EnsureInitialized)), postfix: new HarmonyMethod(patchType,             nameof(PawnRenderTreeEnsureInitializedPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Body), nameof(PawnRenderNode_Body.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(BodyGraphicForPrefix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Head), nameof(PawnRenderNode_Head.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(HeadGraphicForPrefix)));
@@ -34,27 +35,26 @@ namespace AlienRace
 
         public class PawnRenderResolveData
         {
-            //public static Tuple<Pawn, ThingDef_AlienRace, AlienPartGenerator.AlienComp, LifeStageAgeAlien, int> pawnRenderData;
-
-            public Pawn                         pawn;
             public ThingDef_AlienRace           alienProps;
             public AlienPartGenerator.AlienComp alienComp;
             public LifeStageAgeAlien            lsaa;
             public int                          sharedIndex = 0;
         }
 
-        public static PawnRenderResolveData pawnRenderResolveData;
+        public static Dictionary<Pawn, PawnRenderResolveData> pawnRenderResolveData = [];
 
 
         public static void TrySetupGraphIfNeededPrefix(PawnRenderTree __instance)
         {
             if (__instance.Resolved)
                 return;
-            
+
             Pawn alien = __instance.pawn;
 
             if (alien.def is ThingDef_AlienRace alienProps && alien.story != null)
             {
+                //Log.Message($"Setup Graph: {alien.NameFullColored}");
+
                 AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
                 
                 if (alienComp != null)
@@ -98,14 +98,16 @@ namespace AlienRace
 
                     alienComp.RegenerateColorChannelLinks();
 
-                    pawnRenderResolveData = new PawnRenderResolveData
-                                            {
-                                                pawn = alien,
-                                                alienProps = alienProps,
-                                                alienComp = alienComp,
-                                                lsaa = lsaa,
-                                                sharedIndex = 0
-                                            };
+                    if(!pawnRenderResolveData.ContainsKey(alien))
+                        pawnRenderResolveData.Add(alien, null);
+
+                    pawnRenderResolveData[alien] = new PawnRenderResolveData
+                                                   {
+                                                       alienProps  = alienProps,
+                                                       alienComp   = alienComp,
+                                                       lsaa        = lsaa,
+                                                       sharedIndex = 0
+                                                   };
                     
                     portraitRender = new Pair<WeakReference, bool>(new WeakReference(alien), false);
 
@@ -240,22 +242,35 @@ namespace AlienRace
             }
         }
 
+        public static void PawnRenderTreeEnsureInitializedPostfix(PawnRenderTree __instance)
+        {
+            if (pawnRenderResolveData.ContainsKey(__instance.pawn))
+            {
+                //Log.Message($"Removing {__instance.pawn.NameFullColored} | {pawnRenderResolveData.Count} saved data entries remaining");
+                pawnRenderResolveData.Remove(__instance.pawn);
+            }
+        }
+
         public static bool BodyGraphicForPrefix(PawnRenderNode_Body __instance, Pawn pawn, ref Graphic __result)
         {
             if (pawn.def is not ThingDef_AlienRace)
                 return true;
+            //Log.Message($"Body GraphicFor: {pawn.NameFullColored}");
 
-            int                          sharedIndex  = pawnRenderResolveData.sharedIndex;
-            GraphicPaths                 graphicPaths = pawnRenderResolveData.alienProps.alienRace.graphicPaths;
-            AlienPartGenerator.AlienComp alienComp    = pawnRenderResolveData.alienComp;
-            AlienPartGenerator           apg          = pawnRenderResolveData.alienProps.alienRace.generalSettings.alienPartGenerator;
+            PawnRenderResolveData pawnRenderData = pawnRenderResolveData[pawn];
+
+            //if (pawnRenderResolveData.pawn != pawn) Log.Message($"PAWNS DON'T MATCH: {pawn.NameFullColored} vs {pawnRenderResolveData.pawn.NameFullColored}");
+            int                          sharedIndex  = pawnRenderData.sharedIndex;
+            GraphicPaths                 graphicPaths = pawnRenderData.alienProps.alienRace.graphicPaths;
+            AlienPartGenerator.AlienComp alienComp    = pawnRenderData.alienComp;
+            AlienPartGenerator           apg          = pawnRenderData.alienProps.alienRace.generalSettings.alienPartGenerator;
 
             string bodyPath    = graphicPaths.body.GetPath(pawn, ref sharedIndex, alienComp.bodyVariant < 0 ? null : alienComp.bodyVariant);
             alienComp.bodyVariant = sharedIndex;
             string bodyMask = graphicPaths.bodyMasks.GetPath(pawn, ref sharedIndex, alienComp.bodyMaskVariant < 0 ? null : alienComp.bodyMaskVariant);
             alienComp.bodyMaskVariant = sharedIndex;
 
-            pawnRenderResolveData.sharedIndex = sharedIndex;
+            pawnRenderData.sharedIndex = sharedIndex;
 
             Shader skinShader = graphicPaths.skinShader?.Shader ?? ShaderUtility.GetSkinShader(pawn);
 
@@ -287,10 +302,16 @@ namespace AlienRace
             if (pawn.def is not ThingDef_AlienRace)
                 return true;
 
-            int                          sharedIndex  = pawnRenderResolveData.sharedIndex;
-            GraphicPaths                 graphicPaths = pawnRenderResolveData.alienProps.alienRace.graphicPaths;
-            AlienPartGenerator.AlienComp alienComp    = pawnRenderResolveData.alienComp;
-            AlienPartGenerator           apg          = pawnRenderResolveData.alienProps.alienRace.generalSettings.alienPartGenerator;
+            //Log.Message($"Head GraphicFor: {pawn.NameFullColored}");
+
+            //if (pawnRenderResolveData.pawn != pawn) Log.Message($"PAWNS DON'T MATCH: {pawn.NameFullColored} vs {pawnRenderResolveData.pawn.NameFullColored}");
+
+            PawnRenderResolveData pawnRenderData = pawnRenderResolveData[pawn];
+
+            int                          sharedIndex  = pawnRenderData.sharedIndex;
+            GraphicPaths                 graphicPaths = pawnRenderData.alienProps.alienRace.graphicPaths;
+            AlienPartGenerator.AlienComp alienComp    = pawnRenderData.alienComp;
+            AlienPartGenerator           apg          = pawnRenderData.alienProps.alienRace.generalSettings.alienPartGenerator;
 
             string headPath = graphicPaths.head.GetPath(pawn, ref sharedIndex, alienComp.headVariant < 0 ? null : alienComp.headVariant);
             alienComp.headVariant = sharedIndex;
@@ -298,7 +319,7 @@ namespace AlienRace
             string headMask = graphicPaths.headMasks.GetPath(pawn, ref sharedIndex, alienComp.headMaskVariant < 0 ? null : alienComp.headMaskVariant);
             alienComp.headMaskVariant = sharedIndex;
 
-            pawnRenderResolveData.sharedIndex = sharedIndex;
+            pawnRenderData.sharedIndex = sharedIndex;
 
             Shader skinShader = graphicPaths.skinShader?.Shader ?? ShaderUtility.GetSkinShader(pawn);
 
@@ -327,9 +348,18 @@ namespace AlienRace
 
         public static void SetupDynamicNodesPostfix(PawnRenderTree __instance)
         {
-            if (__instance.pawn.RaceProps.Humanlike && __instance.pawn == pawnRenderResolveData.pawn)
+            if (__instance.pawn.RaceProps.Humanlike)
             {
-                AlienPartGenerator.AlienComp alienComp = pawnRenderResolveData.alienComp;
+                //Log.Message($"Setup Addons: {__instance.pawn.NameFullColored}");
+
+                if (!pawnRenderResolveData.ContainsKey(__instance.pawn))
+                    return;
+
+
+                PawnRenderResolveData pawnRenderData = pawnRenderResolveData[__instance.pawn];
+
+
+                AlienPartGenerator.AlienComp alienComp = pawnRenderData.alienComp;
 
                 alienComp.addonGraphics =   [];
                 alienComp.addonVariants ??= [];
@@ -337,7 +367,7 @@ namespace AlienRace
 
                 int sharedIndex = 0;
 
-                using (IEnumerator<AlienPartGenerator.BodyAddon> bodyAddons = pawnRenderResolveData.alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator())
+                using (IEnumerator<AlienPartGenerator.BodyAddon> bodyAddons = pawnRenderData.alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator())
                 {
                     int addonIndex = 0;
                     while (bodyAddons.MoveNext())
@@ -361,7 +391,7 @@ namespace AlienRace
                             }
                         }
 
-                        Graphic g = addon.GetGraphic(pawnRenderResolveData.pawn, ref sharedIndex, alienComp.addonVariants.Count > addonIndex ? alienComp.addonVariants[addonIndex] : null);
+                        Graphic g = addon.GetGraphic(__instance.pawn, ref sharedIndex, alienComp.addonVariants.Count > addonIndex ? alienComp.addonVariants[addonIndex] : null);
                         alienComp.addonGraphics.Add(g);
                         if (alienComp.addonVariants.Count <= addonIndex)
                             alienComp.addonVariants.Add(sharedIndex);
@@ -395,8 +425,8 @@ namespace AlienRace
                                                                                 alienComp = alienComp,
                                                                                 debugLabel = addon.Name
                                                                             };
-                        PawnRenderNode pawnRenderNode = (PawnRenderNode)Activator.CreateInstance(nodeProps.nodeClass, pawnRenderResolveData.pawn, nodeProps, pawnRenderResolveData.pawn.Drawer.renderer.renderTree);
-                        CachedData.renderTreeAddChild(pawnRenderResolveData.pawn.Drawer.renderer.renderTree, pawnRenderNode, null);
+                        PawnRenderNode pawnRenderNode = (PawnRenderNode)Activator.CreateInstance(nodeProps.nodeClass, __instance.pawn, nodeProps, __instance.pawn.Drawer.renderer.renderTree);
+                        CachedData.renderTreeAddChild(__instance.pawn.Drawer.renderer.renderTree, pawnRenderNode, null);
                     }
                 }
             }
