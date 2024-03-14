@@ -105,7 +105,7 @@
 
             if (this.alienRace.graphicPaths.head.path == GraphicPaths.VANILLA_HEAD_PATH && !this.alienRace.graphicPaths.head.GetSubGraphics().MoveNext())
             {
-                foreach (HeadTypeDef headType in this.alienRace.generalSettings.alienPartGenerator.HeadTypes.Concat(DefDatabase<HeadTypeDef>.AllDefs.Where(htd => !htd.requiredGenes.NullOrEmpty())))
+                foreach (HeadTypeDef headType in DefDatabase<HeadTypeDef>.AllDefs)
                 {
                     AlienPartGenerator.ExtendedHeadtypeGraphic headtypeGraphic = new()
                                                                                  {
