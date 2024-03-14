@@ -26,7 +26,7 @@
             if (this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize.Equals(Vector2.zero))
                 this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
 
-            this.alienRace.generalSettings.alienPartGenerator.headFemaleOffsetSpecific ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetSpecific;
+            this.alienRace.generalSettings.alienPartGenerator.headFemaleOffsetDirectional ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetDirectional;
 
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
 
@@ -94,12 +94,10 @@
                     lsaa.headFemaleOffset = this.alienRace.generalSettings.alienPartGenerator.headFemaleOffset;
 
                 lsaa.headOffsetDirectional ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetDirectional;
+                lsaa.headOffsetDirectional.west ??= lsaa.headOffsetDirectional.east;
 
-                lsaa.headOffsetSpecific      ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetSpecific;
-                lsaa.headOffsetSpecific.west ??= lsaa.headOffsetSpecific.east;
-
-                lsaa.headFemaleOffsetSpecific ??= this.alienRace.generalSettings.alienPartGenerator.headFemaleOffsetSpecific;
-                lsaa.headFemaleOffsetSpecific.west ??= lsaa.headFemaleOffsetSpecific.east;
+                lsaa.headFemaleOffsetDirectional ??= this.alienRace.generalSettings.alienPartGenerator.headFemaleOffsetDirectional;
+                lsaa.headFemaleOffsetDirectional.west ??= lsaa.headFemaleOffsetDirectional.east;
             }
 
             //if (this.alienRace.graphicPaths.body.path == GraphicPaths.VANILLA_BODY_PATH && !this.alienRace.graphicPaths.body.GetSubGraphics().MoveNext())
@@ -203,7 +201,7 @@
         public List<ThingDef>                notXenophobistTowards   = new();
         public bool                          humanRecipeImport       = false;
 
-        [LoadDefFromField(nameof(AlienDefOf.alienCorpseCategory))]
+        [LoadDefFromField(nameof(AlienDefOf.HAR_AlienCorpseCategory))]
         public ThingCategoryDef corpseCategory;
 
         public SimpleCurve lovinIntervalHoursFromAge;
@@ -305,8 +303,6 @@
         public T defName;
         public List<AlienChanceEntry<T>> options = [];
         public int count = 1;
-        [Obsolete("Use TraitWithDegree instead")]
-        public int degree = 0; //mostly for traits, but maybe will find some other use later
         public float chance = 100;
 
         public float commonalityMale = -1f;
@@ -315,26 +311,25 @@
         [Unsaved]
         private readonly List<AlienChanceEntry<T>> shuffledOptions = [];
 
-        public bool Approved(int wantedDegree = 0) =>
-            (wantedDegree == int.MinValue || wantedDegree == this.degree || this.degree == 0) &&
-            Rand.Range(min: 0, max: 100) < this.chance;
+        public bool Approved() =>
+            Rand.Range(0, 100) < this.chance;
 
-        public bool Approved(Gender gender, int wantedDegree = 0) =>
-            (gender == Gender.Male   && (this.commonalityMale   < 0 || Rand.Range(min: 0, max: 100) < this.commonalityMale)   ||
-             gender == Gender.Female && (this.commonalityFemale < 0 || Rand.Range(min: 0, max: 100) < this.commonalityFemale) ||
+        public bool Approved(Gender gender) =>
+            (gender == Gender.Male   && (this.commonalityMale   < 0 || Rand.Range(0, 100) < this.commonalityMale)   ||
+             gender == Gender.Female && (this.commonalityFemale < 0 || Rand.Range(0, 100) < this.commonalityFemale) ||
              gender == Gender.None) && 
-            this.Approved(wantedDegree);
+            this.Approved();
 
-        public bool Approved(Pawn pawn, int wantedDegree = 0) =>
-            this.Approved(pawn.gender, wantedDegree);
+        public bool Approved(Pawn pawn) =>
+            this.Approved(pawn.gender);
 
         public IEnumerable<T> Select(Pawn pawn, int wantedDegree = 0)
         {
             if (pawn != null)
             {
-                if (!this.Approved(pawn, wantedDegree))
+                if (!this.Approved(pawn))
                     yield break;
-            } else if (!this.Approved(wantedDegree))
+            } else if (!this.Approved())
             {
                 yield break;
             }
@@ -867,22 +862,21 @@
         public BodyDef body;
 
         public Vector2                              headOffset = Vector2.zero;
-        [Obsolete("Type will be replaced by Directional Offset")]
-        public DirectionOffset                      headOffsetDirectional;
-        public AlienPartGenerator.DirectionalOffset headOffsetSpecific;
+        public AlienPartGenerator.DirectionalOffset headOffsetDirectional;
 
-        public Vector2 headFemaleOffset = Vector2.negativeInfinity;
-        public AlienPartGenerator.DirectionalOffset headFemaleOffsetSpecific;
+        public Vector2                              headFemaleOffset = Vector2.negativeInfinity;
+        public AlienPartGenerator.DirectionalOffset headFemaleOffsetDirectional;
 
-        public Vector2         customDrawSize             = Vector2.zero;
-        public Vector2         customPortraitDrawSize     = Vector2.zero;
-        public Vector2         customHeadDrawSize         = Vector2.zero;
-        public Vector2         customPortraitHeadDrawSize = Vector2.zero;
 
-        public Vector2         customFemaleDrawSize             = Vector2.zero;
-        public Vector2         customFemalePortraitDrawSize     = Vector2.zero;
-        public Vector2         customFemaleHeadDrawSize         = Vector2.zero;
-        public Vector2         customFemalePortraitHeadDrawSize = Vector2.zero;
+        public Vector2 customDrawSize             = Vector2.zero;
+        public Vector2 customPortraitDrawSize     = Vector2.zero;
+        public Vector2 customHeadDrawSize         = Vector2.zero;
+        public Vector2 customPortraitHeadDrawSize = Vector2.zero;
+
+        public Vector2 customFemaleDrawSize             = Vector2.zero;
+        public Vector2 customFemalePortraitDrawSize     = Vector2.zero;
+        public Vector2 customFemaleHeadDrawSize         = Vector2.zero;
+        public Vector2 customFemalePortraitHeadDrawSize = Vector2.zero;
     }
 
     public class StatPartAgeOverride

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
     <TraitDef>
-        <defName>Xenophobia</defName>
+        <defName>HAR_Xenophobia</defName>
         <commonality>1</commonality>
         <degreeDatas>
             <li>

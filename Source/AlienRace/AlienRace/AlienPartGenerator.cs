@@ -28,10 +28,6 @@
         [LoadDefFromField("Female")]
         public BodyTypeDef defaultFemaleBodyType;
 
-
-        [Obsolete]
-        public int getsGreyAt = 40;
-
         public FloatRange  oldHairAgeRange = new(-1f, -1f);
         public SimpleCurve oldHairAgeCurve = new();
 
@@ -59,13 +55,10 @@
 
         public Vector2 headOffset = Vector2.zero;
 
-        [Obsolete("Type will be replaced by Directional Offset")]
-        public DirectionOffset headOffsetDirectional = new();
-
-        public DirectionalOffset headOffsetSpecific = new();
+        public DirectionalOffset headOffsetDirectional = new();
 
         public Vector2           headFemaleOffset = Vector2.negativeInfinity;
-        public DirectionalOffset headFemaleOffsetSpecific;
+        public DirectionalOffset headFemaleOffsetDirectional;
 
         public float borderScale = 1f;
         public int   atlasScale  = 1;
@@ -163,13 +156,11 @@
         {
             if (this.oldHairAgeCurve.PointsCount <= 0)
             {
-                float minAge = this.oldHairAgeRange.min <= 0 ?
-                                   this.getsGreyAt :
-                                   this.oldHairAgeRange.TrueMin;
+                float minAge = this.oldHairAgeRange.TrueMin;
 
                 float maxAge = this.oldHairAgeRange.max <= 0 ?
                                    this.alienProps.race.ageGenerationCurve == null || this.alienProps.race.ageGenerationCurve.Points.Count < 3 ?
-                                       this.alienProps.alienRace.generalSettings.alienPartGenerator.getsGreyAt + this.alienProps.race.lifeExpectancy / 3f :
+                                       this.alienProps.race.lifeExpectancy / 3f * 2f :
                                        this.alienProps.race.ageGenerationCurve.Points.Skip(this.alienProps.race.ageGenerationCurve.Points.Count - 3).First().x :
                                    this.oldHairAgeRange.TrueMax;
 
