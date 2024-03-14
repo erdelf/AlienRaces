@@ -36,7 +36,7 @@ namespace AlienRace
 
         static HarmonyPatches()
         {
-            Harmony harmony = new(id: "rimworld.erdelf.alien_race.main");
+            AlienHarmony harmony = new(id: "rimworld.erdelf.alien_race.main");
 
             harmony.Patch(AccessTools.Method(typeof(PatchProcessor), nameof(PatchProcessor.Patch)), new HarmonyMethod(patchType, nameof(ForTheLoveOfGodLogSomethingUseful)));
 
@@ -501,7 +501,7 @@ namespace AlienRace
                 }
             }
 
-            Log.Message($"Alien race successfully completed {harmony.GetPatchedMethods().Select(Harmony.GetPatchInfo).SelectMany(selector: p => p.Prefixes.Concat(p.Postfixes).Concat(p.Transpilers)).Count(predicate: p => p.owner == harmony.Id)} patches with harmony.");
+            Log.Message($"Alien race successfully completed {harmony.harmony.GetPatchedMethods().Select(Harmony.GetPatchInfo).SelectMany(selector: p => p.Prefixes.Concat(p.Postfixes).Concat(p.Transpilers)).Count(predicate: p => p.owner == harmony.harmony.Id)} patches with harmony.");
             HairDefOf.Bald.styleTags.Add(item: "alienNoStyle");
             BeardDefOf.NoBeard.styleTags.Add(item: "alienNoStyle");
             TattooDefOf.NoTattoo_Body.styleTags.Add(item: "alienNoStyle");

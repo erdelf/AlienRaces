@@ -17,7 +17,7 @@ namespace AlienRace
     public static class AlienRenderTreePatches
     {
         private static readonly Type patchType = typeof(AlienRenderTreePatches);
-        public static void HarmonyInit(Harmony harmony)
+        public static void HarmonyInit(AlienHarmony harmony)
         {
             
             harmony.Patch(AccessTools.Method(typeof(MeshPool), nameof(MeshPool.GetMeshSetForWidth), [typeof(float), typeof(float)]), transpiler: new HarmonyMethod(patchType, nameof(GetMeshSetForWidthTranspiler)));
