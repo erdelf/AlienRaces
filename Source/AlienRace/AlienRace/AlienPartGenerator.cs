@@ -687,22 +687,34 @@
                 base.PostExposeData();
 
                 // If we're saving or the node name is found, use the new comp tag name
-                if ((Scribe.mode == LoadSaveMode.Saving || (Scribe.loader.curXmlParent is XmlNode parentNode && parentNode[ScribeNodeName] != null)) &&
+                if ((Scribe.mode == LoadSaveMode.Saving || (Scribe.loader.curXmlParent is { } parentNode && parentNode[ScribeNodeName] != null)) &&
                     Scribe.EnterNode(ScribeNodeName))
-                {
                     try
                     {
-                        ExposeDataInternal();
+                        this.ExposeDataInternal();
                     }
                     finally
                     {
                         Scribe.ExitNode();
                     }
-                }
                 // Pull data from legacy fields in the root tag
                 else
                 {
-                    ExposeDataInternal();
+                    this.ExposeDataInternal();
+
+                    this.colorChannelLinks = new Dictionary<string, ColorChannelLinkData>();
+
+                    foreach (ColorChannelGenerator ccg in this.AlienProps.alienRace.generalSettings.alienPartGenerator.colorChannels)
+                    {
+                        foreach (ColorChannelGeneratorCategory ccgc in ccg.entries)
+                        {
+                            if (ccgc.first is ColorGenerator_CustomAlienChannel) 
+                                this.GenerateColor(ccg, ccgc, true);
+                            if (ccgc.second is ColorGenerator_CustomAlienChannel)
+                                this.GenerateColor(ccg, ccgc, false);
+                        }
+                    }
+
                 }
             }
 
@@ -722,6 +734,7 @@
                 if (Scribe.mode is LoadSaveMode.ResolvingCrossRefs)
                     this.Pawn.story.SkinColorBase = this.GetChannel("skin").first;
 
+                
                 this.colorChannelLinks = this.ColorChannelLinks ?? [];
             }
 
