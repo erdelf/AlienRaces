@@ -10,6 +10,8 @@ namespace AlienRace
     using System.Reflection;
     using UnityEngine;
     using Verse;
+    using static AlienRace.AlienPartGenerator;
+    using UnityEngine.UIElements;
 
     public static class AlienRenderTreePatches
     {
@@ -29,8 +31,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), "TrySetupGraphIfNeeded"),        new HarmonyMethod(patchType,             nameof(TrySetupGraphIfNeededPrefix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), nameof(PawnRenderTree.EnsureInitialized)), postfix: new HarmonyMethod(patchType,             nameof(PawnRenderTreeEnsureInitializedPostfix)));
 
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Body), nameof(PawnRenderNode_Body.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(BodyGraphicForPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Head), nameof(PawnRenderNode_Head.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(HeadGraphicForPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Body), nameof(PawnRenderNode.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(BodyGraphicForPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Head), nameof(PawnRenderNode.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(HeadGraphicForPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Stump), nameof(PawnRenderNode.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(StumpGraphicForTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(HairDef), nameof(HairDef.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(HairDefGraphicForTranspiler)));
         }
@@ -120,11 +123,6 @@ namespace AlienRace
                     portraitRender = new Pair<WeakReference, bool>(new WeakReference(alien), false);
 
                     /*
-                    __instance.hairGraphic = !(__instance.pawn.story.hairDef?.noGraphic ?? true) && alienProps.alienRace.styleSettings[typeof(HairDef)].hasStyle ? GraphicDatabase.Get<Graphic_Multi>(__instance.pawn.story.hairDef.texPath, ContentFinder<Texture2D>.Get(__instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
-                                                                                                                           (alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? ShaderDatabase.Transparent) :
-                                                                                                                           ShaderDatabase.CutoutComplex, Vector2.one, alien.story.HairColor,
-                                                                                alienComp.GetChannel(channel: "hair").second) : null;
-
                     string stumpPath = graphicPaths.stump.GetPath(alien, ref sharedIndex, alienComp.headVariant);
                     __instance.headStumpGraphic = !stumpPath.NullOrEmpty() ?
                                                       GraphicDatabase.Get<Graphic_Multi>(stumpPath, alien.story.SkinColor == apg.SkinColor(alien, first: false) ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex,
@@ -252,7 +250,7 @@ namespace AlienRace
 
         public static void PawnRenderTreeEnsureInitializedPostfix(PawnRenderTree __instance) => 
             pawnRenderResolveData = default;
-
+        #region Graphics
         public static bool BodyGraphicForPrefix(PawnRenderNode_Body __instance, Pawn pawn, ref Graphic __result)
         {
             if (pawn.def is not ThingDef_AlienRace)
@@ -345,6 +343,29 @@ namespace AlienRace
             return false;
         }
 
+        public static IEnumerable<CodeInstruction> StumpGraphicForTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo baseInfo = AccessTools.Method(typeof(PawnRenderNode), nameof(PawnRenderNode.GraphicFor));
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if(instruction.Calls(baseInfo))
+                    yield return CodeInstruction.Call(patchType, nameof(StumpGraphicHelper));
+                else
+                    yield return instruction;
+            }
+        }
+
+        public static Graphic StumpGraphicHelper(PawnRenderNode_Stump node, Pawn pawn)
+        {
+            string path = pawnRenderResolveData.alienProps.alienRace.graphicPaths.stump.GetPath(pawn, ref pawnRenderResolveData.sharedIndex, pawnRenderResolveData.alienComp.headVariant);
+            return !path.NullOrEmpty() ?
+                       GraphicDatabase.Get<Graphic_Multi>(path, ShaderDatabase.CutoutComplex, Vector2.one, node.ColorFor(pawn), 
+                                                          pawnRenderResolveData.alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(pawn, first: false)) : 
+                       null;
+
+        }
+
         public static IEnumerable<CodeInstruction> HairDefGraphicForTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> instructionList = instructions.ToList();
@@ -356,7 +377,7 @@ namespace AlienRace
                 if (instruction.opcode == OpCodes.Call && instructionList[i + 1].opcode == OpCodes.Ret)
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
-                    yield return CodeInstruction.Call(patchType, nameof(HairHelper));
+                    yield return CodeInstruction.Call(patchType, nameof(HairGraphicHelper));
                 } else
                 {
                     yield return instruction;
@@ -377,9 +398,11 @@ namespace AlienRace
             }
         }
 
-        public static Graphic HairHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) => 
+        public static Graphic HairGraphicHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) => 
             GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, pawnRenderResolveData.alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? shader), 
                                                size, color, pawnRenderResolveData.alienComp.GetChannel(channel: "hair").second);
+
+        #endregion
 
         public static void SetupDynamicNodesPostfix(PawnRenderTree __instance)
         {
