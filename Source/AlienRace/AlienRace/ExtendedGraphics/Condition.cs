@@ -40,7 +40,9 @@ public abstract class Condition
             Utilities.SetFieldFromXmlNodeRaw(Traverse.Create(this).Field(field.Name), xmlRoot, this, field.Name, field.FieldType);
         }
         else
+        {
             Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
+        }
     }
 }
 
