@@ -21,6 +21,13 @@ public partial class AlienPartGenerator
         [UsedImplicitly]
         public new void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
+            if (Condition.XmlNameParseKeys.TryGetValue(xmlRoot.LocalName, out string classTagOrigin))
+            {
+                XmlDocument xmlDoc = new();
+                xmlDoc.LoadXml($"<conditions><{classTagOrigin}>{xmlRoot.Attributes!["For"].Value}</{classTagOrigin}></conditions>");
+                xmlRoot.AppendChild(xmlRoot.OwnerDocument!.ImportNode(xmlDoc, true));
+            }
+
             foreach (XmlNode childNode in xmlRoot.ChildNodes)
             {
                 if (childNode.Name.Equals(nameof(this.conditions)))
@@ -36,7 +43,7 @@ public partial class AlienPartGenerator
                     }
                 }
             }
-
+            Log.Message(xmlRoot.OuterXml);
             this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
         }
 

@@ -6,6 +6,7 @@
     using System.Reflection;
     using System.Text.RegularExpressions;
     using System.Xml;
+    using System.Xml.Schema;
     using AlienRace.ExtendedGraphics;
     using HarmonyLib;
     using JetBrains.Annotations;
@@ -120,8 +121,15 @@
 
             Type valueType = field.GetValueType();
 
+            XmlAttribute xmlAttribute = xmlNode.Attributes!["Class"];
+            if (xmlAttribute != null)
+            {
+                Type typeInAnyAssembly = GenTypes.GetTypeInAnyAssembly(xmlAttribute.Value, valueType.Namespace);
+                valueType = typeInAnyAssembly ?? valueType;
+            }
 
-            if(valueType.IsSubclassOf(typeof(Def)))
+
+            if (valueType.IsSubclassOf(typeof(Def)))
                 DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(wanter, fieldName, xmlNode.FirstChild.Value);
             else
                 field.SetValue(valueType.IsGenericType || !ParseHelper.HandlesType(valueType) ?
@@ -309,5 +317,14 @@
 
         public static readonly RenderTreeAddChild renderTreeAddChild =
             AccessTools.MethodDelegate<RenderTreeAddChild>(AccessTools.Method(typeof(PawnRenderTree), "AddChild"));
+
+        public static readonly AccessTools.FieldRef<XmlElement, IXmlSchemaInfo> xmlElementName = AccessTools.FieldRefAccess<IXmlSchemaInfo>(typeof(XmlElement), "name");
+
+        public static readonly AccessTools.FieldRef<IXmlSchemaInfo, string> xmlNameLocalName = AccessTools.FieldRefAccess<string>("System.Xml.XmlName:localName");
+        public static readonly AccessTools.FieldRef<IXmlSchemaInfo, string> xmlNameName = AccessTools.FieldRefAccess<string>("System.Xml.XmlName:name");
+
+        public delegate IXmlSchemaInfo XmlDocumentAddName(XmlDocument document, string prefix, string localName, string namespaceURI, IXmlSchemaInfo schemaInfo);
+
+        public static readonly XmlDocumentAddName xmlDocumentAddName = AccessTools.MethodDelegate<XmlDocumentAddName>(AccessTools.Method(typeof(XmlDocument), "AddXmlName"));
     }
 }
