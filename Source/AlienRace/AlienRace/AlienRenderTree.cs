@@ -374,8 +374,6 @@ namespace AlienRace
                         yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_DrawTracker), nameof(Pawn_DrawTracker.renderer)));
                         yield return new CodeInstruction(OpCodes.Call,  AccessTools.PropertyGetter(typeof(PawnRenderer), nameof(PawnRenderer.HeadGraphic)));
                         yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Graphic), nameof(Graphic.path)));
-                        yield return new CodeInstruction(OpCodes.Dup);
-                        yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Log), nameof(Log.Message), new []{typeof(string)}));
 
                     } else if (instructionList[i + 1].LoadsField(bodyTypeInfo))
                     {
@@ -414,18 +412,6 @@ namespace AlienRace
 
         public static Shader TattooShaderHelper(Shader shader, StyleSettings style) =>
             style.shader?.Shader ?? shader;
-
-         /*
-                                      __instance.faceTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.FaceTattoo.texPath,
-                                                                              (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ??
-                                                                               ShaderDatabase.CutoutSkinOverlay),
-                                                                              Vector2.one, tattooColor.first, tattooColor.second, null, headPath);
-          */
-
-        public static Graphic TattooGraphicHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) =>
-            GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, RegenerateResolveData(pawn).alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? shader),
-                                               size, color, pawnRenderResolveData.alienComp.GetChannel(channel: "hair").second);
-
 
         #endregion
 
