@@ -332,7 +332,7 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Ldloc,    styleLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(StyleSettings), nameof(StyleSettings.hasStyle)));
                     yield return new CodeInstruction(OpCodes.Brtrue_S, instruction.operand);
-                    }
+                }
                 else if (instruction.opcode == OpCodes.Ldarg_2)
                 {
                     i++;
@@ -592,7 +592,7 @@ namespace AlienRace
         public override bool CanDrawNow(PawnRenderNode node, PawnDrawParms parms)
         {
             AlienPartGenerator.BodyAddon addonFromNode = AddonFromNode(node);
-            return addonFromNode.CanDrawAddon(parms.pawn);
+            return addonFromNode.CanDrawAddon(parms.pawn) && (addonFromNode.useSkipFlags.NullOrEmpty() || !addonFromNode.useSkipFlags.Any(rsfd => parms.skipFlags.HasFlag(rsfd)));
         }
 
         public override Vector3 OffsetFor(PawnRenderNode node, PawnDrawParms parms, out Vector3 pivot)
