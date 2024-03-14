@@ -192,6 +192,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRenderer), nameof(PawnRenderer.BaseHeadOffsetAt)), 
                           postfix: new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtPostfix)), transpiler: new HarmonyMethod(patchType, nameof(BaseHeadOffsetAtTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), nameof(Pawn_HealthTracker.AddHediff), new []{typeof(Hediff), typeof(BodyPartRecord), typeof(DamageInfo?), typeof(DamageWorker.DamageResult)}), postfix: new HarmonyMethod(patchType, nameof(AddHediffPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), nameof(Pawn_HealthTracker.RemoveHediff)), postfix: new HarmonyMethod(patchType, nameof(RemoveHediffPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_HealthTracker), nameof(Pawn_HealthTracker.Notify_HediffChanged)), postfix: new HarmonyMethod(patchType, nameof(HediffChangedPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateGearFor"), 
                 postfix:          new HarmonyMethod(patchType, nameof(GenerateGearForPostfix)));
@@ -1808,6 +1809,12 @@ namespace AlienRace
         public static void AddHediffPostfix(Pawn ___pawn, Hediff hediff)
         {
             if(!hediff.def.hairColorOverride.HasValue && !hediff.def.HasDefinedGraphicProperties)
+                ___pawn.Drawer.renderer.SetAllGraphicsDirty();
+        }
+
+        public static void RemoveHediffPostfix(Pawn ___pawn, Hediff hediff)
+        {
+            if (!hediff.def.HasDefinedGraphicProperties && !hediff.def.forceRenderTreeRecache)
                 ___pawn.Drawer.renderer.SetAllGraphicsDirty();
         }
 
