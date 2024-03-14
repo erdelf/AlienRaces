@@ -101,7 +101,7 @@
 	<s:Boolean x:Key="/Default/Environment/ExternalSources/Decompiler/DecompilerLegalNoticeAccepted/@EntryValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/ExternalSources/FirstTimeFormShown/@EntryValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/Feedback/ShouldPrompt/@EntryValue">False</s:Boolean>
-	<s:Int64 x:Key="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue">57</s:Int64>
+	<s:Int64 x:Key="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue">60</s:Int64>
 	<s:Boolean x:Key="/Default/Environment/MemoryUsageIndicator/IsVisible/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/Environment/PerformanceGuide/SwitchBehaviour/=Antivirus/@EntryIndexedValue">LIVE_MONITOR</s:String>
 	
@@ -151,6 +151,14 @@
 	<s:Boolean x:Key="/Default/Housekeeping/Search/SearchForMembersUsages/@EntryValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Housekeeping/UpgradeFromExceptionReport/UpgradePerformed/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/Housekeeping/WhatsNewShown/WhatsNewShownIndexedEntry/=RS/@EntryIndexedValue">2019.3</s:String>
+	
+	<s:Boolean x:Key="/Default/RunConfigs/Config/=A18B0C17F0CEB349AC1E83D672B150C7/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/RunConfigs/Config/=A18B0C17F0CEB349AC1E83D672B150C7/Exe/Executable/@EntryValue">C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64.exe</s:String>
+	<s:String x:Key="/Default/RunConfigs/Config/=A18B0C17F0CEB349AC1E83D672B150C7/Exe/WorkingDirectory/@EntryValue">C:\Program Files (x86)\Steam\steamapps\common\RimWorld</s:String>
+	<s:String x:Key="/Default/RunConfigs/Config/=A18B0C17F0CEB349AC1E83D672B150C7/Name/@EntryValue">RWTest</s:String>
+	<s:String x:Key="/Default/RunConfigs/Config/=A18B0C17F0CEB349AC1E83D672B150C7/ProjectGuid/@EntryValue">57A7AFE76C43A340AAFD66351AA01536</s:String>
+	<s:String x:Key="/Default/RunConfigs/Config/=A18B0C17F0CEB349AC1E83D672B150C7/Type/@EntryValue">exe</s:String>
+	
 	<s:String x:Key="/Default/SnapshotsStore/CurrentStore/@EntryValue">C:\Users\erdelfion\AppData\Local\JetBrains\Shared\vAny\Sessions</s:String>
 	<s:String x:Key="/Default/TeamCityAddin/DotCoverIntegration/CacheHomeDir/@EntryValue">C:\Users\erdelfion\AppData\Local\Temp</s:String>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=addon/@EntryIndexedValue">True</s:Boolean>

@@ -495,14 +495,25 @@
                    (!(this.cannotReceiveThoughts?.Contains(def) ?? false));
         }
 
-        public static bool CanGetThought(ThoughtDef def, Pawn pawn)
-        {
-            bool result = !(thoughtRestrictionDict.TryGetValue(def, out List<ThingDef_AlienRace> races));
+        private static readonly Dictionary<uint, bool> canGetThoughtCache = [];
 
-            return pawn.def is not ThingDef_AlienRace alienProps ? 
-                       result : 
-                       (races?.Contains(alienProps) ?? true) && alienProps.alienRace.thoughtSettings.CanGetThought(def);
+        public static bool CanGetThought(ThoughtDef def, ThingDef race)
+        {
+            uint key = def.shortHash | ((uint)race.shortHash << 16);
+
+            if (!canGetThoughtCache.TryGetValue(key, out bool canGetThought))
+            {
+                bool result = !(thoughtRestrictionDict.TryGetValue(def, out List<ThingDef_AlienRace> races));
+
+                canGetThoughtCache.Add(key, canGetThought = race is not ThingDef_AlienRace alienProps ?
+                                                                result :
+                                                                (races?.Contains(alienProps) ?? true) && alienProps.alienRace.thoughtSettings.CanGetThought(def));
+            }
+            return canGetThought;
         }
+
+        public static bool CanGetThought(ThoughtDef def, Pawn pawn) => 
+            CanGetThought(def, pawn.def);
 
         public List<ThoughtReplacer> replacerList;
     }
