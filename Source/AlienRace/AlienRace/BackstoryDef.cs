@@ -22,7 +22,7 @@
         public IntRange                         chronoAgeRange;
         public List<ThingDefCountRangeClass>    forcedItems = new();
 
-        public bool CommonalityApproved(Gender g) => Rand.Range(min: 0, max: 100) < (g == Gender.Female ? this.femaleCommonality : this.maleCommonality);
+        public bool CommonalityApproved(Gender g) => Rand.Range(0, 100) < (g == Gender.Female ? this.femaleCommonality : this.maleCommonality);
 
         public bool Approved(Pawn p) => this.CommonalityApproved(p.gender)                                                                                                                              &&
                                         (this.bioAgeRange    == default || (this.bioAgeRange.min    < p.ageTracker.AgeBiologicalYears    && p.ageTracker.AgeBiologicalYears    < this.bioAgeRange.max)) &&
