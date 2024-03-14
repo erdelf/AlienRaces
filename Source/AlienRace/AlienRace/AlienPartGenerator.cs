@@ -498,11 +498,40 @@
             public int lastAlienMeatIngestedTick = 0;
 
             private Dictionary<string, ExposableValueTuple<Color, Color>>                                    colorChannels;
-            private Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> colorChannelLinks = [];
+            private Dictionary<string, ColorChannelLinkData> colorChannelLinks = [];
             // originalChannelName, ((targetChannelName, targetChannelCategoryIndex), targetChannelFirst)
 
+            public class ColorChannelLinkData : IExposable
+            {
+                public class ColorChannelLinkTargetData : IExposable
+                {
+                    public string targetChannel;
+                    public int    categoryIndex;
+                    public void   ExposeData()
+                    {
+                        Scribe_Values.Look(ref this.targetChannel, nameof(this.targetChannel));
+                        Scribe_Values.Look(ref this.categoryIndex, nameof(this.categoryIndex));
+                    }
+                }
 
-            public Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> ColorChannelLinks => this.colorChannelLinks;
+                public string originalChannel;
+
+                public HashSet<ColorChannelLinkTargetData> targetsChannelOne = [];
+                public HashSet<ColorChannelLinkTargetData> targetsChannelTwo = [];
+
+                public HashSet<ColorChannelLinkTargetData> GetTargetDataFor(bool first) =>
+                    first ? this.targetsChannelOne : this.targetsChannelTwo;
+
+                public void ExposeData()
+                {
+                    Scribe_Values.Look(ref this.originalChannel, nameof(this.originalChannel));
+                    Scribe_Collections.Look(ref this.targetsChannelOne, nameof(this.targetsChannelOne));
+                    Scribe_Collections.Look(ref this.targetsChannelTwo, nameof(this.targetsChannelTwo));
+                }
+            }
+
+
+            public Dictionary<string, ColorChannelLinkData> ColorChannelLinks => this.colorChannelLinks;
 
             private Pawn               Pawn       => (Pawn)this.parent;
             private ThingDef_AlienRace AlienProps => (ThingDef_AlienRace)this.Pawn.def;
@@ -516,7 +545,7 @@
                         AlienPartGenerator apg = this.AlienProps.alienRace.generalSettings.alienPartGenerator;
 
                         this.colorChannels     = new Dictionary<string, ExposableValueTuple<Color, Color>>();
-                        this.colorChannelLinks = new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
+                        this.colorChannelLinks = new Dictionary<string, ColorChannelLinkData>();
 
                         this.colorChannels.Add(key: "base", new ExposableValueTuple<Color, Color>(Color.white, Color.white));
 
@@ -619,9 +648,16 @@
                         ac.GetInfo(out string channelName, out bool firstColor);
 
                         if (!this.ColorChannelLinks.ContainsKey(channelName))
-                            this.ColorChannelLinks.Add(channelName, []);
-                        if (this.ColorChannelLinks[channelName].All(evt => evt.first.first != channel.name || evt.second != first))
-                            this.ColorChannelLinks[channelName].Add(new ExposableValueTuple<ExposableValueTuple<string, int>, bool>(new ExposableValueTuple<string, int>(channel.name, channel.entries.IndexOf(category)), first));
+                            this.ColorChannelLinks.Add(channelName, new ColorChannelLinkData { originalChannel = channelName});
+
+                        HashSet<ColorChannelLinkData.ColorChannelLinkTargetData> linkTargetData = this.ColorChannelLinks[channelName].GetTargetDataFor(first);
+                        if (linkTargetData.All(ccltd => ccltd.targetChannel != channel.name))
+                            linkTargetData.Add(new ColorChannelLinkData.ColorChannelLinkTargetData
+                                                            {
+                                                                targetChannel = channel.name, 
+                                                                categoryIndex = channel.entries.IndexOf(category)
+                                                            });
+
                         return firstColor ? this.ColorChannels[channelName].first : this.ColorChannels[channelName].second;
                     default:
                         return this.GenerateColor(gen);
@@ -676,7 +712,7 @@
                 Scribe_Collections.Look(ref this.addonVariants, label: "addonVariants");
                 Scribe_Collections.Look(ref this.addonColors,   label: nameof(this.addonColors), LookMode.Deep);
                 Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
-                Scribe_NestedCollections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Undefined, LookMode.Deep);
+                Scribe_Collections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Value, LookMode.Deep);
 
                 Scribe_Values.Look(ref this.headVariant,     nameof(this.headVariant),     -1);
                 Scribe_Values.Look(ref this.bodyVariant,     nameof(this.bodyVariant),     -1);
@@ -686,7 +722,7 @@
                 if (Scribe.mode is LoadSaveMode.ResolvingCrossRefs)
                     this.Pawn.story.SkinColorBase = this.GetChannel("skin").first;
 
-                this.colorChannelLinks = this.ColorChannelLinks ?? new Dictionary<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>>();
+                this.colorChannelLinks = this.ColorChannelLinks ?? [];
             }
 
             public ExposableValueTuple<Color, Color> GetChannel(string channel)
@@ -709,8 +745,8 @@
 
             public void RegenerateColorChannelLinks()
             {
-                foreach (KeyValuePair<string, HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>>> kvp in this.ColorChannelLinks)
-                    this.RegenerateColorChannelLink(kvp.Key);
+                foreach (string key in this.ColorChannelLinks.Keys)
+                    this.RegenerateColorChannelLink(key);
             }
 
             public void RegenerateColorChannelLink(string channel)
@@ -718,20 +754,24 @@
                 ThingDef_AlienRace alienProps = ((ThingDef_AlienRace)this.parent.def);
                 AlienPartGenerator apg        = alienProps.alienRace.generalSettings.alienPartGenerator;
 
-                if (this.ColorChannelLinks.TryGetValue(channel, out HashSet<ExposableValueTuple<ExposableValueTuple<string, int>, bool>> colorChannelLink))
-                    foreach (ExposableValueTuple<ExposableValueTuple<string, int>, bool> link in colorChannelLink)
+                if (this.ColorChannelLinks.TryGetValue(channel, out ColorChannelLinkData colorChannelLink))
+                {
+                    foreach (ColorChannelLinkData.ColorChannelLinkTargetData targetData in colorChannelLink.targetsChannelOne)
                     {
-                        foreach (ColorChannelGenerator apgChannel in apg.colorChannels)
-                        {
-                            if (apgChannel.name == link.first.first)
-                            {
-                                if (link.second)
-                                    this.ColorChannels[link.first.first].first = this.GenerateColor(apgChannel, apgChannel.entries[link.first.second], true);
-                                else
-                                    this.ColorChannels[link.first.first].second = this.GenerateColor(apgChannel, apgChannel.entries[link.first.second], false);
-                            }
-                        }
+                        ColorChannelGenerator apgChannel = apg.colorChannels.FirstOrDefault(ccg => ccg.name == targetData.targetChannel);
+
+                        if (apgChannel != null)
+                            this.ColorChannels[targetData.targetChannel].first = this.GenerateColor(apgChannel, apgChannel.entries[targetData.categoryIndex], true);
                     }
+
+                    foreach (ColorChannelLinkData.ColorChannelLinkTargetData targetData in colorChannelLink.targetsChannelTwo)
+                    {
+                        ColorChannelGenerator apgChannel = apg.colorChannels.FirstOrDefault(ccg => ccg.name == targetData.targetChannel);
+
+                        if (apgChannel != null)
+                            this.ColorChannels[targetData.targetChannel].first = this.GenerateColor(apgChannel, apgChannel.entries[targetData.categoryIndex], true);
+                    }
+                }
             }
 
             public void OverwriteColorChannel(string channel, Color? first = null, Color? second = null)
