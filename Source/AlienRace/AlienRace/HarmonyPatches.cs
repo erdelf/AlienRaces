@@ -27,20 +27,10 @@ namespace AlienRace
         // ReSharper disable once InconsistentNaming
         private static readonly Type patchType = typeof(HarmonyPatches);
 
-        public static void ForTheLoveOfGodLogSomethingUseful(MethodBase ___original, HarmonyMethod ___prefix, HarmonyMethod ___postfix, HarmonyMethod ___transpiler)
-        {
-            if(___original is null)
-                Log.Message($"Prefix: {___prefix?.declaringType}.{___prefix?.methodName}\nPostfix: {___postfix?.declaringType}.{___postfix?.methodName}\nTranspiler: {___transpiler?.declaringType}.{___transpiler?.methodName}\n" +
-                            $"Pre: {___prefix}\nPost: {___postfix}\nTrans: {___transpiler}");
-        }
-
         static HarmonyPatches()
         {
             AlienHarmony harmony = new(id: "rimworld.erdelf.alien_race.main");
 
-            harmony.Patch(AccessTools.Method(typeof(PatchProcessor), nameof(PatchProcessor.Patch)), new HarmonyMethod(patchType, nameof(ForTheLoveOfGodLogSomethingUseful)));
-
-            
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.GenerationChance)), 
                           postfix: new HarmonyMethod(patchType, nameof(GenerationChanceChildPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_ExLover), nameof(PawnRelationWorker_ExLover.GenerationChance)), 
