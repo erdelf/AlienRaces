@@ -41,16 +41,17 @@ namespace AlienRace
             public IExtendedGraphic GetBestGraphic(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel)
             {
                 Pair<int, IExtendedGraphic> bestGraphic = new(0, this);
-                Stack<Pair<int, IEnumerable<IExtendedGraphic>>> stack = new();
-                stack.Push(new Pair<int, IEnumerable<IExtendedGraphic>>(1, this.GetSubGraphics(pawn, part, partLabel))); // generate list of subgraphics
+                Stack<Pair<int, IEnumerator<IExtendedGraphic>>> stack = new();
+                stack.Push(new Pair<int, IEnumerator<IExtendedGraphic>>(1, this.GetSubGraphics(pawn, part, partLabel).GetEnumerator())); // generate list of subgraphics
 
                 // Loop through sub trees until we find a deeper match or we run out of alternatives
                 while (stack.Count > 0 && (bestGraphic.Second == this || bestGraphic.First < stack.Peek().First))
                 {
-                    Pair<int, IEnumerable<IExtendedGraphic>> currentGraphicSet = stack.Pop(); // get the top of the stack
+                    Pair<int, IEnumerator<IExtendedGraphic>> currentGraphicSet = stack.Pop(); // get the top of the stack
 
-                    foreach (IExtendedGraphic current in currentGraphicSet.Second)
+                    while (currentGraphicSet.Second.MoveNext()) // exits if iterates through list of subgraphics without advancing
                     {
+                        IExtendedGraphic current = currentGraphicSet.Second.Current; //current branch of tree
                         //Log.ResetMessageCount();
                         //Log.Message(Traverse.Create(pawn).Property("WrappedPawn").GetValue<Pawn>().NameShortColored + ": " + AccessTools.GetDeclaredFields(current.GetType())[0].GetValue(current) + " | " + current.GetType().FullName + " | " + current.GetPath());
                         if (!(current?.IsApplicable(pawn, part, partLabel) ?? false))
@@ -62,12 +63,12 @@ namespace AlienRace
                         if (current.GetPath() == REWIND_PATH)
                             // add the current layer back to the stack so we can rewind
                             stack.Push(currentGraphicSet);
-                        else if(!current.GetPath().NullOrEmpty() && current.GetVariantCount() > 0)
+                        else if (!current.GetPath().NullOrEmpty() && current.GetVariantCount() > 0)
                             // Only update best graphic if the current one has a valid path
                             bestGraphic = new Pair<int, IExtendedGraphic>(currentGraphicSet.First, current);
                         //Log.Message(bestGraphic.Second.GetPath());
                         // enters next layer/branch
-                        currentGraphicSet = new Pair<int, IEnumerable<IExtendedGraphic>>(currentGraphicSet.First + 1, current.GetSubGraphics(pawn, part, partLabel));
+                        currentGraphicSet = new Pair<int, IEnumerator<IExtendedGraphic>>(currentGraphicSet.First + 1, current.GetSubGraphics(pawn, part, partLabel).GetEnumerator());
                     }
                 }
 
