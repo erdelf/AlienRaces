@@ -71,6 +71,11 @@ public class ConditionBodyPart : Condition
         (pawn.HasNamedBodyPart(this.bodyPart, this.bodyPartLabel))// || pawn.LinkToCorePart(this.drawWithoutPart, this.alignWithHead, this.bodyPart, this.bodyPartLabel))
     //|| this.extendedGraphics.OfType<AlienPartGenerator.ExtendedHediffGraphic>().Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart)
     ;
+
+    public override void LoadDataFromXmlCustom(XmlNode xmlRoot)
+    {
+        Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
+    }
 }
 
 public class ConditionDrafted : Condition
