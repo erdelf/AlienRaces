@@ -578,7 +578,11 @@ namespace AlienRace
 
         public override Graphic GraphicFor(Pawn pawn) => this.props.graphic;
 
-        public override GraphicMeshSet MeshSetFor(Pawn pawn) => MeshPool.GetMeshSetForSize(Vector2.one);
+        public override GraphicMeshSet MeshSetFor(Pawn pawn) => 
+            MeshPool.GetMeshSetForSize(Vector2.one);
+
+        public override Mesh GetMesh(PawnDrawParms parms) => 
+            this.props.graphic.MeshAt(parms.facing);
     }
 
     public class AlienPawnRenderNodeWorker_BodyAddon : PawnRenderNodeWorker
