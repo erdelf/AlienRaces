@@ -6,7 +6,7 @@
 	<IssueDef>
 		<defName>HAR_AlienRaces</defName>
 		<label>alien races</label>
-		<iconPath>UI/Issues/AlienRaces</iconPath>
+		<iconPath>AlienRace/UI/Issues/AlienRaces</iconPath>
 	</IssueDef>
 	
 
