@@ -135,7 +135,7 @@
         public static void SetFieldFromXmlNodeRaw(Traverse field, XmlNode xmlNode, object wanter, string fieldName, Type valueType)
         {
             if (valueType.IsSubclassOf(typeof(Def)))
-                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(wanter, fieldName, xmlNode.FirstChild.Value);
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(wanter, fieldName, xmlNode.FirstChild.Value ?? xmlNode.Value ?? xmlNode.InnerText);
             else
                 field.SetValue(valueType.IsGenericType || !ParseHelper.HandlesType(valueType) ?
                                    DirectXmlToObject.GetObjectFromXmlMethod(valueType)(xmlNode, false) :
