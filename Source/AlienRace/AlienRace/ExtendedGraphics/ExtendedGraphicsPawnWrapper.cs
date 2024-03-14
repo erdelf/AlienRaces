@@ -57,9 +57,6 @@ public class ExtendedGraphicsPawnWrapper
                     capitalisedTrait == t.LabelCap || capitalisedTrait == t.GetLabelCapFor(this.WrappedPawn) || capitalisedTrait == t.untranslatedLabel);
     }
 
-    public virtual bool HasApparelGraphics() =>
-        !this.WrappedPawn.Drawer?.renderer?.graphics?.apparelGraphics?.NullOrEmpty() ?? false;
-
     public virtual IEnumerable<ApparelProperties> GetWornApparel() =>
         this.WrappedPawn.apparel?.WornApparel?.Select(ap => ap.def.apparel) ?? Enumerable.Empty<ApparelProperties>();
 

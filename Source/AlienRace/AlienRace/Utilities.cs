@@ -229,11 +229,6 @@
         public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allWeaponPairs =
             AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnWeaponGenerator), "allWeaponPairs"));
 
-        public delegate Color SwaddleColor(PawnGraphicSet graphicSet);
-
-        public static readonly SwaddleColor swaddleColor =
-            AccessTools.MethodDelegate<SwaddleColor>(AccessTools.Method(typeof(PawnGraphicSet), "SwaddleColor"));
-
         public delegate void PawnGeneratorPawnRelations(Pawn pawn, ref PawnGenerationRequest request);
 
         public static readonly PawnGeneratorPawnRelations generatePawnsRelations =
@@ -292,5 +287,10 @@
 
         public static readonly AccessTools.FieldRef<object, bool>        statPartAgeUseBiologicalYearsField = AccessTools.FieldRefAccess<bool>(typeof(StatPart_Age), "useBiologicalYears");
         public static readonly AccessTools.FieldRef<object, SimpleCurve> statPartAgeCurveField              = AccessTools.FieldRefAccess<SimpleCurve>(typeof(StatPart_Age), "curve");
+
+        public delegate void RenderTreeAddChild(PawnRenderTree tree, PawnRenderNode child, PawnRenderNode parent);
+
+        public static readonly RenderTreeAddChild renderTreeAddChild =
+            AccessTools.MethodDelegate<RenderTreeAddChild>(AccessTools.Method(typeof(PawnRenderTree), "AddChild"));
     }
 }
