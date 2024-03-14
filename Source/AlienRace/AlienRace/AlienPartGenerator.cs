@@ -226,6 +226,51 @@
                     ExtendedGraphicTop bodyGraphic = this.alienProps.alienRace.graphicPaths.body;
                     string             bodyPath    = bodyGraphic.path;
 
+
+                    foreach (CreepJoinerFormKindDef formKindDef in DefDatabase<CreepJoinerFormKindDef>.AllDefsListForReading)
+                    {
+                        ExtendedCreepJoinerFormGraphic formGraphic = new()
+                        {
+                            form = formKindDef,
+                            path = $"{bodyPath}_{formKindDef}"
+                        };
+                        foreach (BodyTypeGraphicData bodyTypeData in formKindDef.bodyTypeGraphicPaths)
+                        {
+                            formGraphic.extendedGraphics.Add(new ExtendedBodytypeGraphic
+                                                             {
+                                                                 bodytype      = bodyTypeData.bodyType,
+                                                                 path          = $"{bodyPath}_{formKindDef}_{bodyTypeData.bodyType}",
+                                                                 pathsFallback = [bodyTypeData.texturePath]
+                                                             });
+                        }
+
+                        bodyGraphic.extendedGraphics.Add(formGraphic);
+                    }
+
+                    foreach (MutantDef mutantDef in DefDatabase<MutantDef>.AllDefsListForReading)
+                    {
+                        ExtendedMutantGraphic mutantGraphic = new()
+                        {
+                            mutant = mutantDef,
+                            path = $"{bodyPath}_{mutantDef}"
+                        };
+                        foreach (BodyTypeGraphicData bodyTypeData in mutantDef.bodyTypeGraphicPaths)
+                            mutantGraphic.extendedGraphics.Add(new ExtendedBodytypeGraphic
+                            {
+                                bodytype      = bodyTypeData.bodyType,
+                                path          = $"{bodyPath}_{mutantDef}_{bodyTypeData.bodyType}",
+                                pathsFallback = [bodyTypeData.texturePath]
+                            });
+                        bodyGraphic.extendedGraphics.Add(mutantGraphic);
+                    }
+
+
+
+
+
+
+
+
                     foreach (BodyTypeDef bodyTypeRaw in this.bodyTypes)
                     {
                         BodyTypeDef bodyType = bodyTypeRaw == BodyTypeDefOf.Baby ? BodyTypeDefOf.Child : bodyTypeRaw;
@@ -249,39 +294,6 @@
                                                                  }
                                                              ]
                                                          });
-                    }
-
-                    foreach (CreepJoinerFormKindDef formKindDef in DefDatabase<CreepJoinerFormKindDef>.AllDefsListForReading)
-                    {
-                        ExtendedCreepJoinerFormGraphic formGraphic = new()
-                                                                     {
-                                                                         form = formKindDef,
-                                                                         path = $"{bodyPath}_{formKindDef}"
-                                                                     };
-                        foreach (BodyTypeGraphicData bodyTypeData in formKindDef.bodyTypeGraphicPaths)
-                            formGraphic.extendedGraphics.Add(new ExtendedBodytypeGraphic
-                                                             {
-                                                                 bodytype = bodyTypeData.bodyType,
-                                                                 path     = bodyTypeData.texturePath
-                                                             });
-
-                        bodyGraphic.extendedGraphics.Add(formGraphic);
-                    }
-
-                    foreach (MutantDef mutantDef in DefDatabase<MutantDef>.AllDefsListForReading)
-                    {
-                        ExtendedMutantGraphic mutantGraphic = new()
-                                                                     {
-                                                                         mutant = mutantDef,
-                                                                         path = $"{bodyPath}_{mutantDef}"
-                                                                     };
-                        foreach (BodyTypeGraphicData bodyTypeData in mutantDef.bodyTypeGraphicPaths)
-                            mutantGraphic.extendedGraphics.Add(new ExtendedBodytypeGraphic
-                                                             {
-                                                                 bodytype = bodyTypeData.bodyType,
-                                                                 path     = bodyTypeData.texturePath
-                                                             });
-                        bodyGraphic.extendedGraphics.Add(mutantGraphic);
                     }
                 }
             }
