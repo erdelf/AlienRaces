@@ -1,17 +1,17 @@
 <Patch>
-    <Operation Class="PatchOperationSequence">
-        <operations>
-            <li Class="PatchOperationAttributeSet">
+    <Operation Class="PatchOperationAttributeSet">
                 <xpath>Defs/ThingDef[defName="Human"]</xpath>
                 <attribute>Class</attribute>
                 <value>AlienRace.ThingDef_AlienRace</value>
-            </li>
-            <li Class="PatchOperationAttributeSet">
-                <xpath>Defs/ThingDef[defName="Human"]</xpath>
-                <attribute>Name</attribute>
-                <value>HumanRace</value>
-            </li>
-            <li Class="PatchOperationAdd">
+    </Operation>
+
+    <Operation Class="PatchOperationAttributeSet">
+        <xpath>Defs/ThingDef[defName="CreepJoiner"]</xpath>
+        <attribute>Class</attribute>
+        <value>AlienRace.ThingDef_AlienRace</value>
+    </Operation>
+
+    <Operation Class="PatchOperationAdd">
                 <xpath>Defs/ThingDef[defName="Human"]</xpath>
                 <value>
                     <alienRace>
@@ -75,7 +75,5 @@
                         </raceRestriction>
                     </alienRace>
                 </value>
-            </li>
-        </operations>
     </Operation>
 </Patch>
