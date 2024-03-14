@@ -166,7 +166,6 @@ namespace AlienRace
                 set => this.shaderType = value ?? ShaderTypeDefOf.Cutout;
             }
             private bool VisibleUnderApparelOf(ExtendedGraphicsPawnWrapper pawn) =>
-                !pawn.HasApparelGraphics()                                                             ||
                 (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
                 !pawn.GetWornApparel().Any(ap => 
                     !ap.hatRenderedFrontOfFace && ap.bodyPartGroups.Any(predicate: bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) || 

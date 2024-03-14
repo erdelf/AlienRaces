@@ -539,7 +539,7 @@
                         }
 
                         if (this.Pawn.Corpse?.GetRotStage() == RotStage.Rotting)
-                            this.OverwriteColorChannel("skin", PawnGraphicSet.RottingColorDefault);
+                            this.OverwriteColorChannel("skin", PawnRenderUtility.GetRottenColor(this.colorChannels["skin"].first));
                         this.Pawn.story.HairColor = this.colorChannels["hair"].first;
 
                         this.RegenerateColorChannelLink("skin");
