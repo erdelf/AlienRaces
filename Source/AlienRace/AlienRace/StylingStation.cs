@@ -711,27 +711,39 @@ public static class StylingStation
 
                 List<string> linkedTo = [];
 
-                if (alienComp.ColorChannelLinks.Keys.Contains(channel.name))
-                    foreach (AlienPartGenerator.ExposableValueTuple<AlienPartGenerator.ExposableValueTuple<string, int>, bool> link in alienComp.ColorChannelLinks[channel.name])
+                void LinkedToCheck(AlienPartGenerator.AlienComp.ColorChannelLinkData.ColorChannelLinkTargetData colorChannelLinkTargetData, bool checkFirst)
+                {
+                    AlienPartGenerator.ColorChannelGeneratorCategory entry = alienRaceDef.alienRace.generalSettings.alienPartGenerator.colorChannels.
+                                                                                          Find(ccg => ccg.name == colorChannelLinkTargetData.targetChannel).entries[colorChannelLinkTargetData.categoryIndex];
+
+                    ((ColorGenerator_CustomAlienChannel)(checkFirst ? entry.first : entry.second)).GetInfo(out _, out bool firstOfChannel);
+                    if (first == firstOfChannel)
+                        linkedTo.Add("HAR.LinkText".Translate(colorChannelLinkTargetData.targetChannel.CapitalizeFirst(), (checkFirst ? "HAR.FirstColor" : "HAR.SecondColor").Translate()));
+                }
+
+                if (alienComp.ColorChannelLinks.TryGetValue(channel.name, out AlienPartGenerator.AlienComp.ColorChannelLinkData linkDataTo))
+                    foreach (AlienPartGenerator.AlienComp.ColorChannelLinkData.ColorChannelLinkTargetData targetData in linkDataTo.targetsChannelOne)
                     {
-                        AlienPartGenerator.ColorChannelGeneratorCategory entry = alienRaceDef.alienRace.generalSettings.alienPartGenerator.colorChannels.Find(ccg => ccg.name == link.first.first).entries[link.first.second];
-                        ((ColorGenerator_CustomAlienChannel)(link.second ? entry.first : entry.second)).GetInfo(out _, out bool firstOfChannel);
-                        if(first == firstOfChannel)
-                            linkedTo.Add("HAR.LinkText".Translate(link.first.first.CapitalizeFirst(), (link.second ? "HAR.FirstColor" : "HAR.SecondColor").Translate()));
+                        LinkedToCheck(targetData, true);
+                        LinkedToCheck(targetData, false);
                     }
 
                 List<string> linkedFrom = [];
 
-                foreach ((string baseChannel, HashSet<AlienPartGenerator.ExposableValueTuple<AlienPartGenerator.ExposableValueTuple<string, int>, bool>> hashSet) in alienComp.ColorChannelLinks)
+                foreach ((string baseChannel, AlienPartGenerator.AlienComp.ColorChannelLinkData linkDataFrom) in alienComp.ColorChannelLinks)
                 {
-                    foreach (AlienPartGenerator.ExposableValueTuple<AlienPartGenerator.ExposableValueTuple<string, int>, bool> link in hashSet)
-                        if (link.first.first == channel.name && link.second == first)
+                    // originalChannelName, ((targetChannelName, targetChannelCategoryIndex), targetChannelFirst)
+
+                    foreach (AlienPartGenerator.AlienComp.ColorChannelLinkData.ColorChannelLinkTargetData targetData in first ? linkDataFrom.targetsChannelOne : linkDataFrom.targetsChannelTwo)
+                    {
+                        if (targetData.targetChannel == channel.name)
                         {
-                            AlienPartGenerator.ColorChannelGeneratorCategory entry = alienRaceDef.alienRace.generalSettings.alienPartGenerator.colorChannels.Find(ccg => ccg.name == channel.name).entries[link.first.second];
+                            AlienPartGenerator.ColorChannelGeneratorCategory entry = alienRaceDef.alienRace.generalSettings.alienPartGenerator.colorChannels.Find(ccg => ccg.name == channel.name).entries[targetData.categoryIndex];
                             ((ColorGenerator_CustomAlienChannel)(first ? entry.first : entry.second)).GetInfo(out _, out bool firstOfChannel);
 
                             linkedFrom.Add("HAR.LinkText".Translate(baseChannel.CapitalizeFirst(), (firstOfChannel ? "HAR.FirstColor" : "HAR.SecondColor").Translate()));
                         }
+                    }
                 }
                 
                 if (linkedTo.Any() || linkedFrom.Any())
