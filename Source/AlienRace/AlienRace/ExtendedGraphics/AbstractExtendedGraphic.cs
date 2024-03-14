@@ -124,10 +124,8 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
                     attribute2.Value = graphicNode.Name;
                     graphicNode.Attributes!.SetNamedItem(attribute2);
 
-                    IXmlSchemaInfo elementName = CachedData.xmlElementName(graphicNode as XmlElement);
-                    CachedData.xmlNameLocalName(elementName) = CachedData.xmlNameName(elementName) = classTag;
+                    CachedData.xmlElementName(graphicNode as XmlElement) = CachedData.xmlDocumentAddName(childNode.OwnerDocument, string.Empty, classTag, string.Empty, null);
                 }
-
 
                 CachedData.xmlElementName(childNode as XmlElement) = CachedData.xmlDocumentAddName(childNode.OwnerDocument, string.Empty, nameof(this.extendedGraphics), string.Empty, null);
 
