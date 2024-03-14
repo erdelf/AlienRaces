@@ -5,14 +5,12 @@ namespace AlienRace
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
-    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using HarmonyLib;
     using LudeonTK;
     using RimWorld;
     using RimWorld.QuestGen;
     using UnityEngine;
-    using UnityEngine.Networking;
     using Verse;
     using Verse.AI;
     using Verse.Grammar;
