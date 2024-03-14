@@ -709,7 +709,7 @@
                 if (p != null)
                 {
                     FleckMaker.ThrowSmoke(p.Position.ToVector3(), p.Map, 5f);
-                    p.Drawer?.renderer?.graphics?.SetAllGraphicsDirty();
+                    p.Drawer?.renderer?.SetAllGraphicsDirty();
                 }
             }
         }
