@@ -53,24 +53,37 @@ namespace AlienRace
                     {
                         IExtendedGraphic current = currentGraphicSet.Second.Current; //current branch of tree
                         //Log.ResetMessageCount();
-                        //Log.Message(Traverse.Create(pawn).Property("WrappedPawn").GetValue<Pawn>().NameShortColored + ": " + AccessTools.GetDeclaredFields(current.GetType())[0].GetValue(current) + " | " + current.GetType().FullName + " | " + current.GetPath());
+                        //Log.Message(HarmonyLib.Traverse.Create(pawn).Property("WrappedPawn").GetValue<Pawn>().NameShortColored + ": " + HarmonyLib.AccessTools.GetDeclaredFields(current.GetType())[0].GetValue(current) + " | " + current.GetType().FullName + " | " + current.GetPath());
                         if (!(current?.IsApplicable(pawn, part, partLabel) ?? false))
                             continue;
-                        /*
-                        Log.Message("applicable");
-                        Log.Message((!current.GetPath().NullOrEmpty()).ToString());
-                        Log.Message(current.GetVariantCount().ToString());*/
+                        
+                        //Log.Message("applicable");
+                        //Log.Message((!current.GetPath().NullOrEmpty()).ToString());
+                        //Log.Message(current.GetVariantCount().ToString());
                         if (current.GetPath() == REWIND_PATH)
                             // add the current layer back to the stack so we can rewind
+                        {
                             stack.Push(currentGraphicSet);
+                        }
                         else if (!current.GetPath().NullOrEmpty() && current.GetVariantCount() > 0)
                             // Only update best graphic if the current one has a valid path
+                        {
                             bestGraphic = new Pair<int, IExtendedGraphic>(currentGraphicSet.First, current);
-                        //Log.Message(bestGraphic.Second.GetPath());
-                        // enters next layer/branch
-                        currentGraphicSet = new Pair<int, IEnumerator<IExtendedGraphic>>(currentGraphicSet.First + 1, current.GetSubGraphics(pawn, part, partLabel).GetEnumerator());
+                        }
+                        else
+                        {
+                            //Log.Message(bestGraphic.Second.GetPath());
+
+                            IEnumerable<IExtendedGraphic> subGraphics = current.GetSubGraphics(pawn, part, partLabel);
+                            if (subGraphics.Any())
+                                currentGraphicSet  = new Pair<int, IEnumerator<IExtendedGraphic>>(currentGraphicSet.First + 1, subGraphics.GetEnumerator());
+                            else
+                                stack.Push(currentGraphicSet);
+                        }
                     }
                 }
+
+                //Log.Message("Alternative Stack:" + stack.Count);
 
                 return bestGraphic.Second;
             }
