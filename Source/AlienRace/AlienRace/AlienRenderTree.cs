@@ -201,7 +201,7 @@ namespace AlienRace
 
             //if (pawnRenderResolveData.pawn != pawn) Log.Message($"PAWNS DON'T MATCH: {pawn.NameFullColored} vs {pawnRenderResolveData.pawn.NameFullColored}");
 
-            PawnRenderResolveData pawnRenderData = pawnRenderResolveData;
+            PawnRenderResolveData pawnRenderData = RegenerateResolveData(pawn);
 
             int                          sharedIndex  = pawnRenderData.sharedIndex;
             GraphicPaths                 graphicPaths = pawnRenderData.alienProps.alienRace.graphicPaths;
