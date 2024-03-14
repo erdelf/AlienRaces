@@ -61,17 +61,15 @@ public partial class AlienPartGenerator
     {
         [XmlIgnore]
         public HediffDef hediff;
-        public List<ExtendedHediffSeverityGraphic> severity;
+        public List<ExtendedHediffSeverityGraphic> severity = [];
 
-        public override IEnumerator<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel)
+        public override IEnumerable<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel)
         {
             float maxSeverityOfHediff = pawn.SeverityOfHediffsOnPart(this.hediff, part, partLabel).Max();
-            IEnumerator<IExtendedGraphic> genericSubGraphics = base.GetSubGraphics(pawn, part, partLabel); //run rest of graphic cycles
-            while (genericSubGraphics.MoveNext())
-            {
-                IExtendedGraphic current = genericSubGraphics.Current;
+            IEnumerable<IExtendedGraphic> genericSubGraphics = base.GetSubGraphics(pawn, part, partLabel); //run rest of graphic cycles
 
-                // check if graphic is valid to return applying type specific requirements
+            foreach (IExtendedGraphic current in genericSubGraphics)
+            {
                 bool isValid = current switch
                 {
                     ExtendedHediffSeverityGraphic severityGraphic => maxSeverityOfHediff >= severityGraphic.severity,
@@ -79,16 +77,20 @@ public partial class AlienPartGenerator
                 };
 
                 //return each of the generic subgraphics lazily applying any type specific requirements
-                if (isValid) yield return current;
+                if (isValid) 
+                    yield return current;
             }
         }
 
-        public override IEnumerable<IExtendedGraphic> GetSubGraphicsOfPriority(ExtendedGraphicsPrioritization priority) =>
-            priority switch
-            {
-                ExtendedGraphicsPrioritization.Severity => this.severity ?? Enumerable.Empty<IExtendedGraphic>(),
-                _ => base.GetSubGraphicsOfPriority(priority)
-            };
+        public override IEnumerable<IExtendedGraphic> GetSubGraphics()
+        {
+            foreach (ExtendedHediffSeverityGraphic severityGraphic in this.severity) 
+                yield return severityGraphic;
+
+            IEnumerable<IExtendedGraphic> subGraphics = base.GetSubGraphics();
+            foreach (IExtendedGraphic graphic in subGraphics) 
+                yield return graphic;
+        }
 
         public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
             pawn.HasHediffOfDefAndPart(this.hediff, part, partLabel);
@@ -103,7 +105,7 @@ public partial class AlienPartGenerator
                                                                 xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index),
                                                                 mayRequire?.Value.ToLower());
 
-            this.SetInstanceVariablesFromChildNodesOf(xmlRoot, new HashSet<string> { hediffFieldName });
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot, [hediffFieldName]);
 
         }
     }

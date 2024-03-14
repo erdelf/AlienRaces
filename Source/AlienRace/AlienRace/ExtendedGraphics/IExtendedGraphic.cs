@@ -21,17 +21,15 @@ public interface IExtendedGraphic
     /*
      * Get all sub-graphics with no restrictions
      */
-    public IEnumerator<IExtendedGraphic> GetSubGraphics(); 
+    public IEnumerable<IExtendedGraphic> GetSubGraphics(); 
     
     /**
      * Get sub-graphics relevant to pawn and part
      */
-    public IEnumerator<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel);
+    public IEnumerable<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel);
     
     /**
      * Check if this graphic is relevant to the pawn and part.
      */
     public bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel);
-
-    public IEnumerable<IExtendedGraphic> GetSubGraphicsOfPriority(AlienPartGenerator.ExtendedGraphicsPrioritization priority);
 }
