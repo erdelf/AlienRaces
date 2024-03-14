@@ -77,6 +77,8 @@
 
         public BodyPartDef headBodyPartDef;
 
+        public static HashSet<ThingDef> racesWithSeverity = [];
+
         public List<BodyAddon> bodyAddons = new();
 
         public ThingDef_AlienRace alienProps;
@@ -382,6 +384,9 @@
                                                                                                                             afo.wornGraphicPaths.Concat(afo.wornGraphicPath))).ToArray());
 
             graphicsLoader.LoadAllGraphics(this.alienProps.defName + " Addons", this.bodyAddons.Cast<ExtendedGraphicTop>().ToArray());
+
+            if ((graphicsLoader as DefaultGraphicsLoader)?.foundSeverityGraphics ?? false)
+                racesWithSeverity?.Add(this.alienProps);
 
             this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
             foreach (OffsetNamed offsetDefault in this.offsetDefaults)

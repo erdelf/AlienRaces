@@ -93,7 +93,10 @@
                     foreach (BodyAddon bodyAddon in universalBodyAddons) 
                         bodyAddon.offsets.west ??= bodyAddon.offsets.east;
 
-                    new DefaultGraphicsLoader().LoadAllGraphics("Universal Addons", universalBodyAddons.Cast<ExtendedGraphicTop>().ToArray());
+                    DefaultGraphicsLoader graphicsLoader = new();
+                    graphicsLoader.LoadAllGraphics("Universal Addons", universalBodyAddons.Cast<AlienPartGenerator.ExtendedGraphicTop>().ToArray());
+                    if (graphicsLoader.foundSeverityGraphics)
+                        AlienPartGenerator.racesWithSeverity = null;
                 }
 
                 return universalBodyAddons;
