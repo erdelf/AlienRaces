@@ -443,6 +443,7 @@ namespace AlienRace
                         bool colorInsertActive = false;
 
                         AlienPartGenerator.BodyAddon addon = bodyAddons.Current!;
+
                         if (alienComp.addonColors.Count > addonIndex)
                         {
                             AlienPartGenerator.ExposableValueTuple<Color?, Color?> addonColor = alienComp.addonColors[addonIndex];
@@ -458,6 +459,8 @@ namespace AlienRace
                                 colorInsertActive      = true;
                             }
                         }
+
+                        bool canDrawAddon = addon.CanDrawAddonStatic(__instance.pawn);
 
                         Graphic g = addon.GetGraphic(__instance.pawn, ref sharedIndex, alienComp.addonVariants.Count > addonIndex ? alienComp.addonVariants[addonIndex] : null);
                         alienComp.addonGraphics.Add(g);
@@ -476,25 +479,28 @@ namespace AlienRace
 
                         addonIndex++;
 
-
-                        AlienPawnRenderNodeProperties_BodyAddon nodeProps = new()
-                                                                            {
-                                                                                addon = addon,
-                                                                                addonIndex = addonIndex,
-                                                                                graphic = g,
-                                                                                parentTagDef = addon.alignWithHead ? PawnRenderNodeTagDefOf.Head : PawnRenderNodeTagDefOf.Body,
-                                                                                pawnType = PawnRenderNodeProperties.RenderNodePawnType.HumanlikeOnly,
-                                                                                workerClass = typeof(AlienPawnRenderNodeWorker_BodyAddon),
-                                                                                nodeClass = typeof(AlienPawnRenderNode_BodyAddon),
-                                                                                drawData = DrawData.NewWithData(new DrawData.RotationalData { rotationOffset = addon.angle },
-                                                                                                                new DrawData.RotationalData { rotationOffset = -addon.angle, rotation = Rot4.East},
-                                                                                                                new DrawData.RotationalData { rotationOffset = 0, rotation = Rot4.North }),
-                                                                                useGraphic = true,
-                                                                                alienComp = alienComp,
-                                                                                debugLabel = addon.Name
-                                                                            };
-                        PawnRenderNode pawnRenderNode = (PawnRenderNode)Activator.CreateInstance(nodeProps.nodeClass, __instance.pawn, nodeProps, __instance.pawn.Drawer.renderer.renderTree);
-                        CachedData.renderTreeAddChild(__instance.pawn.Drawer.renderer.renderTree, pawnRenderNode, null);
+                        if (canDrawAddon)
+                        {
+                            AlienPawnRenderNodeProperties_BodyAddon nodeProps = new()
+                                                                                {
+                                                                                    addon        = addon,
+                                                                                    addonIndex   = addonIndex,
+                                                                                    graphic      = g,
+                                                                                    parentTagDef = addon.alignWithHead ? PawnRenderNodeTagDefOf.Head : PawnRenderNodeTagDefOf.Body,
+                                                                                    pawnType     = PawnRenderNodeProperties.RenderNodePawnType.HumanlikeOnly,
+                                                                                    workerClass  = typeof(AlienPawnRenderNodeWorker_BodyAddon),
+                                                                                    nodeClass    = typeof(AlienPawnRenderNode_BodyAddon),
+                                                                                    drawData = DrawData.NewWithData(new DrawData.RotationalData { rotationOffset = addon.angle },
+                                                                                                                    new DrawData.RotationalData
+                                                                                                                    { rotationOffset = -addon.angle, rotation = Rot4.East },
+                                                                                                                    new DrawData.RotationalData { rotationOffset = 0, rotation = Rot4.North }),
+                                                                                    useGraphic = true,
+                                                                                    alienComp  = alienComp,
+                                                                                    debugLabel = addon.Name
+                                                                                };
+                            PawnRenderNode pawnRenderNode = (PawnRenderNode)Activator.CreateInstance(nodeProps.nodeClass, __instance.pawn, nodeProps, __instance.pawn.Drawer.renderer.renderTree);
+                            CachedData.renderTreeAddChild(__instance.pawn.Drawer.renderer.renderTree, pawnRenderNode, null);
+                        }
                     }
                 }
             }
