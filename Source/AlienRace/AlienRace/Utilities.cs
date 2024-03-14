@@ -49,6 +49,20 @@
 
         [MayRequireIdeology]
         public static HistoryEventDef HAR_Alien_SoldSlave;
+
+        #region Vanilla
+
+        public static TraitDef Cannibal;
+
+        public static ThoughtDef AteHumanlikeMeatDirect;
+        public static ThoughtDef AteHumanlikeMeatAsIngredient;
+        public static ThoughtDef AteHumanlikeMeatDirectCannibal;
+        public static ThoughtDef AteHumanlikeMeatAsIngredientCannibal;
+        public static ThoughtDef ButcheredHumanlikeCorpse;
+        public static ThoughtDef KnowButcheredHumanlikeCorpse;
+
+        #endregion
+
         // ReSharper restore InconsistentNaming
     }
 
