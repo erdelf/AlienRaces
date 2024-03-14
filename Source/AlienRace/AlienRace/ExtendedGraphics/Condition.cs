@@ -1,5 +1,6 @@
 ﻿namespace AlienRace.ExtendedGraphics;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
@@ -7,10 +8,24 @@ using System.Xml.Serialization;
 using Verse;
 using JetBrains.Annotations;
 using System.Xml;
+using HarmonyLib;
 using static AlienRace.AlienPartGenerator.BodyAddon;
 
+[StaticConstructorOnStartup]
 public abstract class Condition
 {
+    public static Dictionary<string, string> XmlNameParseKeys;
+
+    static Condition()
+    {
+        XmlNameParseKeys = [];
+        foreach (Type type in typeof(Condition).AllSubclassesNonAbstract()) 
+            XmlNameParseKeys.Add(Traverse.Create(type).Field(nameof(XmlNameParseKey)).GetValue<string>(), type.FullName);
+    }
+
+
+    public const string XmlNameParseKey = "";
+
     public virtual bool Static => false;
 
     public abstract bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel);
@@ -19,32 +34,26 @@ public abstract class Condition
     [UsedImplicitly]
     public virtual void LoadDataFromXmlCustom(XmlNode xmlRoot)
     {
-
-        foreach (XmlNode childNode in xmlRoot.ChildNodes)
-        {
-            /*
-            if (XML_CLASS_DICTIONARY.TryGetValue(childNode.Name, out string classTag))
-            {
-                XmlAttribute attribute = xmlRoot.OwnerDocument!.CreateAttribute("Class");
-                attribute.Value = classTag;
-                childNode.Attributes!.SetNamedItem(attribute);
-            }*/
-        }
-
         Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
     }
 }
 
 public class ConditionRotStage : Condition
 {
+    public new const string XmlNameParseKey = "RotStage";
+
     public List<RotStage> allowedStages = [RotStage.Fresh];
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) => 
         this.allowedStages.Contains(pawn.GetRotStage() ?? RotStage.Fresh);
+
+    public new virtual void LoadDataFromXmlCustom(XmlNode xmlRoot) => 
+        this.allowedStages = xmlRoot.Value.Split(',').Select(ParseHelper.FromString<RotStage>).ToList();
 }
 
 public class ConditionBodyPart : Condition
 {
+    public new const string XmlNameParseKey = "BodyPart";
 
     public BodyPartDef bodyPart;
     public string      bodyPartLabel;
@@ -58,6 +67,8 @@ public class ConditionBodyPart : Condition
 
 public class ConditionDrafted : Condition
 {
+    public new const string XmlNameParseKey = "Drafted";
+
     private bool drafted = true;
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
@@ -66,6 +77,8 @@ public class ConditionDrafted : Condition
 
 public class ConditionJob : Condition
 {
+    public new const string XmlNameParseKey = "JobConfig";
+
     public BodyAddonJobConfig jobs = new();
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
@@ -100,6 +113,8 @@ public class ConditionJob : Condition
 
 public class ConditionApparel : Condition
 {
+    public new const string XmlNameParseKey = "Apparel";
+
     public List<BodyPartGroupDef> hiddenUnderApparelFor = [];
     public List<string>           hiddenUnderApparelTag = [];
 
@@ -113,6 +128,8 @@ public class ConditionApparel : Condition
 
 public class ConditionPosture : Condition
 {
+    public new const string XmlNameParseKey = "Posture";
+
     private bool drawnOnGround = true;
     private bool drawnInBed = true;
 
@@ -123,6 +140,8 @@ public class ConditionPosture : Condition
 
 public class ConditionDamage : Condition
 {
+    public new const string XmlNameParseKey = "Damage";
+
     public float damage;
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) => 
@@ -131,6 +150,8 @@ public class ConditionDamage : Condition
 
 public class ConditionAge : Condition
 {
+    public new const string XmlNameParseKey = "Age";
+
     public LifeStageDef age;
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
@@ -139,6 +160,8 @@ public class ConditionAge : Condition
 
 public class ConditionHediff : Condition
 {
+    public new const string XmlNameParseKey = "Hediff";
+
     public  HediffDef                     hediff;
     private List<ConditionHediffSeverity> severities;
 
@@ -148,11 +171,15 @@ public class ConditionHediff : Condition
 
 public class ConditionHediffSeverity : ConditionHediff
 {
+    public new const string XmlNameParseKey = "Severity";
+
     public float severity;
 }
 
 public class ConditionBackstory : Condition
 {
+    public new const string XmlNameParseKey = "Backstory";
+
     public override bool         Static => true;
     public          BackstoryDef backstory;
 
@@ -162,6 +189,8 @@ public class ConditionBackstory : Condition
 
 public class ConditionGender : Condition
 {
+    public new const string XmlNameParseKey = "Gender";
+
     public override bool   Static => true;
     public          Gender gender;
 
@@ -171,8 +200,10 @@ public class ConditionGender : Condition
 
 public class ConditionTrait : Condition
 {
-    public override bool   Static => true;
-    public          string trait;
+    public new const string XmlNameParseKey = "Trait";
+
+    public override  bool   Static => true;
+    public           string trait;
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
         pawn.HasTraitWithIdentifier(this.trait);
@@ -180,6 +211,8 @@ public class ConditionTrait : Condition
 
 public class ConditionBodyType : Condition
 {
+    public new const string XmlNameParseKey = "BodyType";
+
     public override bool        Static => true;
     public          BodyTypeDef bodyType;
 
@@ -189,6 +222,8 @@ public class ConditionBodyType : Condition
 
 public class ConditionHeadType : Condition
 {
+    public new const string XmlNameParseKey = "HeadType";
+
     public override bool        Static => true;
     public          HeadTypeDef headType;
 
@@ -198,6 +233,8 @@ public class ConditionHeadType : Condition
 
 public class ConditionGene : Condition
 {
+    public new const string XmlNameParseKey = "Gene";
+
     public override bool    Static => true;
     public          GeneDef gene;
 
@@ -207,6 +244,8 @@ public class ConditionGene : Condition
 
 public class ConditionRace : Condition
 {
+    public new const string XmlNameParseKey = "Race";
+
     public override bool     Static => true;
 
     public List<ThingDef> raceRequirement;
@@ -218,6 +257,8 @@ public class ConditionRace : Condition
 
 public class ConditionMutant : Condition
 {
+    public new const string XmlNameParseKey = "Mutant";
+
     public override bool      Static => true;
     public          MutantDef mutant;
 
@@ -227,6 +268,8 @@ public class ConditionMutant : Condition
 
 public class ConditionCreepJoinerFormKind : Condition
 {
+    public new const string XmlNameParseKey = "CreepForm";
+
     public override bool                   Static => true;
     public          CreepJoinerFormKindDef form;
 
