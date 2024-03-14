@@ -300,7 +300,8 @@
 
     public class AlienChanceEntry<T>
     {
-        public T defName;
+        [LoadAlias("defName")]
+        public T entry;
         public List<AlienChanceEntry<T>> options = [];
         public int count = 1;
         public float chance = 100;
@@ -334,8 +335,8 @@
                 yield break;
             }
 
-            if (!Equals(this.defName, default(T))) 
-                yield return this.defName;
+            if (!Equals(this.entry, default(T))) 
+                yield return this.entry;
 
             // Doing this instead of GenCollection.TakeRandom because TakeRandom allows repeats
             if (this.shuffledOptions.Count != this.options.Count)
@@ -358,15 +359,18 @@
         {
             if (xmlRoot.ChildNodes.Count == 1 && xmlRoot.FirstChild.NodeType == XmlNodeType.Text)
             {
-                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, "defName", xmlRoot.FirstChild.Value);
+                if(typeof(T).IsSubclassOf(typeof(Def)))
+                    DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, "defName", xmlRoot.FirstChild.Value);
+                else
+                    Utilities.SetFieldFromXmlNode(Traverse.Create(this.entry), xmlRoot);
             }
             else
             {
                 Traverse traverse = Traverse.Create(this);
                 foreach (XmlNode xmlNode in xmlRoot.ChildNodes)
 
-                    if (xmlNode.Name == nameof(this.defName) && typeof(T).IsSubclassOf(typeof(Def)))
-                        DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.defName), xmlNode.FirstChild.Value);
+                    if (xmlNode.Name == nameof(this.entry) && typeof(T).IsSubclassOf(typeof(Def)))
+                        DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.entry), xmlNode.FirstChild.Value);
                     else
                         Utilities.SetFieldFromXmlNode(traverse.Field(xmlNode.Name), xmlNode);
             }
