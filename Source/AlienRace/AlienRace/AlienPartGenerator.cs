@@ -476,6 +476,8 @@
 
         public class AlienComp : ThingComp
         {
+            private const string ScribeNodeName = "AlienRaces_AlienComp";
+
             public bool    fixGenderPostSpawn;
             public Vector2 customDrawSize             = Vector2.one;
             public Vector2 customHeadDrawSize         = Vector2.one;
@@ -646,6 +648,29 @@
             public override void PostExposeData()
             {
                 base.PostExposeData();
+
+                // If we're saving or the node name is found, use the new comp tag name
+                if ((Scribe.mode == LoadSaveMode.Saving || (Scribe.loader.curXmlParent is XmlNode parentNode && parentNode[ScribeNodeName] != null)) &&
+                    Scribe.EnterNode(ScribeNodeName))
+                {
+                    try
+                    {
+                        ExposeDataInternal();
+                    }
+                    finally
+                    {
+                        Scribe.ExitNode();
+                    }
+                }
+                // Pull data from legacy fields in the root tag
+                else
+                {
+                    ExposeDataInternal();
+                }
+            }
+
+            private void ExposeDataInternal()
+            {
                 Scribe_Values.Look(ref this.fixGenderPostSpawn, label: "fixAlienGenderPostSpawn");
                 Scribe_Collections.Look(ref this.addonVariants, label: "addonVariants");
                 Scribe_Collections.Look(ref this.addonColors,   label: nameof(this.addonColors), LookMode.Deep);
