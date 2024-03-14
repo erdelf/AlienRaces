@@ -36,10 +36,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Head), nameof(PawnRenderNode.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(HeadGraphicForPrefix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Stump), nameof(PawnRenderNode.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(StumpGraphicForTranspiler)));
 
-            harmony.Patch(AccessTools.Method(typeof(HairDef), nameof(HairDef.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(HairDefGraphicForTranspiler)));
-            Harmony.DEBUG = true;
+            harmony.Patch(AccessTools.Method(typeof(HairDef),   nameof(HairDef.GraphicFor)),   transpiler: new HarmonyMethod(patchType, nameof(HairDefGraphicForTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(TattooDef), nameof(TattooDef.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(TattooDefGraphicForTranspiler)));
-            Harmony.DEBUG = false;
+            harmony.Patch(AccessTools.Method(typeof(BeardDef), nameof(BeardDef.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(BeardDefGraphicForTranspiler)));
         }
 
         public class PawnRenderResolveData
@@ -57,7 +56,7 @@ namespace AlienRace
                 pawnRenderResolveData = new PawnRenderResolveData
                                         {
                                             alienProps  = pawn.def as ThingDef_AlienRace,
-                                            alienComp   = pawn.GetComp<AlienPartGenerator.AlienComp>(),
+                                            alienComp   = pawn.GetComp<AlienComp>(),
                                             lsaa        = pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien,
                                             sharedIndex = 0
                                         } :
@@ -125,33 +124,6 @@ namespace AlienRace
                     alienComp.RegenerateColorChannelLinks();
                     
                     portraitRender = new Pair<WeakReference, bool>(new WeakReference(alien), false);
-
-                    /*
-                    if (alien.style != null && ModsConfig.IdeologyActive && (!ModLister.BiotechInstalled || alien.genes == null || !alien.genes.GenesListForReading.Any(x => x.def.tattoosVisible && x.Active)))
-                    {
-                        AlienPartGenerator.ExposableValueTuple<Color, Color> tattooColor = alienComp.GetChannel("tattoo");
-
-                        if (alien.style.FaceTattoo != null && alien.style.FaceTattoo != TattooDefOf.NoTattoo_Face)
-                            __instance.faceTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.FaceTattoo.texPath,
-                                                                                              (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ??
-                                                                                               ShaderDatabase.CutoutSkinOverlay),
-                                                                                              Vector2.one, tattooColor.first, tattooColor.second, null, headPath);
-                        else
-                            __instance.faceTattooGraphic = null;
-
-                        if (alien.style.BodyTattoo != null && alien.style.BodyTattoo != TattooDefOf.NoTattoo_Body)
-                            __instance.bodyTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.BodyTattoo.texPath,
-                                                                                              (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ??
-                                                                                               ShaderDatabase.CutoutSkinOverlay),
-                                                                                              Vector2.one, tattooColor.first, tattooColor.second, null, __instance.nakedGraphic.path);
-                        else
-                            __instance.bodyTattooGraphic = null;
-                    }
-
-                    if (!(alien.style?.beardDef?.texPath?.NullOrEmpty() ?? true))
-                        __instance.beardGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.beardDef.texPath, alienProps.alienRace.styleSettings[typeof(BeardDef)].shader?.Shader ?? ShaderDatabase.Transparent,
-                                                                                     Vector2.one, alien.story.HairColor);
-                    */
                 }
             }
             else
@@ -413,6 +385,42 @@ namespace AlienRace
         public static Shader TattooShaderHelper(Shader shader, StyleSettings style) =>
             style.shader?.Shader ?? shader;
 
+        public static IEnumerable<CodeInstruction> BeardDefGraphicForTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                if (instruction.opcode == OpCodes.Call && instructionList[i + 1].opcode == OpCodes.Ret)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return CodeInstruction.Call(patchType, nameof(BeardGraphicHelper));
+                }
+                else
+                {
+                    yield return instruction;
+                }
+
+                if (instruction.opcode == OpCodes.Brfalse_S)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(patchType, nameof(pawnRenderResolveData)));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderResolveData), nameof(PawnRenderResolveData.alienProps)));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ThingDef_AlienRace), nameof(ThingDef_AlienRace.alienRace)));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ThingDef_AlienRace.AlienSettings), nameof(ThingDef_AlienRace.AlienSettings.styleSettings)));
+                    yield return new CodeInstruction(OpCodes.Ldtoken, typeof(BeardDef));
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Type), nameof(Type.GetTypeFromHandle)));
+                    yield return new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(Dictionary<Type, StyleSettings>), "get_Item"));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(StyleSettings), nameof(StyleSettings.hasStyle)));
+                    yield return new CodeInstruction(OpCodes.Brtrue_S, instruction.operand);
+                }
+            }
+        }
+
+        public static Graphic BeardGraphicHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) =>
+            GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, RegenerateResolveData(pawn).alienProps.alienRace.styleSettings[typeof(BeardDef)].shader?.Shader ?? shader),
+                                               size, color, pawnRenderResolveData.alienComp.GetChannel(channel: "hair").second);
         #endregion
 
         public static void SetupDynamicNodesPostfix(PawnRenderTree __instance)
