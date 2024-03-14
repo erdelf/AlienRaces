@@ -27,11 +27,18 @@ namespace AlienRace
         // ReSharper disable once InconsistentNaming
         private static readonly Type patchType = typeof(HarmonyPatches);
 
-        
+        public static void ForTheLoveOfGodLogSomethingUseful(MethodBase ___original, HarmonyMethod ___prefix, HarmonyMethod ___postfix, HarmonyMethod ___transpiler)
+        {
+            if(___original is null)
+                Log.Message($"Prefix: {___prefix?.declaringType}.{___prefix?.methodName}\nPostfix: {___postfix?.declaringType}.{___postfix?.methodName}\nTranspiler: {___transpiler?.declaringType}.{___transpiler?.methodName}\n" +
+                            $"Pre: {___prefix}\nPost: {___postfix}\nTrans: {___transpiler}");
+        }
 
         static HarmonyPatches()
         {
             Harmony harmony = new(id: "rimworld.erdelf.alien_race.main");
+
+            harmony.Patch(AccessTools.Method(typeof(PatchProcessor), nameof(PatchProcessor.Patch)), new HarmonyMethod(patchType, nameof(ForTheLoveOfGodLogSomethingUseful)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnRelationWorker_Child), nameof(PawnRelationWorker_Child.GenerationChance)), 
                           postfix: new HarmonyMethod(patchType, nameof(GenerationChanceChildPostfix)));
@@ -60,14 +67,12 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.FillBackstorySlotShuffled)),
                 new HarmonyMethod(patchType, nameof(FillBackstoryInSlotShuffledPrefix)), transpiler: new HarmonyMethod(patchType, nameof(FillBackstorySlotShuffledTranspiler)));
-            
+
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), nameof(WorkGiver_Researcher.ShouldSkip)), 
                 postfix: new HarmonyMethod(patchType, nameof(ShouldSkipResearchPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), name: "ViewSize"), transpiler:
-                new HarmonyMethod(patchType, nameof(ResearchScreenTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), name: "DrawRightRect"), transpiler:
-                new HarmonyMethod(patchType, nameof(ResearchScreenTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.CanConstruct), new[]{typeof(Thing), typeof(Pawn), typeof(bool), typeof(bool)}), 
+            harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), name: "ViewSize"),      transpiler: new HarmonyMethod(patchType, nameof(ResearchScreenTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), name: "DrawRightRect"), transpiler: new HarmonyMethod(patchType, nameof(ResearchScreenTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.CanConstruct), [typeof(Thing), typeof(Pawn), typeof(bool), typeof(bool), typeof(JobDef)]), 
                 postfix: new HarmonyMethod(patchType, nameof(CanConstructPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GameRules), nameof(GameRules.DesignatorAllowed)), 
                 transpiler: new HarmonyMethod(patchType, nameof(DesignatorAllowedTranspiler)));
@@ -86,7 +91,7 @@ namespace AlienRace
                 postfix: new HarmonyMethod(patchType, nameof(CanGetThoughtPostfix)));
             harmony.Patch(AccessTools.Method(typeof(FoodUtility), nameof(FoodUtility.ThoughtsFromIngesting)), 
                           postfix: new HarmonyMethod(patchType, nameof(ThoughtsFromIngestingPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), nameof(MemoryThoughtHandler.TryGainMemory), new[] { typeof(Thought_Memory), typeof(Pawn) }),
+            harmony.Patch(AccessTools.Method(typeof(MemoryThoughtHandler), nameof(MemoryThoughtHandler.TryGainMemory), [typeof(Thought_Memory), typeof(Pawn)]),
                 new HarmonyMethod(patchType, nameof(TryGainMemoryPrefix)));
             harmony.Patch(AccessTools.Method(typeof(SituationalThoughtHandler), name: "TryCreateThought"),
                 new HarmonyMethod(patchType, nameof(TryCreateThoughtPrefix)));
@@ -105,9 +110,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(AgeInjuryUtility), nameof(AgeInjuryUtility.GenerateRandomOldAgeInjuries)),
                           new HarmonyMethod(patchType, nameof(GenerateRandomOldAgeInjuriesPrefix)));
             harmony.Patch(
-                AccessTools.Method(typeof(AgeInjuryUtility), name: "RandomHediffsToGainOnBirthday", new[] { typeof(ThingDef), typeof(float), typeof(float) }),
+                AccessTools.Method(typeof(AgeInjuryUtility), name: "RandomHediffsToGainOnBirthday", [typeof(ThingDef), typeof(float), typeof(float)]),
                 postfix: new HarmonyMethod(patchType, nameof(RandomHediffsToGainOnBirthdayPostfix)));
-            
+
             //            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver), name: nameof(JobDriver.Posture)).GetGetMethod(nonPublic: false), postfix:
             //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
             //            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver_Skygaze), name: nameof(JobDriver_Skygaze.Posture)).GetGetMethod(nonPublic: false), postfix:
@@ -176,6 +181,7 @@ namespace AlienRace
                 new HarmonyMethod(patchType, nameof(GenerateStartingApparelForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateInitialHediffs"), 
                 postfix: new HarmonyMethod(patchType, nameof(GenerateInitialHediffsPostfix)));
+
             harmony.Patch(
                 typeof(HediffSet).GetNestedTypes(AccessTools.all).SelectMany(AccessTools.GetDeclaredMethods).First(predicate: mi => mi.ReturnType == typeof(bool) && mi.GetParameters().First().ParameterType == typeof(BodyPartRecord)), 
                 postfix: new HarmonyMethod(patchType, nameof(HasHeadPostfix)));
@@ -215,9 +221,9 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(CompRottable), "StageChanged"), new HarmonyMethod(patchType, nameof(RottableCompStageChangedPostfix)));
 
-            harmony.Patch(AccessTools.GetDeclaredMethods(typeof(PawnWoundDrawer)).First(mi => mi.Name.Contains("FindAnchors")), postfix: new HarmonyMethod(patchType, nameof(FindAnchorsPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnDrawUtility), nameof(PawnDrawUtility.FindAnchors)), postfix: new HarmonyMethod(patchType, nameof(FindAnchorsPostfix)));
 
-            harmony.Patch(AccessTools.GetDeclaredMethods(typeof(PawnWoundDrawer)).First(mi => mi.Name.Contains("CalcAnchorData")), postfix: new HarmonyMethod(patchType,    nameof(CalcAnchorDataPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnDrawUtility), nameof(PawnDrawUtility.CalcAnchorData)), postfix: new HarmonyMethod(patchType, nameof(CalcAnchorDataPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnWoundDrawer), "WriteCache"), transpiler: new HarmonyMethod(patchType, nameof(WoundWriteCacheTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnCacheRenderer), nameof(PawnCacheRenderer.RenderPawn)), new HarmonyMethod(patchType, nameof(CacheRenderPawnPrefix)));
@@ -226,10 +232,10 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(PawnTextureAtlas), nameof(PawnTextureAtlas.TryGetFrameSet)), 
                           transpiler: new HarmonyMethod(patchType, nameof(PawnTextureAtlasGetFrameSetTranspiler)));
-
+            
             harmony.Patch(typeof(PawnTextureAtlas).GetNestedTypes(AccessTools.all)[0].GetMethods(AccessTools.all).First(mi => mi.GetParameters().Any()), 
                           transpiler: new HarmonyMethod(patchType, nameof(PawnTextureAtlasConstructorFuncTranspiler)));
-
+            
             harmony.Patch(AccessTools.Method(typeof(GlobalTextureAtlasManager), nameof(GlobalTextureAtlasManager.TryGetPawnFrameSet)), new HarmonyMethod(patchType, nameof(GlobalTextureAtlasGetFrameSetPrefix)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnStyleItemChooser), nameof(PawnStyleItemChooser.WantsToUseStyle)), prefix: new HarmonyMethod(patchType, nameof(WantsToUseStylePrefix)), postfix: new HarmonyMethod(patchType, nameof(WantsToUseStylePostfix)));
@@ -289,13 +295,12 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Toils_StyleChange),             nameof(Toils_StyleChange.FinalizeLookChange)), postfix: new HarmonyMethod(patchType,    nameof(FinalizeLookChangePostfix)));
             harmony.Patch(AccessTools.Method(typeof(StatPart_FertilityByGenderAge), "AgeFactor"),                                  transpiler: new HarmonyMethod(patchType, nameof(FertilityAgeFactorTranspiler)));
 
-            harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker), nameof(Pawn_GeneTracker.AddGene), new[] { typeof(Gene), typeof(bool) }), new HarmonyMethod(patchType, nameof(AddGenePrefix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker), nameof(Pawn_GeneTracker.AddGene), [typeof(Gene), typeof(bool)]), new HarmonyMethod(patchType, nameof(AddGenePrefix)));
 
             harmony.Patch(AccessTools.Method(typeof(ApparelGraphicRecordGetter), nameof(ApparelGraphicRecordGetter.TryGetGraphicApparel)), transpiler: new HarmonyMethod(patchType, nameof(TryGetGraphicApparelTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.PregnancyChanceForPartners)), prefix: new HarmonyMethod(patchType,     nameof(PregnancyChanceForPartnersPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.CanEverProduceChild)), 
-                          postfix: new HarmonyMethod(patchType, nameof(CanEverProduceChildPostfix)), transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),   nameof(PregnancyUtility.CanEverProduceChild)), postfix: new HarmonyMethod(patchType, nameof(CanEverProduceChildPostfix)), transpiler: new HarmonyMethod(patchType, nameof(CanEverProduceChildTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Recipe_ExtractOvum), nameof(Recipe_ExtractOvum.AvailableReport)),          postfix: new HarmonyMethod(patchType,    nameof(ExtractOvumAvailableReportPostfix)));
             harmony.Patch(AccessTools.Method(typeof(HumanOvum),          "CanFertilizeReport"),                                postfix: new HarmonyMethod(patchType,    nameof(HumanOvumCanFertilizeReportPostfix)));
             harmony.Patch(AccessTools.Method(typeof(HumanEmbryo),        "ImplantPawnValid"),                                  prefix: new HarmonyMethod(patchType,    nameof(EmbryoImplantPawnPrefix)));
@@ -319,16 +324,13 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnHairColors),       nameof(PawnHairColors.HasGreyHair)),                   transpiler: new HarmonyMethod(patchType, nameof(HasGreyHairTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(Dialog_StylingStation), "DoWindowContents"), transpiler: new HarmonyMethod(typeof(StylingStation), nameof(StylingStation.DoWindowContentsTranspiler)));
-            harmony.Patch(AccessTools.Constructor(typeof(Dialog_StylingStation), new []{typeof(Pawn), typeof(Thing)}), postfix: new HarmonyMethod(typeof(StylingStation), nameof(StylingStation.ConstructorPostfix)));
+            harmony.Patch(AccessTools.Constructor(typeof(Dialog_StylingStation), [typeof(Pawn), typeof(Thing)]), postfix: new HarmonyMethod(typeof(StylingStation), nameof(StylingStation.ConstructorPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Dialog_StylingStation), "Reset"), postfix: new HarmonyMethod(typeof(StylingStation), nameof(StylingStation.ResetPostfix)));
 
-            harmony.Patch(AccessTools.Method(typeof(ApparelProperties), nameof(ApparelProperties.PawnCanWear), new []{typeof(Pawn), typeof(bool)}), postfix: new HarmonyMethod(patchType, nameof(PawnCanWearPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(ApparelProperties), nameof(ApparelProperties.PawnCanWear), [typeof(Pawn), typeof(bool)]), postfix: new HarmonyMethod(patchType, nameof(PawnCanWearPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Scenario), nameof(Scenario.PostIdeoChosen)), prefix: new HarmonyMethod(patchType, nameof(ScenarioPostIdeoChosenPrefix)));
             harmony.Patch(AccessTools.Method(typeof(StartingPawnUtility), "RegenerateStartingPawnInPlace"), prefix: new HarmonyMethod(patchType, nameof(RegenerateStartingPawnInPlacePrefix)));
-
-            harmony.Patch(typeof(PawnRenderer).GetNestedTypes(AccessTools.all).SelectMany(t => t.GetMethods(AccessTools.all)).FirstOrDefault(x =>  x.Name.Contains("DrawExtraEyeGraphic")),
-                          transpiler: new HarmonyMethod(patchType, nameof(DrawExtraEyeGraphicTranspiler)));
-
+            
             harmony.Patch(AccessTools.PropertyGetter(typeof(Pawn_AgeTracker), "GrowthPointsFactor"), postfix: new HarmonyMethod(patchType, nameof(GrowthPointsFactorPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(StatPart_Age), "AgeMultiplier"), new HarmonyMethod(patchType, nameof(StatPartAgeMultiplierPrefix)));
@@ -534,29 +536,6 @@ namespace AlienRace
                     __result = alienProps.alienRace.generalSettings.growthFactorByAge.Evaluate(__instance.AgeBiologicalYears);
         }
 
-        public static IEnumerable<CodeInstruction> DrawExtraEyeGraphicTranspiler(IEnumerable<CodeInstruction> instructions)
-        {
-            FieldInfo  woundAnchors       = AccessTools.Field(typeof(BodyTypeDef),  "woundAnchors");
-            FieldInfo  pawn               = AccessTools.Field(typeof(PawnRenderer), "pawn");
-            MethodInfo findAnchorsPostfix = AccessTools.Method(typeof(HarmonyPatches), nameof(HarmonyPatches.FindAnchorsPostfix));
-
-            List<CodeInstruction> instructionList = instructions.ToList();
-
-            for (int i = 0; i < instructionList.Count; i++)
-            {
-                CodeInstruction instruction = instructionList[i];
-
-                yield return instruction;
-
-                if (instruction.Is(OpCodes.Ldfld, woundAnchors))
-                {
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Ldfld, instructionList[i - 4].operand); //PawnRenderer
-                    yield return new CodeInstruction(OpCodes.Ldfld, pawn);
-                    yield return new CodeInstruction(OpCodes.Call,  findAnchorsPostfix);
-                }
-            }
-        }
 
         public static void RegenerateStartingPawnInPlacePrefix() => 
             firstStartingRequest = false;
@@ -1342,11 +1321,12 @@ namespace AlienRace
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitDrawSize :
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customDrawSize) ?? Vector2.one;
 
-            Vector2 scaleFactor = lifestageFactor is Vector2 lifestageFactorV2 ?
-                                      lifestageFactorV2 :
-                                      lifestageFactor is float lifestageFactorF ?
-                                          new Vector2(lifestageFactorF, lifestageFactorF) :
-                                          Vector2.one;
+            Vector2 scaleFactor = lifestageFactor switch
+            {
+                Vector2 lifestageFactorV2 => lifestageFactorV2,
+                float lifestageFactorF => new Vector2(lifestageFactorF, lifestageFactorF),
+                _ => Vector2.one
+            };
 
             return MeshPool.GetMeshSetForWidth(drawSize.x * scaleFactor.x, drawSize.y * scaleFactor.y);
         }
@@ -1548,7 +1528,7 @@ namespace AlienRace
 
         public static IEnumerable<CodeInstruction> WoundWriteCacheTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
-            MethodInfo defaultAnchorInfo = AccessTools.GetDeclaredMethods(typeof(PawnWoundDrawer)).First(mi => mi.HasAttribute<CompilerGeneratedAttribute>() && mi.Name.Contains("GetDefaultAnchor"));
+            MethodInfo defaultAnchorInfo = AccessTools.Method(typeof(PawnWoundDrawer), "GetDefaultAnchor");
 
             List<CodeInstruction> instructionList = instructions.ToList();
 
@@ -1802,9 +1782,9 @@ namespace AlienRace
             }
         }
 
-        public static void CalcAnchorDataPostfix(Pawn ___pawn, BodyTypeDef.WoundAnchor anchor, ref Vector3 anchorOffset)
+        public static void CalcAnchorDataPostfix(Pawn pawn, BodyTypeDef.WoundAnchor anchor, ref Vector3 anchorOffset)
         {
-            if (___pawn.def is ThingDef_AlienRace alienRace)
+            if (pawn.def is ThingDef_AlienRace alienRace)
             {
                 List<AlienPartGenerator.WoundAnchorReplacement> anchorReplacements = alienRace.alienRace.generalSettings.alienPartGenerator.anchorReplacements;
 
@@ -1812,16 +1792,16 @@ namespace AlienRace
                 {
                     if (anchor == anchorReplacement.replacement && anchorReplacement.offsets != null)
                     {
-                        anchorOffset = anchorReplacement.offsets.GetOffset(anchor.rotation!.Value).GetOffset(false, ___pawn.story.bodyType, ___pawn.story.headType);
+                        anchorOffset = anchorReplacement.offsets.GetOffset(anchor.rotation!.Value).GetOffset(false, pawn.story.bodyType, pawn.story.headType);
                         return;
                     }
                 }
             }
         }
 
-        public static List<BodyTypeDef.WoundAnchor> FindAnchorsPostfix(List<BodyTypeDef.WoundAnchor> __result, Pawn ___pawn)
+        public static List<BodyTypeDef.WoundAnchor> FindAnchorsPostfix(List<BodyTypeDef.WoundAnchor> __result, Pawn pawn)
         {
-            if (___pawn.def is ThingDef_AlienRace alienRace)
+            if (pawn.def is ThingDef_AlienRace alienRace)
             {
                 List<AlienPartGenerator.WoundAnchorReplacement> anchorReplacements = alienRace.alienRace.generalSettings.alienPartGenerator.anchorReplacements;
 
@@ -2604,13 +2584,13 @@ namespace AlienRace
 
         }
 
-        public static bool TryCreateThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance, ref HashSet<ThoughtDef> ___tmpCachedThoughts)
+        public static bool TryCreateThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance, ref HashSet<ThoughtDef> ___cachedThoughts)
         {
             Pawn pawn = __instance.pawn;
             if (pawn.def is ThingDef_AlienRace race)
                 def = race.alienRace.thoughtSettings.ReplaceIfApplicable(def);
 
-            return !___tmpCachedThoughts.Contains(def);
+            return !___cachedThoughts.Contains(def);
         }
 
         public static void CanBingeNowPostfix(Pawn pawn, ChemicalDef chemical, ref bool __result)
@@ -3740,9 +3720,7 @@ namespace AlienRace
         */
         public static IEnumerable<CodeInstruction> TryGetGraphicApparelTranspiler(IEnumerable<CodeInstruction> codeInstructions)
         {
-            MethodInfo originalMethod = AccessTools.Method(typeof(GraphicDatabase), "Get",
-                                                           new[] { typeof(string), typeof(Shader), typeof(Vector2), typeof(Color) }, new[] { typeof(Graphic_Multi) }
-            );
+            MethodInfo originalMethod = AccessTools.Method(typeof(GraphicDatabase), "Get", [typeof(string), typeof(Shader), typeof(Vector2), typeof(Color)], [typeof(Graphic_Multi)]);
 
             MethodInfo newMethod = AccessTools.Method(typeof(ApparelGraphics.ApparelGraphicUtility), nameof(ApparelGraphics.ApparelGraphicUtility.GetGraphic));
 
@@ -3750,7 +3728,7 @@ namespace AlienRace
             {
                 if (instruction.Calls(originalMethod))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldarg_0); // apparel
+                    yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction); // apparel
                     yield return new CodeInstruction(OpCodes.Ldarg_1); // bodyType
                     yield return new CodeInstruction(OpCodes.Call, newMethod);
                 }
@@ -3758,7 +3736,7 @@ namespace AlienRace
                 {
                     yield return instruction;
                 }
-                }
+            }
         }
     }
 }
