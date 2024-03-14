@@ -187,8 +187,7 @@
         public List<ChemicalSettings> chemicalSettings;
         public List<AlienChanceEntry<TraitWithDegree>>   forcedRaceTraitEntries;
         public List<AlienChanceEntry<TraitWithDegree>>   disallowedTraits;
-        [Obsolete("Effectively replaced via growth moments, currently ineffective")]
-        public IntRange                           traitCount         = new(1, 3);
+
         public IntRange                           additionalTraits   = IntRange.zero;
         public AlienPartGenerator                 alienPartGenerator = new();
         public List<SkillGain>                    passions           = new();
