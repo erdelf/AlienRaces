@@ -8,6 +8,7 @@ namespace AlienRace
     using RimWorld;
     using System.Reflection.Emit;
     using System.Reflection;
+    using JetBrains.Annotations;
     using UnityEngine;
     using Verse;
     using static AlienRace.AlienPartGenerator;
@@ -123,22 +124,10 @@ namespace AlienRace
                     portraitRender = new Pair<WeakReference, bool>(new WeakReference(alien), false);
 
                     /*
-                    string stumpPath = graphicPaths.stump.GetPath(alien, ref sharedIndex, alienComp.headVariant);
-                    __instance.headStumpGraphic = !stumpPath.NullOrEmpty() ?
-                                                      GraphicDatabase.Get<Graphic_Multi>(stumpPath, alien.story.SkinColor == apg.SkinColor(alien, first: false) ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex,
-                                                                                                                Vector2.one, alien.story.SkinColor, apg.SkinColor(alien, first: false))
-                                                      : null;
-
-                    __instance.desiccatedHeadStumpGraphic = !stumpPath.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(stumpPath, ShaderDatabase.Cutout, Vector2.one, PawnRenderUtility.GetRottenColor(Color.white)) : null;
-
-                    if (ModLister.BiotechInstalled)
-                    {
-                        __instance.furCoveredGraphic = alien.story.furDef != null ? GraphicDatabase.Get<Graphic_Multi>(alien.story.furDef.GetFurBodyGraphicPath(alien), ShaderDatabase.CutoutSkinOverlay, Vector2.one, alien.story.HairColor, alienComp.GetChannel(channel: "hair").second) : null;
-                    }
                     if (ModsConfig.BiotechActive)
                     {
                         __instance.swaddledBabyGraphic = GraphicDatabase.Get<Graphic_Multi>(graphicPaths.swaddle.GetPath(alien, ref sharedIndex, alien.HashOffset()), ShaderDatabase.Cutout, Vector2.one, CachedData.swaddleColor(__instance));
-                    }
+                    } 
 
                     if (alien.style != null && ModsConfig.IdeologyActive && (!ModLister.BiotechInstalled || alien.genes == null || !alien.genes.GenesListForReading.Any(x => x.def.tattoosVisible && x.Active)))
                     {
@@ -250,6 +239,7 @@ namespace AlienRace
 
         public static void PawnRenderTreeEnsureInitializedPostfix(PawnRenderTree __instance) => 
             pawnRenderResolveData = default;
+        
         #region Graphics
         public static bool BodyGraphicForPrefix(PawnRenderNode_Body __instance, Pawn pawn, ref Graphic __result)
         {
@@ -399,7 +389,7 @@ namespace AlienRace
         }
 
         public static Graphic HairGraphicHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) => 
-            GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, pawnRenderResolveData.alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? shader), 
+            GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, RegenerateResolveData(pawn).alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? shader), 
                                                size, color, pawnRenderResolveData.alienComp.GetChannel(channel: "hair").second);
 
         #endregion
@@ -656,6 +646,16 @@ namespace AlienRace
             return MeshPool.GetMeshSetForWidth(drawSize.x * scaleFactor.x, drawSize.y * scaleFactor.y);
         }
         #endregion
+    }
+
+    [UsedImplicitly]
+    public class AlienPawnRenderNode_Swaddle(Pawn pawn, PawnRenderNodeProperties props, PawnRenderTree tree) : PawnRenderNode_Swaddle(pawn, props, tree)
+    {
+        public override Graphic GraphicFor(Pawn pawn)
+        {
+            AlienRenderTreePatches.PawnRenderResolveData pawnRenderData = AlienRenderTreePatches.pawnRenderResolveData;
+            return GraphicDatabase.Get<Graphic_Multi>(pawnRenderData.alienProps.alienRace.graphicPaths.swaddle.GetPath(pawn, ref pawnRenderData.sharedIndex, pawn.HashOffset()), this.ShaderFor(pawn), Vector2.one, this.ColorFor(pawn));
+        }
     }
 
     public class AlienPawnRenderNodeProperties_BodyAddon : PawnRenderNodeProperties
