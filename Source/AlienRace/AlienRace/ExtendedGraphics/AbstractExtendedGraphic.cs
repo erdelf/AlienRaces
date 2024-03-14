@@ -108,7 +108,6 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     [UsedImplicitly]
     public void LoadDataFromXmlCustom(XmlNode xmlRoot)
     {
-
         foreach (XmlNode childNode in xmlRoot.ChildNodes)
         {
             if(XML_CLASS_DICTIONARY.TryGetValue(childNode.Name, out string classTag))
