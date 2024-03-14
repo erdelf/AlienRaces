@@ -251,4 +251,36 @@ public partial class AlienPartGenerator
         public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
             pawn.IsRace(this.race);
     }
+
+    public class ExtendedMutantGraphic : AbstractExtendedGraphic
+    {
+        public MutantDef mutant;
+
+        [UsedImplicitly]
+        public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+        {
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.mutant), xmlRoot.Name);
+
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
+        }
+
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) => 
+            pawn.IsMutant(this.mutant);
+    }
+
+    public class ExtendedCreepJoinerFormGraphic : AbstractExtendedGraphic
+    {
+        public CreepJoinerFormKindDef form;
+
+        [UsedImplicitly]
+        public void LoadDataFromXmlCustom(XmlNode xmlRoot)
+        {
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.form), xmlRoot.Name);
+
+            this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
+        }
+
+        public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) => 
+            pawn.IsCreepJoiner(this.form);
+    }
 }
