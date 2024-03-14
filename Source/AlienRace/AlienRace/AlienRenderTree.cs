@@ -37,6 +37,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Stump), nameof(PawnRenderNode.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(StumpGraphicForTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(HairDef), nameof(HairDef.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(HairDefGraphicForTranspiler)));
+            Harmony.DEBUG = true;
+            harmony.Patch(AccessTools.Method(typeof(TattooDef), nameof(TattooDef.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(TattooDefGraphicForTranspiler)));
+            Harmony.DEBUG = false;
         }
 
         public class PawnRenderResolveData
@@ -124,11 +127,6 @@ namespace AlienRace
                     portraitRender = new Pair<WeakReference, bool>(new WeakReference(alien), false);
 
                     /*
-                    if (ModsConfig.BiotechActive)
-                    {
-                        __instance.swaddledBabyGraphic = GraphicDatabase.Get<Graphic_Multi>(graphicPaths.swaddle.GetPath(alien, ref sharedIndex, alien.HashOffset()), ShaderDatabase.Cutout, Vector2.one, CachedData.swaddleColor(__instance));
-                    } 
-
                     if (alien.style != null && ModsConfig.IdeologyActive && (!ModLister.BiotechInstalled || alien.genes == null || !alien.genes.GenesListForReading.Any(x => x.def.tattoosVisible && x.Active)))
                     {
                         AlienPartGenerator.ExposableValueTuple<Color, Color> tattooColor = alienComp.GetChannel("tattoo");
@@ -153,64 +151,6 @@ namespace AlienRace
                     if (!(alien.style?.beardDef?.texPath?.NullOrEmpty() ?? true))
                         __instance.beardGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.beardDef.texPath, alienProps.alienRace.styleSettings[typeof(BeardDef)].shader?.Shader ?? ShaderDatabase.Transparent,
                                                                                      Vector2.one, alien.story.HairColor);
-
-                    alienComp.addonGraphics = [];
-                    alienComp.addonVariants ??= [];
-                    alienComp.addonColors ??= [];
-
-                    sharedIndex = 0;
-
-                    using (IEnumerator<AlienPartGenerator.BodyAddon> bodyAddons = apg.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator())
-                    {
-                        int addonIndex = 0;
-                        while (bodyAddons.MoveNext())
-                        {
-                            bool colorInsertActive = false;
-
-                            AlienPartGenerator.BodyAddon addon = bodyAddons.Current;
-                            if (alienComp.addonColors.Count > addonIndex)
-                            {
-                                AlienPartGenerator.ExposableValueTuple<Color?, Color?> addonColor = alienComp.addonColors[addonIndex];
-                                if (addonColor.first.HasValue)
-                                {
-                                    addon.colorOverrideOne = addonColor.first;
-                                    colorInsertActive = true;
-                                }
-
-                                if (addonColor.second.HasValue)
-                                {
-                                    addon.colorOverrideTwo = addonColor.second;
-                                    colorInsertActive = true;
-                                }
-                            }
-
-                            Graphic g = addon.GetGraphic(alien, ref sharedIndex, alienComp.addonVariants.Count > addonIndex ? alienComp.addonVariants[addonIndex] : null);
-                            alienComp.addonGraphics.Add(g);
-                            if (alienComp.addonVariants.Count <= addonIndex)
-                                alienComp.addonVariants.Add(sharedIndex);
-
-                            if (alienComp.addonColors.Count <= addonIndex)
-                            {
-                                alienComp.addonColors.Add(new AlienPartGenerator.ExposableValueTuple<Color?, Color?>(null, null));
-                            }
-                            else if (colorInsertActive)
-                            {
-                                addon.colorOverrideOne = null;
-                                addon.colorOverrideTwo = null;
-                            }
-
-                            addonIndex++;
-                        }
-                    }
-
-                    __instance.ResolveApparelGraphics();
-                    __instance.ResolveGeneGraphics();
-
-                    PortraitsCache.SetDirty(alien);
-                    GlobalTextureAtlasManager.TryMarkPawnFrameSetDirty(alien);
-
-                    return false;
-
                     */
                 }
             }
@@ -389,8 +329,103 @@ namespace AlienRace
         }
 
         public static Graphic HairGraphicHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) => 
-            GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, RegenerateResolveData(pawn).alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? shader), 
+            GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, RegenerateResolveData(pawn).alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? shader),
                                                size, color, pawnRenderResolveData.alienComp.GetChannel(channel: "hair").second);
+
+        public static IEnumerable<CodeInstruction> TattooDefGraphicForTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            FieldInfo storyInfo    = AccessTools.Field(typeof(Pawn),              nameof(Pawn.story));
+            FieldInfo headTypeInfo = AccessTools.Field(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.headType));
+            FieldInfo bodyTypeInfo = AccessTools.Field(typeof(Pawn_StoryTracker), nameof(Pawn_StoryTracker.bodyType));
+
+            LocalBuilder styleLocal = ilg.DeclareLocal(typeof(StyleSettings));
+            LocalBuilder colorLocal = ilg.DeclareLocal(typeof(ExposableValueTuple<Color, Color>));
+
+            bool conditionJumpDone = false;
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                if (!conditionJumpDone && instruction.opcode == OpCodes.Brfalse_S)
+                {
+                    conditionJumpDone = true;
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Call,     AccessTools.Method(patchType, nameof(RegenerateResolveData)));
+                    yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(PawnRenderResolveData),            nameof(PawnRenderResolveData.alienProps)));
+                    yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(ThingDef_AlienRace),               nameof(ThingDef_AlienRace.alienRace)));
+                    yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(ThingDef_AlienRace.AlienSettings), nameof(ThingDef_AlienRace.AlienSettings.styleSettings)));
+                    yield return new CodeInstruction(OpCodes.Ldtoken,  typeof(TattooDef));
+                    yield return new CodeInstruction(OpCodes.Call,     AccessTools.Method(typeof(Type),                            nameof(Type.GetTypeFromHandle)));
+                    yield return new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(Dictionary<Type, StyleSettings>), "get_Item"));
+                    yield return new CodeInstruction(OpCodes.Stloc,    styleLocal.LocalIndex);
+                    yield return instruction;
+                    yield return new CodeInstruction(OpCodes.Ldloc,    styleLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(StyleSettings), nameof(StyleSettings.hasStyle)));
+                    yield return new CodeInstruction(OpCodes.Brtrue_S, instruction.operand);
+                } else if (instruction.LoadsField(storyInfo))
+                {
+                    if (instructionList[i + 1].LoadsField(headTypeInfo))
+                    {
+                        i += 2;
+                        yield return new CodeInstruction(OpCodes.Call,  AccessTools.PropertyGetter(typeof(Pawn), nameof(Pawn.Drawer)));
+                        yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_DrawTracker), nameof(Pawn_DrawTracker.renderer)));
+                        yield return new CodeInstruction(OpCodes.Call,  AccessTools.PropertyGetter(typeof(PawnRenderer), nameof(PawnRenderer.HeadGraphic)));
+                        yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Graphic), nameof(Graphic.path)));
+                        yield return new CodeInstruction(OpCodes.Dup);
+                        yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Log), nameof(Log.Message), new []{typeof(string)}));
+
+                    } else if (instructionList[i + 1].LoadsField(bodyTypeInfo))
+                    {
+                        i += 2;
+                        yield return new CodeInstruction(OpCodes.Call,  AccessTools.PropertyGetter(typeof(Pawn), nameof(Pawn.Drawer)));
+                        yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_DrawTracker), nameof(Pawn_DrawTracker.renderer)));
+                        yield return new CodeInstruction(OpCodes.Call,  AccessTools.PropertyGetter(typeof(PawnRenderer), nameof(PawnRenderer.BodyGraphic)));
+                        yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Graphic), nameof(Graphic.path)));
+                    }
+                }
+                else if (instruction.opcode == OpCodes.Ldarg_2)
+                {
+                    i++;
+                    yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(patchType,                     nameof(pawnRenderResolveData)));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderResolveData), nameof(PawnRenderResolveData.alienComp)));
+                    yield return new CodeInstruction(OpCodes.Ldstr, "tattoo");
+                    yield return new CodeInstruction(OpCodes.Call,  AccessTools.Method(typeof(AlienComp), nameof(AlienComp.GetChannel)));
+                    yield return new CodeInstruction(OpCodes.Dup);
+                    yield return new CodeInstruction(OpCodes.Stloc, colorLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ExposableValueTuple<Color, Color>), nameof(ExposableValueTuple<Color,Color>.first)));
+                    yield return new CodeInstruction(OpCodes.Ldloc, colorLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ExposableValueTuple<Color, Color>), nameof(ExposableValueTuple<Color, Color>.second)));
+                }
+                else
+                {
+                    yield return instruction;
+                }
+
+                if (instruction.opcode == OpCodes.Ldsfld && (instruction.operand as FieldInfo)?.FieldType == typeof(Shader))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldloc, styleLocal.LocalIndex);
+                    yield return CodeInstruction.Call(patchType, nameof(TattooShaderHelper));
+                }
+            }
+        }
+
+        public static Shader TattooShaderHelper(Shader shader, StyleSettings style) =>
+            style.shader?.Shader ?? shader;
+
+         /*
+                                      __instance.faceTattooGraphic = GraphicDatabase.Get<Graphic_Multi>(alien.style.FaceTattoo.texPath,
+                                                                              (alienProps.alienRace.styleSettings[typeof(TattooDef)].shader?.Shader ??
+                                                                               ShaderDatabase.CutoutSkinOverlay),
+                                                                              Vector2.one, tattooColor.first, tattooColor.second, null, headPath);
+          */
+
+        public static Graphic TattooGraphicHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) =>
+            GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, RegenerateResolveData(pawn).alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? shader),
+                                               size, color, pawnRenderResolveData.alienComp.GetChannel(channel: "hair").second);
+
 
         #endregion
 
@@ -400,7 +435,7 @@ namespace AlienRace
             {
                 Log.Message($"Setup Addons: {__instance.pawn.NameFullColored}");
 
-                PawnRenderResolveData pawnRenderData = pawnRenderResolveData;
+                PawnRenderResolveData pawnRenderData = RegenerateResolveData(__instance.pawn);
 
 
                 AlienPartGenerator.AlienComp alienComp = pawnRenderData.alienComp;
