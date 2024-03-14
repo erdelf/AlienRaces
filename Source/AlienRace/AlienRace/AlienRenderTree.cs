@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace AlienRace
 {
+    using System;
     using HarmonyLib;
     using RimWorld;
     using System.Reflection.Emit;

@@ -294,7 +294,7 @@
         public static readonly AccessTools.FieldRef<Pawn_StoryTracker, Color?> skinColorBase =
             AccessTools.FieldRefAccess<Pawn_StoryTracker, Color?>(AccessTools.Field(typeof(Pawn_StoryTracker), "skinColorBase"));
 
-        public static readonly Action<Dialog_StylingStation, Rect> drawTabs = AccessTools.Method(typeof(Dialog_StylingStation), "DrawTabs").CreateDelegate<Action<Dialog_StylingStation, Rect>>();
+        public static readonly Action<Dialog_StylingStation, Rect> drawTabs = AccessTools.MethodDelegate<Action<Dialog_StylingStation, Rect>>(AccessTools.Method(typeof(Dialog_StylingStation), "DrawTabs"));
 
         public static readonly AccessTools.FieldRef<Dialog_StylingStation, Pawn> stationPawn = AccessTools.FieldRefAccess<Dialog_StylingStation, Pawn>("pawn");
 
