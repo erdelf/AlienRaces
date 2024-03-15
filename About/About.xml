@@ -13,6 +13,7 @@
   </supportedVersions>
   <packageId>erdelf.HumanoidAlienRaces</packageId>
   <url>https://github.com/erdelf/AlienRaces/wiki</url>
+  <modIconPath IgnoreIfNoMatchingField="True">AlienRace/HARModIcon</modIconPath>
   <description>
 A framework for the creation of new alien races in Rimworld
 
