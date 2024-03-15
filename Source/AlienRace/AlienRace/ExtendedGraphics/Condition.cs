@@ -74,10 +74,8 @@ public class ConditionBodyPart : Condition
     //|| this.extendedGraphics.OfType<AlienPartGenerator.ExtendedHediffGraphic>().Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart)
     ;
 
-    public override void LoadDataFromXmlCustom(XmlNode xmlRoot)
-    {
+    public override void LoadDataFromXmlCustom(XmlNode xmlRoot) => 
         Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
-    }
 }
 
 public class ConditionDrafted : Condition
@@ -139,6 +137,9 @@ public class ConditionApparel : Condition
         !pawn.GetWornApparel().Any(ap =>
                                        ap.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||
                                        ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
+
+    public override void LoadDataFromXmlCustom(XmlNode xmlRoot) =>
+        Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
 }
 
 public class ConditionPosture : Condition
@@ -151,6 +152,9 @@ public class ConditionPosture : Condition
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) =>
         (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) &&
         (pawn.VisibleInBed()                       || this.drawnInBed);
+
+    public override void LoadDataFromXmlCustom(XmlNode xmlRoot) =>
+        Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
 }
 
 public class ConditionDamage : Condition
