@@ -65,22 +65,22 @@ namespace AlienRace
                             // add the current layer back to the stack so we can rewind
                         {
                             stack.Push(currentGraphicSet);
+                            continue;
                         }
                         else if (!current.GetPath().NullOrEmpty() && current.GetVariantCount() > 0)
                             // Only update best graphic if the current one has a valid path
                         {
                             bestGraphic = new Pair<int, IExtendedGraphic>(currentGraphicSet.First, current);
                         }
-                        else
-                        {
-                            //Log.Message(bestGraphic.Second.GetPath());
+                        
+                        //Log.Message(bestGraphic.Second.GetPath());
 
-                            IEnumerable<IExtendedGraphic> subGraphics = current.GetSubGraphics(pawn, part, partLabel);
-                            if (subGraphics.Any())
-                                currentGraphicSet  = new Pair<int, IEnumerator<IExtendedGraphic>>(currentGraphicSet.First + 1, subGraphics.GetEnumerator());
-                            else
-                                stack.Push(currentGraphicSet);
-                        }
+                        IEnumerable<IExtendedGraphic> subGraphics = current.GetSubGraphics(pawn, part, partLabel);
+                        if (subGraphics.Any())
+                            currentGraphicSet  = new Pair<int, IEnumerator<IExtendedGraphic>>(currentGraphicSet.First + 1, subGraphics.GetEnumerator());
+                        else
+                            stack.Push(currentGraphicSet);
+                        
                     }
                 }
 

@@ -195,10 +195,9 @@
                         ExtendedHeadtypeGraphic headtypeGraphic = new()
                                                                   {
                                                                       headType = headType,
-                                                                      path    = headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath
+                                                                      path    = headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath,
+                                                                      pathsFallback = [headType.graphicPath]
                                                                   };
-
-                        headtypeGraphic.pathsFallback.Add(headType.graphicPath);
 
                         Gender firstGender = genderIncluded ? headType.gender : Gender.Male;
 
@@ -207,6 +206,7 @@
                                                                gender = firstGender,
                                                                path   = headPath + firstGender + "_" + headTypePath
                                                            });
+                        
                         if (!genderIncluded)
                             headtypeGraphic.extendedGraphics.Add(new ExtendedGenderGraphic
                                                                {
