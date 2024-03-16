@@ -1,5 +1,8 @@
 ﻿namespace AlienRace
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Xml;
     using ExtendedGraphics;
     using UnityEngine;
     using Verse;
@@ -22,6 +25,13 @@
 
             XmlInheritance.allowDuplicateNodesFieldNames.Add(nameof(AbstractExtendedGraphic.extendedGraphics));
             XmlInheritance.allowDuplicateNodesFieldNames.Add(nameof(AlienPartGenerator.ExtendedConditionGraphic.conditions));
+
+            XmlDocument xmlDoc = new();
+            xmlDoc.LoadXml($"<extendedGraphics><li Class=\"{typeof(AlienPartGenerator.ExtendedGraphicTop).FullName}\"><path>here</path></li></extendedGraphics>");
+            DirectXmlToObject.ObjectFromXml<List<AbstractExtendedGraphic>>(xmlDoc.DocumentElement, false);
+
+            Func<XmlNode, object> originalFunc = CachedData.listFromXmlMethods()[typeof(List<AbstractExtendedGraphic>)];
+            CachedData.listFromXmlMethods()[typeof(List<AbstractExtendedGraphic>)] = node => originalFunc(AbstractExtendedGraphic.CustomListLoader(node));
         }
 
         public override void DoSettingsWindowContents(Rect inRect)

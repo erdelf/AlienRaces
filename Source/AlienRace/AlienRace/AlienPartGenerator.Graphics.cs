@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 using ExtendedGraphics;
@@ -24,8 +25,17 @@ public partial class AlienPartGenerator
             if (Condition.XmlNameParseKeys.ContainsKey(xmlRoot.LocalName))
             {
                 XmlDocument xmlDoc = new();
-                xmlDoc.LoadXml($"<root><path>{xmlRoot.FirstChild.Value}</path><conditions><{xmlRoot.LocalName}>{xmlRoot.Attributes!["For"].Value}</{xmlRoot.LocalName}></conditions></root>");
-                xmlRoot.FirstChild.Value = string.Empty;
+
+                StringBuilder xmlRaw = new("<root>");
+                if (xmlRoot.Value == null)
+                    xmlRaw.Append($"<path>{xmlRoot.FirstChild.Value}</path>");
+
+                xmlRaw.Append($"<conditions><{xmlRoot.LocalName}>{xmlRoot.Attributes!["For"].Value}</{xmlRoot.LocalName}></conditions></root>");
+                xmlDoc.LoadXml(xmlRaw.ToString());
+
+                if (xmlRoot.Value != null)
+                    xmlRoot.Value = string.Empty;
+
                 foreach (XmlNode childNode in xmlDoc.DocumentElement!.ChildNodes) 
                     xmlRoot.AppendChild(xmlRoot.OwnerDocument!.ImportNode(childNode, true));
             }
