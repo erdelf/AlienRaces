@@ -183,11 +183,16 @@ public class ConditionHediff : Condition
 {
     public new const string XmlNameParseKey = "Hediff";
 
-    public  HediffDef                     hediff;
-    private List<ConditionHediffSeverity> severities;
+    public HediffDef hediff;
 
-    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) => 
-        pawn.HasHediffOfDefAndPart(this.hediff, data.bodyPart, data.bodyPartLabel);
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data)
+    {
+        HediffDef hediff = data.hediff;
+        bool      satisfied      = pawn.HasHediffOfDefAndPart(data.hediff = this.hediff, data.bodyPart, data.bodyPartLabel) != null;
+        if (satisfied)
+            data.hediff = hediff;
+        return satisfied;
+    }
 }
 
 public class ConditionHediffSeverity : ConditionHediff
@@ -195,6 +200,9 @@ public class ConditionHediffSeverity : ConditionHediff
     public new const string XmlNameParseKey = "Severity";
 
     public float severity;
+
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) => 
+        pawn.SeverityOfHediffsOnPart(data.hediff, data.bodyPart, data.bodyPartLabel).Max() > this.severity;
 }
 
 public class ConditionBackstory : Condition
