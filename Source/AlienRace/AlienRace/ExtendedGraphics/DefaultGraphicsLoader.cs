@@ -103,7 +103,8 @@ public class DefaultGraphicsLoader : IGraphicsLoader
                     this.LoadAll2DVariantsForGraphic(currentGraphic, logBuilder, source, topGraphic.Debug);
                     topGraphic.VariantCountMax = currentGraphic.GetVariantCount();
 
-                    if (currentGraphic is AlienPartGenerator.ExtendedHediffSeverityGraphic)
+                    if (currentGraphic is AlienPartGenerator.BodyAddon addon && addon.conditions.Any(c => c is ConditionHediffSeverity) || 
+                        currentGraphic is AlienPartGenerator.ExtendedConditionGraphic conditionGraphic && conditionGraphic.conditions.Any(c => c is ConditionHediffSeverity))
                         this.foundSeverityGraphics = true;
 
                     // Add the enumerator for any sub graphics to the stack

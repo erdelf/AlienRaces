@@ -184,7 +184,7 @@
                     ExtendedGraphicTop headGraphic = this.alienProps.alienRace.graphicPaths.head;
                     string             headPath    = headGraphic.path;
 
-                    foreach (HeadTypeDef headType in DefDatabase<HeadTypeDef>.AllDefs)//.Where(htd => !htd.requiredGenes.NullOrEmpty())))
+                    foreach (HeadTypeDef headType in DefDatabase<HeadTypeDef>.AllDefs) //.Where(htd => !htd.requiredGenes.NullOrEmpty())))
                     {
                         string headTypePath = Path.GetFileName(headType.graphicPath);
 
@@ -192,27 +192,27 @@
                         bool genderIncluded = headType.gender != Gender.None && ind >= 0 && Enum.TryParse(headTypePath.Substring(0, ind), out Gender _);
                         headTypePath = genderIncluded ? headTypePath.Substring(ind + 1) : headTypePath;
 
-                        ExtendedHeadtypeGraphic headtypeGraphic = new()
-                                                                  {
-                                                                      headType = headType,
-                                                                      path    = headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath,
-                                                                      pathsFallback = [headType.graphicPath]
-                                                                  };
+                        ExtendedConditionGraphic headtypeGraphic = new()
+                                                                   {
+                                                                       conditions    = [new ConditionHeadType { headType = headType }],
+                                                                       path          = headPath.NullOrEmpty() ? string.Empty : headPath + headTypePath,
+                                                                       pathsFallback = [headType.graphicPath]
+                                                                   };
 
                         Gender firstGender = genderIncluded ? headType.gender : Gender.Male;
 
-                        headtypeGraphic.extendedGraphics.Add(new ExtendedGenderGraphic
-                                                           {
-                                                               gender = firstGender,
-                                                               path   = headPath + firstGender + "_" + headTypePath
-                                                           });
-                        
+                        headtypeGraphic.extendedGraphics.Add(new ExtendedConditionGraphic
+                                                             {
+                                                                 conditions = [new ConditionGender { gender = firstGender }],
+                                                                 path       = headPath + firstGender + "_" + headTypePath
+                                                             });
+
                         if (!genderIncluded)
-                            headtypeGraphic.extendedGraphics.Add(new ExtendedGenderGraphic
-                                                               {
-                                                                   gender = Gender.Female,
-                                                                   path   = headPath + Gender.Female + headTypePath
-                                                               });
+                            headtypeGraphic.extendedGraphics.Add(new ExtendedConditionGraphic
+                                                                 {
+                                                                     conditions = [new ConditionGender { gender = Gender.Female }],
+                                                                     path       = headPath + Gender.Female + headTypePath
+                                                                 });
 
                         headGraphic.extendedGraphics.Add(headtypeGraphic);
                     }
@@ -228,16 +228,16 @@
 
                     foreach (CreepJoinerFormKindDef formKindDef in DefDatabase<CreepJoinerFormKindDef>.AllDefsListForReading)
                     {
-                        ExtendedCreepJoinerFormGraphic formGraphic = new()
-                        {
-                            form = formKindDef,
-                            path = $"{bodyPath}_{formKindDef}"
-                        };
+                        ExtendedConditionGraphic formGraphic = new()
+                                                               {
+                                                                   conditions = [new ConditionCreepJoinerFormKind { form = formKindDef }],
+                                                                   path       = $"{bodyPath}_{formKindDef}"
+                                                               };
                         foreach (BodyTypeGraphicData bodyTypeData in formKindDef.bodyTypeGraphicPaths)
                         {
-                            formGraphic.extendedGraphics.Add(new ExtendedBodytypeGraphic
+                            formGraphic.extendedGraphics.Add(new ExtendedConditionGraphic()
                                                              {
-                                                                 bodytype      = bodyTypeData.bodyType,
+                                                                 conditions    = [new ConditionBodyType { bodyType = bodyTypeData.bodyType }],
                                                                  path          = $"{bodyPath}_{formKindDef}_{bodyTypeData.bodyType}",
                                                                  pathsFallback = [bodyTypeData.texturePath]
                                                              });
@@ -248,25 +248,20 @@
 
                     foreach (MutantDef mutantDef in DefDatabase<MutantDef>.AllDefsListForReading)
                     {
-                        ExtendedMutantGraphic mutantGraphic = new()
-                        {
-                            mutant = mutantDef,
-                            path = $"{bodyPath}_{mutantDef}"
-                        };
+                        ExtendedConditionGraphic mutantGraphic = new()
+                                                                 {
+                                                                     conditions = [new ConditionMutant { mutant = mutantDef }],
+                                                                     path       = $"{bodyPath}_{mutantDef}"
+                                                                 };
                         foreach (BodyTypeGraphicData bodyTypeData in mutantDef.bodyTypeGraphicPaths)
-                            mutantGraphic.extendedGraphics.Add(new ExtendedBodytypeGraphic
-                            {
-                                bodytype      = bodyTypeData.bodyType,
-                                path          = $"{bodyPath}_{mutantDef}_{bodyTypeData.bodyType}",
-                                pathsFallback = [bodyTypeData.texturePath]
-                            });
+                            mutantGraphic.extendedGraphics.Add(new ExtendedConditionGraphic
+                                                               {
+                                                                   conditions    = [new ConditionBodyType { bodyType = bodyTypeData.bodyType }],
+                                                                   path          = $"{bodyPath}_{mutantDef}_{bodyTypeData.bodyType}",
+                                                                   pathsFallback = [bodyTypeData.texturePath]
+                                                               });
                         bodyGraphic.extendedGraphics.Add(mutantGraphic);
                     }
-
-
-
-
-
 
 
 
@@ -274,22 +269,22 @@
                     {
                         BodyTypeDef bodyType = bodyTypeRaw == BodyTypeDefOf.Baby ? BodyTypeDefOf.Child : bodyTypeRaw;
 
-                        bodyGraphic.extendedGraphics.Add(new ExtendedBodytypeGraphic
+                        bodyGraphic.extendedGraphics.Add(new ExtendedConditionGraphic
                                                          {
-                                                             bodytype = bodyTypeRaw,
-                                                             path     = $"{bodyPath}Naked_{bodyType.defName}",
+                                                             conditions = [new ConditionBodyType { bodyType = bodyTypeRaw }],
+                                                             path       = $"{bodyPath}Naked_{bodyType.defName}",
                                                              extendedGraphics =
                                                              [
-                                                                 new ExtendedGenderGraphic
+                                                                 new ExtendedConditionGraphic
                                                                  {
-                                                                     gender = Gender.Male,
-                                                                     path   = $"{bodyPath}{Gender.Male}_Naked_{bodyType.defName}"
+                                                                     conditions = [new ConditionGender { gender = Gender.Male }],
+                                                                     path       = $"{bodyPath}{Gender.Male}_Naked_{bodyType.defName}"
                                                                  },
 
-                                                                 new ExtendedGenderGraphic
+                                                                 new ExtendedConditionGraphic
                                                                  {
-                                                                     gender = Gender.Female,
-                                                                     path   = $"{bodyPath}{Gender.Female}_Naked_{bodyType.defName}"
+                                                                     conditions = [new ConditionGender { gender = Gender.Female }],
+                                                                     path       = $"{bodyPath}{Gender.Female}_Naked_{bodyType.defName}"
                                                                  }
                                                              ]
                                                          });
@@ -305,22 +300,22 @@
                         string path = graphicTop.path;
 
                         foreach (BodyTypeDef bodyType in this.bodyTypes)
-                            graphicTop.extendedGraphics.Add(new ExtendedBodytypeGraphic
+                            graphicTop.extendedGraphics.Add(new ExtendedConditionGraphic()
                                                             {
-                                                                bodytype = bodyType,
-                                                                path     = $"{path}_{bodyType.defName}",
+                                                                conditions = [new ConditionBodyType { bodyType = bodyType }],
+                                                                path       = $"{path}_{bodyType.defName}",
                                                                 extendedGraphics =
                                                                 [
-                                                                    new ExtendedGenderGraphic
+                                                                    new ExtendedConditionGraphic()
                                                                     {
-                                                                        gender = Gender.Male,
-                                                                        path   = $"{path}_{Gender.Male}_{bodyType.defName}"
+                                                                        conditions = [new ConditionGender { gender = Gender.Male }],
+                                                                        path       = $"{path}_{Gender.Male}_{bodyType.defName}"
                                                                     },
 
-                                                                    new ExtendedGenderGraphic
+                                                                    new ExtendedConditionGraphic
                                                                     {
-                                                                        gender = Gender.Female,
-                                                                        path   = $"{path}_{Gender.Female}_{bodyType.defName}"
+                                                                        conditions = [new ConditionGender { gender = Gender.Female }],
+                                                                        path       = $"{path}_{Gender.Female}_{bodyType.defName}"
                                                                     }
                                                                 ]
                                                             });
@@ -335,21 +330,21 @@
                         {
                             string path = graphicTop.path;
                             foreach (BodyTypeDef bodyType in this.bodyTypes)
-                                graphicTop.extendedGraphics.Add(new ExtendedBodytypeGraphic
+                                graphicTop.extendedGraphics.Add(new ExtendedConditionGraphic()
                                                                 {
-                                                                    bodytype = bodyType,
-                                                                    path     = $"{path}_{bodyType.defName}",
+                                                                    conditions = [new ConditionBodyType { bodyType = bodyType }],
+                                                                    path       = $"{path}_{bodyType.defName}",
                                                                     extendedGraphics =
                                                                     [
-                                                                        new ExtendedGenderGraphic()
+                                                                        new ExtendedConditionGraphic
                                                                         {
-                                                                            gender = Gender.Male,
-                                                                            path   = $"{path}_{Gender.Male}_{bodyType.defName}"
+                                                                            conditions = [new ConditionGender { gender = Gender.Male }],
+                                                                            path       = $"{path}_{Gender.Male}_{bodyType.defName}"
                                                                         },
-                                                                        new ExtendedGenderGraphic()
+                                                                        new ExtendedConditionGraphic
                                                                         {
-                                                                            gender = Gender.Female,
-                                                                            path   = $"{path}_{Gender.Female}_{bodyType.defName}"
+                                                                            conditions = [new ConditionGender { gender = Gender.Female }],
+                                                                            path       = $"{path}_{Gender.Female}_{bodyType.defName}"
                                                                         }
                                                                     ]
                                                                 });

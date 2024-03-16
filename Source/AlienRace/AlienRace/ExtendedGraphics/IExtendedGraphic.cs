@@ -26,10 +26,26 @@ public interface IExtendedGraphic
     /**
      * Get sub-graphics relevant to pawn and part
      */
-    public IEnumerable<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel);
+    public IEnumerable<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, ResolveData data);
     
     /**
      * Check if this graphic is relevant to the pawn and part.
      */
-    public bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel);
+    public bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data);
+}
+
+public struct ResolveData
+{
+    public BodyPartDef bodyPart;
+    public string      bodyPartLabel;
+
+    /**
+     * For other modders
+     */
+    public Dictionary<string, object> genericStorage = [];
+
+    public ResolveData()
+    {
+
+    }
 }

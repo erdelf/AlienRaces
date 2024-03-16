@@ -82,9 +82,9 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
         return this.variantCounts[index]++;
     }
 
-    public abstract bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel);
+    public abstract bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data);
 
-    public virtual IEnumerable<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel) =>
+    public virtual IEnumerable<IExtendedGraphic> GetSubGraphics(ExtendedGraphicsPawnWrapper pawn, ResolveData data) =>
         this.GetSubGraphics();
 
     public virtual IEnumerable<IExtendedGraphic> GetSubGraphics() => 

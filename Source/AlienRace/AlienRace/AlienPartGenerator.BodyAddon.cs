@@ -15,6 +15,7 @@ namespace AlienRace
     {
         public class ExtendedGraphicTop : AbstractExtendedGraphic
         {
+
             public bool debug = true;
             public bool Debug => this.debug && (!this.path.NullOrEmpty() || this.GetSubGraphics().Any());
 
@@ -34,16 +35,14 @@ namespace AlienRace
             private const string REWIND_PATH = "void";
 
             [Unsaved]
-            public BodyPartDef bodyPart;
-            [Unsaved]
-            public string      bodyPartLabel;
+            public ResolveData resolveData;
 
 
-            public IExtendedGraphic GetBestGraphic(ExtendedGraphicsPawnWrapper pawn, BodyPartDef part, string partLabel)
+            public IExtendedGraphic GetBestGraphic(ExtendedGraphicsPawnWrapper pawn, ResolveData data)
             {
                 Pair<int, IExtendedGraphic> bestGraphic = new(0, this);
                 Stack<Pair<int, IEnumerator<IExtendedGraphic>>> stack = new();
-                stack.Push(new Pair<int, IEnumerator<IExtendedGraphic>>(1, this.GetSubGraphics(pawn, part, partLabel).GetEnumerator())); // generate list of subgraphics
+                stack.Push(new Pair<int, IEnumerator<IExtendedGraphic>>(1, this.GetSubGraphics(pawn, data).GetEnumerator())); // generate list of subgraphics
 
                 // Loop through sub trees until we find a deeper match or we run out of alternatives
                 while (stack.Count > 0 && (bestGraphic.Second == this || bestGraphic.First < stack.Peek().First))
@@ -55,7 +54,7 @@ namespace AlienRace
                         IExtendedGraphic current = currentGraphicSet.Second.Current; //current branch of tree
                         //Log.ResetMessageCount();
                         //Log.Message(HarmonyLib.Traverse.Create(pawn).Property("WrappedPawn").GetValue<Pawn>().NameShortColored + ": " + HarmonyLib.AccessTools.GetDeclaredFields(current.GetType())[0].GetValue(current) + " | " + current.GetType().FullName + " | " + current.GetPath());
-                        if (!(current?.IsApplicable(pawn, ref part, ref partLabel) ?? false))
+                        if (!(current?.IsApplicable(pawn, ref data) ?? false))
                             continue;
                         
                         //Log.Message("applicable");
@@ -75,7 +74,7 @@ namespace AlienRace
                         
                         //Log.Message(bestGraphic.Second.GetPath());
 
-                        IEnumerable<IExtendedGraphic> subGraphics = current.GetSubGraphics(pawn, part, partLabel);
+                        IEnumerable<IExtendedGraphic> subGraphics = current.GetSubGraphics(pawn, data);
                         if (subGraphics.Any())
                             currentGraphicSet  = new Pair<int, IEnumerator<IExtendedGraphic>>(currentGraphicSet.First + 1, subGraphics.GetEnumerator());
                         else
@@ -91,7 +90,7 @@ namespace AlienRace
 
             public virtual string GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new(), string pathAppendix = null)
             {
-                IExtendedGraphic bestGraphic = this.GetBestGraphic(new ExtendedGraphicsPawnWrapper(pawn), this.bodyPart, this.bodyPartLabel); //finds deepest match
+                IExtendedGraphic bestGraphic = this.GetBestGraphic(new ExtendedGraphicsPawnWrapper(pawn), this.resolveData); //finds deepest match
 
                 int    variantCounting = bestGraphic.GetVariantCount();
 
@@ -109,7 +108,7 @@ namespace AlienRace
             }
             
             // Top level so always considered applicable
-            public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) => true;
+            public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) => true;
             
 
         }
@@ -172,7 +171,7 @@ namespace AlienRace
                 this.CanDrawAddon(new ExtendedGraphicsPawnWrapper(pawn));
 
             private bool CanDrawAddon(ExtendedGraphicsPawnWrapper pawn) => 
-                this.conditions.TrueForAll(c => c.Satisfied(pawn, ref this.bodyPart, ref this.bodyPartLabel));
+                this.conditions.TrueForAll(c => c.Satisfied(pawn, ref this.resolveData));
 
             /*
             this.VisibleUnderApparelOf(pawn)     &&
@@ -187,7 +186,7 @@ namespace AlienRace
                 this.CanDrawAddonStatic(new ExtendedGraphicsPawnWrapper(pawn));
 
             private bool CanDrawAddonStatic(ExtendedGraphicsPawnWrapper pawn) => 
-                this.conditions.TrueForAll(c => !c.Static || c.Satisfied(pawn, ref this.bodyPart, ref this.bodyPartLabel));
+                this.conditions.TrueForAll(c => !c.Static || c.Satisfied(pawn, ref this.resolveData));
             /*
                 this.VisibleForGenderOf(pawn)    &&
                 this.VisibleForBodyTypeOf(pawn)  &&
