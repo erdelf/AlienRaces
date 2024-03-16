@@ -35,8 +35,8 @@ public class ExtendedGraphicsPawnWrapper
          .Select(h => h.Severity);
 
     //hediff isApplicable
-    public virtual bool HasHediffOfDefAndPart(HediffDef hediffDef, BodyPartDef part, string partLabel) => 
-        this.GetHediffList().Any(h => this.IsHediffOfDefAndPart(h, hediffDef, part, partLabel)); //compares pawn hediffs to specified hediff def and part
+    public virtual Hediff HasHediffOfDefAndPart(HediffDef hediffDef, BodyPartDef part, string partLabel) => 
+        this.GetHediffList().FirstOrDefault(h => this.IsHediffOfDefAndPart(h, hediffDef, part, partLabel)); //compares pawn hediffs to specified hediff def and part
 
     //age isApplicable
     public virtual bool CurrentLifeStageDefMatches(LifeStageDef lifeStageDef) =>

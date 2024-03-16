@@ -38,7 +38,7 @@ public struct ResolveData
 {
     public BodyPartDef bodyPart;
     public string      bodyPartLabel;
-
+    public HediffDef   hediff;
     /**
      * For other modders
      */
