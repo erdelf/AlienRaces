@@ -55,8 +55,10 @@ public class ConditionRotStage : Condition
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref BodyPartDef part, ref string partLabel) => 
         this.allowedStages.Contains(pawn.GetRotStage() ?? RotStage.Fresh);
 
-    public override void LoadDataFromXmlCustom(XmlNode xmlRoot) => 
-        this.allowedStages = xmlRoot.Value.Split(',').Select(ParseHelper.FromString<RotStage>).ToList();
+    public override void LoadDataFromXmlCustom(XmlNode xmlRoot)
+    {
+        this.allowedStages = xmlRoot.FirstChild.Value.Split(',').Select(ParseHelper.FromString<RotStage>).ToList();
+    }
 }
 
 public class ConditionBodyPart : Condition
