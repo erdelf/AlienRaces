@@ -328,5 +328,8 @@
         public delegate IXmlSchemaInfo XmlDocumentAddName(XmlDocument document, string prefix, string localName, string namespaceURI, IXmlSchemaInfo schemaInfo);
 
         public static readonly XmlDocumentAddName xmlDocumentAddName = AccessTools.MethodDelegate<XmlDocumentAddName>(AccessTools.Method(typeof(XmlDocument), "AddXmlName"));
+
+        public static readonly AccessTools.FieldRef<Dictionary<Type, Func<XmlNode, object>>> listFromXmlMethods = 
+            AccessTools.StaticFieldRefAccess<Dictionary<Type, Func<XmlNode, object>>>(AccessTools.Field(typeof(DirectXmlToObject), "listFromXmlMethods"));
     }
 }

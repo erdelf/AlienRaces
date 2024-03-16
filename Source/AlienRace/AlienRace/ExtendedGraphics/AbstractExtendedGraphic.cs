@@ -116,9 +116,6 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
                 //Log.Message("Original: " + childNode.OuterXml);
                 foreach (XmlNode graphicNode in childNode.ChildNodes)
                 {
-                    XmlAttribute attribute = xmlRoot.OwnerDocument!.CreateAttribute("Class");
-                    attribute.Value = typeof(AlienPartGenerator.ExtendedConditionGraphic).FullName;
-                    graphicNode.Attributes!.SetNamedItem(attribute);
                     XmlAttribute attribute2 = xmlRoot.OwnerDocument!.CreateAttribute("For");
                     attribute2.Value = graphicNode.Name;
                     graphicNode.Attributes!.SetNamedItem(attribute2);
@@ -130,21 +127,24 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
 
                 //Log.Message("Adjusting: " + childNode.OuterXml);
             }
-            else if(childNode.Name.Equals(nameof(this.extendedGraphics)))
-            {
-                foreach (XmlNode graphicNode in childNode.ChildNodes)
-                    if (graphicNode.Attributes!["Class"] == null)
-                    {
-                        XmlAttribute attribute = xmlRoot.OwnerDocument!.CreateAttribute("Class");
-                        attribute.Value = typeof(AlienPartGenerator.ExtendedConditionGraphic).FullName;
-                        graphicNode.Attributes!.SetNamedItem(attribute);
-                    }
-            }
         }
 
         if(this is AlienPartGenerator.BodyAddon)
             Log.Message("BodyAddon: " + xmlRoot.OuterXml);
         this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
+    }
+
+    public static XmlNode CustomListLoader(XmlNode xmlNode)
+    {
+        foreach (XmlNode graphicNode in xmlNode.ChildNodes)
+            if (graphicNode.Attributes!["Class"] == null)
+            {
+                XmlAttribute attribute = xmlNode.OwnerDocument!.CreateAttribute("Class");
+                attribute.Value = typeof(AlienPartGenerator.ExtendedConditionGraphic).FullName;
+                graphicNode.Attributes!.SetNamedItem(attribute);
+            }
+
+        return xmlNode;
     }
 
     protected virtual void SetInstanceVariablesFromChildNodesOf(XmlNode xmlRootNode)
