@@ -10,6 +10,7 @@
     using UnityEngine;
     using Verse;
     using System.Xml;
+    using ExtendedGraphics;
     using JetBrains.Annotations;
 
     public class ThingDef_AlienRace : ThingDef
@@ -107,9 +108,9 @@
             {
                 foreach (HeadTypeDef headType in DefDatabase<HeadTypeDef>.AllDefs)
                 {
-                    AlienPartGenerator.ExtendedHeadtypeGraphic headtypeGraphic = new()
+                    AlienPartGenerator.ExtendedConditionGraphic headtypeGraphic = new()
                                                                                  {
-                                                                                     headType = headType,
+                                                                                     conditions = [new ConditionHeadType {headType = headType}],
                                                                                      path = headType.graphicPath
                                                                                  };
 
@@ -123,10 +124,10 @@
                 this.alienRace.graphicPaths.skeleton.path             = string.Empty;
 
                 foreach (BodyTypeDef bodyType in this.alienRace.generalSettings.alienPartGenerator.bodyTypes)
-                    this.alienRace.graphicPaths.skeleton.extendedGraphics.Add(new AlienPartGenerator.ExtendedBodytypeGraphic()
+                    this.alienRace.graphicPaths.skeleton.extendedGraphics.Add(new AlienPartGenerator.ExtendedConditionGraphic()
                                                                               {
-                                                                                  bodytype = bodyType,
-                                                                                  path     = bodyType.bodyDessicatedGraphicPath
+                                                                                  conditions = [new ConditionBodyType { bodyType = bodyType }],
+                                                                                  path       = bodyType.bodyDessicatedGraphicPath
                                                                               });
             }
             
