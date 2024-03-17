@@ -117,7 +117,7 @@ namespace AlienRace
                     if (alien.Corpse?.GetRotStage() == RotStage.Rotting)
                         alienComp.OverwriteColorChannel("skin", PawnRenderUtility.GetRottenColor(alien.story.SkinColor));
 
-                    alienComp.RegenerateColorChannelLinks();
+                    //alienComp.RegenerateColorChannelLinks();
                     
                     portraitRender = new Pair<WeakReference, bool>(new WeakReference(alien), false);
                 }
