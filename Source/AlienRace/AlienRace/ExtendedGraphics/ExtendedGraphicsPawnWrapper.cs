@@ -11,7 +11,7 @@ using Verse.AI;
  */
 public class ExtendedGraphicsPawnWrapper
 {
-    private Pawn WrappedPawn { get; set; }
+    public Pawn WrappedPawn { get; private set; }
 
     public ExtendedGraphicsPawnWrapper(Pawn pawn) => this.WrappedPawn = pawn;
 
