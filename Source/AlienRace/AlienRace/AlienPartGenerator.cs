@@ -777,7 +777,7 @@
                         ColorChannelGenerator apgChannel = apg.colorChannels.FirstOrDefault(ccg => ccg.name == targetData.targetChannel);
 
                         if (apgChannel != null)
-                            this.ColorChannels[targetData.targetChannel].first = this.GenerateColor(apgChannel, apgChannel.entries[targetData.categoryIndex], true);
+                            this.ColorChannels[targetData.targetChannel].second = this.GenerateColor(apgChannel, apgChannel.entries[targetData.categoryIndex], false);
                     }
                 }
             }
