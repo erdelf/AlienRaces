@@ -201,8 +201,10 @@ public class ConditionHediffSeverity : ConditionHediff
 
     public float severity;
 
-    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) => 
-        pawn.SeverityOfHediffsOnPart(data.hediff, data.bodyPart, data.bodyPartLabel).Max() > this.severity;
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data)
+    {
+        return pawn.SeverityOfHediffsOnPart(data.hediff, data.bodyPart, data.bodyPartLabel).Any(sev => sev > this.severity);
+    }
 }
 
 public class ConditionBackstory : Condition
