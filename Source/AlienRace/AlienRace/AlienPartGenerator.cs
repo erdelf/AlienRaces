@@ -790,6 +790,8 @@
                     this.ColorChannels[channel].first = first.Value;
                 if (second.HasValue)
                     this.ColorChannels[channel].second = second.Value;
+
+                this.RegenerateColorChannelLink(channel);
             }
 
             [DebugAction(category: "AlienRace", name: "Regenerate all colorchannels", allowedGameStates = AllowedGameStates.PlayingOnMap)]
