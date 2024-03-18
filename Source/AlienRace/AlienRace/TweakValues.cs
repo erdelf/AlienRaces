@@ -16,7 +16,7 @@ public static class TweakValues
 {
     public static IEnumerable<CodeInstruction> TweakValuesTranspiler(IEnumerable<CodeInstruction> instructions)
     {
-        MethodInfo endScrollInfo = AccessTools.Method(typeof(Widgets), nameof(Widgets.EndScrollView));
+        MethodInfo endScrollInfo = AccessTools.Method(typeof(DevGUI), nameof(DevGUI.EndScrollView));
 
         MethodInfo countInfo = AccessTools.Property(
                                                     AccessTools.Field(typeof(EditWindow_TweakValues), name: "tweakValueFields").FieldType, 
