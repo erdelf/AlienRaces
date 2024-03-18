@@ -6,7 +6,6 @@ namespace AlienRace
     using System.Linq;
     using System.Xml;
     using ExtendedGraphics;
-    using JetBrains.Annotations;
     using RimWorld;
     using UnityEngine;
     using Verse;
@@ -66,20 +65,23 @@ namespace AlienRace
                             stack.Push(currentGraphicSet);
                             continue;
                         }
-                        else if (!current.GetPath().NullOrEmpty() && current.GetVariantCount() > 0)
-                            // Only update best graphic if the current one has a valid path
-                        {
-                            bestGraphic = new Pair<int, IExtendedGraphic>(currentGraphicSet.First, current);
-                        }
-                        
+
                         //Log.Message(bestGraphic.Second.GetPath());
 
                         IEnumerable<IExtendedGraphic> subGraphics = current.GetSubGraphics(pawn, data);
                         if (subGraphics.Any())
-                            currentGraphicSet  = new Pair<int, IEnumerator<IExtendedGraphic>>(currentGraphicSet.First + 1, subGraphics.GetEnumerator());
+                            currentGraphicSet = new Pair<int, IEnumerator<IExtendedGraphic>>(currentGraphicSet.First + 1, subGraphics.GetEnumerator());
                         else
                             stack.Push(currentGraphicSet);
-                        
+
+                        if (!current.GetPath().NullOrEmpty() && current.GetVariantCount() > 0)
+                            // Only update best graphic if the current one has a valid path
+                        {
+                            bestGraphic = new Pair<int, IExtendedGraphic>(currentGraphicSet.First, current);
+                            //Log.Message(bestGraphic.Second.GetPath());
+                            if (!subGraphics.Any())
+                                break;
+                        }
                     }
                 }
 
