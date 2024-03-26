@@ -144,7 +144,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GeneratePawnName)),
                 new HarmonyMethod(patchType, nameof(GeneratePawnNamePrefix)));
             harmony.Patch(AccessTools.Method(typeof(Page_ConfigureStartingPawns), name: "CanDoNext"), 
-                postfix: new HarmonyMethod(patchType, nameof(CanDoNextStartPawnPostfix)));
+                transpiler: new HarmonyMethod(patchType, nameof(CanDoNextStartPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(CharacterCardUtility), nameof(CharacterCardUtility.DrawCharacterCard)),
                 transpiler: new HarmonyMethod(patchType, nameof(DrawCharacterCardTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(GameInitData), nameof(GameInitData.PrepForMapGen)),
@@ -2976,17 +2976,31 @@ namespace AlienRace
             __result = ThoughtSettings.CanGetThought(def, pawn);
         }
 
-        public static void CanDoNextStartPawnPostfix(ref bool __result)
+        public static IEnumerable<CodeInstruction> CanDoNextStartPawnTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
-            if (__result) 
-                return;
+            MethodInfo getNameInfo = AccessTools.PropertyGetter(typeof(Pawn), nameof(Pawn.Name));
 
-            bool result = true;
-            Find.GameInitData.startingAndOptionalPawns.ForEach(action: current =>
+            LocalBuilder pawnLocal = ilg.DeclareLocal(typeof(Pawn));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+            for (int index = 0; index < instructionList.Count; index++)
             {
-                if (!current.Name.IsValid && current.def.race.GetNameGenerator(current.gender) == null) result = false;
-            });
-            __result = result;
+                CodeInstruction instruction = instructionList[index];
+                if (instruction.Calls(getNameInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Dup);
+                    yield return new CodeInstruction(OpCodes.Stloc, pawnLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn),     nameof(Pawn.def)));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ThingDef), nameof(ThingDef.race)));
+                    yield return new CodeInstruction(OpCodes.Ldloc, pawnLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn), nameof(Pawn.gender)));
+                    yield return CodeInstruction.Call(typeof(RaceProperties), nameof(RaceProperties.GetNameGenerator));
+                    yield return new CodeInstruction(instructionList[index + 2]);
+                    yield return new CodeInstruction(OpCodes.Ldloc, pawnLocal.LocalIndex);
+                }
+
+                yield return instruction;
+            }
         }
 
         public static IEnumerable<CodeInstruction> DrawCharacterCardTranspiler(IEnumerable<CodeInstruction> instructions)
