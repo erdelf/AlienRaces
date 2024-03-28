@@ -95,12 +95,14 @@
 
         private void GenerateOffsetDefaults()
         {
-            this.offsetDefaults.Add(new OffsetNamed
+            this.offsetDefaults =
+            [
+                new OffsetNamed
                                     {
                                         name    = "Center",
                                         offsets = new DirectionalOffset()
-                                    });
-            this.offsetDefaults.Add(new OffsetNamed
+                                        },
+                new OffsetNamed
                                     {
                                         name = "Tail",
                                         offsets = new DirectionalOffset
@@ -122,8 +124,8 @@
                                                                  offset = new Vector2(0.42f, -0.22f)
                                                              }
                                                   }
-                                    });
-            this.offsetDefaults.Add(new OffsetNamed
+                                        },
+                new OffsetNamed
                                     {
                                         name = "Head",
                                         offsets = new DirectionalOffset
@@ -145,7 +147,8 @@
                                                                  offset = new Vector2(-0.07f, 0.5f)
                                                              }
                                                   }
-                                    });
+                                        },
+            ];
         }
 
         public void GenerateMeshsAndMeshPools()
