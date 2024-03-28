@@ -321,6 +321,64 @@ namespace AlienRace
 
             AlienRenderTreePatches.HarmonyInit(harmony);
 
+            RebuildLists(harmony);
+
+            {
+                FieldInfo bodyInfo = AccessTools.Field(typeof(RaceProperties), nameof(RaceProperties.body));
+                MethodInfo bodyCheck = AccessTools.Method(patchType, nameof(ReplacedBody));
+                HarmonyMethod bodyTranspiler = new(patchType, nameof(BodyReferenceTranspiler));
+
+                //Full assemblies scan
+                foreach (MethodInfo mi in typeof(LogEntry).Assembly.GetTypes().
+                    SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
+                    Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(t) && !t.IsGenericType).SelectMany(selector: t =>
+                        t.GetMethods(AccessTools.all).Concat(t.GetProperties(AccessTools.all).SelectMany(selector: pi => pi.GetAccessors(nonPublic: true)))
+                      .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<DllImportAttribute>())).Distinct()// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
+                ) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
+                {
+                    IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
+                    if (mi != bodyCheck && instructions.Any(predicate: il => il.Value?.Equals(bodyInfo) ?? false))
+                        harmony.Patch(mi, transpiler: bodyTranspiler);
+                }
+
+                //PawnRenderer Posture scan
+                MethodInfo postureInfo = AccessTools.Method(typeof(PawnUtility), nameof(PawnUtility.GetPosture));
+
+                foreach (MethodInfo mi in typeof(PawnRenderer).GetMethods(AccessTools.all).Concat(typeof(PawnRenderer).GetProperties(AccessTools.all)
+                                                                                                                   .SelectMany(selector: pi =>
+                                                                                                                                   new List<MethodInfo> { pi.GetGetMethod(nonPublic: true), pi.GetGetMethod(nonPublic: false), pi.GetSetMethod(nonPublic: true), pi.GetSetMethod(nonPublic: false) }))
+                   .Where(predicate: mi => mi != null && mi.DeclaringType == typeof(PawnRenderer) && !mi.IsGenericMethod))
+                {
+                    IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
+                    if (instructions.Any(predicate: il => il.Value?.Equals(postureInfo) ?? false))
+                        harmony.Patch(mi, transpiler: new HarmonyMethod(patchType, nameof(PostureTranspiler)));
+                }
+            }
+
+            Log.Message($"Alien race successfully completed {harmony.harmony.GetPatchedMethods().Select(Harmony.GetPatchInfo).SelectMany(selector: p => p.Prefixes.Concat(p.Postfixes).Concat(p.Transpilers)).Count(predicate: p => p.owner == harmony.harmony.Id)} patches with harmony.");
+            
+            AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static void RebuildLists(AlienHarmony harmony = null, bool hotReload = false)
+        {
+            if (hotReload)
+            {
+                harmony = new(id: "rimworld.erdelf.alien_race.main");
+                ThoughtSettings.thoughtRestrictionDict = [];
+                RaceRestrictionSettings.apparelRestricted = [];
+                RaceRestrictionSettings.weaponRestricted = [];
+                RaceRestrictionSettings.buildingRestricted = [];
+                RaceRestrictionSettings.recipeRestricted = [];
+                RaceRestrictionSettings.plantRestricted = [];
+                RaceRestrictionSettings.traitRestricted = [];
+                RaceRestrictionSettings.foodRestricted = [];
+                RaceRestrictionSettings.petRestricted = [];
+                RaceRestrictionSettings.researchRestrictionDict = [];
+                RaceRestrictionSettings.geneRestricted = [];
+                RaceRestrictionSettings.xenotypeRestricted = [];
+                RaceRestrictionSettings.reproductionRestricted = [];
+            }
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -354,19 +412,19 @@ namespace AlienRace
                     RaceRestrictionSettings.recipeRestricted.Add(recipeDef);
                     ar.alienRace.raceRestriction.whiteRecipeList.Add(recipeDef);
                 }
-                
+
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.plantList)
                 {
                     RaceRestrictionSettings.plantRestricted.Add(thingDef);
                     ar.alienRace.raceRestriction.whitePlantList.Add(thingDef);
                 }
-                
+
                 foreach (TraitDef traitDef in ar.alienRace.raceRestriction.traitList)
                 {
                     RaceRestrictionSettings.traitRestricted.Add(traitDef);
                     ar.alienRace.raceRestriction.whiteTraitList.Add(traitDef);
                 }
-                
+
                 foreach (ThingDef thingDef in ar.alienRace.raceRestriction.foodList)
                 {
                     RaceRestrictionSettings.foodRestricted.Add(thingDef);
@@ -420,30 +478,30 @@ namespace AlienRace
 
                 if (ar.alienRace.generalSettings.humanRecipeImport && ar != ThingDefOf.Human)
                 {
-                    (ar.recipes ??= new List<RecipeDef>()).AddRange(ThingDefOf.Human.recipes.Where(predicate: rd => !rd.targetsBodyPart                  ||
+                    (ar.recipes ??= new List<RecipeDef>()).AddRange(ThingDefOf.Human.recipes.Where(predicate: rd => !rd.targetsBodyPart ||
                                                                                                                                   rd.appliedOnFixedBodyParts.NullOrEmpty() ||
                                                                                                                                   rd.appliedOnFixedBodyParts.Any(predicate: bpd => ar.race.body.AllParts.Any(predicate: bpr => bpr.def == bpd))));
 
                     DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(action: rd =>
-                                                                                 {
-                                                                                     if (rd.recipeUsers?.Contains(ThingDefOf.Human) ?? false)
-                                                                                         rd.recipeUsers.Add(ar);
-                                                                                     if (!rd.defaultIngredientFilter?.Allows(ThingDefOf.Meat_Human) ?? false)
-                                                                                         rd.defaultIngredientFilter.SetAllow(ar.race.meatDef, allow: false);
-                                                                                 });
+                    {
+                        if (rd.recipeUsers?.Contains(ThingDefOf.Human) ?? false)
+                            rd.recipeUsers.Add(ar);
+                        if (!rd.defaultIngredientFilter?.Allows(ThingDefOf.Meat_Human) ?? false)
+                            rd.defaultIngredientFilter.SetAllow(ar.race.meatDef, allow: false);
+                    });
                     ar.recipes.RemoveDuplicates();
                 }
 
                 ar.alienRace.raceRestriction?.workGiverList?.ForEach(action: wgd =>
-                                                                             {
-                                                                                 if (wgd == null)
-                                                                                     return;
-                                                                                 harmony.Patch(AccessTools.Method(wgd.giverClass, name: "JobOnThing"),
-                                                                                               postfix: new HarmonyMethod(patchType, nameof(GenericJobOnThingPostfix)));
-                                                                                 MethodInfo hasJobOnThingInfo = AccessTools.Method(wgd.giverClass, name: "HasJobOnThing");
-                                                                                 if (hasJobOnThingInfo?.IsDeclaredMember() ?? false)
-                                                                                     harmony.Patch(hasJobOnThingInfo, postfix: new HarmonyMethod(patchType, nameof(GenericHasJobOnThingPostfix)));
-                                                                             });
+                {
+                    if (wgd == null)
+                        return;
+                    harmony.Patch(AccessTools.Method(wgd.giverClass, name: "JobOnThing"),
+                                  postfix: new HarmonyMethod(patchType, nameof(GenericJobOnThingPostfix)));
+                    MethodInfo hasJobOnThingInfo = AccessTools.Method(wgd.giverClass, name: "HasJobOnThing");
+                    if (hasJobOnThingInfo?.IsDeclaredMember() ?? false)
+                        harmony.Patch(hasJobOnThingInfo, postfix: new HarmonyMethod(patchType, nameof(GenericHasJobOnThingPostfix)));
+                });
             }
 
             foreach (ThingDef def in DefDatabase<ThingDef>.AllDefs)
@@ -456,45 +514,10 @@ namespace AlienRace
                 }
             }
 
-            {
-                FieldInfo bodyInfo = AccessTools.Field(typeof(RaceProperties), nameof(RaceProperties.body));
-                MethodInfo bodyCheck = AccessTools.Method(patchType, nameof(ReplacedBody));
-                HarmonyMethod bodyTranspiler = new(patchType, nameof(BodyReferenceTranspiler));
-
-                //Full assemblies scan
-                foreach (MethodInfo mi in typeof(LogEntry).Assembly.GetTypes().
-                    SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
-                    Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(t) && !t.IsGenericType).SelectMany(selector: t =>
-                        t.GetMethods(AccessTools.all).Concat(t.GetProperties(AccessTools.all).SelectMany(selector: pi => pi.GetAccessors(nonPublic: true)))
-                      .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<DllImportAttribute>())).Distinct()// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
-                ) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
-                {
-                    IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
-                    if (mi != bodyCheck && instructions.Any(predicate: il => il.Value?.Equals(bodyInfo) ?? false))
-                        harmony.Patch(mi, transpiler: bodyTranspiler);
-                }
-
-                //PawnRenderer Posture scan
-                MethodInfo postureInfo = AccessTools.Method(typeof(PawnUtility), nameof(PawnUtility.GetPosture));
-
-                foreach (MethodInfo mi in typeof(PawnRenderer).GetMethods(AccessTools.all).Concat(typeof(PawnRenderer).GetProperties(AccessTools.all)
-                                                                                                                   .SelectMany(selector: pi =>
-                                                                                                                                   new List<MethodInfo> { pi.GetGetMethod(nonPublic: true), pi.GetGetMethod(nonPublic: false), pi.GetSetMethod(nonPublic: true), pi.GetSetMethod(nonPublic: false) }))
-                   .Where(predicate: mi => mi != null && mi.DeclaringType == typeof(PawnRenderer) && !mi.IsGenericMethod))
-                {
-                    IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
-                    if (instructions.Any(predicate: il => il.Value?.Equals(postureInfo) ?? false))
-                        harmony.Patch(mi, transpiler: new HarmonyMethod(patchType, nameof(PostureTranspiler)));
-                }
-            }
-
-            Log.Message($"Alien race successfully completed {harmony.harmony.GetPatchedMethods().Select(Harmony.GetPatchInfo).SelectMany(selector: p => p.Prefixes.Concat(p.Postfixes).Concat(p.Transpilers)).Count(predicate: p => p.owner == harmony.harmony.Id)} patches with harmony.");
             HairDefOf.Bald.styleTags.Add(item: "alienNoStyle");
             BeardDefOf.NoBeard.styleTags.Add(item: "alienNoStyle");
             TattooDefOf.NoTattoo_Body.styleTags.Add(item: "alienNoStyle");
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
-
-            AlienRaceMod.settings.UpdateSettings();
         }
 
         public static bool StatPartAgeMultiplierPrefix(ref float __result, StatPart_Age __instance, Pawn pawn)
@@ -2987,7 +3010,7 @@ namespace AlienRace
             {
                 CodeInstruction instruction = instructionList[index];
                 if (instruction.Calls(getNameInfo))
-                {
+            {
                     yield return new CodeInstruction(OpCodes.Dup);
                     yield return new CodeInstruction(OpCodes.Stloc, pawnLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn),     nameof(Pawn.def)));

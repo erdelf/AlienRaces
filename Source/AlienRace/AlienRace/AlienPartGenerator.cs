@@ -395,7 +395,7 @@
             if ((graphicsLoader as DefaultGraphicsLoader)?.foundSeverityGraphics ?? false)
                 racesWithSeverity?.Add(this.alienProps);
 
-            this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
+             this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
             foreach (OffsetNamed offsetDefault in this.offsetDefaults)
                 this.offsetDefaultsDictionary.Add(offsetDefault.name, offsetDefault);
 
@@ -666,6 +666,12 @@
                     ChannelColorGenerator_PawnBased pb => pb.NewRandomizedColor(this.Pawn),
                     _ => gen.NewRandomizedColor()
                 };
+
+            public override void Notify_DefsHotReloaded()
+            {
+                AlienPartGenerator apg = ((ThingDef_AlienRace)this.parent.def).alienRace.generalSettings.alienPartGenerator;
+                if (!apg.alienProps.alienRace.graphicPaths.head.GetSubGraphics().Any()) HarmonyPatches.RebuildLists(hotReload: true); // Peek to see if we have already rebuilt things, if so we skip, if not then rebuild everything.
+            }
 
             public override void PostSpawnSetup(bool respawningAfterLoad)
             {
