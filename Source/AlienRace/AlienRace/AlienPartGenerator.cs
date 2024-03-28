@@ -98,55 +98,55 @@
             this.offsetDefaults =
             [
                 new OffsetNamed
-                                    {
-                                        name    = "Center",
-                                        offsets = new DirectionalOffset()
+                                        {
+                                            name    = "Center",
+                                            offsets = new DirectionalOffset()
                                         },
                 new OffsetNamed
-                                    {
-                                        name = "Tail",
-                                        offsets = new DirectionalOffset
-                                                  {
-                                                      south = new RotationOffset
-                                                              {
-                                                                  offset = new Vector2(0.42f, -0.22f)
-                                                              },
-                                                      north = new RotationOffset
-                                                              {
-                                                                  offset = new Vector2(0f, -0.55f)
-                                                              },
-                                                      east = new RotationOffset
-                                                             {
-                                                                 offset = new Vector2(0.42f, -0.22f)
-                                                             },
-                                                      west = new RotationOffset
-                                                             {
-                                                                 offset = new Vector2(0.42f, -0.22f)
-                                                             }
-                                                  }
+                                        {
+                                            name = "Tail",
+                                            offsets = new DirectionalOffset
+                                                      {
+                                                          south = new RotationOffset
+                                                                  {
+                                                                      offset = new Vector2(0.42f, -0.22f)
+                                                                  },
+                                                          north = new RotationOffset
+                                                                  {
+                                                                      offset = new Vector2(0f, -0.55f)
+                                                                  },
+                                                          east = new RotationOffset
+                                                                 {
+                                                                     offset = new Vector2(0.42f, -0.22f)
+                                                                 },
+                                                          west = new RotationOffset
+                                                                 {
+                                                                     offset = new Vector2(0.42f, -0.22f)
+                                                                 }
+                                                      }
                                         },
                 new OffsetNamed
-                                    {
-                                        name = "Head",
-                                        offsets = new DirectionalOffset
-                                                  {
-                                                      south = new RotationOffset
-                                                              {
-                                                                  offset = new Vector2(0, 0.5f)
-                                                              },
-                                                      north = new RotationOffset
-                                                              {
-                                                                  offset = new Vector2(0f, 0.35f)
-                                                              },
-                                                      east = new RotationOffset
-                                                             {
-                                                                 offset = new Vector2(-0.07f, 0.5f)
-                                                             },
-                                                      west = new RotationOffset
-                                                             {
-                                                                 offset = new Vector2(-0.07f, 0.5f)
-                                                             }
-                                                  }
+                                        {
+                                            name = "Head",
+                                            offsets = new DirectionalOffset
+                                                      {
+                                                          south = new RotationOffset
+                                                                  {
+                                                                      offset = new Vector2(0, 0.5f)
+                                                                  },
+                                                          north = new RotationOffset
+                                                                  {
+                                                                      offset = new Vector2(0f, 0.35f)
+                                                                  },
+                                                          east = new RotationOffset
+                                                                 {
+                                                                     offset = new Vector2(-0.07f, 0.5f)
+                                                                 },
+                                                          west = new RotationOffset
+                                                                 {
+                                                                     offset = new Vector2(-0.07f, 0.5f)
+                                                                 }
+                                                      }
                                         },
             ];
         }
@@ -398,7 +398,7 @@
             if ((graphicsLoader as DefaultGraphicsLoader)?.foundSeverityGraphics ?? false)
                 racesWithSeverity?.Add(this.alienProps);
 
-            this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
+             this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
             foreach (OffsetNamed offsetDefault in this.offsetDefaults)
                 this.offsetDefaultsDictionary.Add(offsetDefault.name, offsetDefault);
 
@@ -669,6 +669,12 @@
                     ChannelColorGenerator_PawnBased pb => pb.NewRandomizedColor(this.Pawn),
                     _ => gen.NewRandomizedColor()
                 };
+
+            public override void Notify_DefsHotReloaded()
+            {
+                AlienPartGenerator apg = ((ThingDef_AlienRace)this.parent.def).alienRace.generalSettings.alienPartGenerator;
+                if (!apg.alienProps.alienRace.graphicPaths.head.GetSubGraphics().Any()) HarmonyPatches.RebuildLists(hotReload: true); // Peek to see if we have already rebuilt things, if so we skip, if not then rebuild everything.
+            }
 
             public override void PostSpawnSetup(bool respawningAfterLoad)
             {
