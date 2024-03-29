@@ -3405,7 +3405,7 @@ namespace AlienRace
 
 
                 foreach (AlienChanceEntry<TraitWithDegree> ate in alienTraits)
-                        foreach (TraitWithDegree trait in ate.Select(pawn, int.MinValue))
+                        foreach (TraitWithDegree trait in ate.Select(pawn))
                             if (!pawn.story.traits.HasTrait(trait.def)) 
                                 pawn.story.traits.GainTrait(new Trait(trait.def, trait.degree, forced: true));
 
