@@ -322,7 +322,7 @@
         public bool Approved(Pawn pawn) =>
             this.Approved(pawn.gender);
 
-        public IEnumerable<T> Select(Pawn pawn, int wantedDegree = 0)
+        public IEnumerable<T> Select(Pawn pawn)
         {
             if (pawn != null)
             {
@@ -347,7 +347,7 @@
             int limit = Math.Min(this.shuffledOptions.Count, this.count);
             for (int i = 0; i < limit; i ++)
             {
-                foreach (T entryInner in this.shuffledOptions[i].Select(pawn, wantedDegree))
+                foreach (T entryInner in this.shuffledOptions[i].Select(pawn))
                     yield return entryInner;
             }
         }
@@ -358,19 +358,15 @@
             if (xmlRoot.ChildNodes.Count == 1 && xmlRoot.FirstChild.NodeType == XmlNodeType.Text)
             {
                 if(typeof(T).IsSubclassOf(typeof(Def)))
-                    DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, "defName", xmlRoot.FirstChild.Value);
+                    DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.entry), xmlRoot.FirstChild.Value);
                 else
                     Utilities.SetFieldFromXmlNode(Traverse.Create(this), xmlRoot, this, nameof(this.entry));
             }
             else
             {
                 Traverse traverse = Traverse.Create(this);
-                foreach (XmlNode xmlNode in xmlRoot.ChildNodes)
-
-                    if (xmlNode.Name == nameof(this.entry) && typeof(T).IsSubclassOf(typeof(Def)))
-                        DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.entry), xmlNode.FirstChild.Value);
-                    else
-                        Utilities.SetFieldFromXmlNode(traverse, xmlNode, this, xmlNode.Name);
+                foreach (XmlNode xmlNode in xmlRoot.ChildNodes) 
+                    Utilities.SetFieldFromXmlNode(traverse, xmlNode, this, xmlNode.Name == "defName" ? nameof(this.entry) : xmlNode.Name);
             }
         }
     }
@@ -383,9 +379,11 @@
         [UsedImplicitly]
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
-            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.def), xmlRoot.FirstChild.Value);
+            DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.def), xmlRoot?.FirstChild?.Value ?? xmlRoot?.Value ?? xmlRoot?.InnerText);
             int.TryParse(xmlRoot.Attributes?["Degree"]?.Value, out this.degree);
         }
+
+        public override string ToString() => $"{nameof(TraitWithDegree)}: {this.def?.defName} | {this.degree}";
     }
 
     public class GraphicPaths
@@ -718,7 +716,7 @@
                 disallowedTraits.AddRange(alienProps.generalSettings.disallowedTraits);
 
             if (!disallowedTraits.NullOrEmpty())
-                result &= disallowedTraits.All(ace => ace.Select(null, int.MinValue).All(traitEntry => traitEntry.def != trait || degree != traitEntry.degree));
+                result &= disallowedTraits.All(ace => ace.Select(null).All(traitEntry => traitEntry.def != trait || degree != traitEntry.degree));
             
 
             return result && !(raceRestriction?.blackTraitList.Contains(trait) ?? false);
