@@ -63,7 +63,8 @@ public class ExtendedGraphicsPawnWrapper
     public virtual IEnumerable<ApparelProperties> GetWornApparel() =>
         this.WrappedPawn.apparel?.WornApparel?.Select(ap => ap.def.apparel) ?? Enumerable.Empty<ApparelProperties>();
 
-    public virtual bool VisibleInBed() => this.WrappedPawn.CurrentBed()?.def?.building?.bed_showSleeperBody ?? true;
+    public virtual bool VisibleInBed() => 
+        this.WrappedPawn.CurrentBed()?.def?.building?.bed_showSleeperBody ?? true;
 
     public virtual bool HasBackstory(BackstoryDef backstory) =>
         this.WrappedPawn.story?.AllBackstories?.Contains(backstory) ?? false;
