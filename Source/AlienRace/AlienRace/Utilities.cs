@@ -331,5 +331,7 @@
 
         public static readonly AccessTools.FieldRef<Dictionary<Type, Func<XmlNode, object>>> listFromXmlMethods = 
             AccessTools.StaticFieldRefAccess<Dictionary<Type, Func<XmlNode, object>>>(AccessTools.Field(typeof(DirectXmlToObject), "listFromXmlMethods"));
+
+        public static readonly AccessTools.FieldRef<PawnRenderTree, PawnDrawParms> oldDrawParms = AccessTools.FieldRefAccess<PawnDrawParms>(typeof(PawnRenderTree), "oldParms");
     }
 }
