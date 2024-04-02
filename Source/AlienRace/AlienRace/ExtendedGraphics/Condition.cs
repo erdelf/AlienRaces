@@ -126,12 +126,15 @@ public class ConditionApparel : Condition
     public List<BodyPartGroupDef> hiddenUnderApparelFor = [];
     public List<string>           hiddenUnderApparelTag = [];
 
-    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) =>
-        !pawn.HasApparelGraphics()                                                             ||
-        (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
-        !pawn.GetWornApparel().Any(ap =>
-                                       ap.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||
-                                       ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data)
+    {
+        return pawn.HasApparelGraphics()                                                              ||
+               !pawn.VisibleInBed()                                                                   ||
+               (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
+               !pawn.GetWornApparel().Any(ap =>
+                                              ap.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||
+                                              ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
+    }
 
     public override void LoadDataFromXmlCustom(XmlNode xmlRoot) =>
         Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
