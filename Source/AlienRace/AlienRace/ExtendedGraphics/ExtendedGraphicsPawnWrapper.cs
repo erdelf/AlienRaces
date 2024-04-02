@@ -19,8 +19,12 @@ public class ExtendedGraphicsPawnWrapper
     {
     }
 
+    public virtual PawnDrawParms DrawParms => 
+        CachedData.oldDrawParms(this.WrappedPawn.Drawer.renderer.renderTree);
+
     public virtual bool HasApparelGraphics() =>
-        !this.WrappedPawn.apparel.WornApparel.Any(ap => ap.def.apparel.HasDefinedGraphicProperties);
+        this.WrappedPawn.apparel.WornApparel.Any(ap => ap.def.apparel.HasDefinedGraphicProperties) &&
+        PawnRenderNodeWorker_Apparel_Head.HeadgearVisible(DrawParms);
 
     //backstory isApplicable
     public virtual bool HasBackStory(BackstoryDef backstory) =>
