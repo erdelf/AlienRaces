@@ -23,8 +23,7 @@ public class ExtendedGraphicsPawnWrapper
         CachedData.oldDrawParms(this.WrappedPawn.Drawer.renderer.renderTree);
 
     public virtual bool HasApparelGraphics() =>
-        this.WrappedPawn.apparel.WornApparel.Any(ap => ap.def.apparel.HasDefinedGraphicProperties) &&
-        PawnRenderNodeWorker_Apparel_Head.HeadgearVisible(DrawParms);
+        this.WrappedPawn.apparel.WornApparel.Any(ap => ap.def.apparel.HasDefinedGraphicProperties);
 
     //backstory isApplicable
     public virtual bool HasBackStory(BackstoryDef backstory) =>
@@ -67,8 +66,8 @@ public class ExtendedGraphicsPawnWrapper
     public virtual IEnumerable<ApparelProperties> GetWornApparel() =>
         this.WrappedPawn.apparel?.WornApparel?.Select(ap => ap.def.apparel) ?? Enumerable.Empty<ApparelProperties>();
 
-    public virtual bool VisibleInBed() => 
-        this.WrappedPawn.CurrentBed()?.def?.building?.bed_showSleeperBody ?? true;
+    public virtual bool VisibleInBed(bool noBed = true) => 
+        this.WrappedPawn.CurrentBed()?.def?.building?.bed_showSleeperBody ?? noBed;
 
     public virtual bool HasBackstory(BackstoryDef backstory) =>
         this.WrappedPawn.story?.AllBackstories?.Contains(backstory) ?? false;
