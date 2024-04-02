@@ -92,38 +92,31 @@ public class ConditionDrafted : Condition
 
 public class ConditionJob : Condition
 {
-    public new const string XmlNameParseKey = "JobConfig";
+    public new const string XmlNameParseKey = "Job";
 
-    public BodyAddonJobConfig jobs = new();
+    public JobDef job;
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) =>
-        pawn.CurJob == null ?
-            this.jobs.drawNoJob :
-            !this.jobs.JobMap.TryGetValue(pawn.CurJob.def, out BodyAddonJobConfig.BodyAddonJobConfigJob jobConfig) || jobConfig.IsApplicable(pawn);
+        pawn.CurJob?.def == this.job;
 
-    public class BodyAddonJobConfig
+    public override void LoadDataFromXmlCustom(XmlNode xmlRoot)
     {
-        public bool drawNoJob = true;
-
-        public List<BodyAddonJobConfigJob> jobs = new();
-
-        private Dictionary<JobDef, BodyAddonJobConfigJob> jobMap;
-
-        public Dictionary<JobDef, BodyAddonJobConfigJob> JobMap => this.jobMap ??= this.jobs.ToDictionary(bajcj => bajcj.job);
-
-        public class BodyAddonJobConfigJob
-        {
-            public JobDef                        job;
-            public Dictionary<PawnPosture, bool> drawPostures;
-            public bool                          drawMoving   = true;
-            public bool                          drawUnmoving = true;
-
-            public bool IsApplicable(ExtendedGraphicsPawnWrapper pawn) =>
-                (!this.drawPostures.TryGetValue(pawn.GetPosture(), out bool postureDraw) || postureDraw) &&
-                (this.drawMoving   && pawn.Moving ||
-                 this.drawUnmoving && !pawn.Moving);
-        }
+        string value = xmlRoot.FirstChild.Value;
+        if (value.Trim() == "None")
+            this.job = null;
+        else
+            base.LoadDataFromXmlCustom(xmlRoot);
     }
+}
+
+public class ConditionMoving : Condition
+{
+    public new const string XmlNameParseKey = "Moving";
+
+    public bool moving;
+
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) => 
+        this.moving == pawn.Moving;
 }
 
 public class ConditionApparel : Condition
@@ -148,12 +141,14 @@ public class ConditionPosture : Condition
 {
     public new const string XmlNameParseKey = "Posture";
 
-    private bool drawnOnGround = true;
-    private bool drawnInBed = true;
+    private bool drawnStanding = false;
+    private bool drawnLaying   = false;
+    private bool drawnInBed    = false;
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) =>
-        (pawn.GetPosture() == PawnPosture.Standing || this.drawnOnGround) &&
-        (pawn.VisibleInBed()                       || this.drawnInBed);
+        (pawn.GetPosture() == PawnPosture.Standing && this.drawnStanding) ||
+        ((pawn.GetPosture() != PawnPosture.Standing && this.drawnLaying) &&
+         (!pawn.GetPosture().InBed() || this.drawnInBed));
 
     public override void LoadDataFromXmlCustom(XmlNode xmlRoot) =>
         Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
