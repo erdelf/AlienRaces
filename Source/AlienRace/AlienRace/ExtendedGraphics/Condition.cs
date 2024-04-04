@@ -128,9 +128,10 @@ public class ConditionApparel : Condition
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data)
     {
-        return pawn.HasApparelGraphics()                                                              ||
-               !pawn.VisibleInBed()                                                                   ||
-               (this.hiddenUnderApparelTag.NullOrEmpty() && this.hiddenUnderApparelFor.NullOrEmpty()) ||
+        return pawn.HasApparelGraphics()                                                                          ||
+               (!AlienRenderTreePatches.IsPortrait(pawn.WrappedPawn) && !pawn.VisibleInBed())                     ||
+               (AlienRenderTreePatches.IsPortrait(pawn.WrappedPawn)  && Prefs.HatsOnlyOnMap)                     ||
+               (this.hiddenUnderApparelTag.NullOrEmpty()             && this.hiddenUnderApparelFor.NullOrEmpty()) ||
                !pawn.GetWornApparel().Any(ap =>
                                               ap.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||
                                               ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
