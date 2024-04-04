@@ -528,18 +528,18 @@ namespace AlienRace
 
         public static GraphicMeshSet RenderNodeGetMeshHelper(GraphicMeshSet meshSet, PawnRenderNode node, PawnDrawParms parms)
         {
-            if (!parms.Portrait)
-                return meshSet;
+            portraitRender = new Pair<WeakReference, bool>(new WeakReference(parms.pawn), parms.Portrait);
 
-            portraitRender = new Pair<WeakReference, bool>(new WeakReference(parms.pawn), true);
-            return node.MeshSetFor(parms.pawn);
+            return !parms.Portrait ? meshSet : node.MeshSetFor(parms.pawn);
         }
 
         public static Pair<WeakReference, bool> portraitRender = new(new WeakReference(new Pawn()), false);
-        
+        public static bool                      IsPortrait(Pawn pawn) => portraitRender.First?.Target as Pawn == pawn && portraitRender.Second;
+
+
         public static void GetHumanlikeHeadSetForPawnPrefix(Pawn pawn, ref float wFactor, ref float hFactor)
         {
-            Vector2 drawSize = (portraitRender.First?.Target as Pawn == pawn && portraitRender.Second ?
+            Vector2 drawSize = (IsPortrait(pawn) ?
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitHeadDrawSize :
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customHeadDrawSize) ?? Vector2.one;
 
@@ -549,7 +549,7 @@ namespace AlienRace
 
         public static void GetHumanlikeBodySetForPawnPrefix(Pawn pawn, ref float wFactor, ref float hFactor)
         {
-            Vector2 drawSize = (portraitRender.First?.Target as Pawn == pawn && portraitRender.Second ?
+            Vector2 drawSize = (IsPortrait(pawn) ?
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customPortraitDrawSize :
                                     pawn!.GetComp<AlienPartGenerator.AlienComp>()?.customDrawSize) ?? Vector2.one;
 
