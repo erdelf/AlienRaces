@@ -161,9 +161,10 @@ public class ConditionApparelDef : Condition
     public new const string XmlNameParseKey = "ApparelDef";
 
     public ThingDef apparel;
+    public ThingDef stuff;
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) =>
-        pawn.GetWornApparel.Any(ap => ap.def == this.apparel);
+        pawn.GetWornApparel.Any(ap => ap.def == this.apparel && (this.stuff == null || ap.Stuff == this.stuff));
 }
 
 public class ConditionPosture : Condition
