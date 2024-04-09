@@ -390,6 +390,18 @@ namespace AlienRace
                     ar.alienRace.raceRestriction.whiteGeneList.Add(geneDef);
                 }
 
+                foreach (GeneDef geneDef in ar.alienRace.raceRestriction.geneListEndo)
+                {
+                    RaceRestrictionSettings.geneRestrictedEndo.Add(geneDef);
+                    ar.alienRace.raceRestriction.whiteGeneListEndo.Add(geneDef);
+                }
+
+                foreach (GeneDef geneDef in ar.alienRace.raceRestriction.geneListXeno)
+                {
+                    RaceRestrictionSettings.geneRestrictedXeno.Add(geneDef);
+                    ar.alienRace.raceRestriction.whiteGeneListXeno.Add(geneDef);
+                }
+
                 foreach (XenotypeDef xenotypeDef in ar.alienRace.raceRestriction.xenotypeList)
                 {
                     RaceRestrictionSettings.xenotypeRestricted.Add(xenotypeDef);
@@ -945,9 +957,9 @@ namespace AlienRace
             return true;
         }
 
-        public static bool AddGenePrefix(Gene gene, Pawn ___pawn, ref Gene __result)
+        public static bool AddGenePrefix(Gene gene, Pawn ___pawn, ref Gene __result, bool addAsXenogene)
         {
-            if (!RaceRestrictionSettings.CanHaveGene(gene.def, ___pawn.def))
+            if (!RaceRestrictionSettings.CanHaveGene(gene.def, ___pawn.def, addAsXenogene))
             {
                 __result = null;
                 return false;
