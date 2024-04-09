@@ -178,7 +178,7 @@ public class ConditionPosture : Condition
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) =>
         (pawn.GetPosture() == PawnPosture.Standing && this.drawnStanding) ||
         ((pawn.GetPosture() != PawnPosture.Standing && this.drawnLaying) &&
-         (!pawn.GetPosture().InBed() || this.drawnInBed));
+         (pawn.VisibleInBed() || this.drawnInBed));
 
     public override void LoadDataFromXmlCustom(XmlNode xmlRoot) =>
         Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
