@@ -29,9 +29,14 @@
             XmlDocument xmlDoc = new();
             xmlDoc.LoadXml($"<extendedGraphics><li Class=\"{typeof(AlienPartGenerator.ExtendedGraphicTop).FullName}\"><path>here</path></li></extendedGraphics>");
             DirectXmlToObject.ObjectFromXml<List<AbstractExtendedGraphic>>(xmlDoc.DocumentElement, false);
-
             Func<XmlNode, object> originalFunc = CachedData.listFromXmlMethods()[typeof(List<AbstractExtendedGraphic>)];
             CachedData.listFromXmlMethods()[typeof(List<AbstractExtendedGraphic>)] = node => originalFunc(AbstractExtendedGraphic.CustomListLoader(node));
+
+            xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml($"<conditions></conditions>");
+            DirectXmlToObject.ObjectFromXml<List<Condition>>(xmlDoc.DocumentElement, false);
+            Func<XmlNode, object> originalFunc2 = CachedData.listFromXmlMethods()[typeof(List<Condition>)];
+            CachedData.listFromXmlMethods()[typeof(List<Condition>)] = node => originalFunc2(Condition.CustomListLoader(node));
         }
 
         public override void DoSettingsWindowContents(Rect inRect)

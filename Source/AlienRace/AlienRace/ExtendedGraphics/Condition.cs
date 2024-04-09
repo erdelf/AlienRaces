@@ -44,6 +44,21 @@ public abstract class Condition
             Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
         }
     }
+
+    public static XmlNode CustomListLoader(XmlNode xmlNode)
+    {
+        foreach (XmlNode node in xmlNode.ChildNodes)
+        {
+            if (Condition.XmlNameParseKeys.TryGetValue(node.Name, out string classTag))
+            {
+                XmlAttribute attribute = xmlNode.OwnerDocument!.CreateAttribute("Class");
+                attribute.Value = classTag;
+                node.Attributes!.SetNamedItem(attribute);
+            }
+        }
+
+        return xmlNode;
+    }
 }
 
 public class ConditionRotStage : Condition
@@ -314,4 +329,45 @@ public class ConditionCreepJoinerFormKind : Condition
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) =>
         pawn.IsCreepJoiner(this.form);
+}
+
+public abstract class ConditionLogic : Condition
+{
+    public List<Condition> conditions = [];
+
+    public override bool Static => this.conditions.TrueForAll(cd => cd.Static);
+
+    public override void LoadDataFromXmlCustom(XmlNode xmlRoot)
+    {
+        this.conditions = DirectXmlToObject.ObjectFromXml<List<Condition>>(xmlRoot, true);
+    }
+}
+
+public class ConditionLogicOr : ConditionLogic
+{
+    public new const string XmlNameParseKey = "Or";
+
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data)
+    {
+        ResolveData tmpData = data;
+        bool        logic   = this.conditions.Any(cd => cd.Satisfied(pawn, ref tmpData));
+        data = tmpData;
+
+        Log.Message($"{this.conditions.Count}: {logic}");
+
+        return logic;
+    }
+}
+
+public class ConditionLogicAnd : ConditionLogic
+{
+    public new const string XmlNameParseKey = "And";
+
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data)
+    {
+        ResolveData tmpData = data;
+        bool        logic   = this.conditions.TrueForAll(cd => cd.Satisfied(pawn, ref tmpData));
+        data = tmpData;
+        return logic;
+    }
 }
