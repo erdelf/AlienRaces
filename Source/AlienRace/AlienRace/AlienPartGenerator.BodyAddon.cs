@@ -101,9 +101,9 @@ namespace AlienRace
                 
                 savedIndex ??= this.linkVariantIndexWithPrevious ? sharedIndex % this.VariantCountMax : Rand.Range(0, this.VariantCountMax);
 
-                sharedIndex = savedIndex.Value % variantCounting;
+                sharedIndex = savedIndex.Value;
 
-                int    actualIndex = sharedIndex;
+                int    actualIndex = sharedIndex % variantCounting;
                 string returnPath  = bestGraphic.GetPathFromVariant(ref actualIndex, out bool zero) ?? string.Empty;
 
                 return returnPath + pathAppendix + (zero ? "" : actualIndex.ToString());
