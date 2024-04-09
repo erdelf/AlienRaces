@@ -766,17 +766,36 @@
         public List<WorkGiverDef> workGiverList = new();
 
         public bool          onlyHaveRaceRestrictedGenes = false;
-        public List<GeneDef> geneList                    = new();
-        public List<GeneDef> whiteGeneList               = new();
-        public List<string>  whiteGeneTags               = new();
-        public List<GeneDef> blackGeneList               = new();
-        public List<string>  blackGeneTags               = new();
+        public List<GeneDef> geneList                    = [];
+        public List<GeneDef> whiteGeneList               = [];
+        public List<string>  whiteGeneTags               = [];
+        public List<GeneDef> blackGeneList               = [];
+        public List<string>  blackGeneTags               = [];
+        public List<EndogeneCategory> blackEndoCategories = [];
 
-        public List<EndogeneCategory> blackEndoCategories = new();
+        public static HashSet<GeneDef> geneRestricted = [];
 
-        public static HashSet<GeneDef> geneRestricted = new();
+        public bool                   onlyHaveRaceRestrictedGenesXeno = false;
+        public List<GeneDef>          geneListXeno                    = [];
+        public List<GeneDef>          whiteGeneListXeno               = [];
+        public List<string>           whiteGeneTagsXeno               = [];
+        public List<GeneDef>          blackGeneListXeno               = [];
+        public List<string>           blackGeneTagsXeno               = [];
+        public List<EndogeneCategory> blackEndoCategoriesXeno         = [];
 
-        public static bool CanHaveGene(GeneDef gene, ThingDef race)
+        public static HashSet<GeneDef> geneRestrictedXeno = [];
+
+        public bool onlyHaveRaceRestrictedGenesEndo = false;
+        public List<GeneDef> geneListEndo = [];
+        public List<GeneDef> whiteGeneListEndo = [];
+        public List<string> whiteGeneTagsEndo = [];
+        public List<GeneDef> blackGeneListEndo = [];
+        public List<string> blackGeneTagsEndo = [];
+        public List<EndogeneCategory> blackEndoCategoriesEndo = [];
+
+        public static HashSet<GeneDef> geneRestrictedEndo = [];
+
+        public static bool CanHaveGene(GeneDef gene, ThingDef race, bool xeno)
         {
             RaceRestrictionSettings raceRestriction = (race as ThingDef_AlienRace)?.alienRace.raceRestriction;
             bool                    result          = true;
@@ -785,10 +804,33 @@
                 result = (raceRestriction?.whiteGeneList.Contains(gene)                                           ?? false) ||
                          (gene.exclusionTags?.Any(t => raceRestriction?.whiteGeneTags.Any(t.StartsWith) ?? false) ?? false);
 
-            return result                                                                                        &&
-                   !(raceRestriction?.blackGeneList.Contains(gene)                                     ?? false) &&
+            if (xeno)
+            {
+                if (geneRestrictedXeno.Contains(gene) || (raceRestriction?.onlyHaveRaceRestrictedGenesXeno ?? false))
+                    result &= (raceRestriction?.whiteGeneListXeno.Contains(gene)                                           ?? false) ||
+                              (gene.exclusionTags?.Any(t => raceRestriction?.whiteGeneTagsXeno.Any(t.StartsWith) ?? false) ?? false);
+
+                result &= !(raceRestriction?.blackGeneListXeno.Contains(gene)                                           ?? false) &&
+                          !(gene.exclusionTags?.Any(t => raceRestriction?.blackGeneTagsXeno.Any(t.StartsWith) ?? false) ?? false) &&
+                          !(raceRestriction?.blackEndoCategoriesXeno.Contains(gene.endogeneCategory)                    ?? false);
+
+            }
+            else
+            {
+                if (geneRestrictedEndo.Contains(gene) || (raceRestriction?.onlyHaveRaceRestrictedGenesEndo ?? false))
+                    result &= (raceRestriction?.whiteGeneListEndo.Contains(gene)                                           ?? false) ||
+                              (gene.exclusionTags?.Any(t => raceRestriction?.whiteGeneTagsEndo.Any(t.StartsWith) ?? false) ?? false);
+
+                result &= !(raceRestriction?.blackGeneListEndo.Contains(gene)                                           ?? false) &&
+                          !(gene.exclusionTags?.Any(t => raceRestriction?.blackGeneTagsEndo.Any(t.StartsWith) ?? false) ?? false) &&
+                          !(raceRestriction?.blackEndoCategoriesEndo.Contains(gene.endogeneCategory)                    ?? false);
+            }
+
+
+            return result                                                                                              &&
+                   !(raceRestriction?.blackGeneList.Contains(gene)                                           ?? false) &&
                    !(gene.exclusionTags?.Any(t => raceRestriction?.blackGeneTags.Any(t.StartsWith) ?? false) ?? false) &&
-                   !(raceRestriction?.blackEndoCategories.Contains(gene.endogeneCategory)              ?? false);
+                   !(raceRestriction?.blackEndoCategories.Contains(gene.endogeneCategory)                    ?? false);
         }
 
         public bool              onlyUseRaceRestrictedXenotypes = false;
