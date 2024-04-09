@@ -132,13 +132,23 @@ public class ConditionApparel : Condition
                (!AlienRenderTreePatches.IsPortrait(pawn.WrappedPawn) && !pawn.VisibleInBed())                     ||
                (AlienRenderTreePatches.IsPortrait(pawn.WrappedPawn)  && Prefs.HatsOnlyOnMap)                     ||
                (this.hiddenUnderApparelTag.NullOrEmpty()             && this.hiddenUnderApparelFor.NullOrEmpty()) ||
-               !pawn.GetWornApparel().Any(ap =>
+               !pawn.GetWornApparelProps().Any(ap =>
                                               ap.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||
                                               ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
     }
 
     public override void LoadDataFromXmlCustom(XmlNode xmlRoot) =>
         Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
+}
+
+public class ConditionApparelDef : Condition
+{
+    public new const string XmlNameParseKey = "ApparelDef";
+
+    public ThingDef apparel;
+
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) =>
+        pawn.GetWornApparel.Any(ap => ap.def == this.apparel);
 }
 
 public class ConditionPosture : Condition
