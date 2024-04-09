@@ -11,6 +11,7 @@ namespace AlienRace
     using JetBrains.Annotations;
     using UnityEngine;
     using Verse;
+    using static HarmonyLib.Code;
 
     public static class AlienRenderTreePatches
     {
@@ -603,6 +604,13 @@ namespace AlienRace
         {
             AlienPartGenerator.BodyAddon addonFromNode = AddonFromNode(node);
             return addonFromNode.CanDrawAddon(parms.pawn) && (addonFromNode.useSkipFlags.NullOrEmpty() || !addonFromNode.useSkipFlags.Any(rsfd => parms.skipFlags.HasFlag(rsfd)));
+        }
+
+        protected override Material GetMaterial(PawnRenderNode node, PawnDrawParms parms)
+        {
+            if (parms.flipHead && AddonFromNode(node).alignWithHead)
+                parms.facing = parms.facing.Opposite;
+            return base.GetMaterial(node, parms);
         }
 
         public override Vector3 OffsetFor(PawnRenderNode node, PawnDrawParms parms, out Vector3 pivot)
