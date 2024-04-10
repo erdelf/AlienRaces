@@ -303,11 +303,10 @@ public class ConditionRace : Condition
 
     public override bool     Static => true;
 
-    public List<ThingDef> raceRequirement;
-    public List<ThingDef> raceBlacklist;
+    public ThingDef race;
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) =>
-        (this.raceRequirement.NullOrEmpty() || this.raceRequirement.Any(pawn.IsRace)) && (this.raceBlacklist.NullOrEmpty() || !this.raceBlacklist.Any(pawn.IsRace));
+        pawn.IsRace(this.race);
 }
 
 public class ConditionMutant : Condition
