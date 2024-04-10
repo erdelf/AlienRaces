@@ -588,8 +588,13 @@ namespace AlienRace
         public override GraphicMeshSet MeshSetFor(Pawn pawn) => 
             MeshPool.GetMeshSetForSize(Vector2.one);
 
-        public override Mesh GetMesh(PawnDrawParms parms) => 
-            this.props.graphic.MeshAt(parms.facing);
+        public override Mesh GetMesh(PawnDrawParms parms)
+        {
+            if (parms.flipHead && this.props.addon.alignWithHead)
+                parms.facing = parms.facing.Opposite;
+
+            return this.props.graphic.MeshAt(parms.facing);
+        }
     }
 
     public class AlienPawnRenderNodeWorker_BodyAddon : PawnRenderNodeWorker
@@ -615,6 +620,9 @@ namespace AlienRace
 
         public override Vector3 OffsetFor(PawnRenderNode node, PawnDrawParms parms, out Vector3 pivot)
         {
+            if (parms.flipHead && AddonFromNode(node).alignWithHead)
+                parms.facing = parms.facing.Opposite;
+
             AlienPawnRenderNodeProperties_BodyAddon props = PropsFromNode(node);
             AlienPartGenerator.BodyAddon            ba    = props.addon;
 
