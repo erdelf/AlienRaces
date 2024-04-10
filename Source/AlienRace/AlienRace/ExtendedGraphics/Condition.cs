@@ -331,7 +331,7 @@ public class ConditionCreepJoinerFormKind : Condition
         pawn.IsCreepJoiner(this.form);
 }
 
-public abstract class ConditionLogic : Condition
+public abstract class ConditionLogicCollection : Condition
 {
     public List<Condition> conditions = [];
 
@@ -343,7 +343,7 @@ public abstract class ConditionLogic : Condition
     }
 }
 
-public class ConditionLogicOr : ConditionLogic
+public class ConditionLogicCollectionOr : ConditionLogicCollection
 {
     public new const string XmlNameParseKey = "Or";
 
@@ -359,7 +359,7 @@ public class ConditionLogicOr : ConditionLogic
     }
 }
 
-public class ConditionLogicAnd : ConditionLogic
+public class ConditionLogicCollectionAnd : ConditionLogicCollection
 {
     public new const string XmlNameParseKey = "And";
 
@@ -370,4 +370,25 @@ public class ConditionLogicAnd : ConditionLogic
         data = tmpData;
         return logic;
     }
+}
+
+public abstract class ConditionLogicSingle : Condition
+{
+    public Condition condition;
+
+    public override bool Static => this.condition.Static;
+
+    public override void LoadDataFromXmlCustom(XmlNode xmlRoot)
+    {
+        Utilities.SetFieldFromXmlNode(Traverse.Create(this), Condition.CustomListLoader(xmlRoot).FirstChild, this, nameof(this.condition));
+    }
+}
+
+
+public class ConditionLogicNot : ConditionLogicSingle
+{
+    public new const string XmlNameParseKey = "Not";
+
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) => 
+        !this.condition.Satisfied(pawn, ref data);
 }
