@@ -115,7 +115,11 @@
             Traverse field = traverse.Field(fieldName);
 
             if (!field.FieldExists())
+            {
+                if(fieldName != "#text")
+                    Log.Error($"field {fieldName} for {wanter} doesn't exist\n{xmlNode.OuterXml}\n{xmlNode.ParentNode?.OuterXml}\n\n{xmlNode.ParentNode?.ParentNode?.OuterXml}");
                 return;
+            }
 
             Type valueType = field.GetValueType();
 
