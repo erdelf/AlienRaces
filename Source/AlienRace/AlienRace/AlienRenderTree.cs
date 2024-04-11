@@ -656,14 +656,15 @@ namespace AlienRace
             AlienPartGenerator.BodyAddon            ba    = props.addon;
             Vector2 scale = (parms.Portrait && ba.drawSizePortrait != Vector2.zero ? ba.drawSizePortrait : ba.drawSize) *
                             (ba.scaleWithPawnDrawsize ?
-                                 (ba.alignWithHead ?
-                                      parms.Portrait ?
+                                 ba.alignWithHead ?
+                                     (parms.Portrait ?
                                           props.alienComp.customPortraitHeadDrawSize :
-                                          props.alienComp.customHeadDrawSize :
-                                      parms.Portrait ?
+                                          props.alienComp.customHeadDrawSize) *
+                                     HumanlikeMeshPoolUtility.HumanlikeHeadWidthForPawn(parms.pawn) :
+                                     (parms.Portrait ?
                                           props.alienComp.customPortraitDrawSize :
-                                          props.alienComp.customDrawSize) *
-                                 (ModsConfig.BiotechActive ? parms.pawn.ageTracker.CurLifeStage.bodyWidth ?? 1.5f : 1.5f) :
+                                          props.alienComp.customDrawSize) * 
+                                     HumanlikeMeshPoolUtility.HumanlikeBodyWidthForPawn(parms.pawn):
                                  Vector2.one * 1.5f);
 
 
