@@ -351,9 +351,6 @@ public class ConditionLogicCollectionOr : ConditionLogicCollection
         ResolveData tmpData = data;
         bool        logic   = this.conditions.Any(cd => cd.Satisfied(pawn, ref tmpData));
         data = tmpData;
-
-        Log.Message($"{this.conditions.Count}: {logic}");
-
         return logic;
     }
 }

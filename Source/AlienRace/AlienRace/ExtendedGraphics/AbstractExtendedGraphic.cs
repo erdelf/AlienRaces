@@ -129,8 +129,8 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
             }
         }
 
-        if(this is AlienPartGenerator.BodyAddon)
-            Log.Message("BodyAddon: " + xmlRoot.OuterXml);
+        //if(this is AlienPartGenerator.BodyAddon)
+        //    Log.Message("BodyAddon: " + xmlRoot.OuterXml);
         this.SetInstanceVariablesFromChildNodesOf(xmlRoot);
     }
 

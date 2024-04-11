@@ -73,7 +73,7 @@ namespace AlienRace
 
             if (alien.def is ThingDef_AlienRace alienProps && alien.story != null)
             {
-                Log.Message($"Setup Graph: {alien.NameFullColored}");
+                //Log.Message($"Setup Graph: {alien.NameFullColored}");
 
                 RegenerateResolveData(alien);
                 AlienPartGenerator.AlienComp alienComp = pawnRenderResolveData.alienComp;
@@ -154,7 +154,7 @@ namespace AlienRace
         {
             if (pawn.def is not ThingDef_AlienRace)
                 return true;
-            Log.Message($"Body GraphicFor: {pawn.NameFullColored}");
+            //Log.Message($"Body GraphicFor: {pawn.NameFullColored}");
 
             PawnRenderResolveData pawnRenderData = RegenerateResolveData(pawn);
 
@@ -198,7 +198,7 @@ namespace AlienRace
             if (pawn.def is not ThingDef_AlienRace)
                 return true;
 
-            Log.Message($"Head GraphicFor: {pawn.NameFullColored}");
+            //Log.Message($"Head GraphicFor: {pawn.NameFullColored}");
 
             //if (pawnRenderResolveData.pawn != pawn) Log.Message($"PAWNS DON'T MATCH: {pawn.NameFullColored} vs {pawnRenderResolveData.pawn.NameFullColored}");
 
@@ -423,7 +423,7 @@ namespace AlienRace
         {
             if (__instance.pawn.RaceProps.Humanlike)
             {
-                Log.Message($"Setup Addons: {__instance.pawn.NameFullColored}");
+                //Log.Message($"Setup Addons: {__instance.pawn.NameFullColored}");
 
                 PawnRenderResolveData pawnRenderData = RegenerateResolveData(__instance.pawn);
 
