@@ -33,7 +33,6 @@ public abstract class Condition
     [UsedImplicitly]
     public virtual void LoadDataFromXmlCustom(XmlNode xmlRoot)
     {
-        //Log.Message("Condition: " + xmlRoot.OuterXml + "\n" + xmlRoot.ChildNodes.Count);
         if(xmlRoot.ChildNodes.Count == 1)
         {
             FieldInfo field = this.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public).First();
@@ -163,7 +162,7 @@ public class ConditionApparelDef : Condition
     public ThingDef apparel;
     public ThingDef stuff;
 
-    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) =>
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) => 
         pawn.GetWornApparel.Any(ap => ap.def == this.apparel && (this.stuff == null || ap.Stuff == this.stuff));
 }
 

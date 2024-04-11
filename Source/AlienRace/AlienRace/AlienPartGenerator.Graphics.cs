@@ -20,7 +20,7 @@ public partial class AlienPartGenerator
                 XmlDocument xmlDoc = new();
 
                 StringBuilder xmlRaw = new("<root>");
-                if (xmlRoot.Value == null)
+                if (xmlRoot.Value == null && xmlRoot.FirstChild.Name != nameof(this.path))
                     xmlRaw.Append($"<path>{xmlRoot.FirstChild.Value}</path>");
 
                 xmlRaw.Append($"<conditions><{xmlRoot.LocalName}>{xmlRoot.Attributes!["For"].Value}</{xmlRoot.LocalName}></conditions></root>");
