@@ -8,6 +8,7 @@
     using ApparelGraphics;
     using ExtendedGraphics;
     using JetBrains.Annotations;
+    using LudeonTK;
     using RimWorld;
     using UnityEngine;
     using Verse;

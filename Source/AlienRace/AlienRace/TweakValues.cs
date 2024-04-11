@@ -136,7 +136,7 @@ public static class TweakValues
                 float num = value;
                 Rect sliderRect = rect5;
                 sliderRect.y += rect2.height / 3f;
-                num = Widgets.HorizontalSlider_NewTemp(sliderRect, num, -1, 1);
+                num = Widgets.HorizontalSlider(sliderRect, num, -1, 1);
 
                 Rect valueFieldRect = rect4;
 

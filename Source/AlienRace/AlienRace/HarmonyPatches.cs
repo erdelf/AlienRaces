@@ -7,6 +7,7 @@ namespace AlienRace
     using System.Reflection.Emit;
     using System.Runtime.InteropServices;
     using HarmonyLib;
+    using LudeonTK;
     using RimWorld;
     using RimWorld.QuestGen;
     using UnityEngine;
@@ -120,8 +121,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateTraitsFor"), transpiler: new HarmonyMethod(patchType, nameof(GenerateTraitsForTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(JobGiver_SatisfyChemicalNeed), name: "DrugValidator"), 
                           postfix:          new HarmonyMethod(patchType, nameof(DrugValidatorPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(CompDrug), nameof(CompDrug.PostIngested)), 
-                postfix: new HarmonyMethod(patchType, nameof(PostIngestedPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(CompDrug), nameof(CompDrug.PostIngested)), postfix: new HarmonyMethod(patchType,    nameof(DrugPostIngestedPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Thing),    nameof(Thing.Ingested)),        transpiler: new HarmonyMethod(patchType, nameof(IngestedTranspiler)));
+
             harmony.Patch(AccessTools.Method(typeof(AddictionUtility), nameof(AddictionUtility.CanBingeOnNow)), 
                 postfix: new HarmonyMethod(patchType, nameof(CanBingeNowPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), name: "GenerateBodyType"), postfix: new HarmonyMethod(patchType, nameof(GenerateBodyTypePostfix)));
@@ -293,7 +295,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(LifeStageWorker_HumanlikeAdult), nameof(LifeStageWorker_HumanlikeAdult.Notify_LifeStageStarted)),
                           postfix: new HarmonyMethod(patchType, nameof(AdultLifeStageStartedPostfix)), transpiler: new HarmonyMethod(patchType, nameof(AdultLifeStageStartedTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GetBackstoryCategoryFiltersFor"), postfix: new HarmonyMethod(patchType, nameof(GetBackstoryCategoryFiltersForPostfix)));
-
+            
             harmony.Patch(AccessTools.Method(typeof(QuestNode_Root_WandererJoin_WalkIn), nameof(QuestNode_Root_WandererJoin_WalkIn.GeneratePawn)), transpiler: new HarmonyMethod(patchType, nameof(WandererJoinTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),                   nameof(PregnancyUtility.ApplyBirthOutcome)),              transpiler: new HarmonyMethod(patchType, nameof(ApplyBirthOutcomeTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator),                      nameof(PawnGenerator.XenotypesAvailableFor)) ,            postfix: new HarmonyMethod(patchType,    nameof(XenotypesAvailableForPostfix)));
@@ -1193,7 +1195,7 @@ namespace AlienRace
                         passions = passions.Concat(alienProps.alienRace.generalSettings.passions);
 
                     foreach (SkillGain passion in passions)
-                        pawn.skills.GetSkill(passion.skill).passion = (Passion)passion.xp;
+                        pawn.skills.GetSkill(passion.skill).passion = (Passion)passion.amount;
                 }
         }
 
@@ -2439,13 +2441,31 @@ namespace AlienRace
             __result = result;
         }
 
-        public static void PostIngestedPostfix(Pawn ingester, CompDrug __instance)
+        public static IEnumerable<CodeInstruction> IngestedTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo postIngestedInfo = AccessTools.Method(typeof(Thing), "PostIngested");
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.Calls(postIngestedInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldloc_3);
+                    yield return new CodeInstruction(OpCodes.Stsfld, AccessTools.Field(patchType, nameof(ingestedCount)));
+                }
+
+                yield return instruction;
+            }
+        }
+
+        public static int ingestedCount;
+
+        public static void DrugPostIngestedPostfix(Pawn ingester, CompDrug __instance)
         {
             if (ingester.def is ThingDef_AlienRace alienProps)
                 alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(action: cs =>
                 {
                     if (cs.chemical == __instance.Props?.chemical)
-                        cs.reactions?.ForEach(action: iod => iod.DoIngestionOutcome(ingester, __instance.parent));
+                        cs.reactions?.ForEach(action: iod => iod.DoIngestionOutcome(ingester, __instance.parent, ingestedCount));
                 });
         }
 
@@ -2704,7 +2724,7 @@ namespace AlienRace
         public static void ShouldSkipResearchPostfix(Pawn pawn, ref bool __result)
         {
             if (__result) return;
-            ResearchProjectDef project = Find.ResearchManager.currentProj;
+            ResearchProjectDef project = Find.ResearchManager.GetProject();
 
             ResearchProjectRestrictions rprest =
                 (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.FirstOrDefault(predicate: rpr => rpr.projects.Contains(project));

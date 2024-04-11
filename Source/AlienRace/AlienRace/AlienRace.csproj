@@ -29,7 +29,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Lib.Harmony" Version="2.3.1.1" />
+    <PackageReference Include="Lib.Harmony" Version="2.3.3" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
