@@ -226,7 +226,7 @@ public class ConditionHediffSeverity : Condition
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data)
     {
-        return pawn.SeverityOfHediffsOnPart(data.hediff, data.bodyPart, data.bodyPartLabel).Any(sev => sev > this.severity);
+        return pawn.SeverityOfHediffsOnPart(data.hediff, data.bodyPart, data.bodyPartLabel).Any(sev => sev >= this.severity);
     }
 }
 
