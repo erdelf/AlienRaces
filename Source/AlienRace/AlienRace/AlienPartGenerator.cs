@@ -652,7 +652,6 @@
                                                                 targetChannel = channel.name, 
                                                                 categoryIndex = channel.entries.IndexOf(category)
                                                             });
-
                         return firstColor ? this.ColorChannels[channelName].first : this.ColorChannels[channelName].second;
                     default:
                         return this.GenerateColor(gen);
@@ -677,13 +676,17 @@
                 this.customPortraitHeadDrawSize = apg.customPortraitHeadDrawSize;
             }
 
+            private bool saveIsAfter1_4;
             public override void PostExposeData()
             {
                 base.PostExposeData();
 
+                if (Scribe.mode == LoadSaveMode.LoadingVars) 
+                    this.saveIsAfter1_4 = (Scribe.loader.curXmlParent is { } parentNode && parentNode[ScribeNodeName] != null);
+
                 // If we're saving or the node name is found, use the new comp tag name
-                if ((Scribe.mode == LoadSaveMode.Saving || (Scribe.loader.curXmlParent is { } parentNode && parentNode[ScribeNodeName] != null)) &&
-                    Scribe.EnterNode(ScribeNodeName))
+                if ((Scribe.mode == LoadSaveMode.Saving || this.saveIsAfter1_4) && Scribe.EnterNode(ScribeNodeName))
+                {
                     try
                     {
                         this.ExposeDataInternal();
@@ -692,6 +695,7 @@
                     {
                         Scribe.ExitNode();
                     }
+                }
                 // Pull data from legacy fields in the root tag
                 else
                 {
@@ -709,7 +713,6 @@
                                 this.GenerateColor(ccg, ccgc, false);
                         }
                     }
-
                 }
             }
 
