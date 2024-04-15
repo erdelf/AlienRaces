@@ -407,8 +407,8 @@
         public ShaderTypeDef   skinShader;
         public Color           skinColor = new(1f, 0f, 0f, 1f);
 
-        private ShaderParameter skinColoringParameter;
-        public ShaderParameter SkinColoringParameter
+        private List<ShaderParameter> skinColoringParameter;
+        public List<ShaderParameter> SkinColoringParameter
         {
             get
             {
@@ -419,7 +419,7 @@
                     traverse.Field("name").SetValue("_ShadowColor");
                     traverse.Field("value").SetValue(new Vector4(this.skinColor.r, this.skinColor.g, this.skinColor.b, this.skinColor.a));
                     traverse.Field("type").SetValue(1);
-                    this.skinColoringParameter = parameter;
+                    this.skinColoringParameter = [parameter];
                 }
                 return this.skinColoringParameter;
             }
