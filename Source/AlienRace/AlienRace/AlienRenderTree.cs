@@ -187,7 +187,7 @@ namespace AlienRace
             __result = !bodyPath.NullOrEmpty() ? 
                            CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi), bodyPath, CheckMaskShader(bodyPath, skinShader, !bodyMask.NullOrEmpty()), 
                                                                          Vector2.one, __instance.ColorFor(pawn), apg.SkinColor(pawn, first: false),
-                                                                         null, 0, [graphicPaths.SkinColoringParameter], bodyMask)) :
+                                                                         null, 0, graphicPaths.SkinColoringParameter, bodyMask)) :
                                           null;
 
             return false;
@@ -235,7 +235,7 @@ namespace AlienRace
             __result = pawn.health.hediffSet.HasHead && !headPath.NullOrEmpty() ?
                            CachedData.getInnerGraphic(new GraphicRequest(typeof(Graphic_Multi),
                                                                          headPath, CheckMaskShader(headPath, skinShader, !headMask.NullOrEmpty()), Vector2.one, __instance.ColorFor(pawn), 
-                                                                         apg.SkinColor(pawn, first: false), null, 0, [graphicPaths.SkinColoringParameter], headMask))
+                                                                         apg.SkinColor(pawn, first: false), null, 0, graphicPaths.SkinColoringParameter, headMask))
                                          : null;
 
             return false;
