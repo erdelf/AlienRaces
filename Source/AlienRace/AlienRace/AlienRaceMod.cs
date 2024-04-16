@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Xml;
     using ExtendedGraphics;
+    using HarmonyLib;
     using UnityEngine;
     using Verse;
 
@@ -25,6 +26,9 @@
 
             XmlInheritance.allowDuplicateNodesFieldNames.Add(nameof(AbstractExtendedGraphic.extendedGraphics));
             XmlInheritance.allowDuplicateNodesFieldNames.Add(nameof(AlienPartGenerator.ExtendedConditionGraphic.conditions));
+
+            foreach (Type type in typeof(ConditionLogicCollection).AllSubclassesNonAbstract()) 
+                XmlInheritance.allowDuplicateNodesFieldNames.Add(Traverse.Create(type).Field(nameof(ConditionLogicCollection.XmlNameParseKey)).GetValue<string>());
 
             XmlDocument xmlDoc = new();
             xmlDoc.LoadXml($"<extendedGraphics><li Class=\"{typeof(AlienPartGenerator.ExtendedGraphicTop).FullName}\"><path>here</path></li></extendedGraphics>");
