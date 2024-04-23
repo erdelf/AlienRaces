@@ -26,7 +26,8 @@
                 this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
             if (this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize.Equals(Vector2.zero))
                 this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customPortraitDrawSize;
-
+            if (this.alienRace.generalSettings.alienPartGenerator.headFemaleOffset.Equals(Vector2.negativeInfinity))
+                this.alienRace.generalSettings.alienPartGenerator.headFemaleOffset = this.alienRace.generalSettings.alienPartGenerator.headOffset;
             this.alienRace.generalSettings.alienPartGenerator.headFemaleOffsetDirectional ??= this.alienRace.generalSettings.alienPartGenerator.headOffsetDirectional;
 
             this.alienRace.generalSettings.alienPartGenerator.alienProps = this;
