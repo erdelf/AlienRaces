@@ -1858,7 +1858,7 @@ namespace AlienRace
 
             Vector2 alienHeadOffset = (ageAlien == null ? Vector2.zero : pawn.gender switch
                                                    {
-                                                       Gender.Female => ageAlien.headFemaleOffset.Equals(Vector2.negativeInfinity) ? ageAlien.headOffset : ageAlien.headFemaleOffset,
+                                                       Gender.Female => ageAlien.headFemaleOffset,
                                                        _ => ageAlien.headOffset
                                                    });
 
