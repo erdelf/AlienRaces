@@ -184,8 +184,6 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn_AgeTracker), name: "RecalculateLifeStageIndex"), 
                 transpiler: new HarmonyMethod(patchType, nameof(RecalculateLifeStageIndexTranspiler)));
             
-            harmony.Patch(AccessTools.Method(typeof(Faction), nameof(Faction.FactionTick)), transpiler:
-                          new HarmonyMethod(patchType, nameof(FactionTickTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Designator), nameof(Designator.CanDesignateThing)), 
                 postfix: new HarmonyMethod(patchType, nameof(CanDesignateThingTamePostfix)));
             
@@ -1887,41 +1885,6 @@ namespace AlienRace
             __result = colonistRaces.Any(predicate: td => RaceRestrictionSettings.CanTame(t.def, td));
         }
 
-        public static IEnumerable<CodeInstruction> FactionTickTranspiler(IEnumerable<CodeInstruction> instructions)
-        {
-            List<CodeInstruction> instructionList = instructions.ToList();
-
-            MethodInfo isPlayerInfo = AccessTools.PropertyGetter(typeof(Faction), nameof(Faction.IsPlayer));
-
-            for (int i = 0; i < instructionList.Count; i++)
-            {
-                CodeInstruction instruction = instructionList[i];
-
-                yield return instruction;
-
-                if (instruction.opcode == OpCodes.Brfalse && instructionList[i - 1].Calls(isPlayerInfo))
-                {
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Call,    AccessTools.Method(patchType, nameof(FactionTickFactionRelationCheck)));
-                    yield return new CodeInstruction(OpCodes.Brfalse, instruction.operand);
-                }
-            }
-        }
-
-        private static bool FactionTickFactionRelationCheck(Faction f)
-        {
-            FactionDef player = Faction.OfPlayerSilentFail?.def ?? Find.GameInitData?.playerFaction?.def;
-
-            if (player == null)
-                return false;
-
-            return !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(predicate: ar =>
-                       f.def?.basicMemberKind?.race == ar &&
-                       (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(player) ?? false) ?? false) ||
-                       player.basicMemberKind?.race == ar &&
-                       (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(f.def) ?? false) ?? false));
-        }
-
         public static IEnumerable<CodeInstruction> RecalculateLifeStageIndexTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             MethodInfo biotechInfo = AccessTools.PropertyGetter(typeof(ModsConfig), nameof(ModsConfig.BiotechActive));
@@ -2370,11 +2333,12 @@ namespace AlienRace
                 (fac.basicMemberKind?.race ?? fac.pawnGroupMakers?.SelectMany(pgm => pgm.options).GroupBy(pgm => pgm.kind.race).OrderByDescending(g => g.Count()).First().Key) as ThingDef_AlienRace;
 
             ThingDef_AlienRace alienRace = GetRaceOfFaction(other.def);
-            alienRace?.alienRace.generalSettings.factionRelations?.ForEach(action: frs =>
+            if(alienRace != null)
+                foreach (FactionRelationSettings frs in alienRace.alienRace.generalSettings.factionRelations)
                 {
-                    if (!frs.factions.Contains(__instance.def)) return;
+                    if (!frs.factions.Contains(__instance.def)) continue;
 
-                    int           offset = frs.goodwill.RandomInRange;
+                    int offset = frs.goodwill.RandomInRange;
 
                     FactionRelationKind kind = offset > 75 ?
                                                    FactionRelationKind.Ally :
@@ -2384,35 +2348,34 @@ namespace AlienRace
 
                     FactionRelation relation = other.RelationWith(__instance);
                     relation.baseGoodwill = offset;
-                    relation.kind = kind;
+                    relation.kind         = kind;
 
                     relation              = __instance.RelationWith(other);
                     relation.baseGoodwill = offset;
                     relation.kind         = kind;
-                });
+                }
 
             alienRace = GetRaceOfFaction(__instance.def);
+            if(alienRace != null)
+                foreach (FactionRelationSettings frs in alienRace.alienRace.generalSettings.factionRelations)
+                {
+                    if (!frs.factions.Contains(other.def)) continue;
+                    int offset = frs.goodwill.RandomInRange;
 
-            alienRace?.alienRace.generalSettings.factionRelations?.ForEach(action: frs =>
-            {
-                if (!frs.factions.Contains(other.def)) return;
-                int           offset = frs.goodwill.RandomInRange;
+                    FactionRelationKind kind = offset > 75 ?
+                                                   FactionRelationKind.Ally :
+                                                   offset <= -10 ?
+                                                       FactionRelationKind.Hostile :
+                                                       FactionRelationKind.Neutral;
 
-                FactionRelationKind kind = offset > 75 ?
-                                               FactionRelationKind.Ally :
-                                               offset <= -10 ?
-                                                   FactionRelationKind.Hostile :
-                                                   FactionRelationKind.Neutral;
+                    FactionRelation relation = other.RelationWith(__instance);
+                    relation.baseGoodwill = offset;
+                    relation.kind         = kind;
 
-                FactionRelation relation = other.RelationWith(__instance);
-                relation.baseGoodwill = offset;
-                relation.kind     = kind;
-
-                relation          = __instance.RelationWith(other);
-                relation.baseGoodwill = offset;
-                relation.kind     = kind;
-            });
-
+                    relation              = __instance.RelationWith(other);
+                    relation.baseGoodwill = offset;
+                    relation.kind         = kind;
+                }
         }
 
         public static bool TryCreateThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance, ref List<Thought_Situational> ___cachedThoughts)

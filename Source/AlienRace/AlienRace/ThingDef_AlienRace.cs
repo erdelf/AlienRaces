@@ -193,7 +193,7 @@
         public List<SkillGain>                    passions           = new();
         public List<AlienChanceEntry<AbilityDef>> abilities          = new();
 
-        public List<FactionRelationSettings> factionRelations;
+        public List<FactionRelationSettings> factionRelations        = [];
         public int                           maxDamageForSocialfight = int.MaxValue;
         public bool                          allowHumanBios          = false;
         public bool                          immuneToXenophobia      = false;
