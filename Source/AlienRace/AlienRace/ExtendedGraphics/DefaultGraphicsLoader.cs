@@ -1,6 +1,7 @@
 namespace AlienRace.ExtendedGraphics;
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using Verse;
@@ -58,14 +59,9 @@ public class DefaultGraphicsLoader : IGraphicsLoader
         // If we didn't find any, warn about it
         if (graphic.GetVariantCount() == 0)
         {
-            if (Prefs.DevMode)
-            {
+            if (Prefs.DevMode) 
                 LogFor(logBuilder, $"No graphics found at {graphic.GetPath()} for {graphic.GetType()} in {source}.", shouldLog);
-            }
-            else
-            {
-                this.noPath = true;
-            }
+            this.noPath = true;
         }
     }
 
@@ -111,10 +107,11 @@ public class DefaultGraphicsLoader : IGraphicsLoader
                     topGraphics.Push(currentGraphic.GetSubGraphics());
                 }
             }
+
+            if (topGraphic.VariantCountMax <= 0 && !topGraphic.path.Equals(string.Empty))
+                Log.Message($"Textures were not found for one or more extended graphics for {source}: {topGraphic.path}");
         }
 
-        if (this.noPath) 
-            Log.Message($"Textures were not found for one or more extended graphics, enable devmode for more information");
         if (logBuilder.Length > 0) 
             Log.Message($"Loaded graphic variants for {source}\n{logBuilder}");
     }
