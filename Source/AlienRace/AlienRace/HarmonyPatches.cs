@@ -414,12 +414,12 @@ namespace AlienRace
                     ar.alienRace.raceRestriction.whiteReproductionList.Add(thingDef);
                 }
 
-                if (ar.alienRace.generalSettings.corpseCategory != ThingCategoryDefOf.CorpsesHumanlike)
+                if (ar.race.hasCorpse && ar.alienRace.generalSettings.corpseCategory != ThingCategoryDefOf.CorpsesHumanlike)
                 {
                     ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(ar.race.corpseDef);
                     if (ar.alienRace.generalSettings.corpseCategory != null)
                     {
-                        ar.race.corpseDef.thingCategories = new List<ThingCategoryDef> { ar.alienRace.generalSettings.corpseCategory };
+                        ar.race.corpseDef.thingCategories = [ar.alienRace.generalSettings.corpseCategory];
                         ar.alienRace.generalSettings.corpseCategory.childThingDefs.Add(ar.race.corpseDef);
                         ar.alienRace.generalSettings.corpseCategory.ResolveReferences();
                     }
