@@ -3425,7 +3425,7 @@ namespace AlienRace
         {
             if (pawn.def is ThingDef_AlienRace alienProps) 
                 return alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(pawn);
-            return CachedData.skinColorBase(pawn.story)!.Value;
+            return CachedData.skinColorBase(pawn.story) ?? pawn.story.SkinColorBase;
         }
 
         public static void GetBodyTypeForPostfix(Pawn pawn, ref BodyTypeDef __result) =>

@@ -256,10 +256,10 @@ namespace AlienRace
 
         public static Graphic StumpGraphicHelper(PawnRenderNode_Stump node, Pawn pawn)
         {
-            string path = pawnRenderResolveData.alienProps.alienRace.graphicPaths.stump.GetPath(pawn, ref pawnRenderResolveData.sharedIndex, pawnRenderResolveData.alienComp.headVariant);
+            string path = pawnRenderResolveData.alienProps?.alienRace.graphicPaths.stump.GetPath(pawn, ref pawnRenderResolveData.sharedIndex, pawnRenderResolveData.alienComp.headVariant);
             return !path.NullOrEmpty() ?
                        GraphicDatabase.Get<Graphic_Multi>(path, ShaderDatabase.CutoutComplex, Vector2.one, node.ColorFor(pawn), 
-                                                          pawnRenderResolveData.alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(pawn, first: false)) : 
+                                                          pawnRenderResolveData.alienProps!.alienRace.generalSettings.alienPartGenerator.SkinColor(pawn, first: false)) : 
                        null;
 
         }
@@ -297,8 +297,8 @@ namespace AlienRace
         }
 
         public static Graphic HairGraphicHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) => 
-            GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, RegenerateResolveData(pawn).alienProps.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? shader),
-                                               size, color, pawnRenderResolveData.alienComp.GetChannel(channel: "hair").second);
+            GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, RegenerateResolveData(pawn).alienProps?.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? shader),
+                                               size, color, pawnRenderResolveData.alienComp?.GetChannel(channel: "hair").second ?? Color.white);
 
         public static IEnumerable<CodeInstruction> TattooDefGraphicForTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
@@ -415,93 +415,93 @@ namespace AlienRace
         }
 
         public static Graphic BeardGraphicHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) =>
-            GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, RegenerateResolveData(pawn).alienProps.alienRace.styleSettings[typeof(BeardDef)].shader?.Shader ?? shader),
-                                               size, color, pawnRenderResolveData.alienComp.GetChannel(channel: "hair").second);
+            GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, RegenerateResolveData(pawn).alienProps?.alienRace.styleSettings[typeof(BeardDef)].shader?.Shader ?? shader),
+                                               size, color, pawnRenderResolveData.alienComp?.GetChannel(channel: "hair").second ?? Color.white);
         #endregion
 
         public static void SetupDynamicNodesPostfix(PawnRenderTree __instance)
         {
-            if (__instance.pawn.RaceProps.Humanlike)
+            if (__instance.pawn.def is not ThingDef_AlienRace) 
+                return;
+
+            //Log.Message($"Setup Addons: {__instance.pawn.NameFullColored}");
+
+            PawnRenderResolveData pawnRenderData = RegenerateResolveData(__instance.pawn);
+
+
+            AlienPartGenerator.AlienComp alienComp = pawnRenderData.alienComp;
+
+            alienComp.addonGraphics =   [];
+            alienComp.addonVariants ??= [];
+            alienComp.addonColors   ??= [];
+
+            int sharedIndex = 0;
+
+            using (IEnumerator<AlienPartGenerator.BodyAddon> bodyAddons = pawnRenderData.alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator())
             {
-                //Log.Message($"Setup Addons: {__instance.pawn.NameFullColored}");
-
-                PawnRenderResolveData pawnRenderData = RegenerateResolveData(__instance.pawn);
-
-
-                AlienPartGenerator.AlienComp alienComp = pawnRenderData.alienComp;
-
-                alienComp.addonGraphics =   [];
-                alienComp.addonVariants ??= [];
-                alienComp.addonColors   ??= [];
-
-                int sharedIndex = 0;
-
-                using (IEnumerator<AlienPartGenerator.BodyAddon> bodyAddons = pawnRenderData.alienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator())
+                int addonIndex = 0;
+                while (bodyAddons.MoveNext())
                 {
-                    int addonIndex = 0;
-                    while (bodyAddons.MoveNext())
+                    bool colorInsertActive = false;
+
+                    AlienPartGenerator.BodyAddon addon = bodyAddons.Current!;
+
+                    if (alienComp.addonColors.Count > addonIndex)
                     {
-                        bool colorInsertActive = false;
-
-                        AlienPartGenerator.BodyAddon addon = bodyAddons.Current!;
-
-                        if (alienComp.addonColors.Count > addonIndex)
+                        AlienPartGenerator.ExposableValueTuple<Color?, Color?> addonColor = alienComp.addonColors[addonIndex];
+                        if (addonColor.first.HasValue)
                         {
-                            AlienPartGenerator.ExposableValueTuple<Color?, Color?> addonColor = alienComp.addonColors[addonIndex];
-                            if (addonColor.first.HasValue)
-                            {
-                                addon.colorOverrideOne = addonColor.first;
-                                colorInsertActive      = true;
-                            }
-
-                            if (addonColor.second.HasValue)
-                            {
-                                addon.colorOverrideTwo = addonColor.second;
-                                colorInsertActive      = true;
-                            }
+                            addon.colorOverrideOne = addonColor.first;
+                            colorInsertActive      = true;
                         }
 
-                        bool canDrawAddon = addon.CanDrawAddonStatic(__instance.pawn);
-
-                        Graphic g = addon.GetGraphic(__instance.pawn, ref sharedIndex, alienComp.addonVariants.Count > addonIndex ? alienComp.addonVariants[addonIndex] : null);
-                        alienComp.addonGraphics.Add(g);
-                        if (alienComp.addonVariants.Count <= addonIndex)
-                            alienComp.addonVariants.Add(sharedIndex);
-
-                        if (alienComp.addonColors.Count <= addonIndex)
+                        if (addonColor.second.HasValue)
                         {
-                            alienComp.addonColors.Add(new AlienPartGenerator.ExposableValueTuple<Color?, Color?>(null, null));
+                            addon.colorOverrideTwo = addonColor.second;
+                            colorInsertActive      = true;
                         }
-                        else if (colorInsertActive)
-                        {
-                            addon.colorOverrideOne = null;
-                            addon.colorOverrideTwo = null;
-                        }
+                    }
 
-                        addonIndex++;
+                    bool canDrawAddon = addon.CanDrawAddonStatic(__instance.pawn);
 
-                        if (canDrawAddon)
-                        {
-                            AlienPawnRenderNodeProperties_BodyAddon nodeProps = new()
-                                                                                {
-                                                                                    addon        = addon,
-                                                                                    addonIndex   = addonIndex,
-                                                                                    graphic      = g,
-                                                                                    parentTagDef = addon.alignWithHead ? PawnRenderNodeTagDefOf.Head : PawnRenderNodeTagDefOf.Body,
-                                                                                    pawnType     = PawnRenderNodeProperties.RenderNodePawnType.HumanlikeOnly,
-                                                                                    workerClass  = typeof(AlienPawnRenderNodeWorker_BodyAddon),
-                                                                                    nodeClass    = typeof(AlienPawnRenderNode_BodyAddon),
-                                                                                    drawData = DrawData.NewWithData(new DrawData.RotationalData { rotationOffset = addon.angle },
-                                                                                                                    new DrawData.RotationalData
-                                                                                                                    { rotationOffset = -addon.angle, rotation = Rot4.East },
-                                                                                                                    new DrawData.RotationalData { rotationOffset = 0, rotation = Rot4.North }),
-                                                                                    useGraphic = true,
-                                                                                    alienComp  = alienComp,
-                                                                                    debugLabel = addon.Name
-                                                                                };
-                            PawnRenderNode pawnRenderNode = (PawnRenderNode)Activator.CreateInstance(nodeProps.nodeClass, __instance.pawn, nodeProps, __instance.pawn.Drawer.renderer.renderTree);
-                            CachedData.renderTreeAddChild(__instance.pawn.Drawer.renderer.renderTree, pawnRenderNode, null);
-                        }
+                    Graphic g = addon.GetGraphic(__instance.pawn, ref sharedIndex, alienComp.addonVariants.Count > addonIndex ? alienComp.addonVariants[addonIndex] : null);
+                    alienComp.addonGraphics.Add(g);
+                    if (alienComp.addonVariants.Count <= addonIndex)
+                        alienComp.addonVariants.Add(sharedIndex);
+
+                    if (alienComp.addonColors.Count <= addonIndex)
+                    {
+                        alienComp.addonColors.Add(new AlienPartGenerator.ExposableValueTuple<Color?, Color?>(null, null));
+                    }
+                    else if (colorInsertActive)
+                    {
+                        addon.colorOverrideOne = null;
+                        addon.colorOverrideTwo = null;
+                    }
+
+                    addonIndex++;
+
+                    if (canDrawAddon)
+                    {
+                        AlienPawnRenderNodeProperties_BodyAddon nodeProps = new()
+                                                                            {
+                                                                                addon        = addon,
+                                                                                addonIndex   = addonIndex,
+                                                                                graphic      = g,
+                                                                                parentTagDef = addon.alignWithHead ? PawnRenderNodeTagDefOf.Head : PawnRenderNodeTagDefOf.Body,
+                                                                                pawnType     = PawnRenderNodeProperties.RenderNodePawnType.HumanlikeOnly,
+                                                                                workerClass  = typeof(AlienPawnRenderNodeWorker_BodyAddon),
+                                                                                nodeClass    = typeof(AlienPawnRenderNode_BodyAddon),
+                                                                                drawData = DrawData.NewWithData(new DrawData.RotationalData { rotationOffset = addon.angle },
+                                                                                                                new DrawData.RotationalData
+                                                                                                                { rotationOffset = -addon.angle, rotation = Rot4.East },
+                                                                                                                new DrawData.RotationalData { rotationOffset = 0, rotation = Rot4.North }),
+                                                                                useGraphic = true,
+                                                                                alienComp  = alienComp,
+                                                                                debugLabel = addon.Name
+                                                                            };
+                        PawnRenderNode pawnRenderNode = (PawnRenderNode)Activator.CreateInstance(nodeProps.nodeClass, __instance.pawn, nodeProps, __instance.pawn.Drawer.renderer.renderTree);
+                        CachedData.renderTreeAddChild(__instance.pawn.Drawer.renderer.renderTree, pawnRenderNode, null);
                     }
                 }
             }
@@ -565,8 +565,12 @@ namespace AlienRace
     {
         public override Graphic GraphicFor(Pawn pawn)
         {
-            AlienRenderTreePatches.PawnRenderResolveData pawnRenderData = AlienRenderTreePatches.pawnRenderResolveData;
-            return GraphicDatabase.Get<Graphic_Multi>(pawnRenderData.alienProps.alienRace.graphicPaths.swaddle.GetPath(pawn, ref pawnRenderData.sharedIndex, pawn.HashOffset()), this.ShaderFor(pawn), Vector2.one, this.ColorFor(pawn));
+            AlienRenderTreePatches.PawnRenderResolveData pawnRenderData = AlienRenderTreePatches.RegenerateResolveData(pawn);
+
+            return pawnRenderData.alienProps == null ? 
+                       base.GraphicFor(pawn) : 
+                       GraphicDatabase.Get<Graphic_Multi>(pawnRenderData.alienProps.alienRace.graphicPaths.swaddle.GetPath(pawn, ref pawnRenderData.sharedIndex, pawn.HashOffset()), 
+                                                            this.ShaderFor(pawn), Vector2.one, this.ColorFor(pawn));
         }
     }
 
