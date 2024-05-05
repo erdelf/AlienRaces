@@ -263,7 +263,7 @@ namespace AlienRace
             
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateSkills"), new HarmonyMethod(patchType, nameof(GenerateSkillsPrefix)), postfix: new HarmonyMethod(patchType, nameof(GenerateSkillsPostfix)));
 
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnInternalTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "TryGenerateNewPawnInternal"), prefix: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnInternalPrefix)), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnInternalTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker), "Notify_GenesChanged"), transpiler: new HarmonyMethod(patchType, nameof(NotifyGenesChangedTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(GrowthUtility),    nameof(GrowthUtility.IsGrowthBirthday)),       transpiler: new HarmonyMethod(patchType, nameof(IsGrowthBirthdayTranspiler)));
@@ -1153,6 +1153,12 @@ namespace AlienRace
                     yield return CodeInstruction.Call(patchType, nameof(HeadTypeFilter));
                 }
             }
+        }
+
+        public static void TryGenerateNewPawnInternalPrefix(ref PawnGenerationRequest request)
+        {
+            if (!request.KindDef.race.race.IsFlesh)
+                request.AllowGay = false;
         }
 
         public static IEnumerable<CodeInstruction> TryGenerateNewPawnInternalTranspiler(IEnumerable<CodeInstruction> instructions)
