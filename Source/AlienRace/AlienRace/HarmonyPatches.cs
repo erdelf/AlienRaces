@@ -315,10 +315,11 @@ namespace AlienRace
             
             harmony.Patch(AccessTools.PropertyGetter(typeof(Pawn_AgeTracker), "GrowthPointsFactor"), postfix: new HarmonyMethod(patchType, nameof(GrowthPointsFactorPostfix)));
 
-            harmony.Patch(AccessTools.Method(typeof(StatPart_Age), "AgeMultiplier"), new HarmonyMethod(patchType, nameof(StatPartAgeMultiplierPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(StatPart_Age),                 "AgeMultiplier"), new HarmonyMethod(patchType, nameof(StatPartAgeMultiplierPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(GameComponent_PawnDuplicator), nameof(GameComponent_PawnDuplicator.Duplicate)), postfix: new HarmonyMethod(patchType, nameof(DuplicatePostfix)));
+
 
             AlienRenderTreePatches.HarmonyInit(harmony);
-
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
@@ -506,6 +507,9 @@ namespace AlienRace
 
             AlienRaceMod.settings.UpdateSettings();
         }
+
+        public static void DuplicatePostfix(Pawn pawn, Pawn __result) => 
+            AlienPartGenerator.AlienComp.CopyAlienData(pawn, __result);
 
         public static bool StatPartAgeMultiplierPrefix(ref float __result, StatPart_Age __instance, Pawn pawn)
         {

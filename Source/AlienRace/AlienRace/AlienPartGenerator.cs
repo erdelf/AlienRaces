@@ -798,6 +798,43 @@
                 this.RegenerateColorChannelLink(channel);
             }
 
+            public static void CopyAlienData(Pawn original, Pawn clone)
+            {
+                AlienComp originalComp = original.TryGetComp<AlienComp>();
+                AlienComp cloneComp = clone.TryGetComp<AlienComp>();
+
+                foreach ((string channel, ExposableValueTuple<Color, Color> colors) in originalComp.ColorChannels) 
+                    cloneComp.OverwriteColorChannel(channel, colors.first, colors.second);
+
+                cloneComp.addonVariants     = originalComp.addonVariants.ListFullCopy();
+                cloneComp.addonColors       = originalComp.addonColors.Select(vt => new ExposableValueTuple<Color?, Color?>(vt.first, vt.second)).ToList();
+                cloneComp.colorChannelLinks = [];
+                foreach ((string key, ColorChannelLinkData originalData) in originalComp.ColorChannelLinks)
+                {
+                    ColorChannelLinkData cloneData = new()
+                                                {
+                                                    originalChannel   = originalData.originalChannel,
+                                                    targetsChannelOne = [],
+                                                    targetsChannelTwo = []
+                                                };
+                    foreach (ColorChannelLinkData.ColorChannelLinkTargetData targetData in originalData.targetsChannelOne) 
+                        cloneData.targetsChannelOne.Add(new ColorChannelLinkData.ColorChannelLinkTargetData { categoryIndex = targetData.categoryIndex, targetChannel = targetData.targetChannel });
+
+                    foreach (ColorChannelLinkData.ColorChannelLinkTargetData targetData in originalData.targetsChannelTwo)
+                        cloneData.targetsChannelTwo.Add(new ColorChannelLinkData.ColorChannelLinkTargetData { categoryIndex = targetData.categoryIndex, targetChannel = targetData.targetChannel });
+
+                    cloneComp.ColorChannelLinks.Add(key, cloneData);
+                }
+
+                cloneComp.bodyVariant               = originalComp.bodyVariant;
+                cloneComp.bodyMaskVariant           = originalComp.bodyMaskVariant;
+                cloneComp.headVariant               = originalComp.headVariant;
+                cloneComp.headMaskVariant           = originalComp.headMaskVariant;
+                cloneComp.lastAlienMeatIngestedTick = originalComp.lastAlienMeatIngestedTick;
+
+                clone.Drawer.renderer.SetAllGraphicsDirty();
+            }
+
             [DebugAction(category: "AlienRace", name: "Regenerate all colorchannels", allowedGameStates = AllowedGameStates.PlayingOnMap)]
             // ReSharper disable once UnusedMember.Local
             private static void RegenerateColorchannels()
