@@ -323,7 +323,7 @@
                     }
                 }
 
-                foreach (ApparelFallbackOption fallback in this.alienProps.alienRace.graphicPaths.apparel.fallbacks)
+                foreach (ApparelReplacementOption fallback in this.alienProps.alienRace.graphicPaths.apparel.fallbacks)
                 {
                     foreach (ExtendedGraphicTop graphicTop in fallback.wornGraphicPaths.Concat(fallback.wornGraphicPath))
                     {
