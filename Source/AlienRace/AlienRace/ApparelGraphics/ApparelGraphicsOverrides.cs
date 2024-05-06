@@ -8,11 +8,12 @@ namespace AlienRace.ApparelGraphics
 {
     public class ApparelGraphicsOverrides
     {
-        public AlienPartGenerator.ExtendedGraphicTop                       pathPrefix              = new() { path = string.Empty };
-        public Dictionary<ThingDef, AlienPartGenerator.ExtendedGraphicTop> individualPaths = new();
-        public List<ApparelFallbackOption>                                 fallbacks               = new();
-        public BodyTypeDef                                                 bodyTypeFallback        = null;
-        public BodyTypeDef                                                 femaleBodyTypeFallback  = null;
+        public AlienPartGenerator.ExtendedGraphicTop                       pathPrefix             = new() { path = string.Empty };
+        public Dictionary<ThingDef, AlienPartGenerator.ExtendedGraphicTop> individualPaths        = [];
+        public List<ApparelReplacementOption>                              overrides              = [];
+        public List<ApparelReplacementOption>                              fallbacks              = [];
+        public BodyTypeDef                                                 bodyTypeFallback       = null;
+        public BodyTypeDef                                                 femaleBodyTypeFallback = null;
 
         public AlienPartGenerator.ExtendedGraphicTop GetOverride(Apparel apparel)
         {
@@ -21,7 +22,9 @@ namespace AlienRace.ApparelGraphics
 
             return !this.individualPaths.NullOrEmpty() && this.individualPaths.TryGetValue(apparel.def, out AlienPartGenerator.ExtendedGraphicTop overridePath) ?
                        overridePath :
-                       null;
+                       !this.overrides.NullOrEmpty() ? 
+                           this.overrides.FirstOrDefault(apo => apo.IsSuitableReplacementFor(apparel.def))?.GetGraphics(apparel.def) : 
+                           null;
         }
 
         public AlienPartGenerator.ExtendedGraphicTop GetFallbackPath(Apparel apparel)
@@ -30,7 +33,7 @@ namespace AlienRace.ApparelGraphics
                 return null;
 
             return !this.fallbacks.NullOrEmpty() ?
-                       this.fallbacks.FirstOrDefault(option => option.IsSuitableFallBackFor(apparel.def))?.GetGraphics(apparel.def) :
+                       this.fallbacks.FirstOrDefault(option => option.IsSuitableReplacementFor(apparel.def))?.GetGraphics(apparel.def) :
                        null;
         }
 
@@ -48,21 +51,21 @@ namespace AlienRace.ApparelGraphics
         }
     }
 
-    public class ApparelFallbackOption
+    public class ApparelReplacementOption
     {
         public AlienPartGenerator.ExtendedGraphicTop       wornGraphicPath = new() { path = string.Empty };
-        public List<AlienPartGenerator.ExtendedGraphicTop> wornGraphicPaths = new();
+        public List<AlienPartGenerator.ExtendedGraphicTop> wornGraphicPaths = [];
 
         public List<string>           apparelTags;
-        public List<BodyPartGroupDef> bodyPartGroups = new();
-        public List<ApparelLayerDef>  layers         = new();
+        public List<BodyPartGroupDef> bodyPartGroups = [];
+        public List<ApparelLayerDef>  layers         = [];
 
         public AlienPartGenerator.ExtendedGraphicTop GetGraphics(ThingDef apparelDef) =>
             !this.wornGraphicPaths.NullOrEmpty() ?
                 this.wornGraphicPaths[apparelDef.GetHashCode() % this.wornGraphicPaths.Count] :
                 this.wornGraphicPath;
 
-        public bool IsSuitableFallBackFor(ThingDef apparelDef)
+        public bool IsSuitableReplacementFor(ThingDef apparelDef)
         {
             if (apparelDef?.apparel == null)
                 return false;
