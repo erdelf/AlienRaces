@@ -683,7 +683,7 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Ldarg,  4);
                     yield return CodeInstruction.Call(patchType, nameof(BirthOutcomeMultiplier));
                     yield return new CodeInstruction(OpCodes.Stsfld, countInfo);
-                    yield return new CodeInstruction(OpCodes.Ldsfld, countInfo) {labels = new List<Label>{loop}};
+                    yield return new CodeInstruction(OpCodes.Ldsfld, countInfo) {labels = [loop] };
                     yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                     yield return new CodeInstruction(OpCodes.Sub);
                     yield return new CodeInstruction(OpCodes.Dup);
@@ -692,11 +692,11 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Blt_S, loopEnd);
                     for (int j = 0; j < originalMethod.GetParameters().Length; j++)
                         yield return new CodeInstruction(OpCodes.Ldarg, j);
-                    yield return new CodeInstruction(OpCodes.Call,   originalMethod);
+                    yield return new CodeInstruction(OpCodes.Call, originalMethod);
                     yield return new CodeInstruction(OpCodes.Br, loop);
                     yield return new CodeInstruction(OpCodes.Ldc_I4, int.MinValue) { labels = new List<Label> { loopEnd } };
                     yield return new CodeInstruction(OpCodes.Stsfld, countInfo);
-                    yield return new CodeInstruction(OpCodes.Nop) { labels = new List<Label> { loopSkip } };
+                    yield return new CodeInstruction(OpCodes.Nop) { labels = [loopSkip] };
                 }
             }
         }
