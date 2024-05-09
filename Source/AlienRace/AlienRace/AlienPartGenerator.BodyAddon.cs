@@ -197,9 +197,9 @@ namespace AlienRace
                 this.VisibleForRace(pawn);
                 */
 
-            public virtual Graphic GetGraphic(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
+            public virtual Graphic GetGraphic(Pawn pawn, AlienComp alienComp, ref int sharedIndex, int? savedIndex = new int?())
             {
-                ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>()?.GetChannel(this.ColorChannel) ?? new ExposableValueTuple<Color, Color>(Color.white, Color.white);
+                ExposableValueTuple<Color, Color> channel = alienComp?.GetChannel(this.ColorChannel) ?? new ExposableValueTuple<Color, Color>(Color.white, Color.white);
 
                 Color first  = this.ColorChannel == "skin" ? 
                                    pawn.story?.skinColorOverride.HasValue ?? false ? 
