@@ -169,6 +169,7 @@ namespace AlienRace
                 this.extendedGraphics.OfType<ExtendedHediffGraphic>().Any(predicate: bahg => bahg.hediff == HediffDefOf.MissingBodyPart);
                 //any missing part textures need to be done on the first branch level
             */
+
             public virtual bool CanDrawAddon(Pawn pawn) => 
                 this.CanDrawAddon(new ExtendedGraphicsPawnWrapper(pawn));
 
