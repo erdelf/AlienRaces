@@ -64,15 +64,10 @@ public class ConditionRotStage : Condition
 {
     public new const string XmlNameParseKey = "RotStage";
 
-    public List<RotStage> allowedStages = [RotStage.Fresh];
+    public RotDrawMode allowedStages = RotDrawMode.Fresh;
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) => 
-        this.allowedStages.Contains(pawn.GetRotStage() ?? RotStage.Fresh);
-
-    public override void LoadDataFromXmlCustom(XmlNode xmlRoot)
-    {
-        this.allowedStages = xmlRoot.FirstChild.Value.Split(',').Select(ParseHelper.FromString<RotStage>).ToList();
-    }
+        this.allowedStages.HasFlag(pawn.GetRotDrawMode());
 }
 
 public class ConditionBodyPart : Condition

@@ -107,6 +107,8 @@ public class ExtendedGraphicsPawnWrapper
 
     public virtual RotStage? GetRotStage() => this.WrappedPawn.Corpse?.GetRotStage();
 
+    public virtual RotDrawMode GetRotDrawMode() => this.WrappedPawn.Drawer.renderer.CurRotDrawMode;
+
     public virtual List<Hediff> GetHediffList() => this.GetHediffSet().hediffs;
 
     public virtual List<Trait> GetTraitList() => this.GetTraits().allTraits;
