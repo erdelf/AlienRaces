@@ -71,11 +71,15 @@ public class DefaultGraphicsLoader : IGraphicsLoader
     public void LoadAllGraphics(string source, params AlienPartGenerator.ExtendedGraphicTop[] graphicTops)
     {
         Stack<IEnumerable<IExtendedGraphic>> topGraphics = new();
-        StringBuilder                        logBuilder        = new();
+        StringBuilder                        logBuilder  = new();
 
         // Initialise the stack with the set of top level Graphics enumerators from all the bodyaddons.
         foreach (AlienPartGenerator.ExtendedGraphicTop topGraphic in graphicTops)
         {
+            
+            if (topGraphic is AlienPartGenerator.BodyAddon ba)
+                ba.resolveData.head = ba.alignWithHead;
+            
             // This process is not idempotent; each loaded variant increases the variant count.
             // So if the variantCount isn't 0, this addon has already been initialised so we can skip it.
             // It seems likely this could be hoisted above the offset config above as that would also have been done.

@@ -219,6 +219,7 @@
                         headGraphic.extendedGraphics.Add(headtypeGraphic);
                     }
                 }
+                this.alienProps.alienRace.graphicPaths.head.resolveData.head = true;
 
                 //Log.Message(string.Join("\n", this.alienProps.alienRace.graphicPaths.head.headtypeGraphics.Select(ehg => $"{ehg.headType.defName}: {ehg.path} | {string.Join("|", ehg.genderGraphics?.Select(egg => $"{egg.gender}: {egg.path}") ?? new []{string.Empty})}")));
 
@@ -376,6 +377,10 @@
                         stack.Push(current.GetSubGraphics());
                     }
             }
+
+            this.alienProps.alienRace.graphicPaths.skull.resolveData.head     = true;
+            this.alienProps.alienRace.graphicPaths.stump.resolveData.head     = true;
+            this.alienProps.alienRace.graphicPaths.headMasks.resolveData.head = true;
 
             graphicsLoader.LoadAllGraphics(this.alienProps.defName,
                                            this.alienProps.alienRace.graphicPaths.head,

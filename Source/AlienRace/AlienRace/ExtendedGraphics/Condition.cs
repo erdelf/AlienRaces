@@ -147,8 +147,8 @@ public class ConditionApparel : Condition
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data)
     {
         return pawn.HasApparelGraphics()                                                                          ||
-               (!AlienRenderTreePatches.IsPortrait(pawn.WrappedPawn) && !pawn.VisibleInBed())                     ||
-               (AlienRenderTreePatches.IsPortrait(pawn.WrappedPawn)  && Prefs.HatsOnlyOnMap)                     ||
+               (!data.head && !AlienRenderTreePatches.IsPortrait(pawn.WrappedPawn) && !pawn.VisibleInBed())       ||
+               (data.head && AlienRenderTreePatches.IsPortrait(pawn.WrappedPawn)  && Prefs.HatsOnlyOnMap)         ||
                (this.hiddenUnderApparelTag.NullOrEmpty()             && this.hiddenUnderApparelFor.NullOrEmpty()) ||
                !pawn.GetWornApparelProps().Any(ap =>
                                               ap.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||

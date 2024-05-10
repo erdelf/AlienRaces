@@ -36,6 +36,7 @@ public interface IExtendedGraphic
 
 public struct ResolveData
 {
+    public bool        head;
     public BodyPartDef bodyPart;
     public string      bodyPartLabel;
     public HediffDef   hediff;
