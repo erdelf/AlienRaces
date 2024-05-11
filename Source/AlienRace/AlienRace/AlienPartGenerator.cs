@@ -77,8 +77,6 @@
 
         public BodyPartDef headBodyPartDef;
 
-        public static HashSet<ThingDef> racesWithSeverity = [];
-
         public List<BodyAddon> bodyAddons = new();
 
         public ThingDef_AlienRace alienProps;
@@ -397,9 +395,6 @@
                                                                                                                             afo.wornGraphicPaths.Concat(afo.wornGraphicPath))).ToArray());
 
             graphicsLoader.LoadAllGraphics(this.alienProps.defName + " Addons", this.bodyAddons.Cast<ExtendedGraphicTop>().ToArray());
-
-            if ((graphicsLoader as DefaultGraphicsLoader)?.foundSeverityGraphics ?? false)
-                racesWithSeverity?.Add(this.alienProps);
 
             this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
             foreach (OffsetNamed offsetDefault in this.offsetDefaults)
@@ -889,9 +884,7 @@
                     {
                         AlienPawnRenderNodeProperties_BodyAddon nodeProp = nodePropsTemp[addonIndex];
 
-                        //shared Index is not being used here, since a savedIndex always exists
-                        if (addon.GetPath(this.Pawn, ref sharedIndex, this.addonVariants[addonIndex]) != nodeProp.texPath) 
-                            this.RegenerateAddonGraphic(nodeProp, addonIndex, ref sharedIndex);
+                        this.RegenerateAddonGraphic(nodeProp, addonIndex, ref sharedIndex);
 
                         PawnRenderNode pawnRenderNode = (PawnRenderNode)Activator.CreateInstance(nodeProp.nodeClass, this.Pawn, nodeProp, this.Pawn.Drawer.renderer.renderTree);
                         nodes.Add(pawnRenderNode);
@@ -905,8 +898,30 @@
                 return nodes;
             }
 
-            private void RegenerateAddonGraphic(AlienPawnRenderNodeProperties_BodyAddon addonProps, int addonIndex, ref int sharedIndex)
+            public static void RegenerateAddonGraphicsWithCondition(Pawn pawn, HashSet<Type> types) => 
+                pawn.GetComp<AlienComp>()?.RegenerateAddonGraphicsWithCondition(types);
+
+            public void RegenerateAddonGraphicsWithCondition(HashSet<Type> types)
             {
+                using IEnumerator<BodyAddon> bodyAddons = this.AlienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator();
+                int                          addonIndex = 0;
+                int                          sharedIndex = 0;
+                while (bodyAddons.MoveNext())
+                {
+                    BodyAddon addon = bodyAddons.Current!;
+
+                    if (addon.conditionTypes.Intersect(types).Any()) 
+                        this.RegenerateAddonGraphic(this.nodeProps[addonIndex], addonIndex, ref sharedIndex);
+                    addonIndex++;
+                }
+            }
+
+            private void RegenerateAddonGraphic(AlienPawnRenderNodeProperties_BodyAddon addonProps, int addonIndex, ref int sharedIndex, bool force = false)
+            {
+                string prepath = null;
+                if (!force && (prepath = addonProps.addon.GetPath(this.Pawn, ref sharedIndex, this.addonVariants[addonIndex])) == addonProps.texPath)
+                    return;
+
                 bool colorInsertActive = false;
 
                 if (this.addonColors.Count > addonIndex)
@@ -925,7 +940,7 @@
                     }
                 }
 
-                Graphic g = addonProps.addon.GetGraphic(this.Pawn, this, ref sharedIndex, this.addonVariants.Count > addonIndex ? this.addonVariants[addonIndex] : null);
+                Graphic g = addonProps.addon.GetGraphic(this.Pawn, this, ref sharedIndex, this.addonVariants.Count > addonIndex ? this.addonVariants[addonIndex] : null, prepath);
                 this.addonGraphics.Add(g);
                 if (this.addonVariants.Count <= addonIndex) 
                     this.addonVariants.Add(sharedIndex);

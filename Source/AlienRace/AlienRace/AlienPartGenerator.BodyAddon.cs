@@ -14,6 +14,7 @@ namespace AlienRace
     {
         public class ExtendedGraphicTop : AbstractExtendedGraphic
         {
+            public HashSet<Type> conditionTypes = [];
 
             public bool debug = true;
             public bool Debug => this.debug && (!this.path.NullOrEmpty() || this.GetSubGraphics().Any());
@@ -198,7 +199,7 @@ namespace AlienRace
                 this.VisibleForRace(pawn);
                 */
 
-            public virtual Graphic GetGraphic(Pawn pawn, AlienComp alienComp, ref int sharedIndex, int? savedIndex = new int?())
+            public virtual Graphic GetGraphic(Pawn pawn, AlienComp alienComp, ref int sharedIndex, int? savedIndex = new int?(), string preresolvedPath = null)
             {
                 ExposableValueTuple<Color, Color> channel = alienComp?.GetChannel(this.ColorChannel) ?? new ExposableValueTuple<Color, Color>(Color.white, Color.white);
 
@@ -222,7 +223,7 @@ namespace AlienRace
                     second *= this.colorPostFactor;
                 }
                 
-                string returnPath = this.GetPath(pawn, ref sharedIndex, savedIndex);
+                string returnPath = preresolvedPath ?? this.GetPath(pawn, ref sharedIndex, savedIndex);
 
                 return !returnPath.NullOrEmpty() ?
                            GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, ContentFinder<Texture2D>.Get(returnPath + "_southm", reportFailure: false) == null ? 

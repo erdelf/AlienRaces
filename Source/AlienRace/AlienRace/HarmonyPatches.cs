@@ -6,6 +6,7 @@ namespace AlienRace
     using System.Reflection;
     using System.Reflection.Emit;
     using System.Runtime.InteropServices;
+    using ExtendedGraphics;
     using HarmonyLib;
     using LudeonTK;
     using RimWorld;
@@ -317,7 +318,6 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(StatPart_Age),                 "AgeMultiplier"), new HarmonyMethod(patchType, nameof(StatPartAgeMultiplierPrefix)));
             harmony.Patch(AccessTools.Method(typeof(GameComponent_PawnDuplicator), nameof(GameComponent_PawnDuplicator.Duplicate)), postfix: new HarmonyMethod(patchType, nameof(DuplicatePostfix)));
-
 
             AlienRenderTreePatches.HarmonyInit(harmony);
 
@@ -1842,8 +1842,8 @@ namespace AlienRace
 
         public static void HediffChangedPostfix(Pawn ___pawn, HediffSet ___hediffSet)
         {
-            if (Current.ProgramState == ProgramState.Playing && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace && (AlienPartGenerator.racesWithSeverity?.Contains(___pawn.def) ?? true) && (!___hediffSet.HasRegeneration || ___pawn.IsHashIntervalTick(300)))
-                ___pawn.Drawer.renderer.SetAllGraphicsDirty();
+            if (Current.ProgramState == ProgramState.Playing && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace && (!___hediffSet.HasRegeneration || ___pawn.IsHashIntervalTick(300)))
+                AlienPartGenerator.AlienComp.RegenerateAddonGraphicsWithCondition(___pawn, [typeof(ConditionHediffSeverity)]);
         }
 
         public static IEnumerable<CodeInstruction> BaseHeadOffsetAtTranspiler(IEnumerable<CodeInstruction> instructions)
