@@ -94,8 +94,6 @@
 
                     DefaultGraphicsLoader graphicsLoader = new();
                     graphicsLoader.LoadAllGraphics("Universal Addons", universalBodyAddons.Cast<AlienPartGenerator.ExtendedGraphicTop>().ToArray());
-                    if (graphicsLoader.foundSeverityGraphics)
-                        AlienPartGenerator.racesWithSeverity = null;
                 }
 
                 return universalBodyAddons;

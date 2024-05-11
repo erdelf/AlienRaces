@@ -12,8 +12,6 @@ public class DefaultGraphicsLoader : IGraphicsLoader
 
 {
     private readonly IGraphicFinder<Texture2D> graphicFinder2D;
-    public           bool                      foundSeverityGraphics = false;
-    private          bool                      noPath                = false;
 
     public DefaultGraphicsLoader() : this(new GraphicFinder2D())
     {
@@ -61,11 +59,6 @@ public class DefaultGraphicsLoader : IGraphicsLoader
             if (Prefs.DevMode)
             {
                 LogFor(logBuilder, $"No graphics found at {graphic.GetPath()} for {graphic.GetType()} in {source}.", shouldLog);
-            }
-            else
-            {
-                this.noPath = true;
-            }
         }
     }
 
@@ -80,10 +73,14 @@ public class DefaultGraphicsLoader : IGraphicsLoader
         // Initialise the stack with the set of top level Graphics enumerators from all the bodyaddons.
         foreach (AlienPartGenerator.ExtendedGraphicTop topGraphic in graphicTops)
         {
-            
+
             if (topGraphic is AlienPartGenerator.BodyAddon ba)
+            {
                 ba.resolveData.head = ba.alignWithHead;
-            
+                foreach (Condition baCondition in ba.conditions) 
+                    topGraphic.conditionTypes.Add(baCondition.GetType());
+            }
+
             // This process is not idempotent; each loaded variant increases the variant count.
             // So if the variantCount isn't 0, this addon has already been initialised so we can skip it.
             // It seems likely this could be hoisted above the offset config above as that would also have been done.
@@ -107,9 +104,9 @@ public class DefaultGraphicsLoader : IGraphicsLoader
                     this.LoadAll2DVariantsForGraphic(currentGraphic, logBuilder, source, topGraphic.Debug);
                     topGraphic.VariantCountMax = currentGraphic.GetVariantCount();
 
-                    if (currentGraphic is AlienPartGenerator.BodyAddon addon && addon.conditions.Any(c => c is ConditionHediffSeverity) || 
-                        currentGraphic is AlienPartGenerator.ExtendedConditionGraphic conditionGraphic && conditionGraphic.conditions.Any(c => c is ConditionHediffSeverity))
-                        this.foundSeverityGraphics = true;
+                    if (currentGraphic is AlienPartGenerator.ExtendedConditionGraphic conditionGraphic)
+                        foreach (Condition condition in conditionGraphic.conditions)
+                            topGraphic.conditionTypes.Add(condition.GetType());
 
                     // Add the enumerator for any sub graphics to the stack
                     topGraphics.Push(currentGraphic.GetSubGraphics());

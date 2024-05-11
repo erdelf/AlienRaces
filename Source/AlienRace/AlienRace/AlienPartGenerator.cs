@@ -76,8 +76,6 @@
 
         public BodyPartDef headBodyPartDef;
 
-        public static HashSet<ThingDef> racesWithSeverity = [];
-
         public List<BodyAddon> bodyAddons = new();
 
         public ThingDef_AlienRace alienProps;
@@ -396,9 +394,6 @@
                                                                                                                             afo.wornGraphicPaths.Concat(afo.wornGraphicPath))).ToArray());
 
             graphicsLoader.LoadAllGraphics(this.alienProps.defName + " Addons", this.bodyAddons.Cast<ExtendedGraphicTop>().ToArray());
-
-            if ((graphicsLoader as DefaultGraphicsLoader)?.foundSeverityGraphics ?? false)
-                racesWithSeverity?.Add(this.alienProps);
 
             this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
             foreach (OffsetNamed offsetDefault in this.offsetDefaults)
@@ -838,6 +833,128 @@
                 cloneComp.lastAlienMeatIngestedTick = originalComp.lastAlienMeatIngestedTick;
 
                 clone.Drawer.renderer.SetAllGraphicsDirty();
+            }
+
+            private List<AlienPawnRenderNodeProperties_BodyAddon> nodeProps = null;
+
+            public override List<PawnRenderNode> CompRenderNodes()
+            {
+                List<PawnRenderNode>                nodes     = [];
+                List<AlienPawnRenderNodeProperties_BodyAddon> nodePropsTemp = this.nodeProps ?? [];
+
+                AlienComp alienComp = this;
+
+                alienComp.addonGraphics = [];
+                alienComp.addonVariants ??= [];
+                alienComp.addonColors ??= [];
+
+                int sharedIndex = 0;
+
+                using IEnumerator<BodyAddon> bodyAddons = this.AlienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator();
+                int                          addonIndex = 0;
+
+                while (bodyAddons.MoveNext())
+                {
+                    BodyAddon addon = bodyAddons.Current!;
+
+                    if (this.nodeProps == null)
+                    {
+                        AlienPawnRenderNodeProperties_BodyAddon node = new()
+                                                                       {
+                                                                           addon        = addon,
+                                                                           addonIndex   = addonIndex,
+                                                                           parentTagDef = addon.alignWithHead ? PawnRenderNodeTagDefOf.Head : PawnRenderNodeTagDefOf.Body,
+                                                                           pawnType     = PawnRenderNodeProperties.RenderNodePawnType.HumanlikeOnly,
+                                                                           workerClass  = typeof(AlienPawnRenderNodeWorker_BodyAddon),
+                                                                           nodeClass    = typeof(AlienPawnRenderNode_BodyAddon),
+                                                                           drawData = DrawData.NewWithData(new DrawData.RotationalData { rotationOffset = addon.angle },
+                                                                                                           new DrawData.RotationalData
+                                                                                                           { rotationOffset = -addon.angle, rotation = Rot4.East },
+                                                                                                           new DrawData.RotationalData { rotationOffset = 0, rotation = Rot4.North }),
+                                                                           useGraphic = true,
+                                                                           alienComp  = alienComp,
+                                                                           debugLabel = addon.Name
+                                                                       };
+                        this.RegenerateAddonGraphic(node, addonIndex, ref sharedIndex);
+                        nodePropsTemp.Add(node);
+                    }
+
+                    if (addon.CanDrawAddonStatic(this.Pawn))
+                    {
+                        AlienPawnRenderNodeProperties_BodyAddon nodeProp = nodePropsTemp[addonIndex];
+
+                        this.RegenerateAddonGraphic(nodeProp, addonIndex, ref sharedIndex);
+
+                        PawnRenderNode pawnRenderNode = (PawnRenderNode)Activator.CreateInstance(nodeProp.nodeClass, this.Pawn, nodeProp, this.Pawn.Drawer.renderer.renderTree);
+                        nodes.Add(pawnRenderNode);
+                    }
+
+                    addonIndex++;
+                }
+
+                this.nodeProps ??= nodePropsTemp;
+
+                return nodes;
+            }
+
+            public static void RegenerateAddonGraphicsWithCondition(Pawn pawn, HashSet<Type> types) => 
+                pawn.GetComp<AlienComp>()?.RegenerateAddonGraphicsWithCondition(types);
+
+            public void RegenerateAddonGraphicsWithCondition(HashSet<Type> types)
+            {
+                using IEnumerator<BodyAddon> bodyAddons = this.AlienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator();
+                int                          addonIndex = 0;
+                int                          sharedIndex = 0;
+                while (bodyAddons.MoveNext())
+                {
+                    BodyAddon addon = bodyAddons.Current!;
+
+                    if (addon.conditionTypes.Intersect(types).Any()) 
+                        this.RegenerateAddonGraphic(this.nodeProps[addonIndex], addonIndex, ref sharedIndex);
+                    addonIndex++;
+                }
+            }
+
+            private void RegenerateAddonGraphic(AlienPawnRenderNodeProperties_BodyAddon addonProps, int addonIndex, ref int sharedIndex, bool force = false)
+            {
+                string prepath = null;
+                if (!force && (prepath = addonProps.addon.GetPath(this.Pawn, ref sharedIndex, this.addonVariants[addonIndex])) == addonProps.texPath)
+                    return;
+
+                bool colorInsertActive = false;
+
+                if (this.addonColors.Count > addonIndex)
+                {
+                    ExposableValueTuple<Color?, Color?> addonColor = this.addonColors[addonIndex];
+                    if (addonColor.first.HasValue)
+                    {
+                        addonProps.addon.colorOverrideOne = addonColor.first;
+                        colorInsertActive      = true;
+                    }
+
+                    if (addonColor.second.HasValue)
+                    {
+                        addonProps.addon.colorOverrideTwo = addonColor.second;
+                        colorInsertActive      = true;
+                    }
+                }
+
+                Graphic g = addonProps.addon.GetGraphic(this.Pawn, this, ref sharedIndex, this.addonVariants.Count > addonIndex ? this.addonVariants[addonIndex] : null, prepath);
+                this.addonGraphics.Add(g);
+                if (this.addonVariants.Count <= addonIndex) 
+                    this.addonVariants.Add(sharedIndex);
+
+                if (this.addonColors.Count <= addonIndex)
+                {
+                    this.addonColors.Add(new ExposableValueTuple<Color?, Color?>(null, null));
+                }
+                else if (colorInsertActive)
+                {
+                    addonProps.addon.colorOverrideOne = null;
+                    addonProps.addon.colorOverrideTwo = null;
+                }
+
+                addonProps.graphic = g;
             }
 
             [DebugAction(category: "AlienRace", name: "Regenerate all colorchannels", allowedGameStates = AllowedGameStates.PlayingOnMap)]
