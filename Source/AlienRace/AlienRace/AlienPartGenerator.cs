@@ -875,7 +875,7 @@
                                                                            alienComp  = alienComp,
                                                                            debugLabel = addon.Name
                                                                        };
-                        this.RegenerateAddonGraphic(node, addonIndex, ref sharedIndex);
+                        this.RegenerateAddonGraphic(node, addonIndex, ref sharedIndex, true);
                         nodePropsTemp.Add(node);
                     }
 
