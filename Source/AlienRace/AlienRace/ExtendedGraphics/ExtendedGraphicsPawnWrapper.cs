@@ -60,7 +60,7 @@ public class ExtendedGraphicsPawnWrapper
     {
         string capitalisedTrait = traitId.CapitalizeFirst();
         return this.GetTraitList().Select(t => t.CurrentData).Any(t => 
-                    capitalisedTrait == t.LabelCap || capitalisedTrait == t.GetLabelCapFor(this.WrappedPawn) || capitalisedTrait == t.untranslatedLabel);
+                    capitalisedTrait == t.LabelCap || capitalisedTrait == t.GetLabelCapFor(this.WrappedPawn) || capitalisedTrait == t.untranslatedLabel.CapitalizeFirst());
     }
 
     public virtual IEnumerable<Apparel> GetWornApparel =>
