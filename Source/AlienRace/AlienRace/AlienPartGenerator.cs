@@ -883,9 +883,9 @@
                     {
                         AlienPawnRenderNodeProperties_BodyAddon nodeProp = nodePropsTemp[addonIndex];
 
-                        this.RegenerateAddonGraphic(nodeProp, addonIndex, ref sharedIndex);
-
                         PawnRenderNode pawnRenderNode = (PawnRenderNode)Activator.CreateInstance(nodeProp.nodeClass, this.Pawn, nodeProp, this.Pawn.Drawer.renderer.renderTree);
+                        nodeProp.node = pawnRenderNode as AlienPawnRenderNode_BodyAddon;
+                        this.RegenerateAddonGraphic(nodeProp, addonIndex, ref sharedIndex);
                         nodes.Add(pawnRenderNode);
                     }
 
@@ -902,14 +902,14 @@
 
             public void RegenerateAddonGraphicsWithCondition(HashSet<Type> types)
             {
-                using IEnumerator<BodyAddon> bodyAddons = this.AlienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator();
-                int                          addonIndex = 0;
+                using IEnumerator<BodyAddon> bodyAddons  = this.AlienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator();
+                int                          addonIndex  = 0;
                 int                          sharedIndex = 0;
                 while (bodyAddons.MoveNext())
                 {
                     BodyAddon addon = bodyAddons.Current!;
 
-                    if (addon.conditionTypes.Intersect(types).Any()) 
+                    if (addon.conditionTypes.Intersect(types).Any())
                         this.RegenerateAddonGraphic(this.nodeProps[addonIndex], addonIndex, ref sharedIndex);
                     addonIndex++;
                 }
@@ -918,7 +918,7 @@
             private void RegenerateAddonGraphic(AlienPawnRenderNodeProperties_BodyAddon addonProps, int addonIndex, ref int sharedIndex, bool force = false)
             {
                 string prepath = null;
-                if (!force && (prepath = addonProps.addon.GetPath(this.Pawn, ref sharedIndex, this.addonVariants[addonIndex])) == addonProps.texPath)
+                if (!force && (prepath = addonProps.addon.GetPath(this.Pawn, ref sharedIndex, this.addonVariants[addonIndex])) == addonProps.graphic.path)
                     return;
 
                 bool colorInsertActive = false;
@@ -955,6 +955,8 @@
                 }
 
                 addonProps.graphic = g;
+                addonProps.node?.UpdateGraphic();
+                //addonProps.node.requestRecache = true;
             }
 
             [DebugAction(category: "AlienRace", name: "Regenerate all colorchannels", allowedGameStates = AllowedGameStates.PlayingOnMap)]

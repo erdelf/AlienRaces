@@ -580,14 +580,19 @@ namespace AlienRace
         public int                          addonIndex;
         public Graphic                      graphic;
 
-        public AlienPartGenerator.AlienComp alienComp;
+        public AlienPartGenerator.AlienComp  alienComp;
+        public AlienPawnRenderNode_BodyAddon node;
     }
 
     public class AlienPawnRenderNode_BodyAddon(Pawn pawn, AlienPawnRenderNodeProperties_BodyAddon props, PawnRenderTree tree) : PawnRenderNode(pawn, props, tree)
     {
         public new AlienPawnRenderNodeProperties_BodyAddon props = props;
 
-        public override Graphic GraphicFor(Pawn pawn) => this.props.graphic;
+        public override Graphic GraphicFor(Pawn pawn) => 
+            this.props.graphic;
+
+        public void UpdateGraphic() => 
+            this.graphic = this.GraphicFor(pawn);
 
         public override GraphicMeshSet MeshSetFor(Pawn pawn) => 
             MeshPool.GetMeshSetForSize(Vector2.one);
