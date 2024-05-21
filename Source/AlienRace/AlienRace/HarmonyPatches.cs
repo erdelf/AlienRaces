@@ -62,8 +62,8 @@ namespace AlienRace
             
             harmony.Patch(AccessTools.Method(typeof(WorkGiver_Researcher), nameof(WorkGiver_Researcher.ShouldSkip)), 
                 postfix: new HarmonyMethod(patchType, nameof(ShouldSkipResearchPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), name: "ViewSize"),      transpiler: new HarmonyMethod(patchType, nameof(ResearchScreenTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(MainTabWindow_Research), name: "DrawRightRect"), transpiler: new HarmonyMethod(patchType, nameof(ResearchScreenTranspiler)));
+            harmony.Patch(AccessTools.PropertyGetter(typeof(MainTabWindow_Research), nameof(MainTabWindow_Research.VisibleResearchProjects)), transpiler: new HarmonyMethod(patchType, nameof(ResearchScreenTranspiler)));
+
             harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.CanConstruct), [typeof(Thing), typeof(Pawn), typeof(bool), typeof(bool), typeof(JobDef)]), 
                 postfix: new HarmonyMethod(patchType, nameof(CanConstructPostfix)));
             harmony.Patch(AccessTools.Method(typeof(GameRules), nameof(GameRules.DesignatorAllowed)), 
