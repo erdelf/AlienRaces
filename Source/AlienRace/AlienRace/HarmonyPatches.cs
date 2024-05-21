@@ -1142,9 +1142,7 @@ namespace AlienRace
         public static IEnumerable<CodeInstruction> NotifyGenesChangedTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             MethodInfo allDefsInfo = AccessTools.PropertyGetter(typeof(DefDatabase<HeadTypeDef>), nameof(DefDatabase<HeadTypeDef>.AllDefs));
-
-            bool dirtyFlagSet = false;
-
+            
             foreach (CodeInstruction instruction in instructions)
             {
                 if (instruction.opcode == OpCodes.Stloc_1)
@@ -1835,13 +1833,13 @@ namespace AlienRace
         public static void AddHediffPostfix(Pawn ___pawn, Hediff hediff)
         {
             if(!hediff.def.hairColorOverride.HasValue && !hediff.def.HasDefinedGraphicProperties)
-                ___pawn.Drawer.renderer.SetAllGraphicsDirty();
+                AlienPartGenerator.AlienComp.RegenerateAddonGraphicsWithCondition(___pawn, [typeof(ConditionHediff)]);
         }
 
         public static void RemoveHediffPostfix(Pawn ___pawn, Hediff hediff)
         {
             if (!hediff.def.HasDefinedGraphicProperties && !hediff.def.forceRenderTreeRecache)
-                ___pawn.Drawer.renderer.SetAllGraphicsDirty();
+                AlienPartGenerator.AlienComp.RegenerateAddonGraphicsWithCondition(___pawn, [typeof(ConditionHediff)]);
         }
 
         public static void HediffChangedPostfix(Pawn ___pawn, HediffSet ___hediffSet)
