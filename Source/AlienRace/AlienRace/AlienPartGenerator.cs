@@ -902,6 +902,9 @@
 
             public void RegenerateAddonGraphicsWithCondition(HashSet<Type> types)
             {
+                if (!this.Pawn.Drawer.renderer.renderTree.Resolved)
+                    return;
+
                 using IEnumerator<BodyAddon> bodyAddons  = this.AlienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator();
                 int                          addonIndex  = 0;
                 int                          sharedIndex = 0;
