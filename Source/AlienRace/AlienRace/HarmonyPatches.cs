@@ -1666,7 +1666,7 @@ namespace AlienRace
 
                 foreach (AlienPartGenerator.WoundAnchorReplacement anchorReplacement in anchorReplacements)
                 {
-                    if (anchor == anchorReplacement.replacement && anchorReplacement.offsets != null)
+                    if (anchorReplacement.ValidReplacement(anchor) && anchorReplacement.offsets != null)
                     {
                         anchorOffset = anchorReplacement.offsets.GetOffset(anchor.rotation!.Value).GetOffset(false, pawn.story.bodyType, pawn.story.headType);
                         return;
