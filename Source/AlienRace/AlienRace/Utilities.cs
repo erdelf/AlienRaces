@@ -215,6 +215,9 @@
     {
         public override bool ShouldDrawRotated =>
             this.data?.drawRotated ?? false;
+
+        public bool? westFlipped;
+        public override bool WestFlipped => this.westFlipped ?? base.WestFlipped;
     }
 
     [StaticConstructorOnStartup]
