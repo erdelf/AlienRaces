@@ -12,6 +12,7 @@
     using RimWorld;
     using UnityEngine;
     using Verse;
+    using static AlienRenderTreePatches;
     using Gender = Verse.Gender;
 
     public partial class AlienPartGenerator
