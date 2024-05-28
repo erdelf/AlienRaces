@@ -126,17 +126,18 @@ namespace AlienRace
 
             public DirectionalOffset offsets                      = new();
             public DirectionalOffset femaleOffsets                = null;
-            
-            public float            angle                        = 0f;
-            public bool             inFrontOfBody                = false;
-            public bool             layerInvert                  = true;
+
+            public bool? flipWest;
+            public float angle         = 0f;
+            public bool  inFrontOfBody = false;
+            public bool  layerInvert   = true;
 
             public List<Condition> conditions = [];
             
             public bool alignWithHead = false;
 
-            public bool    drawRotated           = true;
-            public bool    scaleWithPawnDrawsize = false;
+            public bool drawRotated           = true;
+            public bool scaleWithPawnDrawsize = false;
 
             public List<RenderSkipFlagDef> useSkipFlags = [];
 
@@ -225,11 +226,17 @@ namespace AlienRace
                 
                 string returnPath = preresolvedPath ?? this.GetPath(pawn, ref sharedIndex, savedIndex);
 
-                return !returnPath.NullOrEmpty() ?
-                           GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, ContentFinder<Texture2D>.Get(returnPath + "_southm", reportFailure: false) == null ? 
-                                                                                               this.ShaderType.Shader : ShaderDatabase.CutoutComplex, 
-                                                                               Vector2.one, first, second, new GraphicData { drawRotated = !this.drawRotated }) :
-                           null;
+                if (!returnPath.NullOrEmpty())
+                {
+                    Graphic_Multi_RotationFromData graphic = GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, ContentFinder<Texture2D>.Get(returnPath + "_southm", reportFailure: false) == null ?
+                                                                                                          this.ShaderType.Shader :
+                                                                                                          ShaderDatabase.CutoutComplex,
+                                                                                          Vector2.one, first, second, new GraphicData { drawRotated = !this.drawRotated }) as Graphic_Multi_RotationFromData;
+                    graphic.westFlipped = this.flipWest;
+                    return graphic;
+                }
+                else
+                    return null;
             }
         }
     }
