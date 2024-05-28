@@ -109,15 +109,7 @@ namespace AlienRace
                         alienComp.customPortraitHeadDrawSize = lsaa.customPortraitHeadDrawSize;
                     }
 
-                    alienComp.OverwriteColorChannel("hair", alien.story.HairColor);
-                    alienComp.OverwriteColorChannel("skin", alien.story.SkinColor);
-                    alienComp.OverwriteColorChannel("skinBase", alien.story.SkinColorBase);
-                    alienComp.OverwriteColorChannel("favorite", alien.story.favoriteColor);
-                    alienComp.OverwriteColorChannel("favorite", second: alienComp.ColorChannels["favorite"].second != Color.clear ? null : alien.story.favoriteColor);
-
-                    if (alien.Corpse?.GetRotStage() == RotStage.Rotting)
-                        alienComp.OverwriteColorChannel("skin", PawnRenderUtility.GetRottenColor(alien.story.SkinColor));
-
+                    alienComp.UpdateColors();
                     //alienComp.RegenerateColorChannelLinks();
                     
                     portraitRender = new Pair<WeakReference, bool>(new WeakReference(alien), false);

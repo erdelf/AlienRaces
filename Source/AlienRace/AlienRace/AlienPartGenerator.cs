@@ -897,6 +897,21 @@
                 return nodes;
             }
 
+            public static void RegenerateAddonsForced(Pawn pawn) =>
+                pawn.GetComp<AlienComp>()?.RegenerateAddonsForced();
+
+            public void RegenerateAddonsForced()
+            {
+                if (!this.Pawn.Drawer.renderer.renderTree.Resolved && !this.Pawn.Spawned)
+                    return;
+
+                using IEnumerator<BodyAddon> bodyAddons  = this.AlienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator();
+                int                          sharedIndex = 0;
+
+                for (int i = 0; i < this.nodeProps.Count; i++) 
+                    this.RegenerateAddonGraphic(this.nodeProps[i], i, ref sharedIndex, true);
+            }
+
             public static void RegenerateAddonGraphicsWithCondition(Pawn pawn, HashSet<Type> types) => 
                 pawn.GetComp<AlienComp>()?.RegenerateAddonGraphicsWithCondition(types);
 
@@ -960,6 +975,22 @@
                 addonProps.graphic = g;
                 addonProps.node?.UpdateGraphic();
                 //addonProps.node.requestRecache = true;
+            }
+
+            public void UpdateColors()
+            {
+                if (!this.Pawn.Drawer.renderer.renderTree.Resolved && !this.Pawn.Spawned)
+                    return;
+
+                this.OverwriteColorChannel("hair",     this.Pawn.story.HairColor);
+                this.OverwriteColorChannel("skin",     this.Pawn.story.SkinColor);
+                this.OverwriteColorChannel("skinBase", this.Pawn.story.SkinColorBase);
+                this.OverwriteColorChannel("favorite", this.Pawn.story.favoriteColor);
+                this.OverwriteColorChannel("favorite", second: this.ColorChannels["favorite"].second != Color.clear ? null : this.Pawn.story.favoriteColor);
+
+                if (this.Pawn.Drawer.renderer.CurRotDrawMode == RotDrawMode.Rotting)
+                    this.OverwriteColorChannel("skin", PawnRenderUtility.GetRottenColor(this.Pawn.story.SkinColor));
+
             }
 
             [DebugAction(category: "AlienRace", name: "Regenerate all colorchannels", allowedGameStates = AllowedGameStates.PlayingOnMap)]
