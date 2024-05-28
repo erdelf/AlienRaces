@@ -319,7 +319,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(StatPart_Age),                 "AgeMultiplier"), new HarmonyMethod(patchType, nameof(StatPartAgeMultiplierPrefix)));
             harmony.Patch(AccessTools.Method(typeof(GameComponent_PawnDuplicator), nameof(GameComponent_PawnDuplicator.Duplicate)), postfix: new HarmonyMethod(patchType, nameof(DuplicatePostfix)));
             harmony.Patch(AccessTools.PropertySetter(typeof(Pawn_DraftController), nameof(Pawn_DraftController.Drafted)), postfix: new HarmonyMethod(patchType, nameof(DraftedPostfix)));
-            
+            harmony.Patch(AccessTools.Method(typeof(Pawn_MutantTracker), nameof(Pawn_MutantTracker.Turn)), postfix: new HarmonyMethod(patchType, nameof(MutantTurnPostfix)));
+
             AlienRenderTreePatches.HarmonyInit(harmony);
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
@@ -507,6 +508,16 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static void MutantTurnPostfix(Pawn ___pawn)
+        {
+            AlienPartGenerator.AlienComp alienComp = ___pawn.GetComp<AlienPartGenerator.AlienComp>();
+            if (alienComp != null)
+            {
+                alienComp.UpdateColors();
+                alienComp.RegenerateAddonsForced();
+            }
         }
 
         public static void DraftedPostfix(Pawn ___pawn) => 
