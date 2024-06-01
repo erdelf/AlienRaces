@@ -1855,7 +1855,7 @@ namespace AlienRace
 
         public static void HediffChangedPostfix(Pawn ___pawn, HediffSet ___hediffSet)
         {
-            if (Current.ProgramState == ProgramState.Playing && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace && (!___hediffSet.HasRegeneration || ___pawn.IsHashIntervalTick(300)))
+            if (Current.ProgramState == ProgramState.Playing && ___pawn.Spawned && ___pawn.def is ThingDef_AlienRace)
                 AlienPartGenerator.AlienComp.RegenerateAddonGraphicsWithCondition(___pawn, [typeof(ConditionHediffSeverity)]);
         }
 
