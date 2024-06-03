@@ -316,10 +316,11 @@ namespace AlienRace
             
             harmony.Patch(AccessTools.PropertyGetter(typeof(Pawn_AgeTracker), "GrowthPointsFactor"), postfix: new HarmonyMethod(patchType, nameof(GrowthPointsFactorPostfix)));
 
-            harmony.Patch(AccessTools.Method(typeof(StatPart_Age),                 "AgeMultiplier"), new HarmonyMethod(patchType, nameof(StatPartAgeMultiplierPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(StatPart_Age),                 "AgeMultiplier"),                                new HarmonyMethod(patchType, nameof(StatPartAgeMultiplierPrefix)));
             harmony.Patch(AccessTools.Method(typeof(GameComponent_PawnDuplicator), nameof(GameComponent_PawnDuplicator.Duplicate)), postfix: new HarmonyMethod(patchType, nameof(DuplicatePostfix)));
-            harmony.Patch(AccessTools.PropertySetter(typeof(Pawn_DraftController), nameof(Pawn_DraftController.Drafted)), postfix: new HarmonyMethod(patchType, nameof(DraftedPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(Pawn_MutantTracker), nameof(Pawn_MutantTracker.Turn)), postfix: new HarmonyMethod(patchType, nameof(MutantTurnPostfix)));
+            harmony.Patch(AccessTools.PropertySetter(typeof(Pawn_DraftController), nameof(Pawn_DraftController.Drafted)),           postfix: new HarmonyMethod(patchType, nameof(DraftedPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_MutantTracker), nameof(Pawn_MutantTracker.Turn)),                          postfix: new HarmonyMethod(patchType, nameof(MutantTurnPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "FinalLevelOfSkill"), transpiler: new HarmonyMethod(patchType, nameof(FinalLevelOfSkillTranspiler)));
 
             AlienRenderTreePatches.HarmonyInit(harmony);
 
@@ -508,6 +509,54 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add(item: "alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> FinalLevelOfSkillTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            FieldInfo ageSkillMaxFactorCurveInfo = AccessTools.Field(typeof(PawnGenerator), "AgeSkillMaxFactorCurve");
+            FieldInfo ageSkillCurve = AccessTools.Field(typeof(PawnGenerator), "AgeSkillFactor");
+
+            LocalBuilder customCurve    = ilg.DeclareLocal(typeof(bool));
+            LocalBuilder originalValue  = ilg.DeclareLocal(typeof(float));
+            Label        nonCustomLabel = ilg.DefineLabel();
+
+            bool entryReady = false;
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.LoadsField(ageSkillCurve))
+                {
+                    yield return new CodeInstruction(OpCodes.Stloc, originalValue.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldloc_0);
+                    entryReady = true;
+                }
+
+                if (entryReady && instruction.opcode == OpCodes.Stloc_0)
+                {
+                    entryReady = false;
+                    yield return new CodeInstruction(OpCodes.Ldloc,   customCurve);
+                    yield return new CodeInstruction(OpCodes.Brfalse, nonCustomLabel);
+                    instruction.labels.Add(nonCustomLabel);
+                    yield return new CodeInstruction(OpCodes.Pop);
+                    yield return new CodeInstruction(OpCodes.Ldloc, originalValue.LocalIndex);
+                }
+
+                yield return instruction;
+
+                if (instruction.LoadsField(ageSkillMaxFactorCurveInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Ldloca, customCurve.LocalIndex);
+                    yield return CodeInstruction.Call(patchType, nameof(SkillCurve));
+                }
+            }
+        }
+
+        public static SimpleCurve SkillCurve(SimpleCurve originalCurve, Pawn pawn, out bool customPresent)
+        {
+            SimpleCurve curve = (pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.ageSkillFactorCurve;
+            customPresent = curve != null;
+            return curve ?? originalCurve;
         }
 
         public static void MutantTurnPostfix(Pawn ___pawn)
