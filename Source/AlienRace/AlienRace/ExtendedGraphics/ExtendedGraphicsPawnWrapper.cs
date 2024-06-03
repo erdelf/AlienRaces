@@ -95,6 +95,12 @@ public class ExtendedGraphicsPawnWrapper
     public virtual BodyPartRecord GetAnyBodyPart(BodyPartDef part, string partLabel) =>
         this.WrappedPawn.RaceProps.body.AllParts.Find(bpr => IsBodyPart(bpr, part, partLabel));
 
+    public virtual float GetNeed(NeedDef needDef, bool percentage)
+    {
+        Need need = this.WrappedPawn.needs.TryGetNeed(needDef);
+        return percentage ? need.CurLevelPercentage : need.CurLevel;
+    }
+
     public virtual Gender GetGender() => this.WrappedPawn.gender;
 
     public virtual PawnPosture GetPosture() => this.WrappedPawn.GetPosture();
