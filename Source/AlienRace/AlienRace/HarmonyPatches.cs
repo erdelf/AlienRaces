@@ -1822,9 +1822,19 @@ namespace AlienRace
         public static BodyDef ReplacedBody(Pawn pawn) => 
             pawn.def is ThingDef_AlienRace ? (pawn.ageTracker?.CurLifeStageRace as LifeStageAgeAlien)?.body ?? pawn.RaceProps.body : pawn.RaceProps.body;
 
-        public static bool ChangeKindPrefix(Pawn __instance, PawnKindDef newKindDef) => 
-            !__instance.RaceProps.Humanlike || !newKindDef.RaceProps.Humanlike || 
-            __instance.kindDef == PawnKindDefOf.WildMan || newKindDef == PawnKindDefOf.WildMan;
+        public static bool ChangeKindPrefix(Pawn __instance, ref PawnKindDef newKindDef)
+        {
+            if (!__instance.RaceProps.Humanlike || !newKindDef.RaceProps.Humanlike || newKindDef == PawnKindDefOf.WildMan)
+                return true;
+
+            if (__instance.kindDef == PawnKindDefOf.WildMan)
+            {
+                newKindDef = __instance.GetComp<AlienPartGenerator.AlienComp>()?.originalKindDef ?? newKindDef;
+                return true;
+            }
+
+            return false;
+        }
 
         public static void GenerateGearForPostfix(Pawn pawn) =>
             pawn.story?.AllBackstories?.OfType<AlienBackstoryDef>()
