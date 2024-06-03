@@ -320,7 +320,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(GameComponent_PawnDuplicator), nameof(GameComponent_PawnDuplicator.Duplicate)), postfix: new HarmonyMethod(patchType, nameof(DuplicatePostfix)));
             harmony.Patch(AccessTools.PropertySetter(typeof(Pawn_DraftController), nameof(Pawn_DraftController.Drafted)),           postfix: new HarmonyMethod(patchType, nameof(DraftedPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_MutantTracker), nameof(Pawn_MutantTracker.Turn)),                          postfix: new HarmonyMethod(patchType, nameof(MutantTurnPostfix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "FinalLevelOfSkill"), transpiler: new HarmonyMethod(patchType, nameof(FinalLevelOfSkillTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator),      "FinalLevelOfSkill"), transpiler: new HarmonyMethod(patchType, nameof(FinalLevelOfSkillTranspiler)));
+            harmony.Patch(AccessTools.PropertySetter(typeof(Need), nameof(Need.CurLevel)), postfix: new HarmonyMethod(patchType, nameof(NeedLevelPostfix)));
+            harmony.Patch(AccessTools.PropertySetter(typeof(Need), nameof(Need.CurLevelPercentage)), postfix: new HarmonyMethod(patchType, nameof(NeedLevelPostfix)));
 
             AlienRenderTreePatches.HarmonyInit(harmony);
 
@@ -510,6 +512,9 @@ namespace AlienRace
 
             AlienRaceMod.settings.UpdateSettings();
         }
+
+        public static void NeedLevelPostfix(Pawn ___pawn) => 
+            AlienPartGenerator.AlienComp.RegenerateAddonGraphicsWithCondition(___pawn, [typeof(ConditionMood), typeof(ConditionNeed)]);
 
         public static IEnumerable<CodeInstruction> FinalLevelOfSkillTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
