@@ -229,6 +229,21 @@ public class ConditionHediffSeverity : Condition
     }
 }
 
+public class ConditionNeed : Condition
+{
+    public new const string XmlNameParseKey = "Need";
+
+    public NeedDef need;
+    public float   level;
+    public bool    percentage;
+
+    public override bool    Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) => 
+        pawn.GetNeed(this.need, this.percentage) > this.level;
+
+    public override void LoadDataFromXmlCustom(XmlNode xmlRoot) =>
+        Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
+}
+
 public class ConditionBackstory : Condition
 {
     public new const string XmlNameParseKey = "Backstory";
