@@ -475,6 +475,8 @@
         {
             private const string ScribeNodeName = "AlienRaces_AlienComp";
 
+            public PawnKindDef originalKindDef;
+
             public bool    fixGenderPostSpawn;
             public Vector2 customDrawSize             = Vector2.one;
             public Vector2 customHeadDrawSize         = Vector2.one;
@@ -675,6 +677,7 @@
                 this.customHeadDrawSize         = apg.customHeadDrawSize;
                 this.customPortraitDrawSize     = apg.customPortraitDrawSize;
                 this.customPortraitHeadDrawSize = apg.customPortraitHeadDrawSize;
+                this.originalKindDef            = this.Pawn.kindDef;
             }
 
             private bool saveIsAfter1_4;
