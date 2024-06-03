@@ -244,6 +244,49 @@ public class ConditionNeed : Condition
         Utilities.SetInstanceVariablesFromChildNodesOf(xmlRoot, this, []);
 }
 
+public class ConditionMood : Condition
+{
+    public new const string XmlNameParseKey = "Mood";
+
+    [Flags]
+    public enum MoodState : byte
+    {
+        ABOUT_TO_BREAK = 1,
+        ON_EDGE = 2,
+        STRESSED = 4,
+        BAD = 7,
+        NEUTRAL = 8,
+        CONTENT = 16,
+        HAPPY = 32
+    }
+
+    public MoodState state = MoodState.CONTENT;
+
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data)
+    {
+        float need = pawn.GetNeed(AlienDefOf.Mood, false);
+        return this.state.HasFlag(GetMood(pawn, need));
+    }
+
+    private static MoodState GetMood(ExtendedGraphicsPawnWrapper pawn, float need)
+    {
+        float breakThresholdExtreme = pawn.WrappedPawn.mindState.mentalBreaker.BreakThresholdExtreme;
+        if (need < breakThresholdExtreme) 
+            return MoodState.ABOUT_TO_BREAK;
+        if (need < breakThresholdExtreme + 0.05f) 
+            return MoodState.ON_EDGE;
+        if (need < pawn.WrappedPawn.mindState.mentalBreaker.BreakThresholdMinor) 
+            return MoodState.STRESSED;
+
+        return need switch
+        {
+            < 0.65f => MoodState.NEUTRAL,
+            < 0.9f => MoodState.CONTENT,
+            _ => MoodState.HAPPY
+        };
+    }
+}
+
 public class ConditionBackstory : Condition
 {
     public new const string XmlNameParseKey = "Backstory";

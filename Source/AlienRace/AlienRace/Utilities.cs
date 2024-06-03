@@ -57,7 +57,9 @@
         public static ThoughtDef ButcheredHumanlikeCorpse;
         public static ThoughtDef KnowButcheredHumanlikeCorpse;
 
-        #endregion
+        public static NeedDef Mood;
+
+    #endregion
 
         // ReSharper restore InconsistentNaming
     }
