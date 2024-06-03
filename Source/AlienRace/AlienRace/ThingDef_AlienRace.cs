@@ -208,6 +208,7 @@
         public int[]       GrowthAges => this.growthAges?.ToArray();
 
         public SimpleCurve growthFactorByAge;
+        public SimpleCurve ageSkillFactorCurve;
 
         public List<BackstoryCategoryFilter> childBackstoryFilter;
         public List<BackstoryCategoryFilter> adultBackstoryFilter;
