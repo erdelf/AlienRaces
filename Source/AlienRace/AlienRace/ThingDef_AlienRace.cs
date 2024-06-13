@@ -19,7 +19,8 @@
 
         public override void ResolveReferences()
         {
-            this.comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
+            if(!this.HasComp<AlienPartGenerator.AlienComp>())
+                this.comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
             base.ResolveReferences();
 
             if (this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize.Equals(Vector2.zero))

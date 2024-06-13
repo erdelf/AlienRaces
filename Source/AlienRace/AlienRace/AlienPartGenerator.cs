@@ -856,7 +856,7 @@
 
                 using IEnumerator<BodyAddon> bodyAddons = this.AlienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator();
                 int                          addonIndex = 0;
-
+                
                 while (bodyAddons.MoveNext())
                 {
                     BodyAddon addon = bodyAddons.Current!;
@@ -897,7 +897,6 @@
                 }
 
                 this.nodeProps ??= nodePropsTemp;
-
                 return nodes;
             }
 
