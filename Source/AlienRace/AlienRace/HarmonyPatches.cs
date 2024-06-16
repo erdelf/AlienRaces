@@ -1883,7 +1883,8 @@ namespace AlienRace
 
             if (__instance.kindDef == PawnKindDefOf.WildMan)
             {
-                newKindDef = __instance.GetComp<AlienPartGenerator.AlienComp>()?.originalKindDef ?? newKindDef;
+                PawnKindDef originalKind = __instance.GetComp<AlienPartGenerator.AlienComp>()?.originalKindDef;
+                newKindDef = originalKind != PawnKindDefOf.WildMan ? originalKind ?? newKindDef : newKindDef;
                 return true;
             }
 
