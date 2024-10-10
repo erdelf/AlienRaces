@@ -141,13 +141,12 @@ public class ConditionApparel : Condition
 
     public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data)
     {
-        return pawn.HasApparelGraphics()                                                                          ||
-               (!data.head && !AlienRenderTreePatches.IsPortrait(pawn.WrappedPawn) && !pawn.VisibleInBed())       ||
+        return (!data.head && !AlienRenderTreePatches.IsPortrait(pawn.WrappedPawn) && !pawn.VisibleInBed())       ||
                (data.head && AlienRenderTreePatches.IsPortrait(pawn.WrappedPawn)  && Prefs.HatsOnlyOnMap)         ||
                (this.hiddenUnderApparelTag.NullOrEmpty()             && this.hiddenUnderApparelFor.NullOrEmpty()) ||
                !pawn.GetWornApparelProps().Any(ap =>
-                                              ap.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||
-                                              ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
+                                                   ap.bodyPartGroups.Any(bpgd => this.hiddenUnderApparelFor.Contains(bpgd)) ||
+                                                   ap.tags.Any(s => this.hiddenUnderApparelTag.Contains(s)));
     }
 
     public override void LoadDataFromXmlCustom(XmlNode xmlRoot) =>
