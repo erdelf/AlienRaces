@@ -328,6 +328,9 @@ namespace AlienRace
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
+                foreach (ThingDef bedDef in ar.alienRace.generalSettings.validBeds) 
+                    GeneralSettings.lockedBeds.Add(bedDef);
+
                 foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
                 {
                     if (!ThoughtSettings.thoughtRestrictionDict.ContainsKey(thoughtDef))
@@ -2116,9 +2119,7 @@ namespace AlienRace
             if (__result)
             {
                 __result = p.def is not ThingDef_AlienRace alienProps ||
-                           ((alienProps.alienRace.generalSettings.validBeds?.Contains(bedDef) ?? false) ||
-                            (alienProps.alienRace.generalSettings.validBeds.NullOrEmpty() &&
-                             !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(predicate: td => td.alienRace.generalSettings.validBeds?.Contains(bedDef) ?? false)));
+                            alienProps.alienRace.generalSettings.CanUseBed(bedDef);
             }
         }
 

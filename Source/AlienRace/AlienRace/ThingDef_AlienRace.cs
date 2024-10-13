@@ -184,7 +184,14 @@
         public bool canLayDown = true;
         public float minAgeForAdulthood = -1f;
 
-        public List<ThingDef>         validBeds;
+        public        List<ThingDef>    validBeds = [];
+        public static HashSet<ThingDef> lockedBeds = [];
+
+        public bool CanUseBed(ThingDef bedDef) =>
+            this.validBeds.Contains(bedDef) ||
+            (this.validBeds.NullOrEmpty() &&
+             !lockedBeds.Contains(bedDef));
+
         public List<ChemicalSettings> chemicalSettings;
         public List<AlienChanceEntry<TraitWithDegree>>   forcedRaceTraitEntries;
         public List<AlienChanceEntry<TraitWithDegree>>   disallowedTraits;
