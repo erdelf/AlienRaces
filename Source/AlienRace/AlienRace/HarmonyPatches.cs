@@ -2688,9 +2688,9 @@ namespace AlienRace
                     if (newColonistRaces.Count != colonistRaces.Count || newColonistRaces.Any(td => !colonistRaces.Contains(td)))
                     {
                         RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Clear();
-                        HashSet<ThingDef> buildingsRestrictedTemp = new(RaceRestrictionSettings.buildingRestricted);
+                        HashSet<BuildableDef> buildingsRestrictedTemp = [..RaceRestrictionSettings.buildingRestricted];
                         buildingsRestrictedTemp.AddRange(newColonistRaces.Where(td => td is ThingDef_AlienRace).SelectMany(td => (td as ThingDef_AlienRace)!.alienRace.raceRestriction.blackBuildingList));
-                        foreach (ThingDef td in buildingsRestrictedTemp)
+                        foreach (BuildableDef td in buildingsRestrictedTemp)
                         {
                             bool canBuild = false;
                             foreach (ThingDef race in newColonistRaces)
