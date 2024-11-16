@@ -97,8 +97,8 @@ public class ExtendedGraphicsPawnWrapper
 
     public virtual float GetNeed(NeedDef needDef, bool percentage)
     {
-        Need need = this.WrappedPawn.needs.TryGetNeed(needDef);
-        return percentage ? need.CurLevelPercentage : need.CurLevel;
+        Need need = this.WrappedPawn.needs?.TryGetNeed(needDef);
+        return need == null ? 0 : percentage ? need.CurLevelPercentage : need.CurLevel;
     }
 
     public virtual Gender GetGender() => this.WrappedPawn.gender;
