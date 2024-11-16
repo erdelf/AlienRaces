@@ -630,14 +630,14 @@
             return result && !(raceRestriction?.blackWeaponList.Contains(weapon) ?? false);
         }
 
-        public bool           onlyBuildRaceRestrictedBuildings = false;
-        public List<ThingDef> buildingList                     = new();
-        public List<ThingDef> whiteBuildingList                = new();
-        public List<ThingDef> blackBuildingList                = new();
+        public bool               onlyBuildRaceRestrictedBuildings = false;
+        public List<BuildableDef> buildingList                     = [];
+        public List<BuildableDef> whiteBuildingList                = [];
+        public List<BuildableDef> blackBuildingList                = [];
 
-        public static HashSet<ThingDef> buildingRestricted = new();
+        public static readonly HashSet<BuildableDef> buildingRestricted = [];
 
-        public static HashSet<ThingDef> buildingsRestrictedWithCurrentColony = new();
+        public static readonly HashSet<BuildableDef> buildingsRestrictedWithCurrentColony = [];
 
         public static bool CanColonyBuild(BuildableDef building) => 
             !buildingsRestrictedWithCurrentColony.Contains(building);
