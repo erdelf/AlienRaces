@@ -907,7 +907,7 @@
 
             public void RegenerateAddonsForced()
             {
-                if (!this.Pawn.Drawer.renderer.renderTree.Resolved && !this.Pawn.Spawned)
+                if (!this.Pawn.Drawer.renderer.renderTree.Resolved || !this.Pawn.Spawned || this.nodeProps == null)
                     return;
 
                 using IEnumerator<BodyAddon> bodyAddons  = this.AlienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator();
