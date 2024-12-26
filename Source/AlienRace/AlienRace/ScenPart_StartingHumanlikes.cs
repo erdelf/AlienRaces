@@ -39,28 +39,28 @@
         public override void DoEditInterface(Listing_ScenEdit listing)
         {
             Rect scenPartRect = listing.GetScenPartRect(this, RowHeight * 3f);
-            if (Widgets.ButtonText(scenPartRect.TopPart(pct: 0.45f), this.KindDef.label.CapitalizeFirst()))
+            if (Widgets.ButtonText(scenPartRect.TopPart(0.45f), this.KindDef.label.CapitalizeFirst()))
             {
                 List<FloatMenuOption> list = new();
-                list.AddRange(DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: ar => ar.pawnKindSettings.startingColonists != null)
-                   .SelectMany(selector: ar => ar.pawnKindSettings.startingColonists.SelectMany(selector: ste => ste.pawnKindEntries.SelectMany(selector: pke => pke.kindDefs)))
-                   .Where(predicate: s => s != null).Select(selector: pkd => new FloatMenuOption($"{pkd.label.CapitalizeFirst()} | {pkd.race.LabelCap}", action: () => this.KindDef = pkd)));
-                list.Add(new FloatMenuOption(label: "Villager", action: () => this.KindDef = PawnKindDefOf.Villager));
-                list.Add(new FloatMenuOption(label: "Slave",    action: () => this.KindDef = PawnKindDefOf.Slave));
+                list.AddRange(DefDatabase<RaceSettings>.AllDefsListForReading.Where(ar => ar.pawnKindSettings.startingColonists != null)
+                   .SelectMany(ar => ar.pawnKindSettings.startingColonists.SelectMany(ste => ste.pawnKindEntries.SelectMany(pke => pke.kindDefs)))
+                   .Where(s => s != null).Select(pkd => new FloatMenuOption($"{pkd.LabelCap} | {pkd.race.LabelCap}", () => this.KindDef = pkd)));
+                list.Add(new FloatMenuOption(PawnKindDefOf.Villager.LabelCap, () => this.KindDef = PawnKindDefOf.Villager));
+                list.Add(new FloatMenuOption(PawnKindDefOf.Slave.LabelCap,    () => this.KindDef = PawnKindDefOf.Slave));
                 Find.WindowStack.Add(new FloatMenu(list));
             }
 
-            Widgets.TextFieldNumeric(scenPartRect.BottomPart(pct: 0.45f), ref this.pawnCount, ref this.buffer);
+            Widgets.TextFieldNumeric(scenPartRect.BottomPart(0.45f), ref this.pawnCount, ref this.buffer);
         }
 
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look(ref this.pawnCount, label: "alienRaceScenPawnCount");
-            Scribe_Defs.Look(ref this.kindDef, label: "PawnKindDefAlienRaceScen");
+            Scribe_Values.Look(ref this.pawnCount, "alienRaceScenPawnCount");
+            Scribe_Defs.Look(ref this.kindDef, "PawnKindDefAlienRaceScen");
         }
 
-        public override string Summary(Scenario scen) => ScenSummaryList.SummaryWithList(scen, tag: "PlayerStartsWith", ScenPart_StartingThing_Defined.PlayerStartWithIntro);
+        public override string Summary(Scenario scen) => ScenSummaryList.SummaryWithList(scen, "PlayerStartsWith", ScenPart_StartingThing_Defined.PlayerStartWithIntro);
 
         public override IEnumerable<string> GetSummaryListEntries(string tag)
         {
