@@ -71,10 +71,8 @@
             base.DoSettingsWindowContents(inRect);
             Listing_Standard listingStandard = new();
             listingStandard.Begin(inRect);
-            listingStandard.CheckboxLabeled(label: "Display Texture Loading Logs", ref settings.textureLogs,
-                                            tooltip: "True: Texture loading logs are displayed on startup.\nFalse: Texture loading logs and details are suppressed.\nNote: This is intended for race mod debugging and development.");
-            listingStandard.CheckboxLabeled(label: "Randomize Starting Pawns on Reroll", ref settings.randomizeStartingPawnsOnReroll,
-                                            tooltip: "True: Randomizing a starting pawn will allow for a complete reroll.\nFalse: All Settings stay on a reroll and only details will change.");
+            listingStandard.CheckboxLabeled("HAR.Options.TextureLoadingLogs_Label".Translate(), ref settings.textureLogs, "HAR.Options.TextureLoadingLogs_Tooltip".Translate());
+            listingStandard.CheckboxLabeled("HAR.Options.RandomizeStartingPawns_Label".Translate(), ref settings.randomizeStartingPawnsOnReroll, "HAR.Options.RandomizeStartingPawns_Tooltip".Translate());
             listingStandard.End();
         }
 
@@ -93,8 +91,8 @@
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look(ref this.textureLogs,                    label: nameof(this.textureLogs),                    defaultValue: false);
-            Scribe_Values.Look(ref this.randomizeStartingPawnsOnReroll, label: nameof(this.randomizeStartingPawnsOnReroll), defaultValue: true);
+            Scribe_Values.Look(ref this.textureLogs,                    nameof(this.textureLogs),                    false);
+            Scribe_Values.Look(ref this.randomizeStartingPawnsOnReroll, nameof(this.randomizeStartingPawnsOnReroll), true);
         }
 
         public void UpdateSettings()
