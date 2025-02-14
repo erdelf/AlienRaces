@@ -163,6 +163,132 @@
                 }
             }
             RecursiveAttributeCheck(typeof(AlienSettings), Traverse.Create(this.alienRace));
+
+
+            foreach (ThingDef bedDef in this.alienRace.generalSettings.validBeds)
+                GeneralSettings.lockedBeds.Add(bedDef);
+
+            foreach (ThoughtDef thoughtDef in this.alienRace.thoughtSettings.restrictedThoughts)
+            {
+                if (!ThoughtSettings.thoughtRestrictionDict.ContainsKey(thoughtDef))
+                    ThoughtSettings.thoughtRestrictionDict.Add(thoughtDef, []);
+                ThoughtSettings.thoughtRestrictionDict[thoughtDef].Add(this);
+            }
+
+            foreach (ThingDef thingDef in this.alienRace.raceRestriction.apparelList)
+            {
+                RaceRestrictionSettings.apparelRestricted.Add(thingDef);
+                this.alienRace.raceRestriction.whiteApparelList.Add(thingDef);
+            }
+
+            foreach (ThingDef thingDef in this.alienRace.raceRestriction.weaponList)
+            {
+                RaceRestrictionSettings.weaponRestricted.Add(thingDef);
+                this.alienRace.raceRestriction.whiteWeaponList.Add(thingDef);
+            }
+
+            foreach (BuildableDef thingDef in this.alienRace.raceRestriction.buildingList)
+            {
+                RaceRestrictionSettings.buildingRestricted.Add(thingDef);
+                this.alienRace.raceRestriction.whiteBuildingList.Add(thingDef);
+            }
+
+            foreach (RecipeDef recipeDef in this.alienRace.raceRestriction.recipeList)
+            {
+                RaceRestrictionSettings.recipeRestricted.Add(recipeDef);
+                this.alienRace.raceRestriction.whiteRecipeList.Add(recipeDef);
+            }
+
+            foreach (ThingDef thingDef in this.alienRace.raceRestriction.plantList)
+            {
+                RaceRestrictionSettings.plantRestricted.Add(thingDef);
+                this.alienRace.raceRestriction.whitePlantList.Add(thingDef);
+            }
+
+            foreach (TraitDef traitDef in this.alienRace.raceRestriction.traitList)
+            {
+                RaceRestrictionSettings.traitRestricted.Add(traitDef);
+                this.alienRace.raceRestriction.whiteTraitList.Add(traitDef);
+            }
+
+            foreach (ThingDef thingDef in this.alienRace.raceRestriction.foodList)
+            {
+                RaceRestrictionSettings.foodRestricted.Add(thingDef);
+                this.alienRace.raceRestriction.whiteFoodList.Add(thingDef);
+            }
+
+            foreach (ThingDef thingDef in this.alienRace.raceRestriction.petList)
+            {
+                RaceRestrictionSettings.petRestricted.Add(thingDef);
+                this.alienRace.raceRestriction.whitePetList.Add(thingDef);
+            }
+
+            foreach (ResearchProjectDef projectDef in this.alienRace.raceRestriction.researchList.SelectMany(selector: rl => rl?.projects))
+            {
+                if (!RaceRestrictionSettings.researchRestrictionDict.ContainsKey(projectDef))
+                    RaceRestrictionSettings.researchRestrictionDict.Add(projectDef, []);
+                RaceRestrictionSettings.researchRestrictionDict[projectDef].Add(this);
+            }
+
+            foreach (GeneDef geneDef in this.alienRace.raceRestriction.geneList)
+            {
+                RaceRestrictionSettings.geneRestricted.Add(geneDef);
+                this.alienRace.raceRestriction.whiteGeneList.Add(geneDef);
+            }
+
+            foreach (GeneDef geneDef in this.alienRace.raceRestriction.geneListEndo)
+            {
+                RaceRestrictionSettings.geneRestrictedEndo.Add(geneDef);
+                this.alienRace.raceRestriction.whiteGeneListEndo.Add(geneDef);
+            }
+
+            foreach (GeneDef geneDef in this.alienRace.raceRestriction.geneListXeno)
+            {
+                RaceRestrictionSettings.geneRestrictedXeno.Add(geneDef);
+                this.alienRace.raceRestriction.whiteGeneListXeno.Add(geneDef);
+            }
+
+            foreach (XenotypeDef xenotypeDef in this.alienRace.raceRestriction.xenotypeList)
+            {
+                RaceRestrictionSettings.xenotypeRestricted.Add(xenotypeDef);
+                this.alienRace.raceRestriction.whiteXenotypeList.Add(xenotypeDef);
+            }
+
+            foreach (ThingDef thingDef in this.alienRace.raceRestriction.reproductionList)
+            {
+                RaceRestrictionSettings.reproductionRestricted.Add(thingDef);
+                this.alienRace.raceRestriction.whiteReproductionList.Add(thingDef);
+            }
+
+            if (this.race.hasCorpse && this.alienRace.generalSettings.corpseCategory != ThingCategoryDefOf.CorpsesHumanlike)
+            {
+                ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(this.race.corpseDef);
+                if (this.alienRace.generalSettings.corpseCategory != null)
+                {
+                    this.race.corpseDef.thingCategories = [this.alienRace.generalSettings.corpseCategory];
+                    this.alienRace.generalSettings.corpseCategory.childThingDefs.Add(this.race.corpseDef);
+                    this.alienRace.generalSettings.corpseCategory.ResolveReferences();
+                }
+                ThingCategoryDefOf.CorpsesHumanlike.ResolveReferences();
+            }
+
+            this.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
+
+            if (this.alienRace.generalSettings.humanRecipeImport && this != ThingDefOf.Human)
+            {
+                (this.recipes ??= []).AddRange(ThingDefOf.Human.recipes.Where(rd => !rd.targetsBodyPart                      ||
+                                                                                    rd.appliedOnFixedBodyParts.NullOrEmpty() ||
+                                                                                    rd.appliedOnFixedBodyParts.Any(bpd => this.race.body.AllParts.Any(bpr => bpr.def == bpd))));
+
+                DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(rd =>
+                {
+                    if (rd.recipeUsers?.Contains(ThingDefOf.Human) ?? false)
+                        rd.recipeUsers.Add(this);
+                    if (!rd.defaultIngredientFilter?.Allows(ThingDefOf.Meat_Human) ?? false)
+                        rd.defaultIngredientFilter.SetAllow(this.race.meatDef, allow: false);
+                });
+                this.recipes.RemoveDuplicates();
+            }
         }
 
         public class AlienSettings

@@ -328,141 +328,16 @@ namespace AlienRace
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
             {
-                foreach (ThingDef bedDef in ar.alienRace.generalSettings.validBeds) 
-                    GeneralSettings.lockedBeds.Add(bedDef);
-
-                foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
-                {
-                    if (!ThoughtSettings.thoughtRestrictionDict.ContainsKey(thoughtDef))
-                        ThoughtSettings.thoughtRestrictionDict.Add(thoughtDef, new List<ThingDef_AlienRace>());
-                    ThoughtSettings.thoughtRestrictionDict[thoughtDef].Add(ar);
-                }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.apparelList)
-                {
-                    RaceRestrictionSettings.apparelRestricted.Add(thingDef);
-                    ar.alienRace.raceRestriction.whiteApparelList.Add(thingDef);
-                }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.weaponList)
-                {
-                    RaceRestrictionSettings.weaponRestricted.Add(thingDef);
-                    ar.alienRace.raceRestriction.whiteWeaponList.Add(thingDef);
-                }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.buildingList)
-                {
-                    RaceRestrictionSettings.buildingRestricted.Add(thingDef);
-                    ar.alienRace.raceRestriction.whiteBuildingList.Add(thingDef);
-                }
-
-                foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.recipeList)
-                {
-                    RaceRestrictionSettings.recipeRestricted.Add(recipeDef);
-                    ar.alienRace.raceRestriction.whiteRecipeList.Add(recipeDef);
-                }
-                
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.plantList)
-                {
-                    RaceRestrictionSettings.plantRestricted.Add(thingDef);
-                    ar.alienRace.raceRestriction.whitePlantList.Add(thingDef);
-                }
-                
-                foreach (TraitDef traitDef in ar.alienRace.raceRestriction.traitList)
-                {
-                    RaceRestrictionSettings.traitRestricted.Add(traitDef);
-                    ar.alienRace.raceRestriction.whiteTraitList.Add(traitDef);
-                }
-                
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.foodList)
-                {
-                    RaceRestrictionSettings.foodRestricted.Add(thingDef);
-                    ar.alienRace.raceRestriction.whiteFoodList.Add(thingDef);
-                }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.petList)
-                {
-                    RaceRestrictionSettings.petRestricted.Add(thingDef);
-                    ar.alienRace.raceRestriction.whitePetList.Add(thingDef);
-                }
-
-                foreach (ResearchProjectDef projectDef in ar.alienRace.raceRestriction.researchList.SelectMany(selector: rl => rl?.projects))
-                {
-                    if (!RaceRestrictionSettings.researchRestrictionDict.ContainsKey(projectDef))
-                        RaceRestrictionSettings.researchRestrictionDict.Add(projectDef, new List<ThingDef_AlienRace>());
-                    RaceRestrictionSettings.researchRestrictionDict[projectDef].Add(ar);
-                }
-
-                foreach (GeneDef geneDef in ar.alienRace.raceRestriction.geneList)
-                {
-                    RaceRestrictionSettings.geneRestricted.Add(geneDef);
-                    ar.alienRace.raceRestriction.whiteGeneList.Add(geneDef);
-                }
-
-                foreach (GeneDef geneDef in ar.alienRace.raceRestriction.geneListEndo)
-                {
-                    RaceRestrictionSettings.geneRestrictedEndo.Add(geneDef);
-                    ar.alienRace.raceRestriction.whiteGeneListEndo.Add(geneDef);
-                }
-
-                foreach (GeneDef geneDef in ar.alienRace.raceRestriction.geneListXeno)
-                {
-                    RaceRestrictionSettings.geneRestrictedXeno.Add(geneDef);
-                    ar.alienRace.raceRestriction.whiteGeneListXeno.Add(geneDef);
-                }
-
-                foreach (XenotypeDef xenotypeDef in ar.alienRace.raceRestriction.xenotypeList)
-                {
-                    RaceRestrictionSettings.xenotypeRestricted.Add(xenotypeDef);
-                    ar.alienRace.raceRestriction.whiteXenotypeList.Add(xenotypeDef);
-                }
-
-                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.reproductionList)
-                {
-                    RaceRestrictionSettings.reproductionRestricted.Add(thingDef);
-                    ar.alienRace.raceRestriction.whiteReproductionList.Add(thingDef);
-                }
-
-                if (ar.race.hasCorpse && ar.alienRace.generalSettings.corpseCategory != ThingCategoryDefOf.CorpsesHumanlike)
-                {
-                    ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(ar.race.corpseDef);
-                    if (ar.alienRace.generalSettings.corpseCategory != null)
-                    {
-                        ar.race.corpseDef.thingCategories = [ar.alienRace.generalSettings.corpseCategory];
-                        ar.alienRace.generalSettings.corpseCategory.childThingDefs.Add(ar.race.corpseDef);
-                        ar.alienRace.generalSettings.corpseCategory.ResolveReferences();
-                    }
-                    ThingCategoryDefOf.CorpsesHumanlike.ResolveReferences();
-                }
-
-                ar.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
-
-                if (ar.alienRace.generalSettings.humanRecipeImport && ar != ThingDefOf.Human)
-                {
-                    (ar.recipes ??= new List<RecipeDef>()).AddRange(ThingDefOf.Human.recipes.Where(predicate: rd => !rd.targetsBodyPart                  ||
-                                                                                                                                  rd.appliedOnFixedBodyParts.NullOrEmpty() ||
-                                                                                                                                  rd.appliedOnFixedBodyParts.Any(predicate: bpd => ar.race.body.AllParts.Any(predicate: bpr => bpr.def == bpd))));
-
-                    DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(action: rd =>
-                                                                                 {
-                                                                                     if (rd.recipeUsers?.Contains(ThingDefOf.Human) ?? false)
-                                                                                         rd.recipeUsers.Add(ar);
-                                                                                     if (!rd.defaultIngredientFilter?.Allows(ThingDefOf.Meat_Human) ?? false)
-                                                                                         rd.defaultIngredientFilter.SetAllow(ar.race.meatDef, allow: false);
-                                                                                 });
-                    ar.recipes.RemoveDuplicates();
-                }
-
-                ar.alienRace.raceRestriction?.workGiverList?.ForEach(action: wgd =>
-                                                                             {
-                                                                                 if (wgd == null)
-                                                                                     return;
-                                                                                 harmony.Patch(AccessTools.Method(wgd.giverClass, name: "JobOnThing"),
-                                                                                               postfix: new HarmonyMethod(patchType, nameof(GenericJobOnThingPostfix)));
-                                                                                 MethodInfo hasJobOnThingInfo = AccessTools.Method(wgd.giverClass, name: "HasJobOnThing");
-                                                                                 if (hasJobOnThingInfo?.IsDeclaredMember() ?? false)
-                                                                                     harmony.Patch(hasJobOnThingInfo, postfix: new HarmonyMethod(patchType, nameof(GenericHasJobOnThingPostfix)));
-                                                                             });
+                ar.alienRace.raceRestriction?.workGiverList?.ForEach(wgd =>
+                                                                               {
+                                                                                   if (wgd == null)
+                                                                                       return;
+                                                                                   harmony.Patch(AccessTools.Method(wgd.giverClass, name: "JobOnThing"),
+                                                                                                 postfix: new HarmonyMethod(patchType, nameof(GenericJobOnThingPostfix)));
+                                                                                   MethodInfo hasJobOnThingInfo = AccessTools.Method(wgd.giverClass, name: "HasJobOnThing");
+                                                                                   if (hasJobOnThingInfo?.IsDeclaredMember() ?? false)
+                                                                                       harmony.Patch(hasJobOnThingInfo, postfix: new HarmonyMethod(patchType, nameof(GenericHasJobOnThingPostfix)));
+                                                                               });
             }
 
             foreach (ThingDef def in DefDatabase<ThingDef>.AllDefs)
