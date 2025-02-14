@@ -265,7 +265,6 @@
                     }
 
 
-
                     foreach (BodyTypeDef bodyTypeRaw in this.bodyTypes)
                     {
                         BodyTypeDef bodyType = bodyTypeRaw == BodyTypeDefOf.Baby ? BodyTypeDefOf.Child : bodyTypeRaw;
@@ -380,25 +379,22 @@
             this.alienProps.alienRace.graphicPaths.stump.resolveData.head     = true;
             this.alienProps.alienRace.graphicPaths.headMasks.resolveData.head = true;
 
-            graphicsLoader.LoadAllGraphics(this.alienProps.defName,
-                                           this.alienProps.alienRace.graphicPaths.head,
-                                           this.alienProps.alienRace.graphicPaths.body,
-                                           this.alienProps.alienRace.graphicPaths.skeleton,
-                                           this.alienProps.alienRace.graphicPaths.skull,
-                                           this.alienProps.alienRace.graphicPaths.stump,
-                                           this.alienProps.alienRace.graphicPaths.bodyMasks,
-                                           this.alienProps.alienRace.graphicPaths.headMasks);
+            void LoadGraphics()
+            {
+                graphicsLoader.LoadAllGraphics(this.alienProps.defName, this.alienProps.alienRace.graphicPaths.head, this.alienProps.alienRace.graphicPaths.body, this.alienProps.alienRace.graphicPaths.skeleton, this.alienProps.alienRace.graphicPaths.skull, this.alienProps.alienRace.graphicPaths.stump, this.alienProps.alienRace.graphicPaths.bodyMasks, this.alienProps.alienRace.graphicPaths.headMasks);
 
-            graphicsLoader.LoadAllGraphics(this.alienProps.defName,
-                                           this.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values.Concat(
-                                                                                                                        this.alienProps.alienRace.graphicPaths.apparel.fallbacks.SelectMany(afo =>
-                                                                                                                            afo.wornGraphicPaths.Concat(afo.wornGraphicPath))).ToArray());
+                graphicsLoader.LoadAllGraphics(this.alienProps.defName, this.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values.Concat(this.alienProps.alienRace.graphicPaths.apparel.fallbacks.SelectMany(afo => afo.wornGraphicPaths.Concat(afo.wornGraphicPath))).ToArray());
 
-            graphicsLoader.LoadAllGraphics(this.alienProps.defName + " Addons", this.bodyAddons.Cast<ExtendedGraphicTop>().ToArray());
+                graphicsLoader.LoadAllGraphics(this.alienProps.defName + " Addons", this.bodyAddons.Cast<ExtendedGraphicTop>().ToArray());
+
+                Application.onBeforeRender -= LoadGraphics;
+            }
+
+            Application.onBeforeRender += LoadGraphics;
 
             this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
             foreach (OffsetNamed offsetDefault in this.offsetDefaults)
-                this.offsetDefaultsDictionary.Add(offsetDefault.name, offsetDefault);
+                this.offsetDefaultsDictionary[offsetDefault.name] = offsetDefault;
 
             foreach (BodyAddon bodyAddon in this.bodyAddons)
                 bodyAddon.defaultOffsets = this.offsetDefaultsDictionary[bodyAddon.defaultOffset].offsets;
