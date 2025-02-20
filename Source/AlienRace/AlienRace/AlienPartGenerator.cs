@@ -12,7 +12,6 @@
     using RimWorld;
     using UnityEngine;
     using Verse;
-    using static AlienRenderTreePatches;
     using Gender = Verse.Gender;
 
     public partial class AlienPartGenerator
@@ -171,11 +170,6 @@
                 this.oldHairAgeCurve.Add(maxAge, 1f);
             }
 
-            this.GenerateMeshsAndMeshPools(new DefaultGraphicsLoader());
-        }
-
-        public void GenerateMeshsAndMeshPools(IGraphicsLoader graphicsLoader)
-        {
             this.GenerateOffsetDefaults();
 
             {
@@ -379,18 +373,11 @@
             this.alienProps.alienRace.graphicPaths.stump.resolveData.head     = true;
             this.alienProps.alienRace.graphicPaths.headMasks.resolveData.head = true;
 
-            void LoadGraphics()
-            {
-                graphicsLoader.LoadAllGraphics(this.alienProps.defName, this.alienProps.alienRace.graphicPaths.head, this.alienProps.alienRace.graphicPaths.body, this.alienProps.alienRace.graphicPaths.skeleton, this.alienProps.alienRace.graphicPaths.skull, this.alienProps.alienRace.graphicPaths.stump, this.alienProps.alienRace.graphicPaths.bodyMasks, this.alienProps.alienRace.graphicPaths.headMasks);
+            if (!graphicsQueue.Any())
+                Application.onBeforeRender += LoadGraphicsHook;
 
-                graphicsLoader.LoadAllGraphics(this.alienProps.defName, this.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values.Concat(this.alienProps.alienRace.graphicPaths.apparel.fallbacks.SelectMany(afo => afo.wornGraphicPaths.Concat(afo.wornGraphicPath))).ToArray());
-
-                graphicsLoader.LoadAllGraphics(this.alienProps.defName + " Addons", this.bodyAddons.Cast<ExtendedGraphicTop>().ToArray());
-
-                Application.onBeforeRender -= LoadGraphics;
-            }
-
-            Application.onBeforeRender += LoadGraphics;
+            //Log.Message("queueing graphics for: " + this.alienProps.defName);
+            graphicsQueue.Add(this);
 
             this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
             foreach (OffsetNamed offsetDefault in this.offsetDefaults)
@@ -398,6 +385,27 @@
 
             foreach (BodyAddon bodyAddon in this.bodyAddons)
                 bodyAddon.defaultOffsets = this.offsetDefaultsDictionary[bodyAddon.defaultOffset].offsets;
+        }
+
+        public static readonly HashSet<AlienPartGenerator> graphicsQueue = [];
+
+        private static readonly IGraphicsLoader graphicsLoader = new DefaultGraphicsLoader();
+
+        public static void LoadGraphicsHook()
+        {
+            foreach (AlienPartGenerator apg in graphicsQueue)
+            {
+                //Log.Message("resolving graphics for: " + apg.alienProps.defName);
+                graphicsLoader.LoadAllGraphics(apg.alienProps.defName, apg.alienProps.alienRace.graphicPaths.head, apg.alienProps.alienRace.graphicPaths.body, apg.alienProps.alienRace.graphicPaths.skeleton, apg.alienProps.alienRace.graphicPaths.skull, apg.alienProps.alienRace.graphicPaths.stump, apg.alienProps.alienRace.graphicPaths.bodyMasks, apg.alienProps.alienRace.graphicPaths.headMasks);
+
+                graphicsLoader.LoadAllGraphics(apg.alienProps.defName, apg.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values.Concat(apg.alienProps.alienRace.graphicPaths.apparel.fallbacks.SelectMany(afo => afo.wornGraphicPaths.Concat(afo.wornGraphicPath))).ToArray());
+
+                graphicsLoader.LoadAllGraphics(apg.alienProps.defName + " Addons", apg.bodyAddons.Cast<ExtendedGraphicTop>().ToArray());
+            }
+
+            graphicsQueue.Clear();
+
+            Application.onBeforeRender -= LoadGraphicsHook;
         }
 
         public class WoundAnchorReplacement
@@ -838,7 +846,7 @@
             }
 
             private List<AlienPawnRenderNodeProperties_BodyAddon> nodeProps = null;
-
+            
             public override List<PawnRenderNode> CompRenderNodes()
             {
                 List<PawnRenderNode>                nodes     = [];

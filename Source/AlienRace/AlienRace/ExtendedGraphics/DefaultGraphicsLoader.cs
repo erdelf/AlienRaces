@@ -8,17 +8,13 @@ using Verse;
 /**
  * This class loads graphics in a reasonable way but makes no guarantees about idempotency
  */
-public class DefaultGraphicsLoader : IGraphicsLoader
+public class DefaultGraphicsLoader(IGraphicFinder<Texture2D> graphicFinder2D) : IGraphicsLoader
 
 {
-    private readonly IGraphicFinder<Texture2D> graphicFinder2D;
-
     public DefaultGraphicsLoader() : this(new GraphicFinder2D())
     {
     }
 
-    public DefaultGraphicsLoader(IGraphicFinder<Texture2D> graphicFinder2D) => this.graphicFinder2D = graphicFinder2D;
-    
     private static void LogFor(StringBuilder logBuilder, string logLine, bool shouldLog = false)
     {
         if (shouldLog && AlienRaceMod.settings.textureLogs) 
@@ -37,7 +33,7 @@ public class DefaultGraphicsLoader : IGraphicsLoader
 
         for (int i = 0; i < graphic.GetPathCount(); i++)
         {
-            while (this.graphicFinder2D.GetByPath(graphic.GetPath(i), graphic.GetVariantCount(i), "south", false) != null)
+            while (graphicFinder2D.GetByPath(graphic.GetPath(i), graphic.GetVariantCount(i), "south", false) != null)
                 graphic.IncrementVariantCount(i);
             LogFor(logBuilder, $"Variants found for {graphic.GetPath(i)}: {graphic.GetVariantCount(i)}", shouldLog);
         }
@@ -46,7 +42,7 @@ public class DefaultGraphicsLoader : IGraphicsLoader
             if(graphic.UseFallback())
                 for (int i = 0; i < graphic.GetPathCount(); i++)
                 {
-                    while (this.graphicFinder2D.GetByPath(graphic.GetPath(i), graphic.GetVariantCount(i), "south", false) != null)
+                    while (graphicFinder2D.GetByPath(graphic.GetPath(i), graphic.GetVariantCount(i), "south", false) != null)
                         graphic.IncrementVariantCount(i);
                     LogFor(logBuilder, $"Variants found for {graphic.GetPath(i)}: {graphic.GetVariantCount(i)}", shouldLog);
                 }

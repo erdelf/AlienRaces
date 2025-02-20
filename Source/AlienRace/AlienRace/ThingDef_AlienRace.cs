@@ -133,36 +133,48 @@
                                                                               });
             }
             
-            void RecursiveAttributeCheck(Type type, Traverse instance)
+            void RecursiveAttributeCheck(Type type, Traverse instance, string debug)
             {
                 if (type == typeof(ThingDef_AlienRace))
                     return;
-
-                foreach (FieldInfo field in type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+                try
                 {
-                    Traverse instanceNew = instance.Field(field.Name);
+                    debug += ".";
+                    string debugBackup = debug;
 
-                    if (typeof(IList).IsAssignableFrom(field.FieldType))
+                    foreach (FieldInfo field in type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
                     {
-                        object value = instanceNew.GetValue();
-                        if (value != null)
-                            foreach (object o in (IList) value)
-                            {
-                                if (o.GetType().Assembly == typeof(ThingDef_AlienRace).Assembly)
-                                    RecursiveAttributeCheck(o.GetType(), Traverse.Create(o));
-                            }
+                        debug = debugBackup;
+                        debug += $"({field.FieldType.FullName}) {field.Name}";
+
+                        Traverse instanceNew = instance.Field(field.Name);
+
+                        if (typeof(IList).IsAssignableFrom(field.FieldType))
+                        {
+                            object value = instanceNew.GetValue();
+                            if (value != null)
+                                foreach (object o in (IList)value)
+                                {
+                                    if (o.GetType().Assembly == typeof(ThingDef_AlienRace).Assembly)
+                                        RecursiveAttributeCheck(o.GetType(), Traverse.Create(o), debug);
+                                }
+                        }
+
+                        if (field.FieldType.Assembly == typeof(ThingDef_AlienRace).Assembly)
+                            RecursiveAttributeCheck(field.FieldType, instanceNew, debug);
+
+                        LoadDefFromField attribute = field.GetCustomAttribute<LoadDefFromField>();
+                        if (attribute != null)
+                            if (instanceNew.GetValue() == null)
+                                instanceNew.SetValue(attribute.defName == "this" ? this : attribute.GetDef(field.FieldType));
                     }
-
-                    if (field.FieldType.Assembly == typeof(ThingDef_AlienRace).Assembly)
-                        RecursiveAttributeCheck(field.FieldType, instanceNew);
-
-                    LoadDefFromField attribute = field.GetCustomAttribute<LoadDefFromField>();
-                    if (attribute != null)
-                        if (instanceNew.GetValue() == null)
-                            instanceNew.SetValue(attribute.defName == "this" ? this : attribute.GetDef(field.FieldType));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Log.Error($"RecursiveAttribute Error: {debug}\n{ex}");
                 }
             }
-            RecursiveAttributeCheck(typeof(AlienSettings), Traverse.Create(this.alienRace));
+            RecursiveAttributeCheck(typeof(AlienSettings), Traverse.Create(this.alienRace), this.defName);
 
 
             foreach (ThingDef bedDef in this.alienRace.generalSettings.validBeds)
