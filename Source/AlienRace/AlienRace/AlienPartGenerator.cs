@@ -993,7 +993,12 @@
 
                 if (this.Pawn.Drawer.renderer.CurRotDrawMode == RotDrawMode.Rotting)
                     this.OverwriteColorChannel("skin", PawnRenderUtility.GetRottenColor(this.Pawn.story.SkinColor));
+            }
 
+            public override void Notify_DefsHotReloaded()
+            {
+                base.Notify_DefsHotReloaded();
+                LongEventHandler.QueueLongEvent(() => ReresolveGraphic(this.Pawn), $"Regenerate {this.Pawn.NameFullColored}", false, null);
             }
 
             [DebugAction(category: "AlienRace", name: "Regenerate all colorchannels", allowedGameStates = AllowedGameStates.PlayingOnMap)]
