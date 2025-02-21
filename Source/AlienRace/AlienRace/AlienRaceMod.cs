@@ -11,12 +11,14 @@
 
     public class AlienRaceMod : Mod
     {
+        public static AlienRaceMod      instance;
         public static AlienRaceSettings settings;
 
         public override string SettingsCategory() => "Alien Race";
 
         public AlienRaceMod(ModContentPack content) : base(content)
         {
+            instance = this;
             settings = this.GetSettings<AlienRaceSettings>();
             /*
             if (CachedData.customDataLoadMethodCacheInfo().ContainsKey(typeof(AlienPartGenerator.BodyAddon)))
