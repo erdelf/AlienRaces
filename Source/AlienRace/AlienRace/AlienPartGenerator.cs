@@ -393,6 +393,9 @@
 
         public static void LoadGraphicsHook()
         {
+            if (!AlienRaceMod.instance.Content.GetContentHolder<Texture2D>()?.contentList?.Any() ?? true)
+                return;
+
             foreach (AlienPartGenerator apg in graphicsQueue)
             {
                 //Log.Message("resolving graphics for: " + apg.alienProps.defName);
