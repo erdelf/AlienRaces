@@ -14,13 +14,13 @@
         {
             ScenPartDef scenPart = new()
                                    {
-                                             defName         = "StartingHumanlikes",
-                                             label           = "Start with humanlikes",
-                                             scenPartClass   = typeof(ScenPart_StartingHumanlikes),
-                                             category        = ScenPartCategory.StartingImportant,
-                                             selectionWeight = 1.0f,
-                                             summaryPriority = 10
-                                         };
+                                       defName         = "StartingHumanlikes",
+                                       label           = "HAR.StartingHumanlikesScenPart.Label".Translate(),
+                                       scenPartClass   = typeof(ScenPart_StartingHumanlikes),
+                                       category        = ScenPartCategory.StartingImportant,
+                                       selectionWeight = 1.0f,
+                                       summaryPriority = 10
+                                   };
             scenPart.ResolveReferences();
             scenPart.PostLoad();
             DefDatabase<ScenPartDef>.Add(scenPart);
