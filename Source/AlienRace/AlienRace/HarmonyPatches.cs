@@ -1496,7 +1496,7 @@ namespace AlienRace
         public static void CacheRenderPawnPrefix(Pawn pawn, ref float cameraZoom, bool portrait)
         {
             if(!portrait)
-                cameraZoom = 1f / ((pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.borderScale ?? 1f);
+                cameraZoom /= ((pawn.def as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.borderScale ?? 1f);
         }
 
         public static Pawn createPawnAtlasPawn;
