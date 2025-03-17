@@ -621,9 +621,19 @@
         public static Dictionary<ThoughtDef, List<ThingDef_AlienRace>> thoughtRestrictionDict = new();
         public        List<ThoughtDef>                                 restrictedThoughts     = new();
 
-        public ThoughtDef ReplaceIfApplicable(ThoughtDef def) =>
-            (this.replacerList == null || this.replacerList.Select(selector: tr => tr.replacer).Contains(def))
-                ? def : this.replacerList.FirstOrDefault(predicate: tr => tr.original == def)?.replacer ?? def;
+        public ThoughtDef ReplaceIfApplicable(ThoughtDef def)
+        {
+            if (this.replacerList == null || this.replacerList.Select(tr => tr.replacer).Contains(def))
+                return def;
+            
+            for (int i = 0; i < this.replacerList.Count; i++)
+            {
+                if(this.replacerList[i].original == def)
+                    return this.replacerList[i].replacer ?? def;
+            }
+
+            return def;
+        }
 
         public ButcherThought       butcherThoughtGeneral  = new();
         public List<ButcherThought> butcherThoughtSpecific = new();

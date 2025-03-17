@@ -2348,7 +2348,13 @@ namespace AlienRace
             if (pawn.def is ThingDef_AlienRace race)
                 def = race.alienRace.thoughtSettings.ReplaceIfApplicable(def);
             ThoughtDef  thoughtDef = def;
-            return !___cachedThoughts.Any(th => th.def == thoughtDef);
+
+            for (int i = 0; i < ___cachedThoughts.Count; i++)
+            {
+                if (___cachedThoughts[i].def == thoughtDef)
+                    return false;
+            }
+            return true;
         }
 
         public static void CanBingeNowPostfix(Pawn pawn, ChemicalDef chemical, ref bool __result)
