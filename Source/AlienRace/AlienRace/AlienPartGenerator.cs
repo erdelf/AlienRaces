@@ -345,6 +345,36 @@
                         }
                     }
                 }
+
+                foreach (ApparelReplacementOption overrides in this.alienProps.alienRace.graphicPaths.apparel.overrides)
+                {
+                    foreach (ExtendedGraphicTop graphicTop in overrides.wornGraphicPaths.Concat(overrides.wornGraphicPath))
+                    {
+                        if (!graphicTop.GetSubGraphics().Any())
+                        {
+                            string path = graphicTop.path;
+                            foreach (BodyTypeDef bodyType in this.bodyTypes)
+                                graphicTop.extendedGraphics.Add(new ExtendedConditionGraphic()
+                                                                {
+                                                                    conditions = [new ConditionBodyType { bodyType = bodyType }],
+                                                                    path       = $"{path}_{bodyType.defName}",
+                                                                    extendedGraphics =
+                                                                    [
+                                                                        new ExtendedConditionGraphic
+                                                                        {
+                                                                            conditions = [new ConditionGender { gender = Gender.Male }],
+                                                                            path       = $"{path}_{Gender.Male}_{bodyType.defName}"
+                                                                        },
+                                                                        new ExtendedConditionGraphic
+                                                                        {
+                                                                            conditions = [new ConditionGender { gender = Gender.Female }],
+                                                                            path       = $"{path}_{Gender.Female}_{bodyType.defName}"
+                                                                        }
+                                                                    ]
+                                                                });
+                        }
+                    }
+                }
             }
 
             this.alienProps.alienRace.graphicPaths.apparel.pathPrefix.Init();
@@ -401,7 +431,11 @@
                 //Log.Message("resolving graphics for: " + apg.alienProps.defName);
                 graphicsLoader.LoadAllGraphics(apg.alienProps.defName, apg.alienProps.alienRace.graphicPaths.head, apg.alienProps.alienRace.graphicPaths.body, apg.alienProps.alienRace.graphicPaths.skeleton, apg.alienProps.alienRace.graphicPaths.skull, apg.alienProps.alienRace.graphicPaths.stump, apg.alienProps.alienRace.graphicPaths.bodyMasks, apg.alienProps.alienRace.graphicPaths.headMasks);
 
-                graphicsLoader.LoadAllGraphics(apg.alienProps.defName, apg.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values.Concat(apg.alienProps.alienRace.graphicPaths.apparel.fallbacks.SelectMany(afo => afo.wornGraphicPaths.Concat(afo.wornGraphicPath))).ToArray());
+                graphicsLoader.LoadAllGraphics(apg.alienProps.defName, apg.alienProps.alienRace.graphicPaths.apparel.individualPaths.Values.Concat(
+                                                apg.alienProps.alienRace.graphicPaths.apparel.fallbacks.SelectMany(afo => 
+                                                                                                                       afo.wornGraphicPaths.Concat(afo.wornGraphicPath))).Concat(
+                                                    apg.alienProps.alienRace.graphicPaths.apparel.overrides.SelectMany(afo => 
+                                                                                                                           afo.wornGraphicPaths.Concat(afo.wornGraphicPath))).ToArray());
 
                 graphicsLoader.LoadAllGraphics(apg.alienProps.defName + " Addons", apg.bodyAddons.Cast<ExtendedGraphicTop>().ToArray());
             }
