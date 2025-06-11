@@ -32,7 +32,7 @@ namespace AlienRace
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"Error during patching {original} with: pre {prefix?.method} | post: {postfix?.method} | trans: {transpiler?.method}\n{e}");
+                    Log.Error($"Error during patching {original.DeclaringType?.FullName} :: {original} with: pre {prefix?.method} | post: {postfix?.method} | trans: {transpiler?.method}\n{e}");
                 }
 
             return null;
