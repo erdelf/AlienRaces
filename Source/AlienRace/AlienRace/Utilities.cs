@@ -313,9 +313,6 @@
             set => defaultHeadTypeDefs = value;
         }
 
-        public static readonly AccessTools.FieldRef<Dictionary<Type, MethodInfo>> customDataLoadMethodCacheInfo =
-            AccessTools.StaticFieldRefAccess<Dictionary<Type, MethodInfo>>(AccessTools.Field(typeof(DirectXmlToObject), "customDataLoadMethodCache"));
-
         public delegate Graphic_Multi GraphicMultiFromGraphicRequest(GraphicRequest req);
 
         public static readonly GraphicMultiFromGraphicRequest getInnerGraphic =
