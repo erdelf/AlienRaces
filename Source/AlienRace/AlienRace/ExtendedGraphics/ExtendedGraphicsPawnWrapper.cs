@@ -139,6 +139,8 @@ public class ExtendedGraphicsPawnWrapper
     public virtual bool IsMutant(MutantDef def) => this.WrappedPawn.IsMutant && (def == null || this.WrappedPawn.mutant.Def == def);
 
     public virtual bool IsCreepJoiner(CreepJoinerFormKindDef def) => this.WrappedPawn.IsCreepJoiner && (def == null || this.WrappedPawn.creepjoiner.form == def);
+
+    public virtual bool IsStatue => AlienRenderTreePatches.IsStatuePawn(this.WrappedPawn);
 }
 
 public class DummyExtendedGraphicsPawnWrapper : ExtendedGraphicsPawnWrapper

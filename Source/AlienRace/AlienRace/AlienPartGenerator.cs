@@ -82,6 +82,9 @@
 
         public Color SkinColor(Pawn alien, bool first = true)
         {
+            if(alien.Drawer.renderer.StatueColor.HasValue)
+                return alien.Drawer.renderer.StatueColor.Value;
+
             AlienComp alienComp = alien.TryGetComp<AlienComp>();
             
             ExposableValueTuple<Color, Color> skinColors = alienComp.GetChannel(channel: "skin");
@@ -776,7 +779,7 @@
                 Scribe_Values.Look(ref this.headMaskVariant, nameof(this.headMaskVariant), -1);
                 Scribe_Values.Look(ref this.bodyMaskVariant, nameof(this.bodyMaskVariant), -1);
 
-                if (Scribe.mode is LoadSaveMode.ResolvingCrossRefs)
+                if (Scribe.mode is LoadSaveMode.ResolvingCrossRefs && this.Pawn != null)
                     this.Pawn.story.SkinColorBase = this.GetChannel("skin").first;
 
                 
@@ -850,7 +853,14 @@
                 AlienComp originalComp = original.TryGetComp<AlienComp>();
                 AlienComp cloneComp = clone.TryGetComp<AlienComp>();
 
-                foreach ((string channel, ExposableValueTuple<Color, Color> colors) in originalComp.ColorChannels) 
+                CopyAlienData(originalComp, cloneComp);
+
+                clone.Drawer.renderer.SetAllGraphicsDirty();
+            }
+
+            public static void CopyAlienData(AlienComp originalComp, AlienComp cloneComp)
+            {
+                foreach ((string channel, ExposableValueTuple<Color, Color> colors) in originalComp.ColorChannels)
                     cloneComp.OverwriteColorChannel(channel, colors.first, colors.second);
 
                 cloneComp.addonVariants     = originalComp.addonVariants.ListFullCopy();
@@ -859,12 +869,12 @@
                 foreach ((string key, ColorChannelLinkData originalData) in originalComp.ColorChannelLinks)
                 {
                     ColorChannelLinkData cloneData = new()
-                                                {
-                                                    originalChannel   = originalData.originalChannel,
-                                                    targetsChannelOne = [],
-                                                    targetsChannelTwo = []
-                                                };
-                    foreach (ColorChannelLinkData.ColorChannelLinkTargetData targetData in originalData.targetsChannelOne) 
+                                                     {
+                                                         originalChannel   = originalData.originalChannel,
+                                                         targetsChannelOne = [],
+                                                         targetsChannelTwo = []
+                                                     };
+                    foreach (ColorChannelLinkData.ColorChannelLinkTargetData targetData in originalData.targetsChannelOne)
                         cloneData.targetsChannelOne.Add(new ColorChannelLinkData.ColorChannelLinkTargetData { categoryIndex = targetData.categoryIndex, targetChannel = targetData.targetChannel });
 
                     foreach (ColorChannelLinkData.ColorChannelLinkTargetData targetData in originalData.targetsChannelTwo)
@@ -878,9 +888,8 @@
                 cloneComp.headVariant               = originalComp.headVariant;
                 cloneComp.headMaskVariant           = originalComp.headMaskVariant;
                 cloneComp.lastAlienMeatIngestedTick = originalComp.lastAlienMeatIngestedTick;
-
-                clone.Drawer.renderer.SetAllGraphicsDirty();
             }
+
 
             private List<AlienPawnRenderNodeProperties_BodyAddon> nodeProps = null;
             

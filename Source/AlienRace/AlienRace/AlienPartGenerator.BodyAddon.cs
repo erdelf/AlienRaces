@@ -163,7 +163,15 @@ namespace AlienRace
                 get => this.shaderType ??= ShaderTypeDefOf.Cutout;
                 set => this.shaderType = value ?? ShaderTypeDefOf.Cutout;
             }
-            
+
+            private ShaderTypeDef shaderTypeStatue;
+
+            public ShaderTypeDef ShaderTypeStatue
+            {
+                get => this.shaderTypeStatue ??= ShaderTypeDefOf.Cutout;
+                set => this.shaderTypeStatue = value ?? ShaderTypeDefOf.Cutout;
+            }
+
             /*
             private bool RequiredBodyPartExistsFor(ExtendedGraphicsPawnWrapper pawn) =>
                 (pawn.HasNamedBodyPart(this.bodyPart, this.bodyPartLabel) || pawn.LinkToCorePart(this.drawWithoutPart, this.alignWithHead, this.bodyPart, this.bodyPartLabel)) ||
@@ -203,11 +211,11 @@ namespace AlienRace
             {
                 ExposableValueTuple<Color, Color> channel = alienComp?.GetChannel(this.ColorChannel) ?? new ExposableValueTuple<Color, Color>(Color.white, Color.white);
 
-                Color first  = this.ColorChannel == "skin" ? 
-                                   pawn.story?.skinColorOverride.HasValue ?? false ? 
-                                       pawn.story.skinColorOverride.Value : 
-                                       channel.first : 
-                                   channel.first;
+                Color first = this.ColorChannel == "skin" ?
+                                  pawn.story?.skinColorOverride.HasValue ?? false ?
+                                      pawn.story.skinColorOverride.Value :
+                                      channel.first :
+                                  channel.first;
 
                 Color second = channel.second;
 
@@ -227,16 +235,19 @@ namespace AlienRace
                 if (this.ColorChannel == "skin" && pawn.Drawer.renderer.CurRotDrawMode == RotDrawMode.Rotting)
                     first = PawnRenderUtility.GetRottenColor(first);
 
+                first = AlienRenderTreePatches.CheckOverrideColor(pawn, first);
 
                 string returnPath = this.GetPath(pawn, ref sharedIndex, savedIndex);
 
                 if (!returnPath.NullOrEmpty() && (!precheckCompare || preGraphic == null || returnPath != preGraphic.path || first != preGraphic.Color || second != preGraphic.ColorTwo))
                 {
-                    Graphic_Multi_RotationFromData graphic = GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, ContentFinder<Texture2D>.Get(returnPath + "_southm", reportFailure: false) == null ?
-                                                                                                          this.ShaderType.Shader :
-                                                                                                          ShaderDatabase.CutoutComplex,
-                                                                                          Vector2.one, first, second, new GraphicData { drawRotated = !this.drawRotated }) as Graphic_Multi_RotationFromData
-                    ;
+                    Graphic_Multi_RotationFromData graphic = GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, AlienRenderTreePatches.IsStatuePawn(pawn) ?
+                                                                                                                                 this.ShaderTypeStatue.Shader :
+                                                                                                                                 ContentFinder<Texture2D>.Get(returnPath + "_southm", reportFailure: false) == null ?
+                                                                                                                                     this.ShaderType.Shader :
+                                                                                                                                     ShaderDatabase.CutoutComplex,
+                                                                                                                 Vector2.one, first, second,
+                                                                                                                 new GraphicData { drawRotated = !this.drawRotated }) as Graphic_Multi_RotationFromData;
                     graphic.westFlipped = this.flipWest;
                     return graphic;
                 }
