@@ -495,7 +495,7 @@ namespace AlienRace
             this.props.graphic;
 
         public void UpdateGraphic() => 
-            this.graphic = this.GraphicFor(this.owningPawn);
+            this.primaryGraphic = this.GraphicFor(this.owningPawn);
 
         public override GraphicMeshSet MeshSetFor(Pawn pawn) => 
             MeshPool.GetMeshSetForSize(Vector2.one);

@@ -1034,7 +1034,7 @@
                 this.OverwriteColorChannel("favorite", this.Pawn.story.favoriteColor);
                 this.OverwriteColorChannel("favorite", second: this.ColorChannels["favorite"].second != Color.clear ? null : this.Pawn.story.favoriteColor);
                 this.OverwriteColorChannel("ideo",     this.Pawn.Ideo?.Color, this.Pawn.Ideo?.ApparelColor);
-                this.OverwriteColorChannel("mech",     this.Pawn.Faction?.MechColor);
+                this.OverwriteColorChannel("mech",     this.Pawn.Faction?.AllegianceColor);
 
                 if (this.Pawn.Drawer.renderer.CurRotDrawMode == RotDrawMode.Rotting)
                     this.OverwriteColorChannel("skin", PawnRenderUtility.GetRottenColor(this.Pawn.story.SkinColor));
