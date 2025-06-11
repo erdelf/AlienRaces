@@ -17,10 +17,10 @@ namespace AlienRace.ApparelGraphics
         public static string GetPath(string path, Apparel apparel, BodyTypeDef bodyType)
         {
             Pawn wearer = apparel.Wearer;
-            if (wearer?.def is ThingDef_AlienRace alienRace)
+            if (wearer?.def is ThingDef_AlienRace alienRace || (alienRace = AlienPartGenerator.ExtendedGraphicTop.drawOverrideDummy?.race as ThingDef_AlienRace) != null)
             {
                 int index      = 0;
-                int savedIndex = wearer.HashOffset();
+                int savedIndex = wearer?.HashOffset() ?? apparel.HashOffset();
 
                 if (apparelCache.TryGetValue((apparel.def, alienRace, bodyType), out AlienPartGenerator.ExtendedGraphicTop cachedGraphic))
                     return cachedGraphic.GetPath(wearer, ref index, savedIndex);
@@ -59,7 +59,7 @@ namespace AlienRace.ApparelGraphics
                 }
 
                 // If no specific fallbacks exist, attempt to use a fallback body type
-                if (bodyType != null && path.EndsWith(overridePath = "_" + bodyType.defName) && overrides.TryGetBodyTypeFallback(wearer, out BodyTypeDef overrideBodyType))
+                if (bodyType != null && path.EndsWith(overridePath = "_" + bodyType.defName) && overrides.TryGetBodyTypeFallback(wearer?.gender ?? AlienPartGenerator.ExtendedGraphicTop.drawOverrideDummy?.gender ?? Gender.None, out BodyTypeDef overrideBodyType))
                     return ReplaceBodyType(path, overridePath, overrideBodyType);
 
                 // If all else fails, fall back to vanilla behavior

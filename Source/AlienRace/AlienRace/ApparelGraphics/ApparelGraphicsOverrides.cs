@@ -37,13 +37,13 @@ namespace AlienRace.ApparelGraphics
                        null;
         }
 
-        public bool TryGetBodyTypeFallback(Pawn pawn, out BodyTypeDef def)
+        public bool TryGetBodyTypeFallback(Gender? gender, out BodyTypeDef def)
         {
             def = null;
-            if (pawn == null)
+            if (gender == null)
                 return false;
 
-            def = pawn.gender == Gender.Female && this.femaleBodyTypeFallback != null ?
+            def = gender == Gender.Female && this.femaleBodyTypeFallback != null ?
                       this.femaleBodyTypeFallback :
                       this.bodyTypeFallback;
 

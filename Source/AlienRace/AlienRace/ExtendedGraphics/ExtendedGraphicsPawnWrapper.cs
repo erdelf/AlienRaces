@@ -22,8 +22,8 @@ public class ExtendedGraphicsPawnWrapper
     public virtual PawnDrawParms DrawParms => 
         CachedData.oldDrawParms(this.WrappedPawn.Drawer.renderer.renderTree);
 
-    public virtual bool HasApparelGraphics() =>
-        this.WrappedPawn.apparel.WornApparel.Any(ap => ap.def.apparel.HasDefinedGraphicProperties);
+    public virtual bool HasApparelGraphics() => 
+        this.GetWornApparel.Any(ap => ap.def.apparel.HasDefinedGraphicProperties);
 
     //backstory isApplicable
     public virtual bool HasBackStory(BackstoryDef backstory) =>
@@ -67,13 +67,10 @@ public class ExtendedGraphicsPawnWrapper
         this.WrappedPawn.apparel?.WornApparel ?? Enumerable.Empty<Apparel>();
 
     public virtual IEnumerable<ApparelProperties> GetWornApparelProps() =>
-        this.WrappedPawn.apparel?.WornApparel?.Select(ap => ap.def.apparel) ?? Enumerable.Empty<ApparelProperties>();
+        this.WrappedPawn.apparel?.WornApparel?.Select(ap => ap.def.apparel) ?? [];
 
     public virtual bool VisibleInBed(bool noBed = true) => 
         this.WrappedPawn.CurrentBed()?.def?.building?.bed_showSleeperBody ?? noBed;
-
-    public virtual bool HasBackstory(BackstoryDef backstory) =>
-        this.WrappedPawn.story?.AllBackstories?.Contains(backstory) ?? false;
 
     public virtual bool HasNamedBodyPart(BodyPartDef part, string partLabel) =>
         (part == null && partLabel.NullOrEmpty()) || this.GetBodyPart(part, partLabel) != null;
@@ -142,4 +139,93 @@ public class ExtendedGraphicsPawnWrapper
     public virtual bool IsMutant(MutantDef def) => this.WrappedPawn.IsMutant && (def == null || this.WrappedPawn.mutant.Def == def);
 
     public virtual bool IsCreepJoiner(CreepJoinerFormKindDef def) => this.WrappedPawn.IsCreepJoiner && (def == null || this.WrappedPawn.creepjoiner.form == def);
+}
+
+public class DummyExtendedGraphicsPawnWrapper : ExtendedGraphicsPawnWrapper
+{
+    // Backing fields for all overridden members
+    public  PawnDrawParms                         drawParms;
+    public  IEnumerable<Apparel>                  wornApparel;
+    public  IEnumerable<ApparelProperties>        wornApparelProps;
+    public  bool                                  visibleInBed;
+    public  Gender                                gender;
+    public  PawnPosture                           posture;
+    public  RotStage?                             rotStage;
+    public  RotDrawMode                           rotDrawMode;
+    public  List<Hediff>                          hediffList;
+    public  List<Trait>                           traitList;
+    public  HediffSet                             hediffSet;
+    public  IEnumerable<BackstoryDef>             backstories;
+    public  TraitSet                              traits;
+    public  bool                                  drafted;
+    public  Job                                   curJob;
+    public  bool                                  moving;
+    public  LifeStageDef                          currentLifeStage;
+    public  BodyTypeDef                           bodyType;
+    public  HeadTypeDef                           headType;
+    public  List<GeneDef>                         genes;
+    public  ThingDef                              race;
+    public  MutantDef                             mutant;
+    public  CreepJoinerFormKindDef                creepJoiner;
+    private BodyDef                               body;
+
+    public DummyExtendedGraphicsPawnWrapper() : base()
+    {
+    }
+
+    public override PawnDrawParms DrawParms => this.drawParms;
+
+    public override bool CurrentLifeStageDefMatches(LifeStageDef lifeStageDef) =>
+        lifeStageDef == this.currentLifeStage;
+
+    public override IEnumerable<Apparel> GetWornApparel => this.wornApparel;
+
+    public override IEnumerable<ApparelProperties> GetWornApparelProps()
+    {
+        IEnumerable<ApparelProperties> apparelProps = base.GetWornApparelProps().ToList();
+        return apparelProps.Any() ? apparelProps : this.wornApparelProps;
+    }
+
+    public override bool VisibleInBed(bool noBed = true) => this.visibleInBed;
+
+    public override BodyPartRecord GetAnyBodyPart(BodyPartDef part, string partLabel) =>
+        body.AllParts.Find(bpr => IsBodyPart(bpr, part, partLabel));
+
+    public override float GetNeed(NeedDef needDef, bool percentage) => 0;
+
+    public override Gender GetGender() => this.gender;
+
+    public override PawnPosture GetPosture() => this.posture;
+
+    public override bool HasBodyType(BodyTypeDef bodyType) => bodyType == this.bodyType;
+
+    public override bool HasHeadTypeNamed(HeadTypeDef headType) => headType == this.headType;
+
+    public override RotStage? GetRotStage() => this.rotStage;
+
+    public override RotDrawMode GetRotDrawMode() => this.rotDrawMode;
+
+    public override List<Hediff> GetHediffList() => this.hediffList;
+
+    public override List<Trait> GetTraitList() => this.traitList;
+
+    public override HediffSet GetHediffSet() => this.hediffSet;
+
+    public override IEnumerable<BackstoryDef> GetBackstories() => this.backstories;
+
+    public override TraitSet GetTraits() => this.traits;
+
+    public override bool Drafted => this.drafted;
+
+    public override Job CurJob => this.curJob;
+
+    public override bool Moving => this.moving;
+
+    public override bool HasGene(GeneDef gene) => this.genes.Contains(gene);
+
+    public override bool IsRace(ThingDef race) => race == this.race;
+
+    public override bool IsMutant(MutantDef def) => def == this.mutant;
+
+    public override bool IsCreepJoiner(CreepJoinerFormKindDef def) => def == this.creepJoiner;
 }
