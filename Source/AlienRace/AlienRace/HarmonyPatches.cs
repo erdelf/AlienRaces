@@ -743,7 +743,7 @@ namespace AlienRace
 
             foreach (CodeInstruction instruction in instructions)
             {
-                if (instruction.opcode == OpCodes.Stloc_1)
+                if (instruction.opcode == OpCodes.Stloc_S && ((LocalBuilder)instruction.operand).LocalIndex == 5)
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels()};
                     yield return new CodeInstruction(OpCodes.Ldc_I4_1);
@@ -862,20 +862,20 @@ namespace AlienRace
                             step++;
                             yield return instructionList[i + 1];
                             yield return CodeInstruction.Call(typeof(ReproductionSettings), nameof(ReproductionSettings.GenderReproductionCheck));
-                            yield return new CodeInstruction(OpCodes.Brtrue, instructionList[i + 3].operand);
-                            i += 3;
+                            yield return new CodeInstruction(OpCodes.Brtrue, instructionList[i + 6].operand);
+                            i += 6;
                             break;
                         case 1:
                             step++;
                             yield return new CodeInstruction(OpCodes.Ldc_I4_0);
-                            yield return CodeInstruction.Call(typeof(ReproductionSettings), nameof(ReproductionSettings.ApplicableGender), new[] { typeof(Pawn), typeof(bool) });
+                            yield return CodeInstruction.Call(typeof(ReproductionSettings), nameof(ReproductionSettings.ApplicableGender), [typeof(Pawn), typeof(bool)]);
                             yield return new CodeInstruction(OpCodes.Brtrue, instructionList[i + 2].operand);
                             i += 2;
                             break;
                         case 2:
                             step++;
                             yield return new CodeInstruction(OpCodes.Ldc_I4_1);
-                            yield return CodeInstruction.Call(typeof(ReproductionSettings), nameof(ReproductionSettings.ApplicableGender), new[] { typeof(Pawn), typeof(bool) });
+                            yield return CodeInstruction.Call(typeof(ReproductionSettings), nameof(ReproductionSettings.ApplicableGender), [typeof(Pawn), typeof(bool)]);
                             yield return new CodeInstruction(OpCodes.Brtrue, instructionList[i + 2].operand);
                             i += 2;
                             break;
@@ -995,9 +995,9 @@ namespace AlienRace
             {
                 CodeInstruction instruction = instructionList[i];
 
-                if (instruction.LoadsField(growthMomentAgesCacheInfo) && instructionList[i+1].opcode == OpCodes.Brtrue_S)
+                if (instruction.LoadsField(growthMomentAgesCacheInfo) && instructionList[i+1].opcode == OpCodes.Ldnull)
                 {
-                    yield return new CodeInstruction(OpCodes.Ldc_I4_0).MoveLabelsFrom(instruction);
+                    yield return new CodeInstruction(OpCodes.Ldnull).MoveLabelsFrom(instruction);
                 } 
                 else if (instruction.LoadsField(growthMomentAgesInfo))
                 {
@@ -1026,7 +1026,7 @@ namespace AlienRace
                     {
                         yield return new CodeInstruction(OpCodes.Dup);
                     } 
-                    else if (instruction.opcode == OpCodes.Mul && instructionList[i+1].opcode == OpCodes.Stloc_2)
+                    else if (instruction.opcode == OpCodes.Mul && instructionList[i+1].IsStloc() && (instructionList[i + 1].operand as LocalBuilder)!.LocalIndex == 5)
                     {
                         yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
                         yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Pawn_AgeTracker), "pawn"));
@@ -1184,7 +1184,9 @@ namespace AlienRace
                     yield return CodeInstruction.LoadField(typeof(Pawn),           nameof(Pawn.def));
                     yield return CodeInstruction.LoadField(typeof(ThingDef),       nameof(ThingDef.race));
                     yield return CodeInstruction.LoadField(typeof(RaceProperties), nameof(RaceProperties.hasGenders));
-                    yield return new CodeInstruction(OpCodes.Brfalse, instructionList[i + 4].operand);
+                    yield return new CodeInstruction(OpCodes.Dup);
+                    yield return new CodeInstruction(OpCodes.Brfalse, instructionList[i + 7].operand);
+                    yield return new CodeInstruction(OpCodes.Pop);
                     yield return new CodeInstruction(instruction);
                 }
             }
@@ -1210,11 +1212,13 @@ namespace AlienRace
             }
         }
 
-        public static IEnumerable<CodeInstruction> DrawTradeableRowTranspiler(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> DrawTradeableRowTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
-            MethodInfo doerWillingInfo = AccessTools.Method(typeof(IdeoUtility), nameof(IdeoUtility.DoerWillingToDo), new []{typeof(HistoryEvent)});
+            MethodInfo doerWillingInfo = AccessTools.Method(typeof(IdeoUtility), nameof(IdeoUtility.DoerWillingToDo), [typeof(HistoryEvent)]);
 
             List<CodeInstruction> instructionList = instructions.ToList();
+
+            Label skip = ilg.DefineLabel();
 
             for (int i = 0; i < instructionList.Count; i++)
             {
@@ -1222,12 +1226,15 @@ namespace AlienRace
 
                 yield return instruction;
 
-                if (i > 5 && instructionList[i - 1].Calls(doerWillingInfo))
+                if (i > 5 && instructionList[i - 2].Calls(doerWillingInfo))
                 {
+                    yield return new CodeInstruction(OpCodes.Brfalse, skip);
                     yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(TradeSession), nameof(TradeSession.playerNegotiator)));
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
                     yield return CodeInstruction.Call(patchType, nameof(DrawTransferableRowIsWilling));
-                    yield return new CodeInstruction(instruction);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_0);
+                    yield return new CodeInstruction(OpCodes.Ceq);
+                    yield return new CodeInstruction(OpCodes.Nop) { labels = [skip] };
                 }
             }
         }
@@ -1249,8 +1256,8 @@ namespace AlienRace
                 if (instruction.Calls(sellingSlaveryInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(TradeSession), nameof(TradeSession.playerNegotiator)));
-                    yield return new CodeInstruction(OpCodes.Ldloc_0);
                     yield return new CodeInstruction(OpCodes.Ldloc_1);
+                    yield return new CodeInstruction(OpCodes.Ldloc_2);
                     yield return CodeInstruction.Call(typeof(List<>).MakeGenericType(typeof(Pawn)), "get_Item");
                     yield return CodeInstruction.Call(patchType, nameof(SoldSlave));
                 }
@@ -1262,8 +1269,8 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Brfalse,   orbitalTradeLabel);
                     yield return new CodeInstruction(OpCodes.Ldsfld,    AccessTools.Field(typeof(TradeSession), nameof(TradeSession.trader)));
                     yield return new CodeInstruction(OpCodes.Castclass, typeof(Pawn));
-                    yield return new CodeInstruction(OpCodes.Ldloc_2);
-                    yield return new CodeInstruction(OpCodes.Ldloc_3);
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, 7);
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, 8);
                     yield return CodeInstruction.Call(typeof(List<>).MakeGenericType(typeof(Pawn)), "get_Item");
                     yield return CodeInstruction.Call(patchType, nameof(SoldSlave));
                     yield return new CodeInstruction(OpCodes.Nop).WithLabels(orbitalTradeLabel);
@@ -3169,6 +3176,7 @@ namespace AlienRace
             LocalBuilder xenotypeCustomLocal     = ilg.DeclareLocal(typeof(CustomXenotype));
             LocalBuilder developmentalStageLocal = ilg.DeclareLocal(typeof(DevelopmentalStage));
             LocalBuilder allowDownedLocal        = ilg.DeclareLocal(typeof(bool));
+            bool         downedDone              = false;
 
             List<CodeInstruction> instructionList = instructions.ToList();
             for (int i = 0; i < instructionList.Count; i++)
@@ -3187,8 +3195,9 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Ldloca, developmentalStageLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldloca, allowDownedLocal.LocalIndex);
                     yield return CodeInstruction.Call(patchType, nameof(PickStartingPawnConfig));
-                } else if (instruction.opcode == OpCodes.Ldc_I4_0 && instructionList[i - 1].opcode == OpCodes.Ldc_I4_0 && instructionList[i + 1].opcode == OpCodes.Ldc_I4_1)
+                } else if (!downedDone && instruction.opcode == OpCodes.Ldc_I4_0 && instructionList[i - 1].opcode == OpCodes.Ldc_I4_0 && instructionList[i + 1].opcode == OpCodes.Ldc_I4_1)
                 {
+                    downedDone = true;
                     yield return new CodeInstruction(OpCodes.Pop);
                     yield return new CodeInstruction(OpCodes.Ldloc, allowDownedLocal.LocalIndex);
                 } else if (instruction.LoadsField(baseLinerInfo))
@@ -3196,12 +3205,14 @@ namespace AlienRace
                     //yield return new CodeInstruction(OpCodes.Ldloc,  pawnKindDefLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Pop);
                     yield return new CodeInstruction(OpCodes.Ldloc, xenotypeDefLocal.LocalIndex);
-                    yield return new CodeInstruction(OpCodes.Ldloc, xenotypeCustomLocal.LocalIndex).WithLabels(instructionList[i+1].labels);
+                } else if (instruction.opcode == OpCodes.Ldloc_0)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldloc, xenotypeCustomLocal.LocalIndex).WithLabels(instructionList[i + 1].labels);
                     yield return instructionList[i + 2];
                     yield return instructionList[i + 3];
                     yield return new CodeInstruction(OpCodes.Ldloc, developmentalStageLocal.LocalIndex);
 
-                    i +=4;
+                    i += 4;
                 }
             }
         }
