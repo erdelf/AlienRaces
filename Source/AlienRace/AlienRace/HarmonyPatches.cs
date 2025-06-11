@@ -384,7 +384,7 @@ namespace AlienRace
                 }
             }
 
-            Log.Message($"Alien race successfully completed {harmony.harmony.GetPatchedMethods().Select(Harmony.GetPatchInfo).SelectMany(selector: p => p.Prefixes.Concat(p.Postfixes).Concat(p.Transpilers)).Count(predicate: p => p.owner == harmony.harmony.Id)} patches with harmony.");
+            Log.Message($"Alien race successfully completed {harmony.PatchReport} with harmony.");
             HairDefOf.Bald.styleTags.Add(item: "alienNoStyle");
             BeardDefOf.NoBeard.styleTags.Add(item: "alienNoStyle");
             TattooDefOf.NoTattoo_Body.styleTags.Add(item: "alienNoStyle");
