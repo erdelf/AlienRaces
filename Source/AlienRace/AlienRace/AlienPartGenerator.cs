@@ -981,10 +981,6 @@
 
             private void RegenerateAddonGraphic(AlienPawnRenderNodeProperties_BodyAddon addonProps, int addonIndex, ref int sharedIndex, bool force = false)
             {
-                string prepath = null;
-                if (!force && (prepath = addonProps.addon.GetPath(this.Pawn, ref sharedIndex, this.addonVariants[addonIndex])) == addonProps.graphic.path)
-                    return;
-
                 bool colorInsertActive = false;
 
                 if (this.addonColors.Count > addonIndex)
@@ -993,17 +989,28 @@
                     if (addonColor.first.HasValue)
                     {
                         addonProps.addon.colorOverrideOne = addonColor.first;
-                        colorInsertActive      = true;
+                        colorInsertActive                 = true;
                     }
 
                     if (addonColor.second.HasValue)
                     {
                         addonProps.addon.colorOverrideTwo = addonColor.second;
-                        colorInsertActive      = true;
+                        colorInsertActive                 = true;
                     }
                 }
 
-                Graphic g = addonProps.addon.GetGraphic(this.Pawn, this, ref sharedIndex, this.addonVariants.Count > addonIndex ? this.addonVariants[addonIndex] : null, prepath);
+                Graphic g = addonProps.addon.GetGraphic(this.Pawn, this, ref sharedIndex, this.addonVariants.Count > addonIndex ? this.addonVariants[addonIndex] : null, !force, addonProps.graphic);
+
+                if(g == null)
+                {
+                    if (colorInsertActive)
+                    {
+                        addonProps.addon.colorOverrideOne = null;
+                        addonProps.addon.colorOverrideTwo = null;
+                    }
+                    return;
+                }
+
                 this.addonGraphics.Add(g);
                 if (this.addonVariants.Count <= addonIndex) 
                     this.addonVariants.Add(sharedIndex);

@@ -1,12 +1,11 @@
 namespace AlienRace
 {
+    using ExtendedGraphics;
+    using RimWorld;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Xml;
-    using ExtendedGraphics;
-    using RimWorld;
     using UnityEngine;
     using Verse;
 
@@ -200,7 +199,7 @@ namespace AlienRace
                 this.VisibleForRace(pawn);
                 */
 
-            public virtual Graphic GetGraphic(Pawn pawn, AlienComp alienComp, ref int sharedIndex, int? savedIndex = new int?(), string preresolvedPath = null)
+            public virtual Graphic GetGraphic(Pawn pawn, AlienComp alienComp, ref int sharedIndex, int? savedIndex = new int?(), bool precheckCompare = false, Graphic preGraphic = null)
             {
                 ExposableValueTuple<Color, Color> channel = alienComp?.GetChannel(this.ColorChannel) ?? new ExposableValueTuple<Color, Color>(Color.white, Color.white);
 
@@ -223,20 +222,26 @@ namespace AlienRace
                     first  *= this.colorPostFactor;
                     second *= this.colorPostFactor;
                 }
-                
-                string returnPath = preresolvedPath ?? this.GetPath(pawn, ref sharedIndex, savedIndex);
 
-                if (!returnPath.NullOrEmpty())
+
+                if (this.ColorChannel == "skin" && pawn.Drawer.renderer.CurRotDrawMode == RotDrawMode.Rotting)
+                    first = PawnRenderUtility.GetRottenColor(first);
+
+
+                string returnPath = this.GetPath(pawn, ref sharedIndex, savedIndex);
+
+                if (!returnPath.NullOrEmpty() && (!precheckCompare || preGraphic == null || returnPath != preGraphic.path || first != preGraphic.Color || second != preGraphic.ColorTwo))
                 {
                     Graphic_Multi_RotationFromData graphic = GraphicDatabase.Get<Graphic_Multi_RotationFromData>(returnPath, ContentFinder<Texture2D>.Get(returnPath + "_southm", reportFailure: false) == null ?
                                                                                                           this.ShaderType.Shader :
                                                                                                           ShaderDatabase.CutoutComplex,
-                                                                                          Vector2.one, first, second, new GraphicData { drawRotated = !this.drawRotated }) as Graphic_Multi_RotationFromData;
+                                                                                          Vector2.one, first, second, new GraphicData { drawRotated = !this.drawRotated }) as Graphic_Multi_RotationFromData
+                    ;
                     graphic.westFlipped = this.flipWest;
                     return graphic;
                 }
-                else
-                    return null;
+
+                return null;
             }
         }
     }
