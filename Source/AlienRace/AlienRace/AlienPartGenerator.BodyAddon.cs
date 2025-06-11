@@ -13,6 +13,8 @@ namespace AlienRace
     {
         public class ExtendedGraphicTop : AbstractExtendedGraphic
         {
+            public static DummyExtendedGraphicsPawnWrapper drawOverrideDummy = null;
+
             public HashSet<Type> conditionTypes = [];
 
             public bool debug = true;
@@ -92,7 +94,7 @@ namespace AlienRace
 
             public virtual string GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new(), string pathAppendix = null)
             {
-                IExtendedGraphic bestGraphic = this.GetBestGraphic(new ExtendedGraphicsPawnWrapper(pawn), this.resolveData); //finds deepest match
+                IExtendedGraphic bestGraphic = this.GetBestGraphic(pawn != null ? new ExtendedGraphicsPawnWrapper(pawn) : drawOverrideDummy, this.resolveData); //finds deepest match
 
                 int    variantCounting = bestGraphic.GetVariantCount();
 
@@ -111,8 +113,6 @@ namespace AlienRace
             
             // Top level so always considered applicable
             public override bool IsApplicable(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) => true;
-            
-
         }
 
         public class BodyAddon : ExtendedGraphicTop
