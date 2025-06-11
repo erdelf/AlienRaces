@@ -550,10 +550,12 @@ namespace AlienRace
             }
         }
 
-        public static Vector2 OutfitStandRecacheGraphicsHelper(Vector2 original)
+        public static Vector3 OutfitStandRecacheGraphicsHelper(Vector3 original)
         {
             Vector2 drawSize = (outfitStandComp.Race as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.customDrawSize ?? Vector2.one;
-            return original * drawSize;
+            original.x *= drawSize.x;
+            original.z *= drawSize.y;
+            return original;
         }
 
         public static void OutfitStandEnableOverride(Building_OutfitStand __instance)
