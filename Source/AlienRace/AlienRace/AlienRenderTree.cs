@@ -11,7 +11,6 @@ namespace AlienRace
     using JetBrains.Annotations;
     using UnityEngine;
     using Verse;
-    using static HarmonyLib.Code;
 
     public static class AlienRenderTreePatches
     {
