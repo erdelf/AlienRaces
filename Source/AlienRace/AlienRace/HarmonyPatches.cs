@@ -331,7 +331,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Building_OutfitStand), "DrawAt"), transpiler: new HarmonyMethod(patchType, nameof(OutfitStandDrawAtTranspiler)));
             harmony.Patch(AccessTools.PropertyGetter(typeof(Building_OutfitStand), "BodyTypeDefForRendering"), postfix: new HarmonyMethod(patchType, nameof(OutfitStandBodyTypeDefForRenderingPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Building_OutfitStand), "RimWorld.IHaulDestination.Accepts"), postfix: new HarmonyMethod(patchType, nameof(OutfitStandAcceptsPostfix)));
-
+            harmony.Patch(AccessTools.Method(typeof(CompStatue),           "CreateSnapshotOfPawn_HookForMods"), postfix: new HarmonyMethod(patchType, nameof(StatueSnapshotHookPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(CompStatue),           "InitFakePawn_HookForMods"), postfix: new HarmonyMethod(patchType, nameof(StatueFakePawnHookPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(CompStatue),           "InitFakePawn"), transpiler: new HarmonyMethod(patchType, nameof(StatueInitFakePawnTranspiler)));
             AlienRenderTreePatches.HarmonyInit(harmony);
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
@@ -397,6 +399,73 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add("alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> StatueInitFakePawnTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            FieldInfo humanInfo = AccessTools.Field(typeof(ThingDefOf), nameof(ThingDefOf.Human));
+            FieldInfo colonistInfo = AccessTools.Field(typeof(PawnKindDefOf), nameof(PawnKindDefOf.Colonist));
+
+            LocalBuilder modData = ilg.DeclareLocal(typeof(HARStatueContainer));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+                if (instruction.LoadsField(humanInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return CodeInstruction.LoadField(typeof(CompStatue), "additionalSavedPawnDataForMods");
+                    yield return new CodeInstruction(OpCodes.Ldstr,    HARStatueContainer.loadKey);
+                    yield return new CodeInstruction(OpCodes.Ldloca_S, modData.LocalIndex);
+                    yield return CodeInstruction.Call(AccessTools.Field(typeof(CompStatue), "additionalSavedPawnDataForMods").FieldType, nameof(Dictionary<object, object>.TryGetValue));
+                    yield return new CodeInstruction(OpCodes.Pop);
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, modData.LocalIndex);
+                    Label trueLabel = ilg.DefineLabel();
+                    yield return new CodeInstruction(OpCodes.Brtrue, trueLabel);
+                    yield return instruction;
+                    Label falseLabel = ilg.DefineLabel();
+                    yield return new CodeInstruction(OpCodes.Br, falseLabel);
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, modData.LocalIndex).WithLabels(trueLabel);
+                    yield return CodeInstruction.LoadField(typeof(HARStatueContainer), nameof(HARStatueContainer.alienRace));
+                    yield return new CodeInstruction(OpCodes.Castclass, typeof(ThingDef));
+                    yield return new CodeInstruction(OpCodes.Nop).WithLabels(falseLabel);
+                }
+                else
+                {
+                    yield return instruction;
+
+                    if (instruction.LoadsField(colonistInfo))
+                    {
+                        yield return new CodeInstruction(OpCodes.Ldloc_S, modData.LocalIndex);
+                        Label falseLabel = ilg.DefineLabel();
+                        yield return new CodeInstruction(OpCodes.Brfalse, falseLabel);
+                        yield return new CodeInstruction(OpCodes.Pop);
+                        yield return new CodeInstruction(OpCodes.Ldloc_S, modData.LocalIndex);
+                        yield return CodeInstruction.LoadField(typeof(HARStatueContainer), nameof(HARStatueContainer.kindDef));
+                        yield return new CodeInstruction(OpCodes.Nop).WithLabels(falseLabel);
+                    }
+                }
+            }
+        }
+
+        public static void StatueFakePawnHookPostfix(Pawn fakePawn, Dictionary<string, object> additionalSavedPawnDataForMods)
+        {
+            if (additionalSavedPawnDataForMods.TryGetValue(HARStatueContainer.loadKey, out object rawData) && rawData is HARStatueContainer statueData) 
+                AlienPartGenerator.AlienComp.CopyAlienData(statueData.alienComp, fakePawn.GetComp<AlienPartGenerator.AlienComp>());
+        }
+
+        public static void StatueSnapshotHookPostfix(Pawn p, Dictionary<string, object> dictToStoreDataIn)
+        {
+            if (p.def is ThingDef_AlienRace alienRace)
+            {
+                dictToStoreDataIn[HARStatueContainer.loadKey] = new HARStatueContainer
+                                                                 {
+                                                                     alienComp = p.GetComp<AlienPartGenerator.AlienComp>(),
+                                                                     alienRace = alienRace,
+                                                                     kindDef   = p.kindDef
+                                                                 };
+            }
         }
 
         public static void OutfitStandAcceptsPostfix(Building_OutfitStand __instance, Thing t, ref bool __result)

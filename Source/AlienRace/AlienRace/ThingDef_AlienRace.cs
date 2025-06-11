@@ -1134,4 +1134,23 @@
 
         public virtual bool HasBloodPawn(Pawn pawn) => this.HasBlood;
     }
+
+    public class HARStatueContainer : IExposable
+    {
+        public static readonly string loadKey = typeof(HARStatueContainer).FullName!;
+
+        public ThingDef_AlienRace           alienRace;
+        public PawnKindDef                  kindDef;
+        public AlienPartGenerator.AlienComp alienComp;
+
+        public void ExposeData()
+        {
+            Scribe_Defs.Look(ref this.alienRace, nameof(this.alienRace));
+            Scribe_Defs.Look(ref this.kindDef, nameof(this.kindDef));
+
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+                this.alienComp = Activator.CreateInstance<AlienPartGenerator.AlienComp>();
+            this.alienComp.PostExposeData();
+        }
+    }
 }

@@ -3,13 +3,14 @@ using System.Linq;
 
 namespace AlienRace
 {
-    using System;
     using HarmonyLib;
-    using RimWorld;
-    using System.Reflection.Emit;
-    using System.Reflection;
     using JetBrains.Annotations;
+    using RimWorld;
+    using System;
+    using System.Reflection;
+    using System.Reflection.Emit;
     using UnityEngine;
+    using UnityEngine.UIElements;
     using Verse;
 
     public static class AlienRenderTreePatches
@@ -55,6 +56,9 @@ namespace AlienRace
                                             sharedIndex = 0
                                         } :
                 pawnRenderResolveData;
+
+        public static bool  IsStatuePawn(Pawn       pawn)              => pawn.Drawer.renderer.StatueColor.HasValue;
+        public static Color CheckOverrideColor(Pawn pawn, Color color) => pawn.Drawer.renderer.StatueColor ?? color;
 
         public static Shader CheckMaskShader(string texPath, Shader shader, bool pathCheckOverride = false) =>
             (!shader.SupportsMaskTex() && (pathCheckOverride || ContentFinder<Texture2D>.Get(texPath + "_northm", reportFailure: false) != null)) ?
@@ -291,7 +295,7 @@ namespace AlienRace
 
         public static Graphic HairGraphicHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) => 
             GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, RegenerateResolveData(pawn).alienProps?.alienRace.styleSettings[typeof(HairDef)].shader?.Shader ?? shader),
-                                               size, color, pawnRenderResolveData.alienComp?.GetChannel(channel: "hair").second ?? Color.white);
+                                               size, color, CheckOverrideColor(pawn, pawnRenderResolveData.alienComp?.GetChannel(channel: "hair").second ?? Color.white));
 
         public static IEnumerable<CodeInstruction> TattooDefGraphicForTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
@@ -409,7 +413,7 @@ namespace AlienRace
 
         public static Graphic BeardGraphicHelper(string texPath, Shader shader, Vector2 size, Color color, Pawn pawn) =>
             GraphicDatabase.Get<Graphic_Multi>(texPath, CheckMaskShader(texPath, RegenerateResolveData(pawn).alienProps?.alienRace.styleSettings[typeof(BeardDef)].shader?.Shader ?? shader),
-                                               size, color, pawnRenderResolveData.alienComp?.GetChannel(channel: "hair").second ?? Color.white);
+                                               size, color, CheckOverrideColor(pawn, pawnRenderResolveData.alienComp?.GetChannel(channel: "hair").second ?? Color.white));
         #endregion
 
         #region MeshSets

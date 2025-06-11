@@ -386,6 +386,15 @@ public class ConditionCreepJoinerFormKind : Condition
         pawn.IsCreepJoiner(this.form);
 }
 
+public class ConditionStatue : Condition
+{
+    public new const string XmlNameParseKey = "Statue";
+    public override bool Static => true;
+    
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) =>
+        pawn.IsStatue;
+}
+
 public abstract class ConditionLogicCollection : Condition
 {
     public List<Condition> conditions = [];
@@ -435,7 +444,6 @@ public abstract class ConditionLogicSingle : Condition
         Utilities.SetFieldFromXmlNode(Traverse.Create(this), Condition.CustomListLoader(xmlRoot).FirstChild, this, nameof(this.condition));
     }
 }
-
 
 public class ConditionLogicNot : ConditionLogicSingle
 {
