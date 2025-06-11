@@ -161,7 +161,9 @@ namespace AlienRace
 
             pawnRenderData.sharedIndex = sharedIndex;
 
-            Shader skinShader = graphicPaths.skinShader?.Shader ?? ShaderUtility.GetSkinShader(pawn);
+            Shader skinShader = pawn.Drawer.renderer.StatueColor.HasValue ? 
+                                    ShaderDatabase.Cutout : 
+                                    graphicPaths.skinShader?.Shader ?? ShaderUtility.GetSkinShader(pawn);
 
             if (skinShader == ShaderDatabase.CutoutSkin && pawn.story.SkinColorOverriden)
                 skinShader = ShaderDatabase.CutoutSkinColorOverride;
@@ -207,7 +209,9 @@ namespace AlienRace
 
             pawnRenderData.sharedIndex = sharedIndex;
 
-            Shader skinShader = graphicPaths.skinShader?.Shader ?? ShaderUtility.GetSkinShader(pawn);
+            Shader skinShader = pawn.Drawer.renderer.StatueColor.HasValue ?
+                                    ShaderDatabase.Cutout : 
+                                    graphicPaths.skinShader?.Shader ?? ShaderUtility.GetSkinShader(pawn);
 
             if (skinShader == ShaderDatabase.CutoutSkin && pawn.story.SkinColorOverriden)
                 skinShader = ShaderDatabase.CutoutSkinColorOverride;
