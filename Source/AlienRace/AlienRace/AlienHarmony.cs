@@ -2,16 +2,28 @@
 
 namespace AlienRace
 {
-    using System.Reflection;
+    using System.Collections.Generic;
     using HarmonyLib;
+    using System.Linq;
+    using System.Reflection;
     using Verse;
 
-    public class AlienHarmony
+    public class AlienHarmony(string id)
     {
-        public Harmony harmony;
+        public readonly Harmony harmony = new(id);
+        public          string  PatchReport
+        {
+            get
+            {
+                List<Patches> patchInfos = this.harmony.GetPatchedMethods().Select(Harmony.GetPatchInfo).ToList();
 
-        public AlienHarmony(string id) => 
-            this.harmony = new Harmony(id);
+                int prefixCount     = patchInfos.SelectMany(p => p.Prefixes).Count(predicate: p => p.owner == this.harmony.Id);
+                int postfixCount    = patchInfos.SelectMany(p => p.Postfixes).Count(predicate: p => p.owner == this.harmony.Id);
+                int transpilerCount = patchInfos.SelectMany(p => p.Transpilers).Count(predicate: p => p.owner == this.harmony.Id);
+
+                return $"{prefixCount + postfixCount + transpilerCount} patches ({prefixCount} pre, {postfixCount} post, {transpilerCount} trans)";
+            }
+        }
 
         public MethodInfo Patch(
             MethodBase    original,
