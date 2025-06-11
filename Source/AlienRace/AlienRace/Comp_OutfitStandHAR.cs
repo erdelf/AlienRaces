@@ -158,7 +158,7 @@
                 yield return new Command_Action
                              {
                                  defaultLabel = this.Race.LabelCap,
-                                 defaultDesc  = "CommandOutfitStandHARRaceDesc".Translate(),
+                                 defaultDesc  = "HAR.OutfitStandRaceCommandDesc".Translate(),
                                  icon         = this.Race.uiIcon,
                                  action       = () =>
                                                 {
@@ -170,7 +170,7 @@
                 yield return new Command_Action
                              {
                                  defaultLabel = this.BodyType.defName,
-                                 defaultDesc  = "CommandOutfitStandHARBodyDesc".Translate(),
+                                 defaultDesc  = "HAR.OutfitStandBodyCommandDesc".Translate(),
                                  icon         = this.BodyType.Icon,
                                  action = () =>
                                           {
@@ -182,7 +182,7 @@
                 yield return new Command_Action
                              {
                                  defaultLabel = this.HeadType.defName,
-                                 defaultDesc  = "CommandOutfitStandHARHeadDesc".Translate(),
+                                 defaultDesc  = "HAR.OutfitStandHeadCommandDesc".Translate(),
                                  icon         = this.HeadType.Icon,
                                  action = () =>
                                           {
