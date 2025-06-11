@@ -334,7 +334,7 @@
         public List<AlienChanceEntry<TraitWithDegree>>   forcedRaceTraitEntries;
         public List<AlienChanceEntry<TraitWithDegree>>   disallowedTraits;
 
-        public IntRange                           additionalTraits   = IntRange.zero;
+        public IntRange                           additionalTraits   = IntRange.Zero;
         public AlienPartGenerator                 alienPartGenerator = new();
         public List<SkillGain>                    passions           = new();
         public List<AlienChanceEntry<AbilityDef>> abilities          = new();
