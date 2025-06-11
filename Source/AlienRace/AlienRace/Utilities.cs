@@ -257,8 +257,8 @@
 
         public delegate bool CanBeChild(PawnKindDef kindDef);
 
-        public static readonly CanBeChild canBeChild =
-            AccessTools.MethodDelegate<CanBeChild>(AccessTools.Method(typeof(ScenarioUtility), "CanBeChild"));
+        public static readonly BoolFromPawnKindDefDel canBeChild =
+            AccessTools.MethodDelegate<BoolFromPawnKindDefDel>(AccessTools.Method(typeof(ScenarioUtility), "CanBeChild"));
 
         public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allApparelPairs =
             AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnApparelGenerator), "allApparelPairs"));
@@ -266,10 +266,10 @@
         public static readonly AccessTools.FieldRef<List<ThingStuffPair>> allWeaponPairs =
             AccessTools.StaticFieldRefAccess<List<ThingStuffPair>>(AccessTools.Field(typeof(PawnWeaponGenerator), "allWeaponPairs"));
 
-        public delegate void PawnGeneratorPawnRelations(Pawn pawn, ref PawnGenerationRequest request);
+        public delegate void FromPawnAndPawnRequestRefDel(Pawn pawn, ref PawnGenerationRequest request);
 
-        public static readonly PawnGeneratorPawnRelations generatePawnsRelations =
-            AccessTools.MethodDelegate<PawnGeneratorPawnRelations>(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"));
+        public static readonly FromPawnAndPawnRequestRefDel generatePawnsRelations =
+            AccessTools.MethodDelegate<FromPawnAndPawnRequestRefDel>(AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations"));
 
         public delegate void FoodUtilityAddThoughtsFromIdeo(HistoryEventDef eventDef, Pawn ingester, ThingDef foodDef, MeatSourceCategory meatSourceCategory);
 
@@ -301,15 +301,15 @@
         public static readonly AccessTools.FieldRef<Dictionary<Type, MethodInfo>> customDataLoadMethodCacheInfo =
             AccessTools.StaticFieldRefAccess<Dictionary<Type, MethodInfo>>(AccessTools.Field(typeof(DirectXmlToObject), "customDataLoadMethodCache"));
 
-        public delegate Graphic_Multi GetGraphic(GraphicRequest req);
+        public delegate Graphic_Multi GraphicMultiFromGraphicRequest(GraphicRequest req);
 
-        public static GetGraphic getInnerGraphic =
-            AccessTools.MethodDelegate<GetGraphic>(AccessTools.Method(typeof(GraphicDatabase), "GetInner", new[] { typeof(GraphicRequest) }, new[] { typeof(Graphic_Multi) }));
+        public static readonly GraphicMultiFromGraphicRequest getInnerGraphic =
+            AccessTools.MethodDelegate<GraphicMultiFromGraphicRequest>(AccessTools.Method(typeof(GraphicDatabase), "GetInner", [typeof(GraphicRequest)], [typeof(Graphic_Multi)]));
 
-        public delegate void PawnMethod(Pawn pawn);
+        public delegate void FromPawnDel(Pawn pawn);
 
-        public static readonly PawnMethod generateStartingPossessions =
-            AccessTools.MethodDelegate<PawnMethod>(AccessTools.Method(typeof(StartingPawnUtility), "GeneratePossessions"));
+        public static readonly FromPawnDel generateStartingPossessions =
+            AccessTools.MethodDelegate<FromPawnDel>(AccessTools.Method(typeof(StartingPawnUtility), "GeneratePossessions"));
 
         public static readonly AccessTools.FieldRef<Pawn_StoryTracker, Color?> skinColorBase =
             AccessTools.FieldRefAccess<Pawn_StoryTracker, Color?>(AccessTools.Field(typeof(Pawn_StoryTracker), "skinColorBase"));
