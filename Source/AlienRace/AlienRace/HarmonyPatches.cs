@@ -1525,7 +1525,7 @@ namespace AlienRace
             {
                 CodeInstruction instruction = instructionList[i];
 
-                if (!done && i > 2 && instructionList[i-1].opcode == OpCodes.Ret)
+                if (!done && instruction.opcode == OpCodes.Stind_I1)
                 {
                     done = true;
                     yield return new CodeInstruction(OpCodes.Ldarg_0) {labels = instruction.ExtractLabels()};
@@ -1534,6 +1534,8 @@ namespace AlienRace
                     yield return CodeInstruction.LoadField(typeof(PawnTextureAtlas), "freeFrameSets");
                     yield return CodeInstruction.Call(patchType, nameof(TextureAtlasSameRace));
                     yield return new CodeInstruction(OpCodes.Brtrue_S, jumpLabel);
+                    yield return new CodeInstruction(OpCodes.Pop);
+                    yield return new CodeInstruction(OpCodes.Pop);
                     yield return new CodeInstruction(OpCodes.Ldc_I4_0);
                     yield return new CodeInstruction(OpCodes.Ret);
                     instruction = instruction.WithLabels(jumpLabel);
@@ -1541,6 +1543,8 @@ namespace AlienRace
 
                 yield return instruction;
             }
+            if(!done)
+                Log.Error(nameof(PawnTextureAtlasGetFrameSetTranspiler) + " failed to find entry point");
         }
 
         public static bool TextureAtlasSameRace(PawnTextureAtlas atlas, Pawn pawn, List<PawnTextureAtlasFrameSet> frameSets)
