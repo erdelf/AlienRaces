@@ -6,6 +6,7 @@ namespace AlienRace
     using System.Reflection;
     using System.Reflection.Emit;
     using System.Runtime.InteropServices;
+    using ApparelGraphics;
     using ExtendedGraphics;
     using HarmonyLib;
     using LudeonTK;
@@ -325,6 +326,11 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator),      "FinalLevelOfSkill"), transpiler: new HarmonyMethod(patchType, nameof(FinalLevelOfSkillTranspiler)));
             harmony.Patch(AccessTools.PropertySetter(typeof(Need), nameof(Need.CurLevel)), postfix: new HarmonyMethod(patchType, nameof(NeedLevelPostfix)));
             harmony.Patch(AccessTools.PropertySetter(typeof(Need), nameof(Need.CurLevelPercentage)), postfix: new HarmonyMethod(patchType, nameof(NeedLevelPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Building_OutfitStand), "RecacheGraphics"), new HarmonyMethod(patchType, nameof(OutfitStandEnableOverride)), 
+                          new HarmonyMethod(patchType, nameof(OutfitStandDisableOverride)), new HarmonyMethod(patchType, nameof(OutfindStandRecacheGraphicsTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Building_OutfitStand), "DrawAt"), transpiler: new HarmonyMethod(patchType, nameof(OutfitStandDrawAtTranspiler)));
+            harmony.Patch(AccessTools.PropertyGetter(typeof(Building_OutfitStand), "BodyTypeDefForRendering"), postfix: new HarmonyMethod(patchType, nameof(OutfitStandBodyTypeDefForRenderingPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(Building_OutfitStand), "RimWorld.IHaulDestination.Accepts"), postfix: new HarmonyMethod(patchType, nameof(OutfitStandAcceptsPostfix)));
 
             AlienRenderTreePatches.HarmonyInit(harmony);
 
@@ -392,6 +398,103 @@ namespace AlienRace
 
             AlienRaceMod.settings.UpdateSettings();
         }
+
+        public static void OutfitStandAcceptsPostfix(Building_OutfitStand __instance, Thing t, ref bool __result)
+        {
+            if (__result)
+            {
+                Comp_OutfitStandHAR comp = __instance.GetComp<Comp_OutfitStandHAR>();
+                if (comp != null)
+                {
+                    if (t.def.IsApparel && !RaceRestrictionSettings.CanWear(t.def, comp.Race))
+                        __result = false;
+                    if (t.def.IsWeapon && !RaceRestrictionSettings.CanWear(t.def, comp.Race))
+                        __result = false;
+                }
+            }
+        }
+
+        public static void OutfitStandBodyTypeDefForRenderingPostfix(Building_OutfitStand __instance, ref BodyTypeDef __result) => 
+            __result = __instance.GetComp<Comp_OutfitStandHAR>()?.BodyType ?? __result;
+
+
+        private static Comp_OutfitStandHAR outfitStandComp;
+
+        public static IEnumerable<CodeInstruction> OutfitStandDrawAtTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            FieldInfo bodyInfo = AccessTools.Field(typeof(Building_OutfitStand), "bodyGraphic");
+            FieldInfo bodyChildInfo = AccessTools.Field(typeof(Building_OutfitStand), "bodyGraphicChild");
+            FieldInfo headInfo = AccessTools.Field(typeof(Building_OutfitStand), "headGraphic");
+
+            LocalBuilder bodyTypeLoc = ilg.DeclareLocal(typeof(BodyTypeDef));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+                if (instruction.LoadsField(bodyInfo) || instruction.LoadsField(bodyChildInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_1).MoveLabelsFrom(instruction);
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return CodeInstruction.Call(patchType, nameof(OutfitStandDrawAtHelper));
+                }
+                else if (instruction.LoadsField(headInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_0).MoveLabelsFrom(instruction);
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return CodeInstruction.Call(patchType, nameof(OutfitStandDrawAtHelper));
+                }
+                else
+                {
+                    if (i < instructionList.Count - 2 && instructionList[i + 1].opcode == OpCodes.Ceq)
+                    {
+                        yield return new CodeInstruction(OpCodes.Stloc, bodyTypeLoc);
+                        yield return new CodeInstruction(OpCodes.Ldloc, bodyTypeLoc);
+                    }
+
+                    yield return instruction;
+
+                    if (instruction.opcode == OpCodes.Ceq)
+                    {
+                        yield return new CodeInstruction(OpCodes.Ldloc, bodyTypeLoc);
+                        yield return CodeInstruction.LoadField(typeof(BodyTypeDefOf), nameof(BodyTypeDefOf.Baby));
+                        yield return new CodeInstruction(OpCodes.Ceq);
+                        yield return new CodeInstruction(OpCodes.Or);
+                    }
+                }
+            }
+        }
+
+        public static Graphic_Multi OutfitStandDrawAtHelper(bool body, Building_OutfitStand __instance) =>
+            body ?
+                (outfitStandComp = __instance.GetComp<Comp_OutfitStandHAR>())?.bodyGraphic ?? CachedData.outfitStandBodyGraphic() :
+                outfitStandComp?.headGraphic                                               ?? CachedData.outfitStandHeadGraphic();
+
+        public static IEnumerable<CodeInstruction> OutfindStandRecacheGraphicsTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+                if (instruction.opcode == OpCodes.Ldloc_S && ((LocalBuilder)instruction.operand).LocalIndex == 9)
+                    yield return CodeInstruction.Call(patchType, nameof(OutfitStandRecacheGraphicsHelper));
+            }
+        }
+
+        public static Vector2 OutfitStandRecacheGraphicsHelper(Vector2 original)
+        {
+            Vector2 drawSize = (outfitStandComp.Race as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.customDrawSize ?? Vector2.one;
+            return original * drawSize;
+        }
+
+        public static void OutfitStandEnableOverride(Building_OutfitStand __instance)
+        {
+            outfitStandComp = __instance.GetComp<Comp_OutfitStandHAR>();
+            AlienPartGenerator.ExtendedGraphicTop.drawOverrideDummy = outfitStandComp != null ? new DummyExtendedGraphicsPawnWrapper { race = outfitStandComp.Race, bodyType = outfitStandComp.BodyType, headType = outfitStandComp.HeadType} : null;
+        }
+
+        public static void OutfitStandDisableOverride() =>
+            AlienPartGenerator.ExtendedGraphicTop.drawOverrideDummy = null;
 
         public static void NeedLevelPostfix(Pawn ___pawn) => 
             AlienPartGenerator.AlienComp.RegenerateAddonGraphicsWithCondition(___pawn, [typeof(ConditionMood), typeof(ConditionNeed)]);
@@ -2564,7 +2667,7 @@ namespace AlienRace
                 __result = RaceRestrictionSettings.CanDoRecipe(recipe, p.def);
         }
 
-        private static HashSet<ThingDef> colonistRaces = new();
+        public static  HashSet<ThingDef> colonistRaces = [];
         private static int               colonistRacesTick;
         private const  int               COLONIST_RACES_TICK_TIMER = GenDate.TicksPerHour * 2;
 
@@ -2576,7 +2679,7 @@ namespace AlienRace
 
                 if (pawns.Count > 0)
                 {
-                    HashSet<ThingDef> newColonistRaces = new(pawns.Select(selector: p => p.def));
+                    HashSet<ThingDef> newColonistRaces = [..pawns.Select(selector: p => p.def)];
                     colonistRacesTick = Find.TickManager.TicksAbs;
                     //Log.Message(string.Join(" | ", colonistRaces.Select(td => td.defName)));
 

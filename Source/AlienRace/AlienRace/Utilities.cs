@@ -254,8 +254,23 @@
             return apparelPropsToApparelDict[props];
         }
 
+        public delegate void FromOutfitStandDel(Building_OutfitStand outfitStand);
 
-        public delegate bool CanBeChild(PawnKindDef kindDef);
+        public static readonly FromOutfitStandDel outfitStandRecacheGraphics = AccessTools.MethodDelegate<FromOutfitStandDel>(AccessTools.Method(typeof(Building_OutfitStand), "RecacheGraphics"));
+
+        public static readonly AccessTools.FieldRef<Graphic_Multi> outfitStandBodyGraphic =
+            AccessTools.StaticFieldRefAccess<Graphic_Multi>(AccessTools.Field(typeof(Building_OutfitStand), "bodyGraphic"));
+
+        public static readonly AccessTools.FieldRef<Graphic_Multi> outfitStandHeadGraphic =
+            AccessTools.StaticFieldRefAccess<Graphic_Multi>(AccessTools.Field(typeof(Building_OutfitStand), "headGraphic"));
+
+        public static readonly AccessTools.FieldRef<Vector2> outfitStandDrawSizeBody =
+            AccessTools.StaticFieldRefAccess<Vector2>(AccessTools.Field(typeof(Building_OutfitStand), "bodyDrawSize"));
+
+        public static readonly AccessTools.FieldRef<Vector2> outfitStandDrawSizeHead =
+            AccessTools.StaticFieldRefAccess<Vector2>(AccessTools.Field(typeof(Building_OutfitStand), "headDrawSize"));
+
+        public delegate bool BoolFromPawnKindDefDel(PawnKindDef kindDef);
 
         public static readonly BoolFromPawnKindDefDel canBeChild =
             AccessTools.MethodDelegate<BoolFromPawnKindDefDel>(AccessTools.Method(typeof(ScenarioUtility), "CanBeChild"));
