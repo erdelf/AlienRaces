@@ -1038,8 +1038,8 @@
                 this.OverwriteColorChannel("hair",     this.Pawn.story.HairColor);
                 this.OverwriteColorChannel("skin",     this.Pawn.story.SkinColor);
                 this.OverwriteColorChannel("skinBase", this.Pawn.story.SkinColorBase);
-                this.OverwriteColorChannel("favorite", this.Pawn.story.favoriteColor);
-                this.OverwriteColorChannel("favorite", second: this.ColorChannels["favorite"].second != Color.clear ? null : this.Pawn.story.favoriteColor);
+                this.OverwriteColorChannel("favorite", this.Pawn.story.favoriteColor.color);
+                this.OverwriteColorChannel("favorite", second: this.ColorChannels["favorite"].second != Color.clear ? null : this.Pawn.story.favoriteColor.color);
                 this.OverwriteColorChannel("ideo",     this.Pawn.Ideo?.Color, this.Pawn.Ideo?.ApparelColor);
                 this.OverwriteColorChannel("mech",     this.Pawn.Faction?.AllegianceColor);
 
