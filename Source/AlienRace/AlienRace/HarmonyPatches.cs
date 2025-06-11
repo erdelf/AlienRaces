@@ -137,10 +137,10 @@ namespace AlienRace
                 new HarmonyMethod(patchType, nameof(GeneratePawnPrefix)),
                 postfix: new HarmonyMethod(patchType, nameof(GeneratePawnPostfix)));
 
-            Harmony.DEBUG = true;
+            
             harmony.Patch(AccessTools.PropertyGetter(typeof(StartingPawnUtility), "DefaultStartingPawnRequest"),
                           transpiler: new HarmonyMethod(patchType, nameof(DefaultStartingPawnTranspiler)));
-            Harmony.DEBUG = false;
+            
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "GenerateGenes"), prefix: new HarmonyMethod(patchType, nameof(GenerateGenesPrefix)),
                 postfix: new HarmonyMethod(patchType, nameof(GenerateGenesPostfix)), transpiler: new HarmonyMethod(patchType, nameof(GenerateGenesTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnHairColors), nameof(PawnHairColors.RandomHairColor)), transpiler: new HarmonyMethod(patchType, nameof(GenerateGenesTranspiler)));
