@@ -975,17 +975,27 @@
                 if (!this.Pawn.Drawer.renderer.renderTree.Resolved)
                     return;
 
-                using IEnumerator<BodyAddon> bodyAddons  = this.AlienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons).GetEnumerator();
-                int                          addonIndex  = 0;
-                int                          sharedIndex = 0;
-                while (bodyAddons.MoveNext())
+                void Update()
                 {
-                    BodyAddon addon = bodyAddons.Current!;
+                    using IEnumerator<BodyAddon> bodyAddons = this.AlienProps.alienRace.generalSettings.alienPartGenerator.bodyAddons.Concat(Utilities.UniversalBodyAddons)
+                                                                  .GetEnumerator();
+                    int addonIndex  = 0;
+                    int sharedIndex = 0;
+                    while (bodyAddons.MoveNext())
+                    {
+                        BodyAddon addon = bodyAddons.Current!;
 
-                    if (addon.conditionTypes.Intersect(types).Any())
-                        this.RegenerateAddonGraphic(this.nodeProps[addonIndex], addonIndex, ref sharedIndex);
-                    addonIndex++;
+                        if (addon.conditionTypes.Intersect(types).Any()) this.RegenerateAddonGraphic(this.nodeProps[addonIndex], addonIndex, ref sharedIndex);
+                        addonIndex++;
+                    }
+                    Application.onBeforeRender -= Update;
                 }
+
+                
+                if(UnityData.IsInMainThread)
+                    Update();
+                else
+                    Application.onBeforeRender += Update;
             }
 
             private void RegenerateAddonGraphic(AlienPawnRenderNodeProperties_BodyAddon addonProps, int addonIndex, ref int sharedIndex, bool force = false)
