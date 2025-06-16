@@ -990,12 +990,8 @@
                     }
                     Application.onBeforeRender -= Update;
                 }
-
                 
-                if(UnityData.IsInMainThread)
-                    Update();
-                else
-                    Application.onBeforeRender += Update;
+                Application.onBeforeRender += Update;
             }
 
             private void RegenerateAddonGraphic(AlienPawnRenderNodeProperties_BodyAddon addonProps, int addonIndex, ref int sharedIndex, bool force = false)
