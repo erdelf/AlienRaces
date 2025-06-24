@@ -454,6 +454,7 @@ public static class StylingStation
                         alienComp.addonColors[selectedIndexAddons].first = newlyGeneratedColors.first;
                     else
                         alienComp.addonColors[selectedIndexAddons].second = newlyGeneratedColors.second;
+                    PortraitsCache.SetDirty(pawn);
                 }
 
                 Vector2 pos = new(0, 60);
@@ -475,14 +476,20 @@ public static class StylingStation
                         if (colors.Item1.IndistinguishableFrom(color))
                             Widgets.DrawBox(rect);
                         if (Widgets.ButtonInvisible(rect))
+                        {
                             alienComp.addonColors[selectedIndexAddons].first = i == 0 ? null : color;
+                            PortraitsCache.SetDirty(pawn);
+                        }
                     }
                     else
                     {
                         if (colors.Item2.IndistinguishableFrom(color))
                             Widgets.DrawBox(rect);
                         if (Widgets.ButtonInvisible(rect))
+                        {
                             alienComp.addonColors[selectedIndexAddons].second = i == 0 ? null : color;
+                            PortraitsCache.SetDirty(pawn);
+                        }
                     }
 
                     pos.x += size.x;
