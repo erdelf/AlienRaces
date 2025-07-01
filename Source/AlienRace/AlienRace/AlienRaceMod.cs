@@ -39,33 +39,11 @@
             Func<XmlNode, object> originalFunc = CachedData.listFromXmlMethods()[typeof(List<AbstractExtendedGraphic>)];
             CachedData.listFromXmlMethods()[typeof(List<AbstractExtendedGraphic>)] = node => originalFunc(AbstractExtendedGraphic.CustomListLoader(node));
 
-            bool xmlExtensionsActive  = ModLister.GetActiveModWithIdentifier("imranfish.xmlextensions", true) != null;
-            AccessTools.FieldRef<Dictionary<Type, Func<XmlNode, XmlNode, string, object>>> listFromXmlMethodsXE = null;
-
-            if (xmlExtensionsActive)
-            {
-                listFromXmlMethodsXE =
-                    AccessTools.StaticFieldRefAccess<Dictionary<Type, Func<XmlNode, XmlNode, string, object>>>(AccessTools.Field("XmlExtensions.CustomXmlLoader:listFromXmlMethods"));
-                
-                AccessTools.Method("XmlExtensions.CustomXmlLoader:ObjectFromXml", generics: [typeof(List<AbstractExtendedGraphic>)]).Invoke(null, [xmlDoc.DocumentElement, false, null, null]);
-
-                Func<XmlNode, XmlNode, string, object> originalFuncXE = listFromXmlMethodsXE()[typeof(List<AbstractExtendedGraphic>)];
-                listFromXmlMethodsXE()[typeof(List<AbstractExtendedGraphic>)] = (node, _, _) => originalFuncXE(AbstractExtendedGraphic.CustomListLoader(node), null, null);
-            }
-
             xmlDoc = new XmlDocument();
             xmlDoc.LoadXml($"<conditions></conditions>");
             DirectXmlToObject.ObjectFromXml<List<Condition>>(xmlDoc.DocumentElement, false);
             Func<XmlNode, object> originalFunc2 = CachedData.listFromXmlMethods()[typeof(List<Condition>)];
             CachedData.listFromXmlMethods()[typeof(List<Condition>)] = node => originalFunc2(Condition.CustomListLoader(node));
-
-            if (xmlExtensionsActive)
-            {
-                AccessTools.Method("XmlExtensions.CustomXmlLoader:ObjectFromXml", generics: [typeof(List<Condition>)]).Invoke(null, [xmlDoc.DocumentElement, false, null, null]);
-
-                Func<XmlNode, XmlNode, string, object> originalFuncXE = listFromXmlMethodsXE()[typeof(List<Condition>)];
-                listFromXmlMethodsXE()[typeof(List<Condition>)] = (node, _, _) => originalFuncXE(Condition.CustomListLoader(node), null, null);
-            }
         }
 
         public override void DoSettingsWindowContents(Rect inRect)
