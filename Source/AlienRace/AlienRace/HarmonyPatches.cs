@@ -335,7 +335,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(CompStatue),           "InitFakePawn_HookForMods"), postfix: new HarmonyMethod(patchType, nameof(StatueFakePawnHookPostfix)));
             harmony.Patch(AccessTools.Method(typeof(CompStatue),           "InitFakePawn"), transpiler: new HarmonyMethod(patchType, nameof(StatueInitFakePawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker),     nameof(Pawn_GeneTracker.AddictionChanceFactor)), new HarmonyMethod(patchType, nameof(AddictionChanceFactorPrefix)));
-
+            harmony.Patch(AccessTools.Method(typeof(JoyGiver_SocialRelax), "TryFindIngestibleToNurse"), transpiler: new HarmonyMethod(patchType, nameof(IngestibleToNurseTranspiler)));
 
 
             AlienRenderTreePatches.HarmonyInit(harmony);
@@ -403,6 +403,32 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add("alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> IngestibleToNurseTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
+        {
+            FieldInfo ingestibleInfo = AccessTools.Field(typeof(ThingDef), nameof(ThingDef.ingestible));
+            FieldInfo nurseableInfo = AccessTools.Field(typeof(IngestibleProperties), nameof(IngestibleProperties.nurseable));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+            Label                 skipLabel     = ilg.DefineLabel();
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+                if (instruction.LoadsField(ingestibleInfo) && instructionList[i+1].LoadsField(nurseableInfo))
+                {
+                    yield return new CodeInstruction(OpCodes.Dup);
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldfld,     AccessTools.Field(typeof(Pawn), nameof(Pawn.def)));
+                    yield return new CodeInstruction(OpCodes.Call,      AccessTools.Method(typeof(RaceRestrictionSettings), nameof(RaceRestrictionSettings.CanEat)));
+                    yield return new CodeInstruction(OpCodes.Brtrue,    skipLabel);
+                    yield return new CodeInstruction(OpCodes.Pop);
+                    yield return new CodeInstruction(OpCodes.Br, instructionList[i + 2].labels.FirstOrDefault());
+                    yield return new CodeInstruction(OpCodes.Nop).WithLabels(skipLabel);
+                }
+                yield return instruction;
+            }
         }
 
         public static bool AddictionChanceFactorPrefix(ref float __result, Pawn ___pawn, ChemicalDef chemical)
