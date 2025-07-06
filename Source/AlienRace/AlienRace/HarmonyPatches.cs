@@ -334,6 +334,10 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(CompStatue),           "CreateSnapshotOfPawn_HookForMods"), postfix: new HarmonyMethod(patchType, nameof(StatueSnapshotHookPostfix)));
             harmony.Patch(AccessTools.Method(typeof(CompStatue),           "InitFakePawn_HookForMods"), postfix: new HarmonyMethod(patchType, nameof(StatueFakePawnHookPostfix)));
             harmony.Patch(AccessTools.Method(typeof(CompStatue),           "InitFakePawn"), transpiler: new HarmonyMethod(patchType, nameof(StatueInitFakePawnTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker),     nameof(Pawn_GeneTracker.AddictionChanceFactor)), new HarmonyMethod(patchType, nameof(AddictionChanceFactorPrefix)));
+
+
+
             AlienRenderTreePatches.HarmonyInit(harmony);
 
             foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
@@ -399,6 +403,28 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add("alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static bool AddictionChanceFactorPrefix(ref float __result, Pawn ___pawn, ChemicalDef chemical)
+        {
+            if (___pawn.def is not ThingDef_AlienRace alienProps)
+                return true;
+
+            bool forbidden = false;
+            
+            alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(cs =>
+                                                                           {
+                                                                               if (cs.chemical == chemical && !cs.ingestible)
+                                                                                   forbidden = false;
+                                                                           });
+            
+            if(forbidden)
+            {
+                __result = 0f;
+                return false;
+            }
+
+            return true;
         }
 
         public static IEnumerable<CodeInstruction> StatueInitFakePawnTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
@@ -2553,7 +2579,7 @@ namespace AlienRace
                 return;
 
             bool result = true;
-            alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(action: cs =>
+            alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(cs =>
                                                                                    {
                                                                                        if (cs.chemical == chemical && !cs.ingestible)
                                                                                            result = false;
