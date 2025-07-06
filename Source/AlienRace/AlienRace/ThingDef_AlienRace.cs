@@ -984,6 +984,8 @@
                           !(raceRestriction?.blackEndoCategoriesEndo.Contains(gene.endogeneCategory)                    ?? false);
             }
 
+            if (gene.chemical != null) 
+                result &= ((race as ThingDef_AlienRace)?.alienRace.generalSettings.chemicalSettings?.TrueForAll(c => c.ingestible || c.chemical != gene.chemical) ?? true);
 
             return result                                                                                              &&
                    !(raceRestriction?.blackGeneList.Contains(gene)                                           ?? false) &&
