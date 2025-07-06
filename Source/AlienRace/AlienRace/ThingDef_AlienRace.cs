@@ -898,7 +898,7 @@
             result &= !(raceRestriction?.blackFoodList.Contains(food) ?? false);
 
             ChemicalDef chemical = food.GetCompProperties<CompProperties_Drug>()?.chemical;
-            return result && (chemical == null || ((race as ThingDef_AlienRace)?.alienRace.generalSettings.chemicalSettings?.TrueForAll(match: c => c.ingestible || c.chemical != chemical) ?? true));
+            return result && (chemical == null || ((race as ThingDef_AlienRace)?.alienRace.generalSettings.chemicalSettings?.TrueForAll(c => c.ingestible || c.chemical != chemical) ?? true));
         }
 
         public bool           onlyTameRaceRestrictedPets = false;
