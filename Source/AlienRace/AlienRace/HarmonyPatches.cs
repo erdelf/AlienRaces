@@ -299,7 +299,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GetBackstoryCategoryFiltersFor"), postfix: new HarmonyMethod(patchType, nameof(GetBackstoryCategoryFiltersForPostfix)));
             
             harmony.Patch(AccessTools.Method(typeof(QuestNode_Root_WandererJoin_WalkIn), nameof(QuestNode_Root_WandererJoin_WalkIn.GeneratePawn)), transpiler: new HarmonyMethod(patchType, nameof(WandererJoinTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),                   nameof(PregnancyUtility.ApplyBirthOutcome_NewTemp)),              transpiler: new HarmonyMethod(patchType, nameof(ApplyBirthOutcomeTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),                   nameof(PregnancyUtility.ApplyBirthOutcome)),              transpiler: new HarmonyMethod(patchType, nameof(ApplyBirthOutcomeTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator),                      nameof(PawnGenerator.XenotypesAvailableFor)) ,            postfix: new HarmonyMethod(patchType,    nameof(XenotypesAvailableForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator),                      nameof(PawnGenerator.GetXenotypeForGeneratedPawn)),       transpiler: new HarmonyMethod(patchType, nameof(GetXenotypeForGeneratedPawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker),                   nameof(Pawn_GeneTracker.SetXenotype)), new HarmonyMethod(patchType, nameof(SetXenotypePrefix)));
@@ -2464,14 +2464,14 @@ namespace AlienRace
                 if (parent == null)
                 {
                     parent = PawnGenerator.GeneratePawn(other.kindDef,
-                        Find.FactionManager.FirstFactionOfDef(other.kindDef.defaultFactionType) ?? Find.FactionManager.AllFactions.RandomElement());
+                        Find.FactionManager.FirstFactionOfDef(other.kindDef.defaultFactionDef) ?? Find.FactionManager.AllFactions.RandomElement());
                     if (!other.GetRelations(parent).Contains(PawnRelationDefOf.Parent)) other.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent);
                 }
 
                 if (parent2 == null)
                 {
                     parent2 = PawnGenerator.GeneratePawn(other.kindDef,
-                        Find.FactionManager.FirstFactionOfDef(other.kindDef.defaultFactionType) ?? Find.FactionManager.AllFactions.RandomElement());
+                        Find.FactionManager.FirstFactionOfDef(other.kindDef.defaultFactionDef) ?? Find.FactionManager.AllFactions.RandomElement());
                     if (!other.GetRelations(parent2).Contains(PawnRelationDefOf.Parent)) other.relations.AddDirectRelation(PawnRelationDefOf.Parent, parent2);
                 }
 
