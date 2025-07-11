@@ -369,6 +369,8 @@
 
         [Unsaved]
         public Dictionary<StatDef, StatPart_Age> ageStatOverride = [];
+
+        public List<MeditationFocusDef> meditationFocii = [];
     }
 
     public class ReproductionSettings

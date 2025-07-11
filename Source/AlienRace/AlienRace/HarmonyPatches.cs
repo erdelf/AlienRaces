@@ -337,6 +337,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker),     nameof(Pawn_GeneTracker.AddictionChanceFactor)), new HarmonyMethod(patchType, nameof(AddictionChanceFactorPrefix)));
             harmony.Patch(AccessTools.Method(typeof(JoyGiver_SocialRelax), "TryFindIngestibleToNurse"), transpiler: new HarmonyMethod(patchType, nameof(IngestibleToNurseTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnUtility), nameof(PawnUtility.CanTakeDrug)), new HarmonyMethod(patchType, nameof(CanTakeDrugPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(MeditationFocusTypeAvailabilityCache), "PawnCanUseInt"), transpiler: new HarmonyMethod(patchType, nameof(PawnCanUseMeditationFocusTranspiler)));
 
 
             AlienRenderTreePatches.HarmonyInit(harmony);
@@ -405,6 +406,32 @@ namespace AlienRace
 
             AlienRaceMod.settings.UpdateSettings();
         }
+
+        public static IEnumerable<CodeInstruction> PawnCanUseMeditationFocusTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            int index = instructionList.FindLastIndex(ci => ci.opcode == OpCodes.Ldc_I4_0);
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                if (i == index)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0).WithLabels(instruction.labels); // Load Pawn
+                    yield return new CodeInstruction(OpCodes.Ldarg_1); // Load MeditationFocusDef
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(RaceCanUseMeditationFocusHelper)));
+                } else
+                {
+                    yield return instruction;
+                }
+            }
+        }
+
+        public static bool RaceCanUseMeditationFocusHelper(Pawn p, MeditationFocusDef focus) => 
+            p.def is ThingDef_AlienRace alienProps && 
+            alienProps.alienRace.generalSettings.meditationFocii.Contains(focus);
 
         public static void CanTakeDrugPostfix(Pawn pawn, ThingDef drug, ref bool __result)
         {
