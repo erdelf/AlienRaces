@@ -141,35 +141,39 @@ public class ExtendedGraphicsPawnWrapper
     public virtual bool IsCreepJoiner(CreepJoinerFormKindDef def) => this.WrappedPawn.IsCreepJoiner && (def == null || this.WrappedPawn.creepjoiner.form == def);
 
     public virtual bool IsStatue => AlienRenderTreePatches.IsStatuePawn(this.WrappedPawn);
+
+    public virtual bool HasStyle(StyleCategoryDef style) => this.WrappedPawn.Ideo?.thingStyleCategories.Any(tscwp => tscwp.category == style && tscwp.priority > 0) ?? false;
 }
 
 public class DummyExtendedGraphicsPawnWrapper : ExtendedGraphicsPawnWrapper
 {
     // Backing fields for all overridden members
-    public  PawnDrawParms                         drawParms;
-    public  IEnumerable<Apparel>                  wornApparel;
-    public  IEnumerable<ApparelProperties>        wornApparelProps;
-    public  bool                                  visibleInBed;
-    public  Gender                                gender;
-    public  PawnPosture                           posture;
-    public  RotStage?                             rotStage;
-    public  RotDrawMode                           rotDrawMode;
-    public  List<Hediff>                          hediffList;
-    public  List<Trait>                           traitList;
-    public  HediffSet                             hediffSet;
-    public  IEnumerable<BackstoryDef>             backstories;
-    public  TraitSet                              traits;
-    public  bool                                  drafted;
-    public  Job                                   curJob;
-    public  bool                                  moving;
-    public  LifeStageDef                          currentLifeStage;
-    public  BodyTypeDef                           bodyType;
-    public  HeadTypeDef                           headType;
-    public  List<GeneDef>                         genes;
-    public  ThingDef                              race;
-    public  MutantDef                             mutant;
-    public  CreepJoinerFormKindDef                creepJoiner;
-    private BodyDef                               body;
+    public  PawnDrawParms                  drawParms;
+    public  IEnumerable<Apparel>           wornApparel;
+    public  IEnumerable<ApparelProperties> wornApparelProps;
+    public  bool                           visibleInBed;
+    public  Gender                         gender;
+    public  PawnPosture                    posture;
+    public  RotStage?                      rotStage;
+    public  RotDrawMode                    rotDrawMode;
+    public  List<Hediff>                   hediffList;
+    public  List<Trait>                    traitList;
+    public  HediffSet                      hediffSet;
+    public  IEnumerable<BackstoryDef>      backstories;
+    public  TraitSet                       traits;
+    public  bool                           drafted;
+    public  Job                            curJob;
+    public  bool                           moving;
+    public  LifeStageDef                   currentLifeStage;
+    public  BodyTypeDef                    bodyType;
+    public  HeadTypeDef                    headType;
+    public  List<GeneDef>                  genes;
+    public  ThingDef                       race;
+    public  MutantDef                      mutant;
+    public  CreepJoinerFormKindDef         creepJoiner;
+    private BodyDef                        body;
+    private bool                           isStatue;
+    private List<StyleCategoryDef>         styles;
 
     public DummyExtendedGraphicsPawnWrapper() : base()
     {
@@ -230,4 +234,8 @@ public class DummyExtendedGraphicsPawnWrapper : ExtendedGraphicsPawnWrapper
     public override bool IsMutant(MutantDef def) => def == this.mutant;
 
     public override bool IsCreepJoiner(CreepJoinerFormKindDef def) => def == this.creepJoiner;
+
+    public override bool IsStatue => this.isStatue;
+
+    public override bool HasStyle(StyleCategoryDef style) => this.styles.Contains(style);
 }

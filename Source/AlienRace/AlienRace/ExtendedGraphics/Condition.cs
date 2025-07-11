@@ -395,6 +395,15 @@ public class ConditionStatue : Condition
         pawn.IsStatue;
 }
 
+public class ConditionStyle : Condition
+{
+    public new const string XmlNameParseKey = "Style";
+    public override bool Static => true;
+    public StyleCategoryDef style;
+    public override bool Satisfied(ExtendedGraphicsPawnWrapper pawn, ref ResolveData data) =>
+        pawn.HasStyle(this.style);
+}
+
 public abstract class ConditionLogicCollection : Condition
 {
     public List<Condition> conditions = [];
