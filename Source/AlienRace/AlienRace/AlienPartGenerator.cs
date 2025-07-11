@@ -863,7 +863,7 @@
                 foreach ((string channel, ExposableValueTuple<Color, Color> colors) in originalComp.ColorChannels)
                     cloneComp.OverwriteColorChannel(channel, colors.first, colors.second);
 
-                cloneComp.addonVariants     = originalComp.addonVariants.ListFullCopy();
+                cloneComp.addonVariants     = originalComp.addonVariants == null ? null : originalComp.addonVariants.ListFullCopy();
                 cloneComp.addonColors       = originalComp.addonColors.Select(vt => new ExposableValueTuple<Color?, Color?>(vt.first, vt.second)).ToList();
                 cloneComp.colorChannelLinks = [];
                 foreach ((string key, ColorChannelLinkData originalData) in originalComp.ColorChannelLinks)
