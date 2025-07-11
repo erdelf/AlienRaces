@@ -863,6 +863,8 @@
                 foreach ((string channel, ExposableValueTuple<Color, Color> colors) in originalComp.ColorChannels)
                     cloneComp.OverwriteColorChannel(channel, colors.first, colors.second);
 
+                originalComp.Pawn.Drawer.renderer.EnsureGraphicsInitialized();
+
                 cloneComp.addonVariants     = originalComp.addonVariants.ListFullCopy();
                 cloneComp.addonColors       = originalComp.addonColors.Select(vt => new ExposableValueTuple<Color?, Color?>(vt.first, vt.second)).ToList();
                 cloneComp.colorChannelLinks = [];
