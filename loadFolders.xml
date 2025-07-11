@@ -3,5 +3,6 @@
 		<li>/</li>
 		<li>1.6</li>
 		<li IfModActive="Ludeon.RimWorld.Ideology">1.6/Mods/Ideology</li>
+		<li IfModActive="Ludeon.RimWorld.Odyssey">1.6/Mods/Odyssey</li>
 	</v1.6>
 </loadFolders>
