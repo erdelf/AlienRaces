@@ -1001,31 +1001,36 @@ namespace AlienRace
 
         public static IEnumerable<CodeInstruction> AdultLifeStageStartedTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            FieldInfo backstoryFilters = AccessTools.Field(typeof(LifeStageWorker_HumanlikeAdult), "VatgrowBackstoryFilter");
+            FieldInfo  backstoryFilters             = AccessTools.Field(typeof(LifeStageWorker_HumanlikeAdult), "VatgrowBackstoryFilter");
+            FieldInfo  backstoryTribalFilters       = AccessTools.Field(typeof(LifeStageWorker_HumanlikeAdult), "BackstoryFiltersTribal");
             MethodInfo isPlayerColonyChildBackstory = AccessTools.PropertyGetter(typeof(BackstoryDef), nameof(BackstoryDef.IsPlayerColonyChildBackstory));
 
-            foreach (CodeInstruction instruction in instructions)
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            for (int index = 0; index < instructionList.Count; index++)
             {
-                if (instruction.opcode == OpCodes.Stloc_S && ((LocalBuilder)instruction.operand).LocalIndex == 5)
-                {
-                    yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels()};
-                    yield return new CodeInstruction(OpCodes.Ldc_I4_1);
-                    yield return CodeInstruction.Call(patchType, nameof(LifeStageStartedHelper));
-                }
+                CodeInstruction instruction = instructionList[index];
 
                 if (instruction.Calls(isPlayerColonyChildBackstory))
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels() };
                     yield return CodeInstruction.Call(patchType, nameof(IsPlayerColonyChildBackstoryHelper));
-                } else
+                }
+                else
                 {
                     yield return instruction;
+                }
+
+                if (instruction.LoadsField(backstoryTribalFilters))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels() }.MoveLabelsFrom(instructionList[index+1]);
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+                    yield return CodeInstruction.Call(patchType, nameof(LifeStageStartedHelper));
                 }
 
 
                 if (instruction.LoadsField(backstoryFilters))
                 {
-                    
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
                     yield return new CodeInstruction(OpCodes.Ldc_I4_2);
                     yield return CodeInstruction.Call(patchType, nameof(LifeStageStartedHelper));
