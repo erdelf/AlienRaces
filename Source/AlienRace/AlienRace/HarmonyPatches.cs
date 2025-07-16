@@ -454,12 +454,15 @@ namespace AlienRace
                 if (instruction.LoadsField(ingestibleInfo) && instructionList[i+1].LoadsField(nurseableInfo))
                 {
                     yield return new CodeInstruction(OpCodes.Dup);
-                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldarg_1); // pawn
                     yield return new CodeInstruction(OpCodes.Ldfld,     AccessTools.Field(typeof(Pawn), nameof(Pawn.def)));
                     yield return new CodeInstruction(OpCodes.Call,      AccessTools.Method(typeof(RaceRestrictionSettings), nameof(RaceRestrictionSettings.CanEat)));
+
+                    //yield return new CodeInstruction(OpCodes.Pop);
+                    //yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                     yield return new CodeInstruction(OpCodes.Brtrue,    skipLabel);
                     yield return new CodeInstruction(OpCodes.Pop);
-                    yield return new CodeInstruction(OpCodes.Br, instructionList[i + 2].labels.FirstOrDefault());
+                    yield return new CodeInstruction(OpCodes.Br, instructionList[i + 2].operand);
                     yield return new CodeInstruction(OpCodes.Nop).WithLabels(skipLabel);
                 }
                 yield return instruction;
@@ -471,15 +474,7 @@ namespace AlienRace
             if (___pawn.def is not ThingDef_AlienRace alienProps)
                 return true;
 
-            bool forbidden = false;
-            
-            alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(cs =>
-                                                                           {
-                                                                               if (cs.chemical == chemical && !cs.ingestible)
-                                                                                   forbidden = false;
-                                                                           });
-            
-            if(forbidden)
+            if(!alienProps.alienRace.generalSettings.CanUseChemical(chemical))
             {
                 __result = 0f;
                 return false;
@@ -2644,14 +2639,7 @@ namespace AlienRace
             if (pawn.def is not ThingDef_AlienRace alienProps) 
                 return;
 
-            bool result = true;
-            alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(cs =>
-                                                                                   {
-                                                                                       if (cs.chemical == chemical && !cs.ingestible)
-                                                                                           result = false;
-                                                                                   }
-                                                                          );
-            __result = result;
+            __result = alienProps.alienRace.generalSettings.CanUseChemical(chemical);
         }
 
         public static IEnumerable<CodeInstruction> IngestedTranspiler(IEnumerable<CodeInstruction> instructions)

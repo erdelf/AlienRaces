@@ -331,6 +331,19 @@
              !lockedBeds.Contains(bedDef));
 
         public List<ChemicalSettings> chemicalSettings;
+
+        public bool CanUseChemical(ChemicalDef chemical)
+        {
+            if (this.chemicalSettings.NullOrEmpty() || chemical == null)
+                return true;
+
+            foreach (ChemicalSettings cs in this.chemicalSettings)
+                if (cs.chemical == chemical && !cs.ingestible)
+                    return false;
+
+            return true;
+        }
+
         public List<AlienChanceEntry<TraitWithDegree>>   forcedRaceTraitEntries;
         public List<AlienChanceEntry<TraitWithDegree>>   disallowedTraits;
 
@@ -900,7 +913,7 @@
             result &= !(raceRestriction?.blackFoodList.Contains(food) ?? false);
 
             ChemicalDef chemical = food.GetCompProperties<CompProperties_Drug>()?.chemical;
-            return result && (chemical == null || ((race as ThingDef_AlienRace)?.alienRace.generalSettings.chemicalSettings?.TrueForAll(c => c.ingestible || c.chemical != chemical) ?? true));
+            return result && (chemical == null || ((race as ThingDef_AlienRace)?.alienRace.generalSettings.CanUseChemical(chemical) ?? true));
         }
 
         public bool           onlyTameRaceRestrictedPets = false;
@@ -987,7 +1000,7 @@
             }
 
             if (gene.chemical != null) 
-                result &= ((race as ThingDef_AlienRace)?.alienRace.generalSettings.chemicalSettings?.TrueForAll(c => c.ingestible || c.chemical != gene.chemical) ?? true);
+                result &= ((race as ThingDef_AlienRace)?.alienRace.generalSettings.CanUseChemical(gene.chemical) ?? true);
 
             return result                                                                                              &&
                    !(raceRestriction?.blackGeneList.Contains(gene)                                           ?? false) &&
