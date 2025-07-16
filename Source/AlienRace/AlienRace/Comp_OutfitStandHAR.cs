@@ -31,6 +31,9 @@
                 if (this.race == value || value == null) 
                     return;
                 this.race     = value;
+
+                this.blockRecache = true;
+
                 IEnumerable<BodyTypeDef> bodies = this.BodyTypesAvailable.ToList();
                 if(!bodies.Contains(this.BodyType))
                     this.BodyType = bodies.RandomElement();
@@ -38,6 +41,7 @@
                 if(!heads.Contains(this.HeadType))
                     this.HeadType = heads.RandomElement();
 
+                this.blockRecache = false;
                 this.RecacheGraphics();
             }
         }
@@ -100,9 +104,11 @@
             LongEventHandler.ExecuteWhenFinished(this.RecacheGraphicsStatic);
         }
 
+        private bool blockRecache = false;
+
         private void RecacheGraphicsStatic()
         {
-            if (this.HeadType == null || this.BodyType == null)
+            if (this.HeadType == null || this.BodyType == null || this.blockRecache)
                 return;
 
             ThingWithComps heldWeapon = this.OutfitStand.HeldWeapon;
