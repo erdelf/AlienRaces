@@ -95,16 +95,14 @@
             }
         }
 
-        private int  recacheCounter = 0;
-
         private void RecacheGraphics()
         {
-            this.recacheCounter++;
             LongEventHandler.ExecuteWhenFinished(this.RecacheGraphicsStatic);
         }
+
         private void RecacheGraphicsStatic()
         {
-            if (this.recacheCounter-- > 1) 
+            if (this.HeadType == null || this.BodyType == null)
                 return;
 
             ThingWithComps heldWeapon = this.OutfitStand.HeldWeapon;
