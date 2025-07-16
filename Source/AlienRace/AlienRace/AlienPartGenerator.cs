@@ -860,7 +860,7 @@
 
             public static void CopyAlienData(AlienComp originalComp, AlienComp cloneComp)
             {
-                originalComp.Pawn.Drawer.renderer.EnsureGraphicsInitialized();
+                originalComp.Pawn?.Drawer?.renderer?.EnsureGraphicsInitialized();
 
                 if(!(originalComp.Pawn?.Drawer?.renderer?.renderTree?.Resolved ?? false))
                     return;
