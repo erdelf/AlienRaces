@@ -173,7 +173,7 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Verb_MeleeAttackDamage), "DamageInfosToApply"), 
                 postfix: new HarmonyMethod(patchType, nameof(DamageInfosToApplyPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnWeaponGenerator), nameof(PawnWeaponGenerator.TryGenerateWeaponFor)),
-                new HarmonyMethod(patchType, nameof(TryGenerateWeaponForPrefix)), new HarmonyMethod(patchType, nameof(TryGenerateWeaponForPostfix)));
+                new HarmonyMethod(patchType, nameof(TryGenerateWeaponForPrefix)), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateWeaponForTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnApparelGenerator), nameof(PawnApparelGenerator.GenerateStartingApparelFor)),
                 new HarmonyMethod(patchType, nameof(GenerateStartingApparelForPrefix)),
                 new HarmonyMethod(patchType, nameof(GenerateStartingApparelForPostfix)));
@@ -2179,14 +2179,38 @@ namespace AlienRace
             CachedData.allApparelPairs().RemoveAll(match: tsp => apparelList.Contains(tsp));
         }
 
-        public static void TryGenerateWeaponForPostfix() =>
+
+       
+        public static IEnumerable<CodeInstruction> TryGenerateWeaponForTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            FieldInfo workingWeaponsInfo = AccessTools.Field(typeof(PawnWeaponGenerator), "workingWeapons");
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+                if (instruction.LoadsField(workingWeaponsInfo) && instructionList[i+1].Calls(AccessTools.PropertyGetter(typeof(List<ThingStuffPair>), nameof(List<ThingStuffPair>.Count)))) 
+                    yield return CodeInstruction.Call(patchType, nameof(TryGenerateWeaponForCleanup)).MoveLabelsFrom(instruction);
+
+                yield return instruction;
+
+                if (instruction.opcode == OpCodes.Brtrue_S && instructionList[i - 1].Calls(AccessTools.PropertyGetter(typeof(List<string>), nameof(List<string>.Count))) &&
+                                                                instructionList[i - 2].LoadsField(AccessTools.Field(typeof(PawnKindDef),  nameof(PawnKindDef.weaponTags))))
+                    yield return CodeInstruction.Call(patchType, nameof(TryGenerateWeaponForCleanup)).MoveLabelsFrom(instructionList[i+1]);
+            }
+        }
+
+        public static void TryGenerateWeaponForCleanup()
+        {
             CachedData.allWeaponPairs().AddRange(weaponList);
+        }
 
         private static HashSet<ThingStuffPair> weaponList;
 
         public static void TryGenerateWeaponForPrefix(Pawn pawn)
         {
-            weaponList = new HashSet<ThingStuffPair>();
+            weaponList = [];
 
             foreach (ThingStuffPair pair in CachedData.allWeaponPairs().ListFullCopy())
             {
@@ -2194,7 +2218,8 @@ namespace AlienRace
                 if (!RaceRestrictionSettings.CanEquip(equipment, pawn.def))
                     weaponList.Add(pair);
             }
-            CachedData.allWeaponPairs().RemoveAll(match: tsp => float.IsNaN(tsp.commonalityMultiplier) ? weaponList.Any(pair => pair.thing == tsp.thing && pair.stuff == tsp.stuff && float.IsNaN(pair.commonalityMultiplier)) : weaponList.Contains(tsp));
+
+            CachedData.allWeaponPairs().RemoveAll(tsp => float.IsNaN(tsp.commonalityMultiplier) ? weaponList.Any(pair => pair.thing == tsp.thing && pair.stuff == tsp.stuff && float.IsNaN(pair.commonalityMultiplier)) : weaponList.Contains(tsp));
         }
 
         public static void DamageInfosToApplyPostfix(Verb __instance, ref IEnumerable<DamageInfo> __result)
