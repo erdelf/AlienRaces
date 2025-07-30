@@ -3567,18 +3567,6 @@ namespace AlienRace
                 return false;
             }
 
-            if(slot == BackstorySlot.Adulthood)
-            {
-                Log.ResetMessageCount();
-                Log.Message(backstoryCategories.GetType().FullName);
-                Log.Message($"Backstory count: {backstoryCategories?.Count}");
-
-                /*
-                Log.Message($"Backstory: {backstoryCategories?.Count}\n{(backstoryCategories.NullOrEmpty() ? string.Empty :
-                                                                             string.Join("\n", backstoryCategories.Select(bcf => $"{bcf.commonality}: {(bcf.categories.NullOrEmpty() ? string.Empty : string.Join(" | ", bcf.categories))}")))}");
-                */
-            }
-
             return true;
         }
 
