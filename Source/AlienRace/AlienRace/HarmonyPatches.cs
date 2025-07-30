@@ -1005,10 +1005,10 @@ namespace AlienRace
             for (int index = 0; index < instructionList.Count; index++)
             {
                 CodeInstruction instruction = instructionList[index];
-
+                
                 if (instruction.Calls(isPlayerColonyChildBackstory))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels() };
+                    yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels() }; 
                     yield return CodeInstruction.Call(patchType, nameof(IsPlayerColonyChildBackstoryHelper));
                 }
                 else
@@ -1018,7 +1018,7 @@ namespace AlienRace
 
                 if (instruction.LoadsField(backstoryTribalFilters))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldarg_1) { labels = instruction.ExtractLabels() }.MoveLabelsFrom(instructionList[index+1]);
+                    yield return new CodeInstruction(OpCodes.Ldarg_1).MoveLabelsFrom(instructionList[index+1]);
                     yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                     yield return CodeInstruction.Call(patchType, nameof(LifeStageStartedHelper));
                 }
@@ -3558,7 +3558,7 @@ namespace AlienRace
         }
 
         
-        public static bool FillBackstoryInSlotShuffledPrefix(Pawn pawn, BackstorySlot slot)
+        public static bool FillBackstoryInSlotShuffledPrefix(Pawn pawn, BackstorySlot slot, List<BackstoryCategoryFilter> backstoryCategories)
         {
             bioReference = null;
             if (slot == BackstorySlot.Adulthood && pawn.story.Childhood is AlienBackstoryDef absd && absd.linkedBackstory != null)
@@ -3566,7 +3566,19 @@ namespace AlienRace
                 pawn.story.Adulthood = absd.linkedBackstory;
                 return false;
             }
-            
+
+            if(slot == BackstorySlot.Adulthood)
+            {
+                Log.ResetMessageCount();
+                Log.Message(backstoryCategories.GetType().FullName);
+                Log.Message($"Backstory count: {backstoryCategories?.Count}");
+
+                /*
+                Log.Message($"Backstory: {backstoryCategories?.Count}\n{(backstoryCategories.NullOrEmpty() ? string.Empty :
+                                                                             string.Join("\n", backstoryCategories.Select(bcf => $"{bcf.commonality}: {(bcf.categories.NullOrEmpty() ? string.Empty : string.Join(" | ", bcf.categories))}")))}");
+                */
+            }
+
             return true;
         }
 
@@ -3594,8 +3606,7 @@ namespace AlienRace
         }
 
         public static IEnumerable<BackstoryDef> FilterBackstories(IEnumerable<BackstoryDef> backstories, Pawn pawn, BackstorySlot slot) =>
-            backstories.Where(predicate: bs => bs is not AlienBackstoryDef abs || 
-                                               abs.Approved(pawn) && (slot != BackstorySlot.Adulthood || abs.linkedBackstory == null || pawn.story.Childhood == abs.linkedBackstory));
+            backstories.Where(bs => bs is not AlienBackstoryDef abs || abs.Approved(pawn) && (slot != BackstorySlot.Adulthood || abs.linkedBackstory == null || pawn.story.Childhood == abs.linkedBackstory));
 
         private static PawnBioDef                bioReference;
 
