@@ -68,13 +68,13 @@ namespace AlienRace
         {
             Lord lord = p.GetLord();
             if (lord != null)
-                if (lord.ownedPawns.Any(c => Utilities.DifferentRace(c.def, p.def)))
+                if (lord.ownedPawns.Any(c => Utilities.DifferentRace(p.def, c.def)))
                     return true;
 
             Caravan car = p.GetCaravan();
             if (car != null)
             {
-                if (car.PawnsListForReading.Any(c => Utilities.DifferentRace(c.def, p.def)))
+                if (car.PawnsListForReading.Any(c => Utilities.DifferentRace(p.def, c.def)))
                     return true;
             }
 
@@ -84,10 +84,10 @@ namespace AlienRace
                 Faction fac = p.Faction;
                 if (fac != null)
                 {
-                    if (map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => Utilities.DifferentRace(c.def, p.def)))
+                    if (map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => Utilities.DifferentRace(p.def, c.def)))
                         return true;
                 }
-                else if (map.mapPawns.AllPawnsSpawned.Any(c => Utilities.DifferentRace(c.def, p.def) && !p.HostileTo(c)))
+                else if (map.mapPawns.AllPawnsSpawned.Any(c => Utilities.DifferentRace(p.def, c.def) && !p.HostileTo(c)))
                 {
                     return true;
                 }
@@ -110,13 +110,13 @@ namespace AlienRace
         {
             Lord lord = p.GetLord();
             if (lord != null)
-                if (lord.ownedPawns.Any(c => Utilities.DifferentRace(c.def, p.def) && c.IsSlave))
+                if (lord.ownedPawns.Any(c => Utilities.DifferentRace(p.def, c.def) && c.IsSlave))
                     return true;
 
             Caravan car = p.GetCaravan();
             if (car != null)
             {
-                if (car.PawnsListForReading.Any(c => Utilities.DifferentRace(c.def, p.def) && c.IsSlave))
+                if (car.PawnsListForReading.Any(c => Utilities.DifferentRace(p.def, c.def) && c.IsSlave))
                     return true;
             }
 
@@ -126,10 +126,10 @@ namespace AlienRace
                 Faction fac = p.Faction;
                 if (fac != null)
                 {
-                    if (map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => Utilities.DifferentRace(c.def, p.def) && c.IsSlave))
+                    if (map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => Utilities.DifferentRace(p.def, c.def) && c.IsSlave))
                         return true;
                 }
-                else if (map.mapPawns.AllPawnsSpawned.Any(c => Utilities.DifferentRace(c.def, p.def) && !p.HostileTo(c) && c.IsSlave))
+                else if (map.mapPawns.AllPawnsSpawned.Any(c => Utilities.DifferentRace(p.def, c.def) && !p.HostileTo(c) && c.IsSlave))
                 {
                     return true;
                 }
@@ -145,13 +145,13 @@ namespace AlienRace
         {
             Lord lord = p.GetLord();
             if (lord != null)
-                if (!lord.ownedPawns.Any(c => Utilities.DifferentRace(c.def, p.def) && c.IsSlave))
+                if (!lord.ownedPawns.Any(c => Utilities.DifferentRace(p.def, c.def) && c.IsSlave))
                     return true;
 
             Caravan car = p.GetCaravan();
             if (car != null)
             {
-                if (!car.PawnsListForReading.Any(c => Utilities.DifferentRace(c.def, p.def) && c.IsSlave))
+                if (!car.PawnsListForReading.Any(c => Utilities.DifferentRace(p.def, c.def) && c.IsSlave))
                     return true;
             }
 
@@ -161,10 +161,10 @@ namespace AlienRace
                 Faction fac = p.Faction;
                 if (fac != null)
                 {
-                    if (!map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => Utilities.DifferentRace(c.def, p.def) && c.IsSlave))
+                    if (!map.mapPawns.SpawnedPawnsInFaction(fac).Any(c => Utilities.DifferentRace(p.def, c.def) && c.IsSlave))
                         return true;
                 }
-                else if (!map.mapPawns.AllPawnsSpawned.Any(c => Utilities.DifferentRace(c.def, p.def) && !p.HostileTo(c) && c.IsSlave))
+                else if (!map.mapPawns.AllPawnsSpawned.Any(c => Utilities.DifferentRace(p.def, c.def) && !p.HostileTo(c) && c.IsSlave))
                 {
                     return true;
                 }
