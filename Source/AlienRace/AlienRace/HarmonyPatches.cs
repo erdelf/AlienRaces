@@ -336,8 +336,9 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(CompStatue),           "InitFakePawn"), transpiler: new HarmonyMethod(patchType, nameof(StatueInitFakePawnTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Pawn_GeneTracker),     nameof(Pawn_GeneTracker.AddictionChanceFactor)), new HarmonyMethod(patchType, nameof(AddictionChanceFactorPrefix)));
             harmony.Patch(AccessTools.Method(typeof(JoyGiver_SocialRelax), "TryFindIngestibleToNurse"), transpiler: new HarmonyMethod(patchType, nameof(IngestibleToNurseTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(PawnUtility), nameof(PawnUtility.CanTakeDrug)), new HarmonyMethod(patchType, nameof(CanTakeDrugPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnUtility), nameof(PawnUtility.CanTakeDrug)), postfix: new HarmonyMethod(patchType, nameof(CanTakeDrugPostfix)));
             harmony.Patch(AccessTools.Method(typeof(MeditationFocusTypeAvailabilityCache), "PawnCanUseInt"), transpiler: new HarmonyMethod(patchType, nameof(PawnCanUseMeditationFocusTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(Recipe_AdministerIngestible), nameof(Recipe_AdministerIngestible.AvailableOnNow)), postfix: new HarmonyMethod(patchType, nameof(IngestibleAvailableOnNowPostfix)));
 
 
             AlienRenderTreePatches.HarmonyInit(harmony);
@@ -405,6 +406,13 @@ namespace AlienRace
             TattooDefOf.NoTattoo_Face.styleTags.Add("alienNoStyle");
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static void IngestibleAvailableOnNowPostfix(Thing thing, ref bool __result, RecipeDef ___recipe)
+        {
+            if (!__result || thing is not Pawn pawn)
+                return;
+            __result = RaceRestrictionSettings.CanEat(___recipe.ingredients[0].filter.AllowedThingDefs.First(), pawn.def);
         }
 
         public static IEnumerable<CodeInstruction> PawnCanUseMeditationFocusTranspiler(IEnumerable<CodeInstruction> instructions)
