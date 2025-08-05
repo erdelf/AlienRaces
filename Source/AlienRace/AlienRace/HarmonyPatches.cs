@@ -2187,8 +2187,6 @@ namespace AlienRace
             CachedData.allApparelPairs().RemoveAll(match: tsp => apparelList.Contains(tsp));
         }
 
-
-        [HarmonyDebug]
         public static IEnumerable<CodeInstruction> TryGenerateWeaponForTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> instructionList = instructions.ToList();
