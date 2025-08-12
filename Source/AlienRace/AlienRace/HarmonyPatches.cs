@@ -1,17 +1,18 @@
 namespace AlienRace
 {
+    using ApparelGraphics;
+    using ExtendedGraphics;
+    using HarmonyLib;
+    using LudeonTK;
+    using RimWorld;
+    using RimWorld.Planet;
+    using RimWorld.QuestGen;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
     using System.Runtime.InteropServices;
-    using ApparelGraphics;
-    using ExtendedGraphics;
-    using HarmonyLib;
-    using LudeonTK;
-    using RimWorld;
-    using RimWorld.QuestGen;
     using UnityEngine;
     using Verse;
     using Verse.AI;
@@ -339,7 +340,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(PawnUtility), nameof(PawnUtility.CanTakeDrug)), postfix: new HarmonyMethod(patchType, nameof(CanTakeDrugPostfix)));
             harmony.Patch(AccessTools.Method(typeof(MeditationFocusTypeAvailabilityCache), "PawnCanUseInt"), transpiler: new HarmonyMethod(patchType, nameof(PawnCanUseMeditationFocusTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Recipe_AdministerIngestible), nameof(Recipe_AdministerIngestible.AvailableOnNow)), postfix: new HarmonyMethod(patchType, nameof(IngestibleAvailableOnNowPostfix)));
-
+            harmony.Patch(AccessTools.Method(typeof(Building_OutfitStand), "HeadOffsetAt"),
+                          postfix: new HarmonyMethod(patchType, nameof(OutfitStandHeadOffsetAtPostfix)), transpiler: new HarmonyMethod(patchType, nameof(OutfitStandHeadOffsetAtTranspiler)));
 
             AlienRenderTreePatches.HarmonyInit(harmony);
 
@@ -558,6 +560,52 @@ namespace AlienRace
             }
         }
 
+        public static IEnumerable<CodeInstruction> OutfitStandHeadOffsetAtTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo offsetInfo = AccessTools.Field(typeof(BodyTypeDef), nameof(BodyTypeDef.headOffset));
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+                if (!instruction.OperandIs(offsetInfo)) continue;
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return new CodeInstruction(OpCodes.Call,  AccessTools.Method(patchType, nameof(OutfitStandHeadOffsetAtHelper)));
+            }
+        }
+
+        public static Vector2 OutfitStandHeadOffsetAtHelper(Vector2 offset, Building_OutfitStand outfitStand)
+        {
+            Comp_OutfitStandHAR comp = outfitStand.GetComp<Comp_OutfitStandHAR>();
+
+            if (comp == null)
+                return offset;
+
+            LifeStageAge lifeStage = comp.Race.race.lifeStageAges.FirstOrDefault(lsa => lsa.def.developmentalStage.Juvenile() == comp.IsJuvenileBodyType);
+
+            Vector2 alienHeadOffset = (lifeStage is not LifeStageAgeAlien ageAlien ? Vector2.zero : comp.gender switch
+                                          {
+                                              Gender.Female => ageAlien.headFemaleOffset,
+                                              _ => ageAlien.headOffset
+                                          });
+
+            return offset + alienHeadOffset;
+        }
+
+        public static void OutfitStandHeadOffsetAtPostfix(ref Vector3 __result, Rot4 rotation, Building_OutfitStand __instance)
+        {
+            Comp_OutfitStandHAR comp = __instance.GetComp<Comp_OutfitStandHAR>();
+
+            if (comp == null)
+                return;
+
+            LifeStageAge lifeStage = comp.Race.race.lifeStageAges.FirstOrDefault(lsa => lsa.def.developmentalStage.Juvenile() == comp.IsJuvenileBodyType);
+            LifeStageAgeAlien stageAgeAlien = lifeStage as LifeStageAgeAlien;
+            Vector3 offsetSpecific = (comp.gender == Gender.Female ?
+                                          stageAgeAlien?.headFemaleOffsetDirectional :
+                                          stageAgeAlien?.headOffsetDirectional)?.GetOffset(rotation)?.GetOffset(false, comp.BodyType, comp.HeadType) ?? Vector3.zero;
+            __result += offsetSpecific;
+        }
+
         public static void OutfitStandAcceptsPostfix(Building_OutfitStand __instance, Thing t, ref bool __result)
         {
             if (__result)
@@ -569,7 +617,7 @@ namespace AlienRace
                         __result = false;
                     if (t.def.IsWeapon && !RaceRestrictionSettings.CanWear(t.def, comp.Race))
                         __result = false;
-                }
+                } 
             }
         }
 
@@ -2101,15 +2149,11 @@ namespace AlienRace
 
         public static Vector2 BaseHeadOffsetAtHelper(Vector2 offset, Pawn pawn)
         {
-            LifeStageAgeAlien ageAlien = (pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien);
-
-            Vector2 alienHeadOffset = (ageAlien == null ? Vector2.zero : pawn.gender switch
-                                                   {
-                                                       Gender.Female => ageAlien.headFemaleOffset,
-                                                       _ => ageAlien.headOffset
-                                                   });
-
-            //Log.Message($"{ageAlien?.def.defName}: {alienHeadOffset.ToStringTwoDigits()}");
+            Vector2 alienHeadOffset = (pawn.ageTracker.CurLifeStageRace is not LifeStageAgeAlien ageAlien ? Vector2.zero : pawn.gender switch
+                                          {
+                                              Gender.Female => ageAlien.headFemaleOffset,
+                                              _ => ageAlien.headOffset
+                                          });
 
             return offset + alienHeadOffset;
         }
@@ -3786,7 +3830,7 @@ namespace AlienRace
         {
             MethodInfo originalMethod = AccessTools.Method(typeof(GraphicDatabase), "Get", [typeof(string), typeof(Shader), typeof(Vector2), typeof(Color)], [typeof(Graphic_Multi)]);
 
-            MethodInfo newMethod = AccessTools.Method(typeof(ApparelGraphics.ApparelGraphicUtility), nameof(ApparelGraphics.ApparelGraphicUtility.GetGraphic));
+            MethodInfo newMethod = AccessTools.Method(typeof(ApparelGraphicUtility), nameof(ApparelGraphicUtility.GetGraphic));
 
             foreach(CodeInstruction instruction in codeInstructions)
             {
