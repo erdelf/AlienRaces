@@ -17,6 +17,7 @@
         private ThingDef    race;
         private BodyTypeDef bodyType;
         private HeadTypeDef headType;
+        public  Gender      gender;
 
         [Unsaved]
         public Graphic_Multi bodyGraphic;
@@ -40,6 +41,12 @@
                 IEnumerable<HeadTypeDef> heads = this.HeadTypesAvailable.ToList();
                 if(!heads.Contains(this.HeadType))
                     this.HeadType = heads.RandomElement();
+
+                this.gender = this.race.race.hasGenders ?
+                                  Gender.None :
+                                  Rand.Bool ?
+                                      Gender.Male :
+                                      Gender.Female;
 
                 this.blockRecache = false;
                 this.RecacheGraphics();
@@ -203,6 +210,7 @@
             Scribe_Defs.Look(ref this.race,     nameof(this.Race));
             Scribe_Defs.Look(ref this.bodyType, nameof(this.BodyType));
             Scribe_Defs.Look(ref this.headType, nameof(this.HeadType));
+            Scribe_Values.Look(ref this.gender, nameof(this.gender));
 
             if (Scribe.mode == LoadSaveMode.ResolvingCrossRefs)
             {
