@@ -148,8 +148,8 @@
             base.PostSpawnSetup(respawningAfterLoad);
             if (respawningAfterLoad)
                 return;
-
-            this.Race = this.parent.Faction != null ? this.parent.Faction.def.basicMemberKind.race ?? ThingDefOf.Human : ThingDefOf.Human;
+            if(this.race == null)
+                this.Race = this.parent.Faction != null ? this.parent.Faction.def.basicMemberKind.race ?? ThingDefOf.Human : ThingDefOf.Human;
         }
 
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
