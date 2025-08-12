@@ -567,7 +567,7 @@ namespace AlienRace
                 {
                     if (t.def.IsApparel && !RaceRestrictionSettings.CanWear(t.def, comp.Race))
                         __result = false;
-                    if (t.def.IsWeapon && !RaceRestrictionSettings.CanWear(t.def, comp.Race))
+                    if (t.def.IsWeapon && !RaceRestrictionSettings.CanEquip(t.def, comp.Race))
                         __result = false;
                 }
             }
@@ -642,7 +642,7 @@ namespace AlienRace
 
         public static Vector3 OutfitStandRecacheGraphicsHelper(Vector3 original)
         {
-            Vector2 drawSize = (outfitStandComp.Race as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.customDrawSize ?? Vector2.one;
+            Vector2 drawSize = (outfitStandComp?.Race as ThingDef_AlienRace)?.alienRace.generalSettings.alienPartGenerator.customDrawSize ?? Vector2.one;
             original.x *= drawSize.x;
             original.z *= drawSize.y;
             return original;

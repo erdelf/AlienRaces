@@ -11,4 +11,8 @@
         <xpath>Defs/ThingDef[defName="Building_KidOutfitStand"]</xpath>
         <value><designationCategory Inherit="false"/></value>
     </Operation>
+
+    <Operation Class="PatchOperationRemove">
+        <xpath>Defs/ThingDef[defName="Building_OutfitStand"]/building/fixedStorageSettings/filter/specialFiltersToDisallow/li[text()="AllowChildOnlyApparel"]</xpath>
+    </Operation>
 </Patch>
