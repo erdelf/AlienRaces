@@ -66,8 +66,8 @@ public class ExtendedGraphicsPawnWrapper
     public virtual IEnumerable<Apparel> GetWornApparel =>
         this.WrappedPawn.apparel?.WornApparel ?? Enumerable.Empty<Apparel>();
 
-    public virtual IEnumerable<ApparelProperties> GetWornApparelProps() =>
-        this.WrappedPawn.apparel?.WornApparel?.Select(ap => ap.def.apparel) ?? [];
+    public virtual IEnumerable<ApparelProperties> GetWornApparelProps() => 
+        this.GetWornApparel?.Select(ap => ap.def.apparel) ?? [];
 
     public virtual bool VisibleInBed(bool noBed = true) => 
         this.WrappedPawn.CurrentBed()?.def?.building?.bed_showSleeperBody ?? noBed;
@@ -148,32 +148,32 @@ public class ExtendedGraphicsPawnWrapper
 public class DummyExtendedGraphicsPawnWrapper : ExtendedGraphicsPawnWrapper
 {
     // Backing fields for all overridden members
-    public  PawnDrawParms                  drawParms;
-    public  IEnumerable<Apparel>           wornApparel;
-    public  IEnumerable<ApparelProperties> wornApparelProps;
-    public  bool                           visibleInBed;
-    public  Gender                         gender;
-    public  PawnPosture                    posture;
-    public  RotStage?                      rotStage;
-    public  RotDrawMode                    rotDrawMode;
-    public  List<Hediff>                   hediffList;
-    public  List<Trait>                    traitList;
-    public  HediffSet                      hediffSet;
-    public  IEnumerable<BackstoryDef>      backstories;
-    public  TraitSet                       traits;
-    public  bool                           drafted;
-    public  Job                            curJob;
-    public  bool                           moving;
-    public  LifeStageDef                   currentLifeStage;
-    public  BodyTypeDef                    bodyType;
-    public  HeadTypeDef                    headType;
-    public  List<GeneDef>                  genes;
-    public  ThingDef                       race;
-    public  MutantDef                      mutant;
-    public  CreepJoinerFormKindDef         creepJoiner;
-    private BodyDef                        body;
-    private bool                           isStatue;
-    private List<StyleCategoryDef>         styles;
+    public PawnDrawParms                  drawParms;
+    public IEnumerable<Apparel>           wornApparel      = [];
+    public IEnumerable<ApparelProperties> wornApparelProps = [];
+    public bool                           visibleInBed;
+    public Gender                         gender;
+    public PawnPosture                    posture;
+    public RotStage?                      rotStage;
+    public RotDrawMode                    rotDrawMode;
+    public List<Hediff>                   hediffList = [];
+    public List<Trait>                    traitList  = [];
+    public HediffSet                      hediffSet;
+    public IEnumerable<BackstoryDef>      backstories;
+    public TraitSet                       traits;
+    public bool                           drafted;
+    public Job                            curJob;
+    public bool                           moving;
+    public LifeStageDef                   currentLifeStage;
+    public BodyTypeDef                    bodyType;
+    public HeadTypeDef                    headType;
+    public List<GeneDef>                  genes = [];
+    public ThingDef                       race;
+    public MutantDef                      mutant;
+    public CreepJoinerFormKindDef         creepJoiner;
+    public BodyDef                        body;
+    public bool                           isStatue;
+    public List<StyleCategoryDef>         styles = [];
 
     public DummyExtendedGraphicsPawnWrapper() : base()
     {
@@ -185,12 +185,6 @@ public class DummyExtendedGraphicsPawnWrapper : ExtendedGraphicsPawnWrapper
         lifeStageDef == this.currentLifeStage;
 
     public override IEnumerable<Apparel> GetWornApparel => this.wornApparel;
-
-    public override IEnumerable<ApparelProperties> GetWornApparelProps()
-    {
-        IEnumerable<ApparelProperties> apparelProps = base.GetWornApparelProps().ToList();
-        return apparelProps.Any() ? apparelProps : this.wornApparelProps;
-    }
 
     public override bool VisibleInBed(bool noBed = true) => this.visibleInBed;
 
