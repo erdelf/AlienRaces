@@ -44,7 +44,7 @@
 
                 this.gender = this.race.race.hasGenders ?
                                   Gender.None :
-                                  Rand.Bool ?
+                                  Rand.Value < ((this.race as ThingDef_AlienRace)?.alienRace.generalSettings.maleGenderProbability ?? 0.5f) ?
                                       Gender.Male :
                                       Gender.Female;
 
@@ -132,7 +132,13 @@
             int savedIndex = this.parent.HashOffset();
             int shared     = 0;
 
-            AlienPartGenerator.ExtendedGraphicTop.drawOverrideDummy = new DummyExtendedGraphicsPawnWrapper { race = this.Race, bodyType = this.BodyType, headType = this.HeadType};
+            AlienPartGenerator.ExtendedGraphicTop.drawOverrideDummy = new DummyExtendedGraphicsPawnWrapper
+                                                                      {
+                                                                          race = this.Race, 
+                                                                          bodyType = this.BodyType, 
+                                                                          headType = this.HeadType, 
+                                                                          gender = this.gender
+                                                                      };
 
             ThingDef_AlienRace alienRace = (this.Race as ThingDef_AlienRace);
             string             bodyPath          = alienRace?.alienRace.graphicPaths.body.GetPath(null, ref shared, savedIndex);
