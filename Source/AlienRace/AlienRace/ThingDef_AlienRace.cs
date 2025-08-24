@@ -797,6 +797,7 @@
         public List<BuildableDef> buildingList                     = [];
         public List<BuildableDef> whiteBuildingList                = [];
         public List<BuildableDef> blackBuildingList                = [];
+        public List<BuildableDef> hiddenBuildingList               = [];
 
         public static readonly HashSet<BuildableDef> buildingRestricted = [];
 
