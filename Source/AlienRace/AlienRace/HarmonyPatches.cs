@@ -495,10 +495,12 @@ namespace AlienRace
 
         public static IEnumerable<CodeInstruction> StatueInitFakePawnTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg)
         {
-            FieldInfo humanInfo = AccessTools.Field(typeof(ThingDefOf), nameof(ThingDefOf.Human));
-            FieldInfo colonistInfo = AccessTools.Field(typeof(PawnKindDefOf), nameof(PawnKindDefOf.Colonist));
+            FieldInfo  humanInfo       = AccessTools.Field(typeof(ThingDefOf),    nameof(ThingDefOf.Human));
+            FieldInfo  colonistInfo    = AccessTools.Field(typeof(PawnKindDefOf), nameof(PawnKindDefOf.Colonist));
+            MethodInfo wornApparelInfo = AccessTools.PropertyGetter(typeof(Pawn_ApparelTracker), nameof(Pawn_ApparelTracker.WornApparel));
 
-            LocalBuilder modData = ilg.DeclareLocal(typeof(HARStatueContainer));
+            LocalBuilder modData    = ilg.DeclareLocal(typeof(HARStatueContainer));
+            LocalBuilder thingOwner = ilg.DeclareLocal(typeof(ThingOwner<Apparel>));
 
             List<CodeInstruction> instructionList = instructions.ToList();
             for (int i = 0; i < instructionList.Count; i++)
@@ -522,9 +524,19 @@ namespace AlienRace
                     yield return CodeInstruction.LoadField(typeof(HARStatueContainer), nameof(HARStatueContainer.alienRace));
                     yield return new CodeInstruction(OpCodes.Castclass, typeof(ThingDef));
                     yield return new CodeInstruction(OpCodes.Nop).WithLabels(falseLabel);
-                }
-                else
+
+                } else
                 {
+                    if (instruction.Calls(wornApparelInfo) && instructionList[i + 2].Calls(AccessTools.Method(typeof(List<Apparel>), nameof(List<Apparel>.Add))))
+                    {
+                        yield return new CodeInstruction(OpCodes.Dup);
+                        yield return CodeInstruction.LoadField(typeof(Pawn_ApparelTracker), "wornApparel");
+                        yield return CodeInstruction.StoreLocal(thingOwner.LocalIndex);
+                        yield return new CodeInstruction(instructionList[i + 1]);
+                        yield return CodeInstruction.LoadLocal(thingOwner.LocalIndex);
+                        yield return CodeInstruction.StoreField(typeof(Thing), nameof(Thing.holdingOwner));
+                    }
+
                     yield return instruction;
 
                     if (instruction.LoadsField(colonistInfo))
