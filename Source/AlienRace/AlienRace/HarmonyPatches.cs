@@ -2920,10 +2920,18 @@ namespace AlienRace
                         foreach (BuildableDef td in buildingsRestrictedTemp)
                         {
                             bool canBuild = false;
+                            bool hidden   = true;
+
                             foreach (ThingDef race in newColonistRaces)
+                            {
                                 if (RaceRestrictionSettings.CanBuild(td, race))
                                     canBuild = true;
-                            if(!canBuild)
+
+                                if (race is not ThingDef_AlienRace alienRace || !alienRace.alienRace.raceRestriction.hiddenBuildingList.Contains(td))
+                                    hidden = false;
+                            }
+
+                            if(!canBuild || hidden)
                                 RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Add(td);
                         }
                         colonistRaces = newColonistRaces;
