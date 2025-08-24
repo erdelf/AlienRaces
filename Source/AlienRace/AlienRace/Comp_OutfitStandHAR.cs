@@ -42,7 +42,7 @@
                 if(!heads.Contains(this.HeadType))
                     this.HeadType = heads.RandomElement();
 
-                this.gender = this.race.race.hasGenders ?
+                this.gender = !this.race.race.hasGenders ?
                                   Gender.None :
                                   Rand.Value < ((this.race as ThingDef_AlienRace)?.alienRace.generalSettings.maleGenderProbability ?? 0.5f) ?
                                       Gender.Male :
