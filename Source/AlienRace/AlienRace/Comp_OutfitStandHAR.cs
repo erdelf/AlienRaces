@@ -134,10 +134,10 @@
 
             AlienPartGenerator.ExtendedGraphicTop.drawOverrideDummy = new DummyExtendedGraphicsPawnWrapper
                                                                       {
-                                                                          race = this.Race, 
+                                                                          race     = this.Race, 
                                                                           bodyType = this.BodyType, 
                                                                           headType = this.HeadType, 
-                                                                          gender = this.gender
+                                                                          gender   = this.HeadType.gender != Gender.None ? this.HeadType.gender : this.gender
                                                                       };
 
             ThingDef_AlienRace alienRace = (this.Race as ThingDef_AlienRace);
