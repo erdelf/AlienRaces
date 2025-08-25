@@ -1131,9 +1131,26 @@
             public void ExposeData()
             {
                 if (typeof(TK).GetInterface(nameof(IExposable)) != null)
+                {
                     Scribe_Deep.Look(ref this.first, label: nameof(this.first));
+                }
+                else if (typeof(Def).IsAssignableFrom(typeof(TK)))
+                {
+                    if (Scribe.mode == LoadSaveMode.Saving)
+                    {
+                        string firstName = ((this.first is Def firstDef) ? firstDef.defName : "null");
+                        Scribe_Values.Look(ref firstName, nameof(this.first), "null");
+                    }
+                    else if (Scribe.mode == LoadSaveMode.LoadingVars)
+                    {
+                        this.first = ScribeExtractor.DefFromNodeUnsafe<TK>(Scribe.loader.curXmlParent[nameof(this.first)]);
+                    }
+                }
                 else
+                {
                     Scribe_Values.Look(ref this.first, label: "first");
+                }
+
                 Scribe_Values.Look(ref this.second, label: "second");
             }
         }

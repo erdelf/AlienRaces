@@ -1161,13 +1161,21 @@
         public PawnKindDef                  kindDef;
         public AlienPartGenerator.AlienComp alienComp;
 
+        public List<AlienPartGenerator.ExposableValueTuple<TraitDef, int>> traits = [];
+
+
         public void ExposeData()
         {
             Scribe_Defs.Look(ref this.alienRace, nameof(this.alienRace));
             Scribe_Defs.Look(ref this.kindDef, nameof(this.kindDef));
+            Scribe_Collections.Look(ref this.traits, nameof(this.traits), LookMode.Deep);
 
             if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                this.traits ??= [];
                 this.alienComp = Activator.CreateInstance<AlienPartGenerator.AlienComp>();
+            }
+
             this.alienComp.PostExposeData();
         }
     }
