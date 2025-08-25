@@ -555,8 +555,13 @@ namespace AlienRace
 
         public static void StatueFakePawnHookPostfix(Pawn fakePawn, Dictionary<string, object> additionalSavedPawnDataForMods)
         {
-            if (additionalSavedPawnDataForMods.TryGetValue(HARStatueContainer.loadKey, out object rawData) && rawData is HARStatueContainer statueData) 
+            if (additionalSavedPawnDataForMods.TryGetValue(HARStatueContainer.loadKey, out object rawData) && rawData is HARStatueContainer statueData)
+            {
                 AlienPartGenerator.AlienComp.CopyAlienData(statueData.alienComp, fakePawn.GetComp<AlienPartGenerator.AlienComp>());
+
+                foreach (AlienPartGenerator.ExposableValueTuple<TraitDef, int> trait in statueData.traits) 
+                    fakePawn.story.traits.GainTrait(new Trait(trait.first, trait.second, true), true);
+            }
         }
 
         public static void StatueSnapshotHookPostfix(Pawn p, Dictionary<string, object> dictToStoreDataIn)
@@ -567,7 +572,8 @@ namespace AlienRace
                                                                  {
                                                                      alienComp = p.GetComp<AlienPartGenerator.AlienComp>(),
                                                                      alienRace = alienRace,
-                                                                     kindDef   = p.kindDef
+                                                                     kindDef   = p.kindDef,
+                                                                     traits = p.story?.traits?.allTraits.Select(t => new AlienPartGenerator.ExposableValueTuple<TraitDef, int>(t.def, t.Degree)).ToList()
                                                                  };
             }
         }
