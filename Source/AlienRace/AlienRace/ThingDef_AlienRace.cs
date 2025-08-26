@@ -204,6 +204,8 @@
                 RaceRestrictionSettings.buildingRestricted.Add(thingDef);
                 this.alienRace.raceRestriction.whiteBuildingList.Add(thingDef);
             }
+            foreach (BuildableDef thingDef in this.alienRace.raceRestriction.hiddenBuildingList)
+                RaceRestrictionSettings.buildingsHidden.Add(thingDef);
 
             foreach (RecipeDef recipeDef in this.alienRace.raceRestriction.recipeList)
             {
@@ -800,6 +802,7 @@
         public List<BuildableDef> hiddenBuildingList               = [];
 
         public static readonly HashSet<BuildableDef> buildingRestricted = [];
+        public static readonly HashSet<BuildableDef> buildingsHidden    = [];
 
         public static readonly HashSet<BuildableDef> buildingsRestrictedWithCurrentColony = [];
 
@@ -812,7 +815,7 @@
             bool                    result          = true;
 
             if (buildingRestricted.Contains(building) || (raceRestriction?.onlyBuildRaceRestrictedBuildings ?? false))
-                result = raceRestriction?.whiteBuildingList.Contains(building)                          ?? false;
+                result = raceRestriction?.whiteBuildingList.Contains(building)                              ?? false;
 
             return result && !(raceRestriction?.blackBuildingList.Contains(building) ?? false);
         }
@@ -821,11 +824,11 @@
 
 
         public bool            onlyDoRaceRestrictedRecipes = false;
-        public List<RecipeDef> recipeList                  = new();
-        public List<RecipeDef> whiteRecipeList             = new();
-        public List<RecipeDef> blackRecipeList             = new();
+        public List<RecipeDef> recipeList                  = [];
+        public List<RecipeDef> whiteRecipeList             = [];
+        public List<RecipeDef> blackRecipeList             = [];
 
-        public static HashSet<RecipeDef> recipeRestricted = new();
+        public static readonly HashSet<RecipeDef> recipeRestricted = [];
 
         public static bool CanDoRecipe(RecipeDef recipe, ThingDef race)
         {
@@ -833,7 +836,7 @@
             bool                    result          = true;
 
             if (recipeRestricted.Contains(recipe) || (raceRestriction?.onlyDoRaceRestrictedRecipes ?? false))
-                result = raceRestriction?.whiteRecipeList.Contains(recipe)                              ?? false;
+                result = raceRestriction?.whiteRecipeList.Contains(recipe)                         ?? false;
 
             return result && !(raceRestriction?.blackRecipeList.Contains(recipe) ?? false);
         }
