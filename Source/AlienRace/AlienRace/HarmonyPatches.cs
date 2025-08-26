@@ -2938,20 +2938,28 @@ namespace AlienRace
                         foreach (BuildableDef td in buildingsRestrictedTemp)
                         {
                             bool canBuild = false;
-                            bool hidden   = true;
 
                             foreach (ThingDef race in newColonistRaces)
-                            {
-                                if (RaceRestrictionSettings.CanBuild(td, race))
+                                if (RaceRestrictionSettings.CanBuild(td, race)) 
                                     canBuild = true;
 
-                                if (race is not ThingDef_AlienRace alienRace || !alienRace.alienRace.raceRestriction.hiddenBuildingList.Contains(td))
-                                    hidden = false;
-                            }
-
-                            if(!canBuild || hidden)
+                            if(!canBuild)
                                 RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Add(td);
                         }
+
+                        foreach (BuildableDef td in RaceRestrictionSettings.buildingsHidden)
+                        {
+                            bool hidden = true;
+
+                            foreach (ThingDef race in newColonistRaces)
+                                if (race is not ThingDef_AlienRace alienRace || !alienRace.alienRace.raceRestriction.hiddenBuildingList.Contains(td))
+                                    hidden = false;
+
+                            if(hidden)
+                                RaceRestrictionSettings.buildingsRestrictedWithCurrentColony.Add(td);
+                        }
+
+
                         colonistRaces = newColonistRaces;
                     }
                 }
