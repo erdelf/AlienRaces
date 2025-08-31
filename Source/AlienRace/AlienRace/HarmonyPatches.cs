@@ -12,6 +12,7 @@ namespace AlienRace
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
+    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using UnityEngine;
     using Verse;
@@ -342,6 +343,10 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Recipe_AdministerIngestible), nameof(Recipe_AdministerIngestible.AvailableOnNow)), postfix: new HarmonyMethod(patchType, nameof(IngestibleAvailableOnNowPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Building_OutfitStand), "HeadOffsetAt"),
                           postfix: new HarmonyMethod(patchType, nameof(OutfitStandHeadOffsetAtPostfix)), transpiler: new HarmonyMethod(patchType, nameof(OutfitStandHeadOffsetAtTranspiler)));
+            harmony.Patch(AccessTools.GetDeclaredMethods(typeof(JobDriver_Lovin)).Where(mi => mi.HasAttribute<CompilerGeneratedAttribute>()).OrderByDescending(mi => mi.GetMethodBody()?.GetILAsByteArray().Length ?? 0).First(),
+                          transpiler: new HarmonyMethod(patchType, nameof(JobDriverLovinFinishTranspiler)));
+
+
 
             AlienRenderTreePatches.HarmonyInit(harmony);
 
@@ -1177,6 +1182,67 @@ namespace AlienRace
         {
             if (__result.Accepted && thing.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.raceRestriction.canReproduce)
                 __result = false;
+        }
+
+        public static IEnumerable<CodeInstruction> JobDriverLovinFinishTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            FieldInfo genderInfo = AccessTools.Field(typeof(Pawn), nameof(Pawn.gender));
+
+            FieldInfo  pawnInfo    = AccessTools.Field(typeof(JobDriver), nameof(JobDriver.pawn));
+            MethodInfo partnerInfo = AccessTools.PropertyGetter(typeof(JobDriver_Lovin), "Partner");
+
+            int state = 0;
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+
+                if (state < 4 && instructionList[i+1].LoadsField(genderInfo))
+                {
+                    if (state is 0 or 1)
+                        yield return instruction;
+                    else
+                        yield return instruction.LoadsField(pawnInfo) ?
+                                         new CodeInstruction(OpCodes.Call,  partnerInfo) :
+                                         new CodeInstruction(OpCodes.Ldfld, pawnInfo);
+
+                    yield return new CodeInstruction(state is 0 or 1 ? OpCodes.Ldc_I4_0 : OpCodes.Ldc_I4_1);
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ReproductionSettings), nameof(ReproductionSettings.ApplicableGender), [typeof(Pawn), typeof(bool)]));
+                    
+                    if (state is 2 or 3)
+                    {
+                        i++;
+                        yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+                    }
+
+                    state++;
+                    i++;
+                }
+                else
+                {
+                    if (state is 4 or 5)
+                    {
+                        if (instruction.Calls(partnerInfo))
+                        {
+                            yield return new CodeInstruction(OpCodes.Ldfld, pawnInfo);
+                            state++;
+                        }
+                        else if (instruction.LoadsField(pawnInfo))
+                        {
+                            yield return new CodeInstruction(OpCodes.Call, partnerInfo);
+                            state++;
+                        } else
+                        {
+                            yield return instruction;
+                        }
+                    } else
+                    {
+                        yield return instruction;
+                    }
+                }
+            }
         }
 
         public static IEnumerable<CodeInstruction> CanEverProduceChildTranspiler(IEnumerable<CodeInstruction> instructions)
