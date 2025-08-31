@@ -392,23 +392,22 @@
     {
         public PawnKindDef childKindDef;
 
-        public SimpleCurve maleFertilityAgeFactor = new(new[]
-                                                        {
-                                                            new CurvePoint(14, 0),
-                                                            new CurvePoint(18, 1),
-                                                            new CurvePoint(50, 1),
-                                                            new CurvePoint(90, 0)
-                                                        });
-        public SimpleCurve femaleFertilityAgeFactor = new(new[]
-                                                          {
-                                                              new CurvePoint(14, 0),
-                                                              new CurvePoint(20, 1),
-                                                              new CurvePoint(28, 1),
-                                                              new CurvePoint(35, 0.5f),
-                                                              new CurvePoint(40, 0.1f),
-                                                              new CurvePoint(45, 0.02f),
-                                                              new CurvePoint(50, 0),
-                                                          });
+        public SimpleCurve maleFertilityAgeFactor = new([
+            new CurvePoint(14, 0),
+            new CurvePoint(18, 1),
+            new CurvePoint(50, 1),
+            new CurvePoint(90, 0)
+        ]);
+
+        public SimpleCurve femaleFertilityAgeFactor = new([
+            new CurvePoint(14, 0),
+            new CurvePoint(20, 1),
+            new CurvePoint(28, 1),
+            new CurvePoint(35, 0.5f),
+            new CurvePoint(40, 0.1f),
+            new CurvePoint(45, 0.02f),
+            new CurvePoint(50, 0)
+        ]);
 
         public List<HybridSpecificSettings> hybridSpecific = new();
 
@@ -1047,11 +1046,11 @@
         public bool           canReproduce                     = true;
         public bool           canReproduceWithSelf             = true;
         public bool           onlyReproduceWithRestrictedRaces = false;
-        public List<ThingDef> reproductionList                 = new();
-        public List<ThingDef> whiteReproductionList            = new();
-        public List<ThingDef> blackReproductionList            = new();
+        public List<ThingDef> reproductionList                 = [];
+        public List<ThingDef> whiteReproductionList            = [];
+        public List<ThingDef> blackReproductionList            = [];
 
-        public static HashSet<ThingDef> reproductionRestricted = new();
+        public static HashSet<ThingDef> reproductionRestricted = [];
 
         public static bool CanReproduce(Pawn pawn, Pawn partnerPawn) =>
             ReproductionSettings.GenderReproductionCheck(pawn, partnerPawn) &&
