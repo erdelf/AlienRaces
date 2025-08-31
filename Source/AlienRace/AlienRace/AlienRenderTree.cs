@@ -12,32 +12,34 @@ namespace AlienRace
     using UnityEngine;
     using UnityEngine.UIElements;
     using Verse;
+    using Label = System.Reflection.Emit.Label;
 
     public static class AlienRenderTreePatches
     {
         private static readonly Type patchType = typeof(AlienRenderTreePatches);
         public static void HarmonyInit(AlienHarmony harmony)
         {
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn)), prefix: new HarmonyMethod(patchType, nameof(GetHumanlikeBodySetForPawnPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn)), prefix: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)), prefix: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn)),  prefix: new HarmonyMethod(patchType, nameof(GetHumanlikeBodySetForPawnPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn)),  prefix: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeHairSetForPawn)),  prefix: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnPrefix)));
             harmony.Patch(AccessTools.Method(typeof(HumanlikeMeshPoolUtility), nameof(HumanlikeMeshPoolUtility.GetHumanlikeBeardSetForPawn)), prefix: new HarmonyMethod(patchType, nameof(GetHumanlikeHeadSetForPawnPrefix)));
 
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode), nameof(PawnRenderNode.GetMesh)), transpiler: new HarmonyMethod(patchType, nameof(RenderNodeGetMeshTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), "TrySetupGraphIfNeeded"),        new HarmonyMethod(patchType,             nameof(TrySetupGraphIfNeededPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), nameof(PawnRenderTree.EnsureInitialized)), postfix: new HarmonyMethod(patchType,             nameof(PawnRenderTreeEnsureInitializedPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode), nameof(PawnRenderNode.GetMesh)),           transpiler: new HarmonyMethod(patchType, nameof(RenderNodeGetMeshTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), "TrySetupGraphIfNeeded"),                  new HarmonyMethod(patchType,             nameof(TrySetupGraphIfNeededPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderTree), nameof(PawnRenderTree.EnsureInitialized)), postfix: new HarmonyMethod(patchType, nameof(PawnRenderTreeEnsureInitializedPostfix)));
 
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Body), nameof(PawnRenderNode.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(BodyGraphicForPrefix)));
-            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Head), nameof(PawnRenderNode.GraphicFor)), prefix: new HarmonyMethod(patchType, nameof(HeadGraphicForPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Body),  nameof(PawnRenderNode.GraphicFor)), prefix: new HarmonyMethod(patchType,     nameof(BodyGraphicForPrefix)));
+            harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Head),  nameof(PawnRenderNode.GraphicFor)), prefix: new HarmonyMethod(patchType,     nameof(HeadGraphicForPrefix)));
             harmony.Patch(AccessTools.Method(typeof(PawnRenderNode_Stump), nameof(PawnRenderNode.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(StumpGraphicForTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(HairDef),   nameof(HairDef.GraphicFor)),   transpiler: new HarmonyMethod(patchType, nameof(HairDefGraphicForTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(TattooDef), nameof(TattooDef.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(TattooDefGraphicForTranspiler)));
-            harmony.Patch(AccessTools.Method(typeof(BeardDef), nameof(BeardDef.GraphicFor)), transpiler: new HarmonyMethod(patchType, nameof(BeardDefGraphicForTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(BeardDef),  nameof(BeardDef.GraphicFor)),  transpiler: new HarmonyMethod(patchType, nameof(BeardDefGraphicForTranspiler)));
         }
 
         public class PawnRenderResolveData
         {
+            public Pawn                         pawn;
             public ThingDef_AlienRace           alienProps;
             public AlienPartGenerator.AlienComp alienComp;
             public LifeStageAgeAlien            lsaa;
@@ -47,9 +49,10 @@ namespace AlienRace
         public static PawnRenderResolveData pawnRenderResolveData;
 
         public static PawnRenderResolveData RegenerateResolveData(Pawn pawn) =>
-            pawnRenderResolveData?.alienComp?.parent != pawn ?
+            pawnRenderResolveData?.pawn != pawn ?
                 pawnRenderResolveData = new PawnRenderResolveData
                                         {
+                                            pawn        = pawn,
                                             alienProps  = pawn.def as ThingDef_AlienRace,
                                             alienComp   = pawn.GetComp<AlienPartGenerator.AlienComp>(),
                                             lsaa        = pawn.ageTracker.CurLifeStageRace as LifeStageAgeAlien,
@@ -301,12 +304,16 @@ namespace AlienRace
         {
             List<CodeInstruction> instructionList = instructions.ToList();
 
-            FieldInfo storyInfo    = AccessTools.Field(typeof(Pawn),              nameof(Pawn.story));
             FieldInfo headTypeInfo = AccessTools.Field(typeof(HeadTypeDef), nameof(HeadTypeDef.graphicPath));
             FieldInfo bodyTypeInfo = AccessTools.Field(typeof(BodyTypeDef), nameof(BodyTypeDef.bodyNakedGraphicPath));
 
-            LocalBuilder styleLocal = ilg.DeclareLocal(typeof(StyleSettings));
-            LocalBuilder colorLocal = ilg.DeclareLocal(typeof(AlienPartGenerator.ExposableValueTuple<Color, Color>));
+            Label nonAlienJumpLabel = ilg.DefineLabel();
+            Label colorLabel = ilg.DefineLabel();
+
+
+            LocalBuilder inactiveLocal = ilg.DeclareLocal(typeof(bool));
+            LocalBuilder styleLocal  = ilg.DeclareLocal(typeof(StyleSettings));
+            LocalBuilder colorLocal  = ilg.DeclareLocal(typeof(AlienPartGenerator.ExposableValueTuple<Color, Color>));
 
             bool conditionJumpDone = false;
 
@@ -318,21 +325,38 @@ namespace AlienRace
                 {
                     conditionJumpDone = true;
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
-                    yield return new CodeInstruction(OpCodes.Call,     AccessTools.Method(patchType, nameof(RegenerateResolveData)));
-                    yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(PawnRenderResolveData),            nameof(PawnRenderResolveData.alienProps)));
-                    yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(ThingDef_AlienRace),               nameof(ThingDef_AlienRace.alienRace)));
+                    yield return new CodeInstruction(OpCodes.Call,  AccessTools.Method(patchType, nameof(RegenerateResolveData)));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PawnRenderResolveData), nameof(PawnRenderResolveData.alienProps)));
+                    yield return new CodeInstruction(OpCodes.Dup);
+                    yield return new CodeInstruction(OpCodes.Ldnull);
+                    yield return new CodeInstruction(OpCodes.Ceq);
+                    yield return new CodeInstruction(OpCodes.Dup);
+                    yield return new CodeInstruction(OpCodes.Stloc, inactiveLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Brfalse_S, nonAlienJumpLabel);
+                    yield return new CodeInstruction(OpCodes.Pop);
+                    yield return new CodeInstruction(OpCodes.Ldsfld,    AccessTools.Field(typeof(ThingDefOf), nameof(ThingDefOf.Human)));
+                    yield return new CodeInstruction(OpCodes.Castclass, typeof(ThingDef_AlienRace));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ThingDef_AlienRace), nameof(ThingDef_AlienRace.alienRace))).WithLabels(nonAlienJumpLabel);
                     yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(ThingDef_AlienRace.AlienSettings), nameof(ThingDef_AlienRace.AlienSettings.styleSettings)));
                     yield return new CodeInstruction(OpCodes.Ldtoken,  typeof(TattooDef));
                     yield return new CodeInstruction(OpCodes.Call,     AccessTools.Method(typeof(Type),                            nameof(Type.GetTypeFromHandle)));
                     yield return new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(Dictionary<Type, StyleSettings>), "get_Item"));
                     yield return new CodeInstruction(OpCodes.Stloc,    styleLocal.LocalIndex);
-                    yield return instruction;
+                    yield return instruction; // original noGraphic jump
                     yield return new CodeInstruction(OpCodes.Ldloc,    styleLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldfld,    AccessTools.Field(typeof(StyleSettings), nameof(StyleSettings.hasStyle)));
                     yield return new CodeInstruction(OpCodes.Brtrue_S, instruction.operand);
                 }
                 else if (instruction.opcode == OpCodes.Ldarg_2)
                 {
+                    yield return instruction;
+                    
+                    yield return instructionList[i + 1];
+                    yield return new CodeInstruction(OpCodes.Ldloc,   inactiveLocal.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Brtrue, colorLabel);
+                    yield return new CodeInstruction(OpCodes.Pop);
+                    yield return new CodeInstruction(OpCodes.Pop);
+
                     i++;
                     yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(patchType,                     nameof(pawnRenderResolveData)));
                     yield return new CodeInstruction(OpCodes.Ldfld,  AccessTools.Field(typeof(PawnRenderResolveData), nameof(PawnRenderResolveData.alienComp)));
@@ -340,9 +364,11 @@ namespace AlienRace
                     yield return new CodeInstruction(OpCodes.Call,   AccessTools.Method(typeof(AlienPartGenerator.AlienComp), nameof(AlienPartGenerator.AlienComp.GetChannel)));
                     yield return new CodeInstruction(OpCodes.Dup);
                     yield return new CodeInstruction(OpCodes.Stloc, colorLocal.LocalIndex);
-                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(AlienPartGenerator.ExposableValueTuple<Color, Color>), nameof(AlienPartGenerator.ExposableValueTuple<Color,Color>.first)));
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(AlienPartGenerator.ExposableValueTuple<Color, Color>), nameof(AlienPartGenerator.ExposableValueTuple<Color, Color>.first)));
                     yield return new CodeInstruction(OpCodes.Ldloc, colorLocal.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(AlienPartGenerator.ExposableValueTuple<Color, Color>), nameof(AlienPartGenerator.ExposableValueTuple<Color, Color>.second)));
+                    instructionList[i+1].labels.Add(colorLabel);
+                    
                 }
                 else
                 {
