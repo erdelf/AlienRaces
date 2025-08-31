@@ -15,7 +15,7 @@
     <Operation Class="PatchOperationAdd">
         <xpath>Defs/ThingDef[defName="Human"]</xpath>
         <value>
-            <alienRace>
+            <alienRace IgnoreIfNoMatchingField="True">
                 <generalSettings>
                     <allowHumanBios>true</allowHumanBios>
                     <corpseCategory>CorpsesHumanlike</corpseCategory>
