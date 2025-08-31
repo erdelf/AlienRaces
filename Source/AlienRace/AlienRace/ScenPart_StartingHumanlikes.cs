@@ -1,5 +1,6 @@
 ﻿namespace AlienRace
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using RimWorld;
@@ -10,12 +11,13 @@
     public class ScenPart_StartingHumanlikes : ScenPart
     {
 
+        [Obsolete("Written in xml as HAR_StartingHumanlikes")]
         static ScenPart_StartingHumanlikes()
         {
             ScenPartDef scenPart = new()
                                    {
                                        defName         = "StartingHumanlikes",
-                                       label           = "HAR.StartingHumanlikesScenPart.Label".Translate(),
+                                       label           = "Starting with Humanlikes",
                                        scenPartClass   = typeof(ScenPart_StartingHumanlikes),
                                        category        = ScenPartCategory.StartingImportant,
                                        selectionWeight = 1.0f,
@@ -44,7 +46,7 @@
                 List<FloatMenuOption> list = new();
                 list.AddRange(DefDatabase<RaceSettings>.AllDefsListForReading.Where(ar => ar.pawnKindSettings.startingColonists != null)
                    .SelectMany(ar => ar.pawnKindSettings.startingColonists.SelectMany(ste => ste.pawnKindEntries.SelectMany(pke => pke.kindDefs)))
-                   .Where(s => s != null).Select(pkd => new FloatMenuOption($"{pkd.LabelCap} | {pkd.race.LabelCap}", () => this.KindDef = pkd)));
+                   .Where(s => s != null).Select(pkd => new FloatMenuOption(pkd.LabelCap != pkd.race.LabelCap ? $"{pkd.LabelCap} | {pkd.race.LabelCap}" : pkd.LabelCap, () => this.KindDef = pkd)));
                 list.Add(new FloatMenuOption(PawnKindDefOf.Villager.LabelCap, () => this.KindDef = PawnKindDefOf.Villager));
                 list.Add(new FloatMenuOption(PawnKindDefOf.Slave.LabelCap,    () => this.KindDef = PawnKindDefOf.Slave));
                 Find.WindowStack.Add(new FloatMenu(list));
