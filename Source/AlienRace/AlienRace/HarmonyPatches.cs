@@ -3831,22 +3831,25 @@ namespace AlienRace
                 return;
 
             if (Faction.OfPlayerSilentFail != null && kindDef == PawnKindDefOf.Colonist && (request.Faction?.IsPlayer ?? false) && kindDef.race != Faction.OfPlayer?.def.basicMemberKind.race)
-                kindDef = Faction.OfPlayer?.def.basicMemberKind;
+                kindDef = Faction.OfPlayer?.def.basicMemberKind ?? request.KindDef;
 
             IEnumerable<RaceSettings> settings = DefDatabase<RaceSettings>.AllDefsListForReading;
             PawnKindEntry             pk;
             if (request.KindDef == PawnKindDefOf.SpaceRefugee || request.KindDef == PawnKindDefOf.Refugee)
             {
-                if (settings.Where(predicate: r => !r.pawnKindSettings.alienrefugeekinds.NullOrEmpty()).SelectMany(selector: r => r.pawnKindSettings.alienrefugeekinds)
-                         .TryRandomElementByWeight(weightSelector: pke => pke.chance, out pk)) 
+                if (settings.Where(r => !r.pawnKindSettings.alienrefugeekinds.NullOrEmpty()).SelectMany(r => r.pawnKindSettings.alienrefugeekinds)
+                         .TryRandomElementByWeight(pke => pke.chance, out pk)) 
                     kindDef = pk.kindDefs.RandomElement();
             }
             else if (request.KindDef == PawnKindDefOf.Slave)
             {
-                if (settings.Where(predicate: r => !r.pawnKindSettings.alienslavekinds.NullOrEmpty()).SelectMany(selector: r => r.pawnKindSettings.alienslavekinds)
-                         .TryRandomElementByWeight(weightSelector: pke => pke.chance, out pk))
+                if (settings.Where(r => !r.pawnKindSettings.alienslavekinds.NullOrEmpty()).SelectMany(r => r.pawnKindSettings.alienslavekinds).TryRandomElementByWeight(pke => pke.chance, out pk))
                     kindDef = pk.kindDefs.RandomElement();
             }
+
+            if(request.ForcedXenotype != null)
+                if (!RaceRestrictionSettings.CanUseXenotype(request.ForcedXenotype, kindDef.race))
+                    kindDef = request.KindDef;
 
             request.KindDef = kindDef;
         }
