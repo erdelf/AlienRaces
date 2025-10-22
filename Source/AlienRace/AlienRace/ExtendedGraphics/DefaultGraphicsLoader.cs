@@ -68,12 +68,22 @@ public class DefaultGraphicsLoader(IGraphicFinder<Texture2D> graphicFinder2D) : 
         // Initialise the stack with the set of top level Graphics enumerators from all the bodyaddons.
         foreach (AlienPartGenerator.ExtendedGraphicTop topGraphic in graphicTops)
         {
+            void AddConditionTypesFromCondition(Condition condition)
+            {
+                if (condition is ConditionLogicCollection clc)
+                    foreach (Condition clcCondition in clc.conditions)
+                        AddConditionTypesFromCondition(clcCondition);
+                else if (condition is ConditionLogicSingle cls)
+                    AddConditionTypesFromCondition(cls.condition);
+                else
+                    topGraphic.conditionTypes.Add(condition.GetType());
+            }
 
             if (topGraphic is AlienPartGenerator.BodyAddon ba)
             {
                 ba.resolveData.head = ba.alignWithHead;
                 foreach (Condition baCondition in ba.conditions) 
-                    topGraphic.conditionTypes.Add(baCondition.GetType());
+                    AddConditionTypesFromCondition(baCondition);
             }
 
             // This process is not idempotent; each loaded variant increases the variant count.
@@ -101,7 +111,7 @@ public class DefaultGraphicsLoader(IGraphicFinder<Texture2D> graphicFinder2D) : 
 
                     if (currentGraphic is AlienPartGenerator.ExtendedConditionGraphic conditionGraphic)
                         foreach (Condition condition in conditionGraphic.conditions)
-                            topGraphic.conditionTypes.Add(condition.GetType());
+                            AddConditionTypesFromCondition(condition);
 
                     // Add the enumerator for any sub graphics to the stack
                     topGraphics.Push(currentGraphic.GetSubGraphics());

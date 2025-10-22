@@ -996,7 +996,8 @@
                     {
                         BodyAddon addon = bodyAddons.Current!;
 
-                        if (addon.conditionTypes.Intersect(types).Any()) this.RegenerateAddonGraphic(this.nodeProps[addonIndex], addonIndex, ref sharedIndex);
+                        if (addon.conditionTypes.Intersect(types).Any()) 
+                            this.RegenerateAddonGraphic(this.nodeProps[addonIndex], addonIndex, ref sharedIndex);
                         addonIndex++;
                     }
                     Application.onBeforeRender -= Update;
