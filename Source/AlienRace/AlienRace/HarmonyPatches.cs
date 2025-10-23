@@ -327,7 +327,6 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn_MutantTracker), nameof(Pawn_MutantTracker.Turn)),                          postfix: new HarmonyMethod(patchType, nameof(MutantTurnPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator),      "FinalLevelOfSkill"), transpiler: new HarmonyMethod(patchType, nameof(FinalLevelOfSkillTranspiler)));
             harmony.Patch(AccessTools.PropertySetter(typeof(Need), nameof(Need.CurLevel)), postfix: new HarmonyMethod(patchType, nameof(NeedLevelPostfix)));
-            harmony.Patch(AccessTools.PropertySetter(typeof(Need), nameof(Need.CurLevelPercentage)), postfix: new HarmonyMethod(patchType, nameof(NeedLevelPostfix)));
             harmony.Patch(AccessTools.Method(typeof(Building_OutfitStand), "RecacheGraphics"), new HarmonyMethod(patchType, nameof(OutfitStandEnableOverride)), 
                           new HarmonyMethod(patchType, nameof(OutfitStandDisableOverride)), new HarmonyMethod(patchType, nameof(OutfindStandRecacheGraphicsTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(Building_OutfitStand), "DrawAt"), transpiler: new HarmonyMethod(patchType, nameof(OutfitStandDrawAtTranspiler)));
