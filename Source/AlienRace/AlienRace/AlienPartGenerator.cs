@@ -981,6 +981,8 @@
             public static void RegenerateAddonGraphicsWithCondition(Pawn pawn, HashSet<Type> types) => 
                 pawn.GetComp<AlienComp>()?.RegenerateAddonGraphicsWithCondition(types);
 
+
+            public readonly HashSet<Type> regenerateTypes = [];
             public void RegenerateAddonGraphicsWithCondition(HashSet<Type> types)
             {
                 if (!this.Pawn.Drawer.renderer.renderTree.Resolved)
@@ -996,14 +998,17 @@
                     {
                         BodyAddon addon = bodyAddons.Current!;
 
-                        if (addon.conditionTypes.Intersect(types).Any()) 
+                        if (addon.conditionTypes.Intersect(this.regenerateTypes).Any()) 
                             this.RegenerateAddonGraphic(this.nodeProps[addonIndex], addonIndex, ref sharedIndex);
                         addonIndex++;
                     }
+                    this.regenerateTypes.Clear();
                     Application.onBeforeRender -= Update;
                 }
-                
-                Application.onBeforeRender += Update;
+                if(!this.regenerateTypes.Any())
+                    Application.onBeforeRender += Update;
+
+                this.regenerateTypes.AddRange(types);
             }
 
             private void RegenerateAddonGraphic(AlienPawnRenderNodeProperties_BodyAddon addonProps, int addonIndex, ref int sharedIndex, bool force = false)
