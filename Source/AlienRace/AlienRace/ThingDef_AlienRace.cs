@@ -286,6 +286,12 @@
                 ThingCategoryDefOf.CorpsesHumanlike.ResolveReferences();
             }
 
+            foreach (ThoughtReplacer replacer in this.alienRace.thoughtSettings.replacerList)
+            {
+                this.alienRace.thoughtSettings.replacerThoughts.Add(replacer.replacer);
+                this.alienRace.thoughtSettings.replacerDict.Add(replacer.original, replacer);
+            }
+
             this.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
 
             if (this.alienRace.generalSettings.humanRecipeImport && this != ThingDefOf.Human)
@@ -639,16 +645,22 @@
 
         public ThoughtDef ReplaceIfApplicable(ThoughtDef def)
         {
-            if (this.replacerList == null || this.replacerList.Select(tr => tr.replacer).Contains(def))
-                return def;
-            
-            for (int i = 0; i < this.replacerList.Count; i++)
-            {
-                if(this.replacerList[i].original == def)
-                    return this.replacerList[i].replacer ?? def;
-            }
+            ThoughtDef thoughtDef = def;
+            this.ReplaceIfApplicable(ref thoughtDef);
+            return thoughtDef;
+        }
 
-            return def;
+        public bool ReplaceIfApplicable(ref ThoughtDef def)
+        {
+            if (this.replacerList == null || this.replacerThoughts.Contains(def))
+                return false;
+
+            if (this.replacerDict.TryGetValue(def, out ThoughtReplacer replacer))
+            {
+                def = replacer.replacer ?? def;
+                return true;
+            }
+            return false;
         }
 
         public ButcherThought       butcherThoughtGeneral  = new();
@@ -689,6 +701,11 @@
             CanGetThought(def, pawn.def);
 
         public List<ThoughtReplacer> replacerList;
+
+        [Unsaved]
+        public HashSet<ThoughtDef> replacerThoughts = [];
+        [Unsaved]
+        public Dictionary<ThoughtDef, ThoughtReplacer> replacerDict = [];
     }
 
     public class ButcherThought

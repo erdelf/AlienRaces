@@ -2781,15 +2781,13 @@ namespace AlienRace
         public static bool TryCreateThoughtPrefix(ref ThoughtDef def, SituationalThoughtHandler __instance, ref List<Thought_Situational> ___cachedThoughts)
         {
             Pawn pawn = __instance.pawn;
-            if (pawn.def is ThingDef_AlienRace race)
-                def = race.alienRace.thoughtSettings.ReplaceIfApplicable(def);
-            ThoughtDef  thoughtDef = def;
+            if (pawn.def is ThingDef_AlienRace race && race.alienRace.thoughtSettings.ReplaceIfApplicable(ref def))
+                for (int i = 0; i < ___cachedThoughts.Count; i++)
+                {
+                    if (___cachedThoughts[i].def == def)
+                        return false;
+                }
 
-            for (int i = 0; i < ___cachedThoughts.Count; i++)
-            {
-                if (___cachedThoughts[i].def == thoughtDef)
-                    return false;
-            }
             return true;
         }
 
