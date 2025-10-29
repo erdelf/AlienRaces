@@ -289,8 +289,8 @@
             if(!this.alienRace.thoughtSettings.replacerList.NullOrEmpty())
                 foreach (ThoughtReplacer replacer in this.alienRace.thoughtSettings.replacerList)
                 {
-                    this.alienRace.thoughtSettings.replacerThoughts.Add(replacer.replacer);
-                    this.alienRace.thoughtSettings.replacerDict.Add(replacer.original, replacer);
+                    this.alienRace.thoughtSettings.replacerThoughts.Add(replacer.replacer.shortHash);
+                    this.alienRace.thoughtSettings.replacerDict.Add(replacer.original.shortHash, replacer);
                 }
 
             this.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
@@ -653,10 +653,10 @@
 
         public bool ReplaceIfApplicable(ref ThoughtDef def)
         {
-            if (this.replacerList == null || this.replacerThoughts.Contains(def))
+            if (this.replacerList == null || this.replacerThoughts.Contains(def.shortHash))
                 return false;
 
-            if (this.replacerDict.TryGetValue(def, out ThoughtReplacer replacer))
+            if (this.replacerDict.TryGetValue(def.shortHash, out ThoughtReplacer replacer))
             {
                 def = replacer.replacer ?? def;
                 return true;
@@ -704,9 +704,9 @@
         public List<ThoughtReplacer> replacerList;
 
         [Unsaved]
-        public HashSet<ThoughtDef> replacerThoughts = [];
+        public HashSet<int> replacerThoughts = [];
         [Unsaved]
-        public Dictionary<ThoughtDef, ThoughtReplacer> replacerDict = [];
+        public Dictionary<int, ThoughtReplacer> replacerDict = [];
     }
 
     public class ButcherThought
