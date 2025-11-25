@@ -286,12 +286,16 @@
                 ThingCategoryDefOf.CorpsesHumanlike.ResolveReferences();
             }
 
-            if(!this.alienRace.thoughtSettings.replacerList.NullOrEmpty())
-                foreach (ThoughtReplacer replacer in this.alienRace.thoughtSettings.replacerList)
-                {
-                    this.alienRace.thoughtSettings.replacerThoughts.Add(replacer.replacer.shortHash);
-                    this.alienRace.thoughtSettings.replacerDict.Add(replacer.original.shortHash, replacer);
-                }
+
+            LongEventHandler.ExecuteWhenFinished(delegate
+                                                 {
+                                                     if (!this.alienRace.thoughtSettings.replacerList.NullOrEmpty())
+                                                         foreach (ThoughtReplacer replacer in this.alienRace.thoughtSettings.replacerList)
+                                                         {
+                                                             this.alienRace.thoughtSettings.replacerThoughts.Add(replacer.replacer.shortHash);
+                                                             this.alienRace.thoughtSettings.replacerDict.Add(replacer.original.shortHash, replacer);
+                                                         }
+                                                 });
 
             this.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
 
