@@ -38,16 +38,19 @@ public static class StylingStation
         StylingStation.pawn         = pawn;
         StylingStation.alienComp    = pawn.TryGetComp<AlienPartGenerator.AlienComp>();
         StylingStation.alienRaceDef = pawn.def as ThingDef_AlienRace;
-        addonVariants               = [.. alienComp.addonVariants];
-        addonColors                 = [.. alienComp.addonColors];
-        colorChannels               = new Dictionary<string, AlienPartGenerator.ExposableValueTuple<Color, Color>>(alienComp.ColorChannels);
+        if (alienComp != null)
+        {
+            addonVariants = [.. alienComp.addonVariants];
+            addonColors   = [.. alienComp.addonColors];
+            colorChannels = new Dictionary<string, AlienPartGenerator.ExposableValueTuple<Color, Color>>(alienComp.ColorChannels);
 
-        availableColorsCache.Clear();
+            availableColorsCache.Clear();
 
-        List<string> list = [.. colorChannels.Keys];
+            List<string> list = [.. colorChannels.Keys];
 
-        foreach (string key in list)
-            colorChannels[key] = (AlienPartGenerator.ExposableValueTuple<Color, Color>)colorChannels[key].Clone();
+            foreach (string key in list)
+                colorChannels[key] = (AlienPartGenerator.ExposableValueTuple<Color, Color>)colorChannels[key].Clone();
+        }
     }
 
     public static IEnumerable<CodeInstruction> DoWindowContentsTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg) =>
@@ -65,7 +68,8 @@ public static class StylingStation
 
         mainTabs.Clear();
         mainTabs.Add(new TabRecord("HAR.CharacterFeatures".Translate(), () => curMainTab = MainTab.CHARACTER, curMainTab == MainTab.CHARACTER));
-        mainTabs.Add(new TabRecord("HAR.RaceFeatures".Translate(),      () => curMainTab = MainTab.RACE,      curMainTab == MainTab.RACE));
+        if(alienComp != null)
+            mainTabs.Add(new TabRecord("HAR.RaceFeatures".Translate(),      () => curMainTab = MainTab.RACE,      curMainTab == MainTab.RACE));
         Widgets.DrawMenuSection(inRect);
         TabDrawer.DrawTabs(inRect, mainTabs);
         inRect.yMin += 40;
