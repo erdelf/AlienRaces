@@ -1,4 +1,7 @@
-﻿namespace AlienRace
+﻿// ReSharper disable UnassignedField.Global
+// ReSharper disable CollectionNeverUpdated.Global
+#pragma warning disable IDE0044
+namespace AlienRace
 {
     using HarmonyLib;
     using RimWorld;
@@ -669,13 +672,13 @@
         }
 
         public ButcherThought       butcherThoughtGeneral  = new();
-        public List<ButcherThought> butcherThoughtSpecific = new();
+        public List<ButcherThought> butcherThoughtSpecific = [];
 
         public AteThought       ateThoughtGeneral  = new();
-        public List<AteThought> ateThoughtSpecific = new();
+        public List<AteThought> ateThoughtSpecific = [];
 
-        public ThoughtDef GetAteThought(ThingDef race, bool cannibal, bool ingredient) =>
-            (this.ateThoughtSpecific?.FirstOrDefault(predicate: at => at.raceList?.Contains(race) ?? false) ?? this.ateThoughtGeneral)?.GetThought(cannibal, ingredient);
+        public ThoughtDef GetAteThought(ThingDef race, bool cannibal, bool ingredient) => 
+            (this.ateThoughtSpecific?.FirstOrDefault(at => at.raceList?.Contains(race) ?? false) ?? this.ateThoughtGeneral)?.GetThought(cannibal, ingredient);
 
         public bool CanGetThought(ThoughtDef def)
         {

@@ -1,5 +1,9 @@
 ﻿namespace AlienRace
 {
+    using AlienRace.ExtendedGraphics;
+    using HarmonyLib;
+    using JetBrains.Annotations;
+    using RimWorld;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -7,13 +11,10 @@
     using System.Text.RegularExpressions;
     using System.Xml;
     using System.Xml.Schema;
-    using AlienRace.ExtendedGraphics;
-    using HarmonyLib;
-    using JetBrains.Annotations;
-    using RimWorld;
     using UnityEngine;
     using Verse;
     using Verse.AI;
+    using static RimWorld.FoodUtility;
 
     [DefOf]
     public static class AlienDefOf
@@ -59,7 +60,7 @@
 
         public static NeedDef Mood;
 
-    #endregion
+        #endregion
 
         // ReSharper restore InconsistentNaming
     }
@@ -290,6 +291,11 @@
 
         public static readonly FoodUtilityAddThoughtsFromIdeo foodUtilityAddThoughtsFromIdeo =
             AccessTools.MethodDelegate<FoodUtilityAddThoughtsFromIdeo>(AccessTools.Method(typeof(FoodUtility), "AddThoughtsFromIdeo"));
+
+        public delegate void FoodUtilityAddIngestThought(Pawn ingester, ThoughtDef def, Precept fromPrecept, List<ThoughtFromIngesting> ingestThoughts, ThingDef foodDef, MeatSourceCategory meatSourceCategory);
+
+        public static readonly FoodUtilityAddIngestThought foodUtilityAddIngestThought =
+            AccessTools.MethodDelegate<FoodUtilityAddIngestThought>(AccessTools.Method(typeof(FoodUtility), "TryAddIngestThought"));
 
         public static readonly AccessTools.FieldRef<PawnTextureAtlas, Dictionary<Pawn, PawnTextureAtlasFrameSet>> pawnTextureAtlasFrameAssignments =
             AccessTools.FieldRefAccess<PawnTextureAtlas, Dictionary<Pawn, PawnTextureAtlasFrameSet>>("frameAssignments");
