@@ -89,8 +89,14 @@ namespace AlienRace
                     if (alienComp.fixGenderPostSpawn)
                     {
                         float? maleGenderProbability = alien.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? alienProps.alienRace.generalSettings.maleGenderProbability;
-                        __instance.pawn.gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
-                        __instance.pawn.Name = PawnBioAndNameGenerator.GeneratePawnName(__instance.pawn);
+
+                        Gender gender = Rand.Value >= maleGenderProbability ? Gender.Female : Gender.Male;
+
+                        if (__instance.pawn.gender != gender)
+                        {
+                            __instance.pawn.gender = gender;
+                            __instance.pawn.Name   = PawnBioAndNameGenerator.GeneratePawnName(__instance.pawn);
+                        }
 
                         alienComp.fixGenderPostSpawn = false;
                     }
