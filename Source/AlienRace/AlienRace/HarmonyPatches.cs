@@ -2098,8 +2098,7 @@ namespace AlienRace
                 if (instruction.LoadsConstant(13))
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return CodeInstruction.Call(typeof(ChoiceLetter_GrowthMoment), "pawn");
-                    yield return instruction;
+                    yield return CodeInstruction.LoadField(typeof(ChoiceLetter_GrowthMoment), "pawn");
                     yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetMinAgeForSexualityHelper)));
                 }
                 else
@@ -2107,7 +2106,7 @@ namespace AlienRace
             }
         }
 
-        public static float GetMinAgeForSexualityHelper(Pawn pawn, int value) =>
+        public static int GetMinAgeForSexualityHelper(Pawn pawn) =>
             GrowthMomentHelper(pawn.def).Last();
 
         public static IEnumerable<CodeInstruction> MinAgeForAdulthood(IEnumerable<CodeInstruction> instructions)
