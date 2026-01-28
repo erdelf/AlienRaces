@@ -210,10 +210,11 @@ namespace AlienRace
 
             harmony.Patch(AccessTools.Method(typeof(EquipmentUtility), nameof(EquipmentUtility.CanEquip), new []{typeof(Thing), typeof(Pawn), typeof(string).MakeByRefType(), typeof(bool)}), postfix: new HarmonyMethod(patchType, nameof(CanEquipPostfix)));
 
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GiveShuffledBioTo"), transpiler: 
-                          new HarmonyMethod(patchType, nameof(MinAgeForAdulthood)));
-            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "TryGiveSolidBioTo"), transpiler:
-                          new HarmonyMethod(patchType, nameof(MinAgeForAdulthood)));
+            HarmonyMethod minAgeAdulthoodInfo = new(patchType, nameof(MinAgeForAdulthood));
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator),   "GiveShuffledBioTo"), transpiler: minAgeAdulthoodInfo);
+            harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator),   "TryGiveSolidBioTo"), transpiler: minAgeAdulthoodInfo);
+            harmony.Patch(AccessTools.Method(typeof(ChoiceLetter_GrowthMoment), nameof(ChoiceLetter_GrowthMoment.MakeChoices)), 
+                          transpiler: AccessTools.Method(patchType, nameof(MinAgeForSexuality)));
 
             harmony.Patch(AccessTools.Method(typeof(PawnDrawUtility), nameof(PawnDrawUtility.FindAnchors)), postfix: new HarmonyMethod(patchType, nameof(FindAnchorsPostfix)));
 
@@ -2089,6 +2090,25 @@ namespace AlienRace
             if (pawn.def is ThingDef_AlienRace race)
                 def = race.alienRace.thoughtSettings.ReplaceIfApplicable(def);
         }
+
+        public static IEnumerable<CodeInstruction> MinAgeForSexuality(IEnumerable<CodeInstruction> instructions)
+        {
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.LoadsConstant(13))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return CodeInstruction.Call(typeof(ChoiceLetter_GrowthMoment), "pawn");
+                    yield return instruction;
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(GetMinAgeForSexualityHelper)));
+                }
+                else
+                    yield return instruction;
+            }
+        }
+
+        public static float GetMinAgeForSexualityHelper(Pawn pawn, int value) =>
+            GrowthMomentHelper(pawn.def).Last();
 
         public static IEnumerable<CodeInstruction> MinAgeForAdulthood(IEnumerable<CodeInstruction> instructions)
         {
