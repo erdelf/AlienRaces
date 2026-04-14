@@ -214,6 +214,11 @@
                         headGraphic.extendedGraphics.Add(headtypeGraphic);
                     }
                 }
+                else
+                {
+                    this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection = true;
+                }
+
                 this.alienProps.alienRace.graphicPaths.head.resolveData.head = true;
 
                 //Log.Message(string.Join("\n", this.alienProps.alienRace.graphicPaths.head.headtypeGraphics.Select(ehg => $"{ehg.headType.defName}: {ehg.path} | {string.Join("|", ehg.genderGraphics?.Select(egg => $"{egg.gender}: {egg.path}") ?? new []{string.Empty})}")));
@@ -286,6 +291,10 @@
                                                              ]
                                                          });
                     }
+                }
+                else
+                {
+                    this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection = true;
                 }
             }
 
@@ -411,6 +420,9 @@
 
             //Log.Message("queueing graphics for: " + this.alienProps.defName);
             graphicsQueue.Add(this);
+
+            if (!this.bodyAddons.NullOrEmpty())
+                this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection = true;
 
             this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
             foreach (OffsetNamed offsetDefault in this.offsetDefaults)
