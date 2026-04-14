@@ -26,6 +26,8 @@ namespace AlienRace
                 this.comps.Add(new CompProperties(typeof(AlienPartGenerator.AlienComp)));
             base.ResolveReferences();
 
+            this.alienRace.compatibility.AlienRace = this;
+
             if (this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize.Equals(Vector2.zero))
                 this.alienRace.generalSettings.alienPartGenerator.customHeadDrawSize = this.alienRace.generalSettings.alienPartGenerator.customDrawSize;
             if (this.alienRace.generalSettings.alienPartGenerator.customPortraitHeadDrawSize.Equals(Vector2.zero))
@@ -1149,6 +1151,9 @@ namespace AlienRace
 
     public class CompatibilityInfo
     {
+        public  ThingDef_AlienRace AlienRace { get; internal set; }
+
+
         protected bool isFlesh = true;
 
         public virtual bool IsFlesh
@@ -1159,6 +1164,7 @@ namespace AlienRace
 
         public virtual bool IsFleshPawn(Pawn pawn) => this.IsFlesh;
 
+        
         protected bool isSentient = true;
 
         public virtual bool IsSentient
@@ -1169,6 +1175,7 @@ namespace AlienRace
 
         public virtual bool IsSentientPawn(Pawn pawn) => this.IsSentient;
 
+
         protected bool hasBlood = true;
 
         public virtual bool HasBlood
@@ -1178,6 +1185,23 @@ namespace AlienRace
         }
 
         public virtual bool HasBloodPawn(Pawn pawn) => this.HasBlood;
+
+        protected bool? usingCustomGraphics = null;
+        internal bool usingCustomGraphicsDetection = false;
+
+        public virtual bool UsingCustomGraphics
+        {
+            get => this.usingCustomGraphics ?? this.usingCustomGraphicsDetection;
+            set => this.usingCustomGraphics = value;
+        }
+
+        public virtual bool UsingCustomGraphicsPawn(Pawn pawn) => this.UsingCustomGraphics;
+
+        public List<BodyTypeDef> AvailableBodyTypes =>
+            this.AlienRace.alienRace.generalSettings.alienPartGenerator.bodyTypes;
+
+        public BodyTypeDef CheckBodyTypeDef(Pawn pawn, BodyTypeDef bodyType) =>
+            HarmonyPatches.CheckBodyType(pawn, bodyType);
     }
 
     public class HARStatueContainer : IExposable
