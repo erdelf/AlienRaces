@@ -216,6 +216,9 @@
                 }
                 else
                 {
+                    Log.Message(this.alienProps.defName + " using custom head");
+
+                    Log.Message(this.alienProps.alienRace.graphicPaths.head);
                     this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection = true;
                 }
 
@@ -294,6 +297,7 @@
                 }
                 else
                 {
+                    Log.Message(this.alienProps.defName + " using custom body");
                     this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection = true;
                 }
             }
@@ -422,7 +426,10 @@
             graphicsQueue.Add(this);
 
             if (!this.bodyAddons.NullOrEmpty())
+            {
+                Log.Message(this.alienProps.defName + " using addons");
                 this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection = true;
+            }
 
             this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
             foreach (OffsetNamed offsetDefault in this.offsetDefaults)
