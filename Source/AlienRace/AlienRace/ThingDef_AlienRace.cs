@@ -108,24 +108,6 @@ namespace AlienRace
                 lsaa.headFemaleOffsetDirectional.west ??= lsaa.headFemaleOffsetDirectional.east;
             }
 
-            //if (this.alienRace.graphicPaths.body.path == GraphicPaths.VANILLA_BODY_PATH && !this.alienRace.graphicPaths.body.GetSubGraphics().MoveNext())
-                //this.alienRace.graphicPaths.body.debug = false;
-
-            if (this.alienRace.graphicPaths.head.path == GraphicPaths.VANILLA_HEAD_PATH && !this.alienRace.graphicPaths.head.GetSubGraphics().Any())
-            {
-                foreach (HeadTypeDef headType in DefDatabase<HeadTypeDef>.AllDefs)
-                {
-                    AlienPartGenerator.ExtendedConditionGraphic headtypeGraphic = new()
-                                                                                 {
-                                                                                     conditions = [new ConditionHeadType {headType = headType}],
-                                                                                     path = headType.graphicPath
-                                                                                 };
-
-                    this.alienRace.graphicPaths.head.extendedGraphics.Add(headtypeGraphic);
-                    //this.alienRace.graphicPaths.head.debug = false;
-                }
-            }
-
             if (this.alienRace.graphicPaths.skeleton.path == GraphicPaths.VANILLA_SKELETON_PATH && !this.alienRace.graphicPaths.skeleton.GetSubGraphics().Any())
             {
                 this.alienRace.graphicPaths.skeleton.path             = string.Empty;
