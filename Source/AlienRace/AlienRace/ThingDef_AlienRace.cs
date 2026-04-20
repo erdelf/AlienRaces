@@ -1169,11 +1169,11 @@ namespace AlienRace
         public virtual bool HasBloodPawn(Pawn pawn) => this.HasBlood;
 
         protected bool? usingCustomGraphics = null;
-        internal bool usingCustomGraphicsDetection = false;
+        internal bool? usingCustomGraphicsDetection = null;
 
         public virtual bool UsingCustomGraphics
         {
-            get => this.usingCustomGraphics ?? this.usingCustomGraphicsDetection;
+            get => this.usingCustomGraphics ?? this.usingCustomGraphicsDetection ?? false;
             set => this.usingCustomGraphics = value;
         }
 
