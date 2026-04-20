@@ -214,11 +214,9 @@
                         headGraphic.extendedGraphics.Add(headtypeGraphic);
                     }
                 }
-                else
+                else if (this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection == null)
                 {
                     Log.Message(this.alienProps.defName + " using custom head");
-
-                    Log.Message(this.alienProps.alienRace.graphicPaths.head);
                     this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection = true;
                 }
 
@@ -295,7 +293,7 @@
                                                          });
                     }
                 }
-                else
+                else if (this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection == null)
                 {
                     Log.Message(this.alienProps.defName + " using custom body");
                     this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection = true;
@@ -425,11 +423,13 @@
             //Log.Message("queueing graphics for: " + this.alienProps.defName);
             graphicsQueue.Add(this);
 
-            if (!this.bodyAddons.NullOrEmpty())
+            if (!this.bodyAddons.NullOrEmpty() && this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection == null)
             {
                 Log.Message(this.alienProps.defName + " using addons");
                 this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection = true;
             }
+
+            this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection ??= false;
 
             this.offsetDefaultsDictionary = new Dictionary<string, OffsetNamed>();
             foreach (OffsetNamed offsetDefault in this.offsetDefaults)
