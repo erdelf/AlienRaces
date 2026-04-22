@@ -216,7 +216,6 @@
                 }
                 else if (this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection == null)
                 {
-                    Log.Message(this.alienProps.defName + " using custom head");
                     this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection = true;
                 }
 
@@ -295,7 +294,6 @@
                 }
                 else if (this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection == null)
                 {
-                    Log.Message(this.alienProps.defName + " using custom body");
                     this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection = true;
                 }
             }
@@ -425,7 +423,6 @@
 
             if (!this.bodyAddons.NullOrEmpty() && this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection == null)
             {
-                Log.Message(this.alienProps.defName + " using addons");
                 this.alienProps.alienRace.compatibility.usingCustomGraphicsDetection = true;
             }
 
