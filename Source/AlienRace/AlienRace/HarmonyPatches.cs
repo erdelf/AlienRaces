@@ -1597,6 +1597,7 @@ namespace AlienRace
             {
                 if (meatSourceCategory == MeatSourceCategory.Humanlike)
                 {
+                    //Log.Message($"EVENT: {eventDef?.defName} eating {foodDef.defName}");
                     bool differentRace = Utilities.DifferentRace(ingester.def, foodDef.ingestible.sourceDef);
                     if (ingester.def is ThingDef_AlienRace alienProps)
                         if (!ModsConfig.IdeologyActive && eventDef != HistoryEventDefOf.AteHumanMeat)
@@ -1631,6 +1632,7 @@ namespace AlienRace
         {
             try
             {
+                //Log.Message($"INGEST: {foodDef.defName}\n{string.Join("\n", __result.Select(tfi => tfi.thought?.defName))}");
                 if (ingester.def is not ThingDef_AlienRace alienProps || !ModsConfig.IdeologyActive) 
                     return;
 
