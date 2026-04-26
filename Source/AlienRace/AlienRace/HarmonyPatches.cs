@@ -17,7 +17,6 @@ namespace AlienRace
     using Verse;
     using Verse.AI;
     using Verse.Grammar;
-    using static RimWorld.FoodUtility;
 
 
     /// <summary>
@@ -261,6 +260,8 @@ namespace AlienRace
             harmony.Patch(AccessTools.Method(typeof(Pawn_MindState), nameof(Pawn_MindState.SetupLastHumanMeatTick)), new HarmonyMethod(patchType, nameof(SetupLastHumanMeatTickPrefix)));
 
             harmony.Patch(AccessTools.Method(typeof(FoodUtility), "AddThoughtsFromIdeo"), new HarmonyMethod(patchType, nameof(FoodUtilityAddThoughtsFromIdeoPrefix)));
+
+            harmony.Patch(AccessTools.Method(typeof(FoodUtility), nameof(FoodUtility.ThoughtsFromIngesting)), postfix: new HarmonyMethod(patchType, nameof(ThoughtsFromIngestingPostfix)));
 
             harmony.Patch(AccessTools.Method(typeof(PreceptComp_UnwillingToDo_Gendered), nameof(PreceptComp.MemberWillingToDo)), transpiler: new HarmonyMethod(patchType, nameof(UnwillingWillingToDoGenderedTranspiler)));
 
@@ -1590,37 +1591,31 @@ namespace AlienRace
             }
         }
 
-        public static void FoodUtilityAddThoughtsFromIdeoPrefix(ref HistoryEventDef eventDef, Pawn ingester, ThingDef foodDef, MeatSourceCategory meatSourceCategory, List<ThoughtFromIngesting> ___ingestThoughts)
+        public static void FoodUtilityAddThoughtsFromIdeoPrefix(ref HistoryEventDef eventDef, Pawn ingester, ThingDef foodDef, MeatSourceCategory meatSourceCategory, List<FoodUtility.ThoughtFromIngesting> ___ingestThoughts)
         {
             try
             {
-                if (ingester.def is not ThingDef_AlienRace alienProps)
-                    return;
-
-                if (meatSourceCategory == MeatSourceCategory.Humanlike && eventDef != HistoryEventDefOf.AteHumanMeat)
+                if (meatSourceCategory == MeatSourceCategory.Humanlike)
                 {
-
-                    //Log.Message($"EVENT: {eventDef?.defName} {ingester?.def?.defName} {foodDef?.defName}\n{Environment.StackTrace}");
-
-                    bool alienMeat = (foodDef.IsCorpse || foodDef.IsMeat) && Utilities.DifferentRace(ingester.def, foodDef.ingestible.sourceDef);
-
-                    if (ingester.story.traits.HasTrait(AlienDefOf.HAR_Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.HAR_Xenophobia) == 1)
-                    {
-                        if (eventDef == HistoryEventDefOf.AteHumanMeatDirect       && Utilities.DifferentRace(ingester.def, foodDef.ingestible.sourceDef) ||
-                            eventDef == HistoryEventDefOf.AteHumanMeatAsIngredient && Utilities.DifferentRace(ingester.def, foodDef.ingestible.sourceDef))
+                    bool differentRace = Utilities.DifferentRace(ingester.def, foodDef.ingestible.sourceDef);
+                    if (ingester.def is ThingDef_AlienRace alienProps)
+                        if (!ModsConfig.IdeologyActive && eventDef != HistoryEventDefOf.AteHumanMeat)
                         {
-                            eventDef = null;
-                            return;
+                            if (ingester.story.traits.HasTrait(AlienDefOf.HAR_Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.HAR_Xenophobia) == 1)
+                                if (differentRace && (eventDef == HistoryEventDefOf.AteHumanMeatDirect || eventDef == HistoryEventDefOf.AteHumanMeatAsIngredient))
+                                {
+                                    eventDef = null;
+                                    return;
+                                }
+
+                            bool cannibal = ingester.story.traits.HasTrait(AlienDefOf.Cannibal);
+                            bool ingredient = eventDef == HistoryEventDefOf.AteHumanMeatAsIngredient;
+
+                            CachedData.foodUtilityAddIngestThought(ingester, alienProps.alienRace.thoughtSettings.GetAteThought(foodDef.ingestible.sourceDef, cannibal, ingredient),
+                                                                   null, ___ingestThoughts, foodDef, meatSourceCategory);
                         }
-                    }
 
-                    bool cannibal = ingester.story.traits.HasTrait(AlienDefOf.Cannibal);
-
-                    bool ingredient = eventDef == HistoryEventDefOf.AteHumanMeatAsIngredient;
-
-                    CachedData.foodUtilityAddIngestThought(ingester, alienProps.alienRace.thoughtSettings.GetAteThought(foodDef.ingestible.sourceDef, cannibal, ingredient), 
-                                                           null, ___ingestThoughts, foodDef, meatSourceCategory);
-
+                    bool alienMeat = (foodDef.IsCorpse || foodDef.IsMeat) && differentRace;
                     if (alienMeat)
                         eventDef = AlienDefOf.HAR_AteAlienMeat;
                 }
@@ -1629,6 +1624,74 @@ namespace AlienRace
             catch (Exception ex)
             {
                 Log.Error($"AlienRace encountered an error processing food\nPawn: {ingester?.Name} | {ingester?.def.defName}\nFood: {foodDef?.defName} | {foodDef?.modContentPack?.Name}\n{ex}");
+            }
+        }
+
+        public static void ThoughtsFromIngestingPostfix(Pawn ingester, Thing foodSource, ThingDef foodDef, ref List<FoodUtility.ThoughtFromIngesting> __result)
+        {
+            try
+            {
+                if (ingester.def is not ThingDef_AlienRace alienProps || !ModsConfig.IdeologyActive) 
+                    return;
+
+                if (ingester.story.traits.HasTrait(AlienDefOf.HAR_Xenophobia) && ingester.story.traits.DegreeOfTrait(AlienDefOf.HAR_Xenophobia) == 1)
+                    if (__result.Any(tfi => tfi.thought == AlienDefOf.AteHumanlikeMeatDirect) && foodDef.ingestible?.sourceDef != ingester.def)
+                        __result.RemoveAll(tfi => tfi.thought == AlienDefOf.AteHumanlikeMeatDirect);
+                    else if (__result.Any(tfi => tfi.thought == AlienDefOf.AteHumanlikeMeatAsIngredient) &&
+                             (foodSource?.TryGetComp<CompIngredients>()?.ingredients
+                                      ?.Any(predicate: td => FoodUtility.GetMeatSourceCategory(td) == MeatSourceCategory.Humanlike && td.ingestible?.sourceDef != ingester.def) ?? false))
+                        __result.RemoveAll(tfi => tfi.thought == AlienDefOf.AteHumanlikeMeatAsIngredient);
+
+                bool cannibal = ingester.story.traits.HasTrait(AlienDefOf.Cannibal);
+
+                List<FoodUtility.ThoughtFromIngesting> resultingThoughts = [];
+                for (int i = 0; i < __result.Count; i++)
+                {
+                    ThoughtDef thoughtDef = __result[i].thought;
+                    ThoughtSettings settings = alienProps.alienRace.thoughtSettings;
+
+                    thoughtDef = settings.ReplaceIfApplicable(thoughtDef);
+
+                    if (thoughtDef == AlienDefOf.AteHumanlikeMeatDirect || thoughtDef == AlienDefOf.AteHumanlikeMeatDirectCannibal)
+                        thoughtDef = settings.GetAteThought(foodDef.ingestible?.sourceDef, cannibal, ingredient: false);
+
+                    if (thoughtDef == AlienDefOf.AteHumanlikeMeatAsIngredient || thoughtDef == AlienDefOf.AteHumanlikeMeatAsIngredientCannibal)
+                    {
+                        ThingDef race = foodSource?.TryGetComp<CompIngredients>()?.ingredients?.FirstOrDefault(predicate: td => td.ingestible?.sourceDef?.race?.Humanlike ?? false)?.ingestible
+                                                ?.sourceDef;
+                        if (race != null)
+                            thoughtDef = settings.GetAteThought(race, cannibal, ingredient: true);
+                    }
+
+                    resultingThoughts.Add(new FoodUtility.ThoughtFromIngesting { fromPrecept = __result[i].fromPrecept, thought = thoughtDef });
+                }
+
+                __result = resultingThoughts;
+
+                if (foodSource != null && FoodUtility.IsHumanlikeCorpseOrHumanlikeMeatOrIngredient(foodSource))
+                {
+                    bool alienMeat = false;
+
+                    CompIngredients compIngredients = foodSource.TryGetComp<CompIngredients>();
+                    if (compIngredients?.ingredients != null)
+                        foreach (ThingDef ingredient in compIngredients.ingredients)
+                            if (ingredient.IsMeat && ingredient.ingestible.sourceDef != ingester.def)
+                                alienMeat = true;
+
+
+                    CachedData.ingestThoughts().Clear();
+                    CachedData.foodUtilityAddThoughtsFromIdeo(alienMeat ? AlienDefOf.HAR_AteAlienMeat : AlienDefOf.HAR_AteNonAlienFood, ingester, foodDef,
+                                                              alienMeat ? MeatSourceCategory.Humanlike : MeatSourceCategory.NotMeat);
+                    resultingThoughts.AddRange(CachedData.ingestThoughts());
+                }
+
+                __result = resultingThoughts;
+
+
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"AlienRace encountered an error processing food\nPawn: {ingester?.Name} | {ingester?.def.defName}\nFood: {foodDef?.defName} | {foodSource?.def.defName} | {foodDef?.modContentPack?.Name}\n{ex}");
             }
         }
 
