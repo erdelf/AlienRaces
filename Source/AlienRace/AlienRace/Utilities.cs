@@ -77,9 +77,13 @@
             };
 
         public static bool DifferentRace(ThingDef one, ThingDef two) =>
-            one != two                                                                                                && one != null && two != null && one.race.Humanlike && two.race.Humanlike &&
+            one != two && one != null && two != null && one.race.Humanlike && two.race.Humanlike &&
             !(one is ThingDef_AlienRace oneAr && oneAr.alienRace.generalSettings.notXenophobistTowards.Contains(two)) &&
             !(two is ThingDef_AlienRace twoAr && twoAr.alienRace.generalSettings.immuneToXenophobia);
+
+        public static bool DifferentRaceMeat(ThingDef ingesterRace, ThingDef meatDef) =>
+            ingesterRace.race?.meatDef != meatDef &&
+            DifferentRace(ingesterRace, meatDef?.ingestible?.sourceDef);
 
         private static List<AlienPartGenerator.BodyAddon> universalBodyAddons;
 
