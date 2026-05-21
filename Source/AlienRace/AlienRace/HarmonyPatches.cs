@@ -1598,7 +1598,7 @@ namespace AlienRace
                 if (meatSourceCategory == MeatSourceCategory.Humanlike)
                 {
                     //Log.Message($"EVENT: {eventDef?.defName} eating {foodDef.defName}");
-                    bool differentRace = Utilities.DifferentRace(ingester.def, foodDef.ingestible.sourceDef);
+                    bool differentRace = Utilities.DifferentRaceMeat(ingester.def, foodDef);
                     if (ingester.def is ThingDef_AlienRace alienProps)
                         if (!ModsConfig.IdeologyActive && eventDef != HistoryEventDefOf.AteHumanMeat)
                         {
@@ -1832,20 +1832,19 @@ namespace AlienRace
             if (FoodUtility.IsHumanlikeCorpseOrHumanlikeMeatOrIngredient(__instance))
             {
                 bool alienMeat = (__instance.def.IsCorpse     && Utilities.DifferentRace(ingester.def, (__instance as Corpse)!.InnerPawn.def)) ||
-                                 (__instance.def.IsIngestible && __instance.def.IsMeat && Utilities.DifferentRace(ingester.def, __instance.def.ingestible.sourceDef));
+                                 (__instance.def.IsIngestible && __instance.def.IsMeat && Utilities.DifferentRaceMeat(ingester.def, __instance.def));
 
                 CompIngredients compIngredients = __instance.TryGetComp<CompIngredients>();
                 if (compIngredients != null)
                     foreach (ThingDef ingredient in compIngredients.ingredients)
-                        if (ingredient.IsMeat && Utilities.DifferentRace(ingester.def, ingredient.ingestible.sourceDef))
+                        if (ingredient.IsMeat && Utilities.DifferentRaceMeat(ingester.def, ingredient))
                             alienMeat = true;
                 if (ModsConfig.IdeologyActive)
                     Find.HistoryEventsManager.RecordEvent(new HistoryEvent(alienMeat ? AlienDefOf.HAR_AteAlienMeat : AlienDefOf.HAR_AteNonAlienFood, ingester.Named(HistoryEventArgsNames.Doer)));
                 if (alienMeat)
                 {
                     AlienPartGenerator.AlienComp alienComp = ingester.GetComp<AlienPartGenerator.AlienComp>();
-                    if (alienComp != null)
-                        alienComp.lastAlienMeatIngestedTick = Find.TickManager.TicksGame;
+                    alienComp?.lastAlienMeatIngestedTick = Find.TickManager.TicksGame;
                 }
             }
         }
