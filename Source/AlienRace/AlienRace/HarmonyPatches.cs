@@ -4,6 +4,7 @@ namespace AlienRace
     using ExtendedGraphics;
     using HarmonyLib;
     using LudeonTK;
+    using Mono.Cecil;
     using RimWorld;
     using RimWorld.QuestGen;
     using System;
@@ -377,16 +378,9 @@ namespace AlienRace
                 MethodInfo bodyCheck = AccessTools.Method(patchType, nameof(ReplacedBody));
                 HarmonyMethod bodyTranspiler = new(patchType, nameof(BodyReferenceTranspiler));
 
-                //Full assemblies scan
-                foreach (MethodInfo mi in typeof(LogEntry).Assembly.GetTypes().
-                    SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
-                    Where(t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(t) && !t.IsGenericType).SelectMany(t =>
-                        t.GetMethods(AccessTools.all).Concat(t.GetProperties(AccessTools.all).SelectMany(pi => pi.GetAccessors(true)))
-                      .Where(mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<DllImportAttribute>())).Distinct()// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
-                ) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
+                foreach (MethodInfo mi in GetBodyReferenceMethods(typeof(LogEntry).Assembly, bodyInfo))
                 {
-                    IEnumerable<KeyValuePair<OpCode, object>> instructions = PatchProcessor.ReadMethodBody(mi);
-                    if (mi != bodyCheck && instructions.Any(il => il.Value?.Equals(bodyInfo) ?? false))
+                    if (mi != bodyCheck)
                         harmony.Patch(mi, transpiler: bodyTranspiler);
                 }
 
@@ -2238,6 +2232,61 @@ namespace AlienRace
                 !(pawn.CurrentBed()?.def.defName.EqualsIgnoreCase(B: "ET_Bed") ?? false)) //todo: how damn specific is this.. a race that can't lay down.. but isn't laying in their own specific bed..........
                 return PawnPosture.Standing;
             return posture;
+        }
+
+        private static IEnumerable<MethodInfo> GetBodyReferenceMethods(Assembly assembly, FieldInfo bodyInfo)
+        {
+            if (assembly == null || bodyInfo == null || string.IsNullOrEmpty(assembly.Location))
+                yield break;
+
+            HashSet<int> seenMetadataTokens = new();
+            using ModuleDefinition module = ModuleDefinition.ReadModule(assembly.Location);
+            foreach (TypeDefinition type in module.Types)
+                foreach (MethodDefinition method in GetBodyReferenceMethods(type, bodyInfo))
+                {
+                    int metadataToken = method.MetadataToken.ToInt32();
+                    if (!seenMetadataTokens.Add(metadataToken))
+                        continue;
+
+                    MethodBase runtimeMethod;
+                    try
+                    {
+                        runtimeMethod = assembly.ManifestModule.ResolveMethod(metadataToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warning($"AlienRace: failed to resolve body-reference method token 0x{metadataToken:X8}: {ex}");
+                        continue;
+                    }
+
+                    if (runtimeMethod is MethodInfo methodInfo && !methodInfo.IsGenericMethod)
+                        yield return methodInfo;
+                }
+        }
+
+        private static IEnumerable<MethodDefinition> GetBodyReferenceMethods(TypeDefinition type, FieldInfo bodyInfo)
+        {
+            foreach (MethodDefinition method in type.Methods)
+                if (MethodReferencesBodyField(method, bodyInfo))
+                    yield return method;
+
+            foreach (TypeDefinition nestedType in type.NestedTypes)
+                foreach (MethodDefinition method in GetBodyReferenceMethods(nestedType, bodyInfo))
+                    yield return method;
+        }
+
+        private static bool MethodReferencesBodyField(MethodDefinition method, FieldInfo bodyInfo)
+        {
+            if (method == null || !method.HasBody || method.HasGenericParameters || method.IsAbstract)
+                return false;
+
+            for (int i = 0; i < method.Body.Instructions.Count; i++)
+                if (method.Body.Instructions[i].Operand is FieldReference fieldReference
+                    && fieldReference.Name == bodyInfo.Name
+                    && fieldReference.DeclaringType.FullName == bodyInfo.DeclaringType.FullName)
+                    return true;
+
+            return false;
         }
 
         public static IEnumerable<CodeInstruction> BodyReferenceTranspiler(IEnumerable<CodeInstruction> instructions)
