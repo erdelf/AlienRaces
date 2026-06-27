@@ -300,7 +300,7 @@ namespace AlienRace
                           postfix: new HarmonyMethod(patchType, nameof(AdultLifeStageStartedPostfix)), transpiler: new HarmonyMethod(patchType, nameof(AdultLifeStageStartedTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnBioAndNameGenerator), "GetBackstoryCategoryFiltersFor"), postfix: new HarmonyMethod(patchType, nameof(GetBackstoryCategoryFiltersForPostfix)));
             
-            harmony.Patch(AccessTools.Method(typeof(QuestNode_Root_WandererJoin_WalkIn), nameof(QuestNode_Root_WandererJoin_WalkIn.GeneratePawn)), transpiler: new HarmonyMethod(patchType, nameof(WandererJoinTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(QuestNode_Root_WandererJoin_WalkIn), nameof(QuestNode_Root_WandererJoin_WalkIn.GeneratePawn_NewTemp)), transpiler: new HarmonyMethod(patchType, nameof(WandererJoinTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PregnancyUtility),                   nameof(PregnancyUtility.ApplyBirthOutcome)),              transpiler: new HarmonyMethod(patchType, nameof(ApplyBirthOutcomeTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator),                      nameof(PawnGenerator.XenotypesAvailableFor)) ,            postfix: new HarmonyMethod(patchType,    nameof(XenotypesAvailableForPostfix)));
             harmony.Patch(AccessTools.Method(typeof(PawnGenerator),                      nameof(PawnGenerator.GetXenotypeForGeneratedPawn)),       transpiler: new HarmonyMethod(patchType, nameof(GetXenotypeForGeneratedPawnTranspiler)));
@@ -1045,9 +1045,9 @@ namespace AlienRace
             if (kindDef.race != Faction.OfPlayerSilentFail?.def.basicMemberKind.race)
                 kindDef = Faction.OfPlayerSilentFail?.def.basicMemberKind ?? kindDef;
             
-            if (DefDatabase<RaceSettings>.AllDefsListForReading.Where(predicate: tdar => !tdar.pawnKindSettings.alienwandererkinds.NullOrEmpty())
-                                      .SelectMany(selector: rs => rs.pawnKindSettings.alienwandererkinds).Where(predicate: fpke => fpke.factionDefs.Contains(Faction.OfPlayer.def))
-                                      .SelectMany(selector: fpke => fpke.pawnKindEntries).TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk))
+            if (DefDatabase<RaceSettings>.AllDefsListForReading.Where(tdar => !tdar.pawnKindSettings.alienwandererkinds.NullOrEmpty())
+                                      .SelectMany(rs => rs.pawnKindSettings.alienwandererkinds).Where(fpke => fpke.factionDefs.Contains(Faction.OfPlayer.def))
+                                      .SelectMany(fpke => fpke.pawnKindEntries).TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk))
                 kindDef = pk.kindDefs.RandomElement();
 
             request.KindDef = kindDef;
