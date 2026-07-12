@@ -1162,11 +1162,11 @@ namespace AlienRace
             }
         }
 
-        public static void HumanOvumCanFertilizeReportPostfix(Pawn pawn, ref AcceptanceReport __result)
+        public static void HumanOvumCanFertilizeReportPostfix(HumanOvum __instance, Pawn pawn, ref AcceptanceReport __result)
         {
             if (__result.Accepted)
             {
-                Pawn second = pawn.TryGetComp<CompHasPawnSources>()?.pawnSources?.FirstOrDefault();
+                Pawn second = __instance.TryGetComp<CompHasPawnSources>()?.pawnSources?.FirstOrDefault();
 
                 if(second != null ? 
                        !RaceRestrictionSettings.CanReproduce(second, pawn) : 
