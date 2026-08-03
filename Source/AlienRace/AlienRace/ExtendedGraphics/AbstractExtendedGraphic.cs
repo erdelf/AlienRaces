@@ -116,6 +116,8 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
                 //Log.Message("Original: " + childNode.OuterXml);
                 foreach (XmlNode graphicNode in childNode.ChildNodes)
                 {
+                    if (graphicNode.NodeType != XmlNodeType.Element) continue;
+
                     XmlAttribute attribute2 = xmlRoot.OwnerDocument!.CreateAttribute("For");
                     attribute2.Value = graphicNode.Name;
                     graphicNode.Attributes!.SetNamedItem(attribute2);
@@ -137,7 +139,7 @@ public abstract class AbstractExtendedGraphic : IExtendedGraphic
     public static XmlNode CustomListLoader(XmlNode xmlNode)
     {
         foreach (XmlNode graphicNode in xmlNode.ChildNodes)
-            if (graphicNode.Attributes!["Class"] == null)
+            if (graphicNode.NodeType == XmlNodeType.Element && graphicNode.Attributes!["Class"] == null)
             {
                 XmlAttribute attribute = xmlNode.OwnerDocument!.CreateAttribute("Class");
                 attribute.Value = typeof(AlienPartGenerator.ExtendedConditionGraphic).FullName;
