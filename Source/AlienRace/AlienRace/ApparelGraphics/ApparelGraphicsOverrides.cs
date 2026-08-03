@@ -62,7 +62,7 @@ namespace AlienRace.ApparelGraphics
 
         public AlienPartGenerator.ExtendedGraphicTop GetGraphics(ThingDef apparelDef) =>
             !this.wornGraphicPaths.NullOrEmpty() ?
-                this.wornGraphicPaths[apparelDef.GetHashCode() % this.wornGraphicPaths.Count] :
+                this.wornGraphicPaths[System.Math.Abs(apparelDef.GetHashCode() % this.wornGraphicPaths.Count)] :
                 this.wornGraphicPath;
 
         public bool IsSuitableReplacementFor(ThingDef apparelDef)
