@@ -111,7 +111,7 @@
         {
             Traverse traverse = Traverse.Create(wanter);
             foreach (XmlNode xmlNode in xmlRootNode.ChildNodes)
-                if (!excludedFieldNames.Contains(xmlNode.Name))
+                if (xmlNode.NodeType == XmlNodeType.Element && !excludedFieldNames.Contains(xmlNode.Name))
                     SetFieldFromXmlNode(traverse, xmlNode, wanter, xmlNode.Name);
         }
 
