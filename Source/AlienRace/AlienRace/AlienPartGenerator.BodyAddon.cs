@@ -101,7 +101,8 @@ namespace AlienRace
                 if (variantCounting <= 0)
                     variantCounting = 1;
                 
-                savedIndex ??= this.linkVariantIndexWithPrevious ? sharedIndex % this.VariantCountMax : Rand.Range(0, this.VariantCountMax);
+                int maxVariants = Mathf.Max(1, this.VariantCountMax);
+                savedIndex ??= this.linkVariantIndexWithPrevious ? sharedIndex % maxVariants : Rand.Range(0, maxVariants);
 
                 sharedIndex = savedIndex.Value;
 
