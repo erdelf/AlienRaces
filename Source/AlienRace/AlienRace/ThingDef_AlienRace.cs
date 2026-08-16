@@ -384,6 +384,41 @@ namespace AlienRace
         public Dictionary<StatDef, StatPart_Age> ageStatOverride = [];
 
         public List<MeditationFocusDef> meditationFocii = [];
+        public SimpleCurve              ideoCertaintyChangeCurve;
+
+        public SimpleCurve IdeoCertaintyChangeCurve
+        {
+            get
+            {
+                if (this.ideoCertaintyChangeCurve == null)
+                {
+                    SimpleCurve curve = [];
+
+                    List<LifeStageAge> lifeStageAges = this.alienPartGenerator.alienProps.race.lifeStageAges;
+
+                    DevelopmentalStage stages = DevelopmentalStage.None;
+
+                    foreach (LifeStageAge lifeStageAge in lifeStageAges)
+                    {
+                        if (!stages.HasFlag(DevelopmentalStage.Child) && lifeStageAge.def.developmentalStage.HasFlag(DevelopmentalStage.Child))
+                        {
+                            curve.Add(lifeStageAge.minAge, 2f);
+                            stages |= DevelopmentalStage.Child;
+                        }
+
+                        if (!stages.HasFlag(DevelopmentalStage.Adult) && lifeStageAge.def.developmentalStage.HasFlag(DevelopmentalStage.Adult))
+                        {
+                            curve.Add(lifeStageAge.minAge, 1f);
+                            stages |= DevelopmentalStage.Adult;
+                        }
+                    }
+                    if(curve.PointsCount > 0)
+                        this.ideoCertaintyChangeCurve = curve;
+                }
+
+                return this.ideoCertaintyChangeCurve;
+            }
+        }
     }
 
     public class ReproductionSettings

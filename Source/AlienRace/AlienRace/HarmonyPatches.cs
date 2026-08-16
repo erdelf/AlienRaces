@@ -344,7 +344,7 @@ namespace AlienRace
                           postfix: new HarmonyMethod(patchType, nameof(OutfitStandHeadOffsetAtPostfix)), transpiler: new HarmonyMethod(patchType, nameof(OutfitStandHeadOffsetAtTranspiler)));
             harmony.Patch(AccessTools.GetDeclaredMethods(typeof(JobDriver_Lovin)).Where(mi => mi.HasAttribute<CompilerGeneratedAttribute>()).OrderByDescending(mi => mi.GetMethodBody()?.GetILAsByteArray().Length ?? 0).First(),
                           transpiler: new HarmonyMethod(patchType, nameof(JobDriverLovinFinishTranspiler)));
-
+            harmony.Patch(AccessTools.PropertyGetter(typeof(Pawn_IdeoTracker), "CertaintyChangeFactor"), transpiler: new HarmonyMethod(patchType, nameof(IdeoCertaintyChangeFactorTranspiler)));
 
             AlienRenderTreePatches.HarmonyInit(harmony);
 
@@ -412,6 +412,57 @@ namespace AlienRace
 
             AlienRaceMod.settings.UpdateSettings();
         }
+
+        public static IEnumerable<CodeInstruction> IdeoCertaintyChangeFactorTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            FieldInfo certaintyCurveInfo = AccessTools.Field(typeof(Pawn_IdeoTracker), "pawnAgeCertaintyCurve");
+
+            bool first = true;
+
+            List<CodeInstruction> instructionsList = instructions.ToList();
+
+            for (int index = 0; index < instructionsList.Count; index++)
+            {
+                CodeInstruction instruction = instructionsList[index];
+
+                if (instruction.LoadsField(certaintyCurveInfo))
+                {
+                    if (first)
+                    {
+                        first = false;
+                        index++;
+                        yield return new CodeInstruction(OpCodes.Br, instructionsList[index].operand).MoveLabelsFrom(instruction);
+                    }
+                    else
+                    {
+                        yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
+                        yield return CodeInstruction.LoadField(typeof(Pawn_IdeoTracker), "pawn");
+                        yield return new CodeInstruction(OpCodes.Call,  AccessTools.Method(patchType, nameof(IdeoCertaintyChangeFactorHelper)));
+                    }
+                }
+                else
+                {
+                    yield return instruction;
+                }
+            }
+        }
+
+        public static SimpleCurve IdeoCertaintyChangeFactorHelper(Pawn pawn)
+        {
+            if (pawn.def is ThingDef_AlienRace alienProps)
+            {
+                SimpleCurve certaintyChangeCurve = alienProps.alienRace.generalSettings.IdeoCertaintyChangeCurve;
+                if (certaintyChangeCurve != null)
+                    return certaintyChangeCurve;
+            }
+
+            return
+            [
+                new CurvePoint(pawn.ageTracker.LifeStageMinAge(LifeStageDefOf.HumanlikeChild), 2f),
+                new CurvePoint(pawn.ageTracker.LifeStageMinAge(LifeStageDefOf.HumanlikeAdult), 1f)
+            ];
+        }
+
 
         public static void IngestibleAvailableOnNowPostfix(Thing thing, ref bool __result, RecipeDef ___recipe)
         {
