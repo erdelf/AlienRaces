@@ -555,8 +555,8 @@
 
             public int lastAlienMeatIngestedTick = 0;
 
-            private Dictionary<string, ExposableValueTuple<Color, Color>>                                    colorChannels;
-            private Dictionary<string, ColorChannelLinkData> colorChannelLinks = [];
+            private Dictionary<string, ExposableValueTuple<Color, Color>> colorChannels;
+            private Dictionary<string, ColorChannelLinkData>              colorChannelLinks = [];
             // originalChannelName, ((targetChannelName, targetChannelCategoryIndex), targetChannelFirst)
 
             public class ColorChannelLinkData : IExposable
@@ -784,20 +784,22 @@
 
             private void ExposeDataInternal()
             {
-                Scribe_Values.Look(ref this.fixGenderPostSpawn, label: "fixAlienGenderPostSpawn");
-                Scribe_Collections.Look(ref this.addonVariants, label: "addonVariants");
-                Scribe_Collections.Look(ref this.addonColors,   label: nameof(this.addonColors), LookMode.Deep);
-                Scribe_Collections.Look(ref this.colorChannels, label: "colorChannels");
-                Scribe_Collections.Look(ref this.colorChannelLinks, label: "colorChannelLinks", LookMode.Value, LookMode.Deep);
+                Scribe_Values.Look(ref this.fixGenderPostSpawn, "fixAlienGenderPostSpawn");
+                Scribe_Collections.Look(ref this.addonVariants, "addonVariants");
+                Scribe_Collections.Look(ref this.addonColors,   nameof(this.addonColors), LookMode.Deep);
+                Scribe_Collections.Look(ref this.colorChannels, "colorChannels");
+                Scribe_Collections.Look(ref this.colorChannelLinks, "colorChannelLinks", LookMode.Value, LookMode.Deep);
 
                 Scribe_Values.Look(ref this.headVariant,     nameof(this.headVariant),     -1);
                 Scribe_Values.Look(ref this.bodyVariant,     nameof(this.bodyVariant),     -1);
                 Scribe_Values.Look(ref this.headMaskVariant, nameof(this.headMaskVariant), -1);
                 Scribe_Values.Look(ref this.bodyMaskVariant, nameof(this.bodyMaskVariant), -1);
 
+                Scribe_Defs.Look(ref this.originalKindDef, nameof(this.originalKindDef));
+                Scribe_Values.Look(ref this.lastAlienMeatIngestedTick, nameof(this.lastAlienMeatIngestedTick));
+
                 if (Scribe.mode is LoadSaveMode.ResolvingCrossRefs && this.Pawn != null)
                     this.Pawn.story.SkinColorBase = this.GetChannel("skin").first;
-
                 
                 this.colorChannelLinks = this.ColorChannelLinks ?? [];
             }
