@@ -739,7 +739,9 @@
                 this.customHeadDrawSize         = apg.customHeadDrawSize;
                 this.customPortraitDrawSize     = apg.customPortraitDrawSize;
                 this.customPortraitHeadDrawSize = apg.customPortraitHeadDrawSize;
-                this.originalKindDef            = this.Pawn.kindDef;
+
+                if(!respawningAfterLoad)
+                    this.originalKindDef            = this.Pawn.kindDef;
             }
 
             private bool saveIsAfter1_4;
