@@ -427,27 +427,31 @@ namespace AlienRace
 
                 if (instruction.LoadsField(certaintyCurveInfo))
                 {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
+                    yield return CodeInstruction.LoadField(typeof(Pawn_IdeoTracker), "pawn");
+                    yield return instruction;
+
                     if (first)
                     {
+                        yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(IdeoCertaintyChangeFactorCheck)));
                         first = false;
-                        index++;
-                        yield return new CodeInstruction(OpCodes.Br, instructionsList[index].operand).MoveLabelsFrom(instruction);
                     }
                     else
                     {
-                        yield return new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction);
-                        yield return CodeInstruction.LoadField(typeof(Pawn_IdeoTracker), "pawn");
                         yield return new CodeInstruction(OpCodes.Call,  AccessTools.Method(patchType, nameof(IdeoCertaintyChangeFactorHelper)));
                     }
                 }
                 else
-                {
+                { 
                     yield return instruction;
                 }
             }
         }
 
-        public static SimpleCurve IdeoCertaintyChangeFactorHelper(Pawn pawn)
+        public static bool IdeoCertaintyChangeFactorCheck(Pawn pawn, SimpleCurve original) => 
+            original != null || !(pawn.def.race.lifeStageAges.Any(la => la.def == LifeStageDefOf.HumanlikeChild) && pawn.def.race.lifeStageAges.Any(la => la.def == LifeStageDefOf.HumanlikeAdult));
+
+        public static SimpleCurve IdeoCertaintyChangeFactorHelper(Pawn pawn, SimpleCurve original)
         {
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
@@ -455,6 +459,9 @@ namespace AlienRace
                 if (certaintyChangeCurve != null)
                     return certaintyChangeCurve;
             }
+
+            if(original != null)
+                return original;
 
             return
             [
