@@ -1100,9 +1100,10 @@ namespace AlienRace
         {
             PawnKindDef kindDef = request.KindDef;
 
-            if (kindDef.race != Faction.OfPlayerSilentFail?.def.basicMemberKind.race)
-                kindDef = Faction.OfPlayerSilentFail?.def.basicMemberKind ?? kindDef;
-            
+            PawnKindDef factionKind = Faction.OfPlayerSilentFail?.def.BasicPawnKindOfFaction();
+            if (kindDef.race != factionKind?.race)
+                kindDef = factionKind ?? kindDef;
+
             if (DefDatabase<RaceSettings>.AllDefsListForReading.Where(tdar => !tdar.pawnKindSettings.alienwandererkinds.NullOrEmpty())
                                       .SelectMany(rs => rs.pawnKindSettings.alienwandererkinds).Where(fpke => fpke.factionDefs.Contains(Faction.OfPlayer.def))
                                       .SelectMany(fpke => fpke.pawnKindEntries).TryRandomElementByWeight(pke => pke.chance, out PawnKindEntry pk))
@@ -2900,7 +2901,7 @@ namespace AlienRace
         public static void TryMakeInitialRelationsWithPostfix(Faction __instance, Faction other)
         {
             static ThingDef_AlienRace GetRaceOfFaction(FactionDef fac) =>
-                (fac.basicMemberKind?.race ?? fac.pawnGroupMakers?.SelectMany(pgm => pgm.options).GroupBy(pgm => pgm.kind.race).OrderByDescending(g => g.Count()).First().Key) as ThingDef_AlienRace;
+                fac.BasicPawnKindOfFaction()?.race as ThingDef_AlienRace;
 
             ThingDef_AlienRace alienRace = GetRaceOfFaction(other.def);
             if(alienRace != null)
@@ -3547,7 +3548,7 @@ namespace AlienRace
             HashSet<string>   startingPawnKindLabelSet          = [];
             HashSet<string>   startingPawnKindDuplicateLabelSet = [];
 
-            PawnKindDef basicMemberKind = Find.GameInitData.startingPawnKind ?? Faction.OfPlayer.def.basicMemberKind;
+            PawnKindDef basicMemberKind = Find.GameInitData.startingPawnKind ?? Faction.OfPlayer.def.BasicPawnKindOfFaction();
 
             List<FloatMenuOption> options =
             [
@@ -3996,8 +3997,12 @@ namespace AlienRace
             if (request.AllowedDevelopmentalStages.Newborn())
                 return;
 
-            if (Faction.OfPlayerSilentFail != null && kindDef == PawnKindDefOf.Colonist && (request.Faction?.IsPlayer ?? false) && kindDef.race != Faction.OfPlayer?.def.basicMemberKind.race)
-                kindDef = Faction.OfPlayer?.def.basicMemberKind ?? request.KindDef;
+            if (Faction.OfPlayerSilentFail != null && kindDef == PawnKindDefOf.Colonist && (request.Faction?.IsPlayer ?? false))
+            {
+                PawnKindDef basicMemberKind = Faction.OfPlayer?.def.BasicPawnKindOfFaction();
+                if (kindDef.race != basicMemberKind?.race)
+                    kindDef = basicMemberKind ?? request.KindDef;
+            }
 
             IEnumerable<RaceSettings> settings = DefDatabase<RaceSettings>.AllDefsListForReading;
             PawnKindEntry             pk;

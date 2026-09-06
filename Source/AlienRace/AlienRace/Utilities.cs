@@ -7,7 +7,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
     using System.Text.RegularExpressions;
     using System.Xml;
     using System.Xml.Schema;
@@ -20,6 +19,7 @@
     public static class AlienDefOf
     {
         // ReSharper disable InconsistentNaming
+        // ReSharper disable UnassignedField.Global
         public static TraitDef HAR_Xenophobia;
 
         public static ThoughtDef HAR_XenophobiaVsAlien;
@@ -61,7 +61,7 @@
         public static NeedDef Mood;
 
         #endregion
-
+        // ReSharper restore UnassignedField.Global
         // ReSharper restore InconsistentNaming
     }
 
@@ -84,6 +84,29 @@
         public static bool DifferentRaceMeat(ThingDef ingesterRace, ThingDef meatDef) =>
             ingesterRace.race?.meatDef != meatDef &&
             DifferentRace(ingesterRace, meatDef?.ingestible?.sourceDef);
+
+        public static PawnKindDef BasicPawnKindOfFaction(this FactionDef faction, PawnKindDef fallback = null)
+        {
+            if(faction == null)
+                return fallback ?? PawnKindDefOf.Colonist;
+
+            if (faction.basicMemberKind != null)
+                return faction.basicMemberKind;
+
+            List<PawnKindDef> allPawnKinds = [];
+            if (faction.pawnGroupMakers != null)
+                foreach (PawnGroupMaker pgm in faction.pawnGroupMakers)
+                {
+                    List<PawnGenOption> options = pgm.options;
+                    foreach (PawnGenOption pgo in options)
+                        if (pgo.kind.RaceProps.Humanlike)
+                            allPawnKinds.Add(pgo.kind);
+                }
+
+            return allPawnKinds.Count == 0 ?
+                       fallback ?? PawnKindDefOf.Colonist : 
+                       allPawnKinds.RandomElement();
+        }
 
         private static List<AlienPartGenerator.BodyAddon> universalBodyAddons;
 
