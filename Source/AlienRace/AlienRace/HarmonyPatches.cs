@@ -2530,7 +2530,7 @@ namespace AlienRace
 
         public static void DamageInfosToApplyPostfix(Verb __instance, ref IEnumerable<DamageInfo> __result)
         {
-            if (__instance.CasterIsPawn && __instance.CasterPawn.def is ThingDef_AlienRace alienProps && __instance.CasterPawn.CurJob.def == JobDefOf.SocialFight)
+            if (__instance.CasterIsPawn && __instance.CasterPawn?.def is ThingDef_AlienRace alienProps && __instance.CasterPawn.CurJob?.def == JobDefOf.SocialFight)
                 __result = __result.Select(selector: di =>
                     new DamageInfo(di.Def, Math.Min(di.Amount, alienProps.alienRace.generalSettings.maxDamageForSocialfight), angle: di.Angle, instigator: di.Instigator,
                         hitPart: di.HitPart, weapon: di.Weapon, category: di.Category));
