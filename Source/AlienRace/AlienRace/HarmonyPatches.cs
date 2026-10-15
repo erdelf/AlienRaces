@@ -1033,6 +1033,7 @@ namespace AlienRace
                     for (int j = 0; j < originalMethod.GetParameters().Length; j++)
                         yield return new CodeInstruction(OpCodes.Ldarg, j);
                     yield return new CodeInstruction(OpCodes.Call, originalMethod);
+                    yield return new CodeInstruction(OpCodes.Pop);
                     yield return new CodeInstruction(OpCodes.Br, loop);
                     yield return new CodeInstruction(OpCodes.Ldc_I4, int.MinValue) { labels = new List<Label> { loopEnd } };
                     yield return new CodeInstruction(OpCodes.Stsfld, countInfo);
