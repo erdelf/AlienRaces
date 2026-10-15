@@ -1,0 +1,41 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "AlienRace/1.0.0": {
+        "dependencies": {
+          "Lib.Harmony": "2.3.6"
+        },
+        "runtime": {
+          "AlienRace.dll": {}
+        }
+      },
+      "Lib.Harmony/2.3.6": {
+        "runtime": {
+          "lib/net9.0/0Harmony.dll": {
+            "assemblyVersion": "2.3.6.0",
+            "fileVersion": "2.3.6.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "AlienRace/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Lib.Harmony/2.3.6": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HqXPz33Z+R8ZDCLS5pJZthg33AMdF1bQXUbz2V7Neb9E+sMQOf4S1wquhM4pLIZFX7BZcOQubclbVreiM1+qmw==",
+      "path": "lib.harmony/2.3.6",
+      "hashPath": "lib.harmony.2.3.6.nupkg.sha512"
+    }
+  }
+}
