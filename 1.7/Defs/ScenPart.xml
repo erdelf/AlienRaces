@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+    <ScenPartDef>
+        <defName>HAR_StartingHumanlikes</defName>
+        <label>Starting with Humanlikes</label>
+        <scenPartClass>AlienRace.ScenPart_StartingHumanlikes</scenPartClass>
+        <category>StartingImportant</category>
+        <selectionWeight>1.0</selectionWeight>
+        <summaryPriority>10</summaryPriority>
+    </ScenPartDef>
+</Defs>

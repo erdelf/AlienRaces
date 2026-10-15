@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LanguageData>
+    <HAR.OutfitStandRaceCommandDesc>Change the displayed race\nThis can change allowed apparel</HAR.OutfitStandRaceCommandDesc>
+    <HAR.OutfitStandBodyCommandDesc>Change the displayed body\nThis can change allowed apparel</HAR.OutfitStandBodyCommandDesc>
+    <HAR.OutfitStandHeadCommandDesc>Change the displayed head</HAR.OutfitStandHeadCommandDesc>
+</LanguageData>

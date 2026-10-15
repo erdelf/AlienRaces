@@ -1,0 +1,14 @@
+<Patch>
+    <Operation Class="PatchOperationAdd">
+        <xpath>Defs/ThingDef[@Name="OutfitStandBase"]/comps</xpath>
+        <value>
+            <li>
+                <compClass>AlienRace.Comp_OutfitStandHAR</compClass>
+            </li>
+        </value>
+    </Operation>
+    <Operation Class="PatchOperationAdd">
+        <xpath>Defs/ThingDef[defName="Building_KidOutfitStand"]</xpath>
+        <value><designationCategory Inherit="false"/></value>
+    </Operation>
+</Patch>
