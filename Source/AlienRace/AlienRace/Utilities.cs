@@ -375,7 +375,7 @@
         public static readonly RenderTreeAddChild renderTreeAddChild =
             AccessTools.MethodDelegate<RenderTreeAddChild>(AccessTools.Method(typeof(PawnRenderTree), "AddChild"));
 
-        public static readonly AccessTools.FieldRef<XmlElement, IXmlSchemaInfo> xmlElementName = AccessTools.FieldRefAccess<IXmlSchemaInfo>(typeof(XmlElement), "name");
+        public static readonly AccessTools.FieldRef<XmlElement, IXmlSchemaInfo> xmlElementName = AccessTools.FieldRefAccess<IXmlSchemaInfo>(typeof(XmlElement), "_name");
 
         public delegate IXmlSchemaInfo XmlDocumentAddName(XmlDocument document, string prefix, string localName, string namespaceURI, IXmlSchemaInfo schemaInfo);
 
